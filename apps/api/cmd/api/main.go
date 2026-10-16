@@ -42,6 +42,7 @@ import (
 	favorite_service "github.com/zigzagapp-org/zigzag-api/internal/services/favorite"
 	github_service "github.com/zigzagapp-org/zigzag-api/internal/services/github"
 	github_sync_service "github.com/zigzagapp-org/zigzag-api/internal/services/githubsync"
+	googleauth_service "github.com/zigzagapp-org/zigzag-api/internal/services/googleauth"
 	import_service "github.com/zigzagapp-org/zigzag-api/internal/services/import"
 	initiative_service "github.com/zigzagapp-org/zigzag-api/internal/services/initiative"
 	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
@@ -163,6 +164,7 @@ func startAPI(cfg *config.Config) {
 		FavoriteService:     favorite_service.NewFavoriteService(cfg, repo),
 		WebhookService:      webhookService,
 		ImportService:       import_service.NewImportService(cfg, repo),
+		GoogleAuthService:   googleauth_service.NewGoogleAuthService(cfg, repo, encryptor, tokenManager.CSRFSecret()),
 	}
 	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
 	srvImpl.DocumentService = document_service.NewDocumentService(cfg, repo, srvImpl.IssueService)

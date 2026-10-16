@@ -80,6 +80,11 @@ func AllowPublicSignup(v bool) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldAllowPublicSignup, v))
 }
 
+// GoogleClientSecretEncrypted applies equality check predicate on the "google_client_secret_encrypted" field. It's identical to GoogleClientSecretEncryptedEQ.
+func GoogleClientSecretEncrypted(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldGoogleClientSecretEncrypted, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldCreatedAt, v))
@@ -293,6 +298,66 @@ func AllowPublicSignupEQ(v bool) predicate.SystemSetting {
 // AllowPublicSignupNEQ applies the NEQ predicate on the "allow_public_signup" field.
 func AllowPublicSignupNEQ(v bool) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldNEQ(FieldAllowPublicSignup, v))
+}
+
+// GoogleAuthIsNil applies the IsNil predicate on the "google_auth" field.
+func GoogleAuthIsNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldIsNull(FieldGoogleAuth))
+}
+
+// GoogleAuthNotNil applies the NotNil predicate on the "google_auth" field.
+func GoogleAuthNotNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNotNull(FieldGoogleAuth))
+}
+
+// GoogleClientSecretEncryptedEQ applies the EQ predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedEQ(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedNEQ applies the NEQ predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedNEQ(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNEQ(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedIn applies the In predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedIn(vs ...[]byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldIn(FieldGoogleClientSecretEncrypted, vs...))
+}
+
+// GoogleClientSecretEncryptedNotIn applies the NotIn predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedNotIn(vs ...[]byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNotIn(FieldGoogleClientSecretEncrypted, vs...))
+}
+
+// GoogleClientSecretEncryptedGT applies the GT predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedGT(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldGT(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedGTE applies the GTE predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedGTE(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldGTE(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedLT applies the LT predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedLT(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldLT(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedLTE applies the LTE predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedLTE(v []byte) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldLTE(FieldGoogleClientSecretEncrypted, v))
+}
+
+// GoogleClientSecretEncryptedIsNil applies the IsNil predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedIsNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldIsNull(FieldGoogleClientSecretEncrypted))
+}
+
+// GoogleClientSecretEncryptedNotNil applies the NotNil predicate on the "google_client_secret_encrypted" field.
+func GoogleClientSecretEncryptedNotNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNotNull(FieldGoogleClientSecretEncrypted))
 }
 
 // And groups predicates with the AND operator between them.

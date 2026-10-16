@@ -19,6 +19,7 @@ import (
 	email_service "github.com/zigzagapp-org/zigzag-api/internal/services/email"
 	favorite_service "github.com/zigzagapp-org/zigzag-api/internal/services/favorite"
 	github_service "github.com/zigzagapp-org/zigzag-api/internal/services/github"
+	googleauth_service "github.com/zigzagapp-org/zigzag-api/internal/services/googleauth"
 	import_service "github.com/zigzagapp-org/zigzag-api/internal/services/import"
 	initiative_service "github.com/zigzagapp-org/zigzag-api/internal/services/initiative"
 	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
@@ -69,6 +70,7 @@ type Server struct {
 	ImportService       *import_service.ImportService
 	SearchService       *search_service.SearchService
 	GithubService       *github_service.GithubService
+	GoogleAuthService   *googleauth_service.GoogleAuthService
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { LockIcon, MailIcon, ServerIcon, UsersIcon } from "lucide-react";
+import { KeyRoundIcon, LockIcon, MailIcon, ServerIcon, UsersIcon } from "lucide-react";
 
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
@@ -32,6 +32,11 @@ function SystemSettingsLayout() {
       exact: true,
     },
     { label: "Email", icon: MailIcon, link: { to: "/$workspace/settings/system/email", params } },
+    {
+      label: "Authentication",
+      icon: KeyRoundIcon,
+      link: { to: "/$workspace/settings/system/authentication", params },
+    },
     { label: "Users", icon: UsersIcon, link: { to: "/$workspace/settings/system/users", params } },
   ];
   return (

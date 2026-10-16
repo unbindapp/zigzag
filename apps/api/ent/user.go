@@ -45,6 +45,8 @@ type User struct {
 	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
 	// Stored lowercased
 	GithubLogin *string `json:"github_login,omitempty"`
+	// GoogleSubject holds the value of the "google_subject" field.
+	GoogleSubject *string `json:"google_subject,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -456,7 +458,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case user.FieldSystemAdmin, user.FieldActive:
 			values[i] = new(sql.NullBool)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldName, user.FieldDisplayName, user.FieldTimezone, user.FieldGithubLogin:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldName, user.FieldDisplayName, user.FieldTimezone, user.FieldGithubLogin, user.FieldGoogleSubject:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
@@ -557,6 +559,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.GithubLogin = new(string)
 				*_m.GithubLogin = value.String
+			}
+		case user.FieldGoogleSubject:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_subject", values[i])
+			} else if value.Valid {
+				_m.GoogleSubject = new(string)
+				*_m.GoogleSubject = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -807,6 +816,11 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	if v := _m.GithubLogin; v != nil {
 		builder.WriteString("github_login=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleSubject; v != nil {
+		builder.WriteString("google_subject=")
 		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')

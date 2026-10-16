@@ -43,7 +43,7 @@ func (self *UserService) RequestPasswordReset(ctx context.Context, rawEmail stri
 	if err != nil {
 		return err
 	}
-	if !user.Active || user.PasswordHash == "" {
+	if !user.Active || (user.PasswordHash == "" && user.GoogleSubject == nil) {
 		return nil
 	}
 	configured, err := self.email.Configured(ctx)

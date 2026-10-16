@@ -40825,19 +40825,21 @@ func (m *ReactionMutation) ResetEdge(name string) error {
 // SystemSettingMutation represents an operation that mutates the SystemSetting nodes in the graph.
 type SystemSettingMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *uuid.UUID
-	created_at               *time.Time
-	updated_at               *time.Time
-	instance_name            *string
-	email_settings           **schema.EmailSettings
-	email_password_encrypted *[]byte
-	allow_public_signup      *bool
-	clearedFields            map[string]struct{}
-	done                     bool
-	oldValue                 func(context.Context) (*SystemSetting, error)
-	predicates               []predicate.SystemSetting
+	op                             Op
+	typ                            string
+	id                             *uuid.UUID
+	created_at                     *time.Time
+	updated_at                     *time.Time
+	instance_name                  *string
+	email_settings                 **schema.EmailSettings
+	email_password_encrypted       *[]byte
+	allow_public_signup            *bool
+	google_auth                    **schema.GoogleAuthSettings
+	google_client_secret_encrypted *[]byte
+	clearedFields                  map[string]struct{}
+	done                           bool
+	oldValue                       func(context.Context) (*SystemSetting, error)
+	predicates                     []predicate.SystemSetting
 }
 
 var _ ent.Mutation = (*SystemSettingMutation)(nil)
@@ -41186,6 +41188,104 @@ func (m *SystemSettingMutation) ResetAllowPublicSignup() {
 	m.allow_public_signup = nil
 }
 
+// SetGoogleAuth sets the "google_auth" field.
+func (m *SystemSettingMutation) SetGoogleAuth(sas *schema.GoogleAuthSettings) {
+	m.google_auth = &sas
+}
+
+// GoogleAuth returns the value of the "google_auth" field in the mutation.
+func (m *SystemSettingMutation) GoogleAuth() (r *schema.GoogleAuthSettings, exists bool) {
+	v := m.google_auth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleAuth returns the old "google_auth" field's value of the SystemSetting entity.
+// If the SystemSetting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemSettingMutation) OldGoogleAuth(ctx context.Context) (v *schema.GoogleAuthSettings, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleAuth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleAuth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleAuth: %w", err)
+	}
+	return oldValue.GoogleAuth, nil
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (m *SystemSettingMutation) ClearGoogleAuth() {
+	m.google_auth = nil
+	m.clearedFields[systemsetting.FieldGoogleAuth] = struct{}{}
+}
+
+// GoogleAuthCleared returns if the "google_auth" field was cleared in this mutation.
+func (m *SystemSettingMutation) GoogleAuthCleared() bool {
+	_, ok := m.clearedFields[systemsetting.FieldGoogleAuth]
+	return ok
+}
+
+// ResetGoogleAuth resets all changes to the "google_auth" field.
+func (m *SystemSettingMutation) ResetGoogleAuth() {
+	m.google_auth = nil
+	delete(m.clearedFields, systemsetting.FieldGoogleAuth)
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (m *SystemSettingMutation) SetGoogleClientSecretEncrypted(b []byte) {
+	m.google_client_secret_encrypted = &b
+}
+
+// GoogleClientSecretEncrypted returns the value of the "google_client_secret_encrypted" field in the mutation.
+func (m *SystemSettingMutation) GoogleClientSecretEncrypted() (r []byte, exists bool) {
+	v := m.google_client_secret_encrypted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleClientSecretEncrypted returns the old "google_client_secret_encrypted" field's value of the SystemSetting entity.
+// If the SystemSetting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemSettingMutation) OldGoogleClientSecretEncrypted(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleClientSecretEncrypted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleClientSecretEncrypted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleClientSecretEncrypted: %w", err)
+	}
+	return oldValue.GoogleClientSecretEncrypted, nil
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (m *SystemSettingMutation) ClearGoogleClientSecretEncrypted() {
+	m.google_client_secret_encrypted = nil
+	m.clearedFields[systemsetting.FieldGoogleClientSecretEncrypted] = struct{}{}
+}
+
+// GoogleClientSecretEncryptedCleared returns if the "google_client_secret_encrypted" field was cleared in this mutation.
+func (m *SystemSettingMutation) GoogleClientSecretEncryptedCleared() bool {
+	_, ok := m.clearedFields[systemsetting.FieldGoogleClientSecretEncrypted]
+	return ok
+}
+
+// ResetGoogleClientSecretEncrypted resets all changes to the "google_client_secret_encrypted" field.
+func (m *SystemSettingMutation) ResetGoogleClientSecretEncrypted() {
+	m.google_client_secret_encrypted = nil
+	delete(m.clearedFields, systemsetting.FieldGoogleClientSecretEncrypted)
+}
+
 // Where appends a list predicates to the SystemSettingMutation builder.
 func (m *SystemSettingMutation) Where(ps ...predicate.SystemSetting) {
 	m.predicates = append(m.predicates, ps...)
@@ -41220,7 +41320,7 @@ func (m *SystemSettingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemSettingMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, systemsetting.FieldCreatedAt)
 	}
@@ -41238,6 +41338,12 @@ func (m *SystemSettingMutation) Fields() []string {
 	}
 	if m.allow_public_signup != nil {
 		fields = append(fields, systemsetting.FieldAllowPublicSignup)
+	}
+	if m.google_auth != nil {
+		fields = append(fields, systemsetting.FieldGoogleAuth)
+	}
+	if m.google_client_secret_encrypted != nil {
+		fields = append(fields, systemsetting.FieldGoogleClientSecretEncrypted)
 	}
 	return fields
 }
@@ -41259,6 +41365,10 @@ func (m *SystemSettingMutation) Field(name string) (ent.Value, bool) {
 		return m.EmailPasswordEncrypted()
 	case systemsetting.FieldAllowPublicSignup:
 		return m.AllowPublicSignup()
+	case systemsetting.FieldGoogleAuth:
+		return m.GoogleAuth()
+	case systemsetting.FieldGoogleClientSecretEncrypted:
+		return m.GoogleClientSecretEncrypted()
 	}
 	return nil, false
 }
@@ -41280,6 +41390,10 @@ func (m *SystemSettingMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldEmailPasswordEncrypted(ctx)
 	case systemsetting.FieldAllowPublicSignup:
 		return m.OldAllowPublicSignup(ctx)
+	case systemsetting.FieldGoogleAuth:
+		return m.OldGoogleAuth(ctx)
+	case systemsetting.FieldGoogleClientSecretEncrypted:
+		return m.OldGoogleClientSecretEncrypted(ctx)
 	}
 	return nil, fmt.Errorf("unknown SystemSetting field %s", name)
 }
@@ -41331,6 +41445,20 @@ func (m *SystemSettingMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAllowPublicSignup(v)
 		return nil
+	case systemsetting.FieldGoogleAuth:
+		v, ok := value.(*schema.GoogleAuthSettings)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleAuth(v)
+		return nil
+	case systemsetting.FieldGoogleClientSecretEncrypted:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleClientSecretEncrypted(v)
+		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)
 }
@@ -41367,6 +41495,12 @@ func (m *SystemSettingMutation) ClearedFields() []string {
 	if m.FieldCleared(systemsetting.FieldEmailPasswordEncrypted) {
 		fields = append(fields, systemsetting.FieldEmailPasswordEncrypted)
 	}
+	if m.FieldCleared(systemsetting.FieldGoogleAuth) {
+		fields = append(fields, systemsetting.FieldGoogleAuth)
+	}
+	if m.FieldCleared(systemsetting.FieldGoogleClientSecretEncrypted) {
+		fields = append(fields, systemsetting.FieldGoogleClientSecretEncrypted)
+	}
 	return fields
 }
 
@@ -41386,6 +41520,12 @@ func (m *SystemSettingMutation) ClearField(name string) error {
 		return nil
 	case systemsetting.FieldEmailPasswordEncrypted:
 		m.ClearEmailPasswordEncrypted()
+		return nil
+	case systemsetting.FieldGoogleAuth:
+		m.ClearGoogleAuth()
+		return nil
+	case systemsetting.FieldGoogleClientSecretEncrypted:
+		m.ClearGoogleClientSecretEncrypted()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting nullable field %s", name)
@@ -41412,6 +41552,12 @@ func (m *SystemSettingMutation) ResetField(name string) error {
 		return nil
 	case systemsetting.FieldAllowPublicSignup:
 		m.ResetAllowPublicSignup()
+		return nil
+	case systemsetting.FieldGoogleAuth:
+		m.ResetGoogleAuth()
+		return nil
+	case systemsetting.FieldGoogleClientSecretEncrypted:
+		m.ResetGoogleClientSecretEncrypted()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)
@@ -48395,6 +48541,7 @@ type UserMutation struct {
 	timezone                         *string
 	last_seen_at                     *time.Time
 	github_login                     *string
+	google_subject                   *string
 	clearedFields                    map[string]struct{}
 	avatar_upload                    *uuid.UUID
 	clearedavatar_upload             bool
@@ -49077,6 +49224,55 @@ func (m *UserMutation) GithubLoginCleared() bool {
 func (m *UserMutation) ResetGithubLogin() {
 	m.github_login = nil
 	delete(m.clearedFields, user.FieldGithubLogin)
+}
+
+// SetGoogleSubject sets the "google_subject" field.
+func (m *UserMutation) SetGoogleSubject(s string) {
+	m.google_subject = &s
+}
+
+// GoogleSubject returns the value of the "google_subject" field in the mutation.
+func (m *UserMutation) GoogleSubject() (r string, exists bool) {
+	v := m.google_subject
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleSubject returns the old "google_subject" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldGoogleSubject(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleSubject is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleSubject requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleSubject: %w", err)
+	}
+	return oldValue.GoogleSubject, nil
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (m *UserMutation) ClearGoogleSubject() {
+	m.google_subject = nil
+	m.clearedFields[user.FieldGoogleSubject] = struct{}{}
+}
+
+// GoogleSubjectCleared returns if the "google_subject" field was cleared in this mutation.
+func (m *UserMutation) GoogleSubjectCleared() bool {
+	_, ok := m.clearedFields[user.FieldGoogleSubject]
+	return ok
+}
+
+// ResetGoogleSubject resets all changes to the "google_subject" field.
+func (m *UserMutation) ResetGoogleSubject() {
+	m.google_subject = nil
+	delete(m.clearedFields, user.FieldGoogleSubject)
 }
 
 // ClearAvatarUpload clears the "avatar_upload" edge to the Upload entity.
@@ -50961,7 +51157,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -50998,6 +51194,9 @@ func (m *UserMutation) Fields() []string {
 	if m.github_login != nil {
 		fields = append(fields, user.FieldGithubLogin)
 	}
+	if m.google_subject != nil {
+		fields = append(fields, user.FieldGoogleSubject)
+	}
 	return fields
 }
 
@@ -51030,6 +51229,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.LastSeenAt()
 	case user.FieldGithubLogin:
 		return m.GithubLogin()
+	case user.FieldGoogleSubject:
+		return m.GoogleSubject()
 	}
 	return nil, false
 }
@@ -51063,6 +51264,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLastSeenAt(ctx)
 	case user.FieldGithubLogin:
 		return m.OldGithubLogin(ctx)
+	case user.FieldGoogleSubject:
+		return m.OldGoogleSubject(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -51156,6 +51359,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetGithubLogin(v)
 		return nil
+	case user.FieldGoogleSubject:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleSubject(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -51195,6 +51405,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldGithubLogin) {
 		fields = append(fields, user.FieldGithubLogin)
 	}
+	if m.FieldCleared(user.FieldGoogleSubject) {
+		fields = append(fields, user.FieldGoogleSubject)
+	}
 	return fields
 }
 
@@ -51217,6 +51430,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldGithubLogin:
 		m.ClearGithubLogin()
+		return nil
+	case user.FieldGoogleSubject:
+		m.ClearGoogleSubject()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -51261,6 +51477,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldGithubLogin:
 		m.ResetGithubLogin()
+		return nil
+	case user.FieldGoogleSubject:
+		m.ResetGoogleSubject()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

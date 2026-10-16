@@ -44,6 +44,7 @@ const rules = [
       "src/lib/helpers/colors.ts",
       "src/components/providers/themes.ts",
       "src/components/shared/color-picker.tsx",
+      "src/components/icons/google.tsx",
     ],
     skipTests: true,
   },

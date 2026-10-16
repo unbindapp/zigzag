@@ -312,6 +312,21 @@ func (suite *WorkspaceServiceSuite) TestAcceptCannotTakeOverDeactivatedOrForeign
 	suite.ErrorIs(err, errdefs.ErrInvalidInput, "an admin of one workspace cannot claim a placeholder that also belongs to another")
 }
 
+func (suite *WorkspaceServiceSuite) TestAcceptNeverSetsAPasswordOnAGoogleAccount() {
+	inv := suite.invitation()
+	suite.MockWorkspaceRepo.EXPECT().GetInvitationByTokenHash(suite.Ctx, utils.HashToken("t")).Return(inv, nil)
+
+	linked := &ent.User{ID: uuid.New(), Email: inv.Email, Active: true, GoogleSubject: utils.ToPtr("sub-1")}
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, inv.Email).Return(linked, nil).Once()
+	_, _, err := suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: "t", Password: utils.ToPtr("long-enough")})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "a Google account joins by signing in with Google")
+
+	deactivated := &ent.User{ID: uuid.New(), Email: inv.Email, Active: false, GoogleSubject: utils.ToPtr("sub-1")}
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, inv.Email).Return(deactivated, nil).Once()
+	_, _, err = suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: "t", Password: utils.ToPtr("long-enough")})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "a deactivated Google account is not a placeholder")
+}
+
 func (suite *WorkspaceServiceSuite) TestAcceptClaimsAPlaceholderOfTheInvitingWorkspace() {
 	inv := suite.invitation()
 	placeholder := &ent.User{ID: uuid.New(), Email: inv.Email, Active: false}

@@ -44,6 +44,24 @@ func (suite *UserRepositorySuite) TestCreateNormalizesAndHashes() {
 	suite.ErrorIs(err, ErrInvalidUserInput)
 }
 
+func (suite *UserRepositorySuite) TestLinkGoogleSubjectOnce() {
+	ada := suite.create("ada@example.com", "ada", "correct-horse")
+	grace := suite.create("grace@example.com", "grace", "")
+
+	linked, err := suite.repo.LinkGoogleSubject(suite.Ctx, nil, ada.ID, "sub-1")
+	suite.Require().NoError(err)
+	suite.True(linked)
+	linked, err = suite.repo.LinkGoogleSubject(suite.Ctx, nil, ada.ID, "sub-2")
+	suite.Require().NoError(err)
+	suite.False(linked, "a linked subject is never replaced")
+
+	_, err = suite.repo.LinkGoogleSubject(suite.Ctx, nil, grace.ID, "sub-1")
+	suite.True(ent.IsConstraintError(err), "a subject belongs to one user")
+
+	reloaded, _ := suite.repo.GetByID(suite.Ctx, ada.ID)
+	suite.Equal(utils.ToPtr("sub-1"), reloaded.GoogleSubject)
+}
+
 func (suite *UserRepositorySuite) TestAuthenticate() {
 	suite.create("ada@example.com", "ada", "correct-horse")
 	placeholder, err := suite.repo.Create(suite.Ctx, nil, &CreateUserInput{Email: "ghost@example.com", DisplayName: "ghost"})

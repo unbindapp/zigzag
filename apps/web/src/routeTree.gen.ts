@@ -52,6 +52,7 @@ import { Route as WorkspaceWorkspaceSettingsAccountConnectedAppsRouteImport } fr
 import { Route as WorkspaceWorkspaceSettingsAccountNotificationsRouteImport } from './routes/$workspace/_workspace/settings/account/notifications'
 import { Route as WorkspaceWorkspaceSettingsAccountPasswordRouteImport } from './routes/$workspace/_workspace/settings/account/password'
 import { Route as WorkspaceWorkspaceSettingsSystemIndexRouteImport } from './routes/$workspace/_workspace/settings/system/index'
+import { Route as WorkspaceWorkspaceSettingsSystemAuthenticationRouteImport } from './routes/$workspace/_workspace/settings/system/authentication'
 import { Route as WorkspaceWorkspaceSettingsSystemEmailRouteImport } from './routes/$workspace/_workspace/settings/system/email'
 import { Route as WorkspaceWorkspaceSettingsSystemUsersRouteImport } from './routes/$workspace/_workspace/settings/system/users'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyRouteRouteImport } from './routes/$workspace/_workspace/settings/team/$key/route'
@@ -321,6 +322,12 @@ const WorkspaceWorkspaceSettingsSystemIndexRoute =
     path: '/',
     getParentRoute: () => WorkspaceWorkspaceSettingsSystemRouteRoute,
   } as any)
+const WorkspaceWorkspaceSettingsSystemAuthenticationRoute =
+  WorkspaceWorkspaceSettingsSystemAuthenticationRouteImport.update({
+    id: '/authentication',
+    path: '/authentication',
+    getParentRoute: () => WorkspaceWorkspaceSettingsSystemRouteRoute,
+  } as any)
 const WorkspaceWorkspaceSettingsSystemEmailRoute =
   WorkspaceWorkspaceSettingsSystemEmailRouteImport.update({
     id: '/email',
@@ -495,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/account/connected-apps': typeof WorkspaceWorkspaceSettingsAccountConnectedAppsRoute
   '/$workspace/settings/account/notifications': typeof WorkspaceWorkspaceSettingsAccountNotificationsRoute
   '/$workspace/settings/account/password': typeof WorkspaceWorkspaceSettingsAccountPasswordRoute
+  '/$workspace/settings/system/authentication': typeof WorkspaceWorkspaceSettingsSystemAuthenticationRoute
   '/$workspace/settings/system/email': typeof WorkspaceWorkspaceSettingsSystemEmailRoute
   '/$workspace/settings/system/users': typeof WorkspaceWorkspaceSettingsSystemUsersRoute
   '/$workspace/team/$key/backlog': typeof WorkspaceWorkspaceTeamKeyBacklogRoute
@@ -556,6 +564,7 @@ export interface FileRoutesByTo {
   '/$workspace/settings/account/connected-apps': typeof WorkspaceWorkspaceSettingsAccountConnectedAppsRoute
   '/$workspace/settings/account/notifications': typeof WorkspaceWorkspaceSettingsAccountNotificationsRoute
   '/$workspace/settings/account/password': typeof WorkspaceWorkspaceSettingsAccountPasswordRoute
+  '/$workspace/settings/system/authentication': typeof WorkspaceWorkspaceSettingsSystemAuthenticationRoute
   '/$workspace/settings/system/email': typeof WorkspaceWorkspaceSettingsSystemEmailRoute
   '/$workspace/settings/system/users': typeof WorkspaceWorkspaceSettingsSystemUsersRoute
   '/$workspace/team/$key/backlog': typeof WorkspaceWorkspaceTeamKeyBacklogRoute
@@ -624,6 +633,7 @@ export interface FileRoutesById {
   '/$workspace/_workspace/settings/account/connected-apps': typeof WorkspaceWorkspaceSettingsAccountConnectedAppsRoute
   '/$workspace/_workspace/settings/account/notifications': typeof WorkspaceWorkspaceSettingsAccountNotificationsRoute
   '/$workspace/_workspace/settings/account/password': typeof WorkspaceWorkspaceSettingsAccountPasswordRoute
+  '/$workspace/_workspace/settings/system/authentication': typeof WorkspaceWorkspaceSettingsSystemAuthenticationRoute
   '/$workspace/_workspace/settings/system/email': typeof WorkspaceWorkspaceSettingsSystemEmailRoute
   '/$workspace/_workspace/settings/system/users': typeof WorkspaceWorkspaceSettingsSystemUsersRoute
   '/$workspace/_workspace/team/$key/backlog': typeof WorkspaceWorkspaceTeamKeyBacklogRoute
@@ -693,6 +703,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/account/connected-apps'
     | '/$workspace/settings/account/notifications'
     | '/$workspace/settings/account/password'
+    | '/$workspace/settings/system/authentication'
     | '/$workspace/settings/system/email'
     | '/$workspace/settings/system/users'
     | '/$workspace/team/$key/backlog'
@@ -754,6 +765,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/account/connected-apps'
     | '/$workspace/settings/account/notifications'
     | '/$workspace/settings/account/password'
+    | '/$workspace/settings/system/authentication'
     | '/$workspace/settings/system/email'
     | '/$workspace/settings/system/users'
     | '/$workspace/team/$key/backlog'
@@ -821,6 +833,7 @@ export interface FileRouteTypes {
     | '/$workspace/_workspace/settings/account/connected-apps'
     | '/$workspace/_workspace/settings/account/notifications'
     | '/$workspace/_workspace/settings/account/password'
+    | '/$workspace/_workspace/settings/system/authentication'
     | '/$workspace/_workspace/settings/system/email'
     | '/$workspace/_workspace/settings/system/users'
     | '/$workspace/_workspace/team/$key/backlog'
@@ -1163,6 +1176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceWorkspaceSettingsSystemIndexRouteImport
       parentRoute: typeof WorkspaceWorkspaceSettingsSystemRouteRoute
     }
+    '/$workspace/_workspace/settings/system/authentication': {
+      id: '/$workspace/_workspace/settings/system/authentication'
+      path: '/authentication'
+      fullPath: '/$workspace/settings/system/authentication'
+      preLoaderRoute: typeof WorkspaceWorkspaceSettingsSystemAuthenticationRouteImport
+      parentRoute: typeof WorkspaceWorkspaceSettingsSystemRouteRoute
+    }
     '/$workspace/_workspace/settings/system/email': {
       id: '/$workspace/_workspace/settings/system/email'
       path: '/email'
@@ -1390,6 +1410,7 @@ const WorkspaceWorkspaceSettingsAccountRouteRouteWithChildren =
   )
 
 interface WorkspaceWorkspaceSettingsSystemRouteRouteChildren {
+  WorkspaceWorkspaceSettingsSystemAuthenticationRoute: typeof WorkspaceWorkspaceSettingsSystemAuthenticationRoute
   WorkspaceWorkspaceSettingsSystemEmailRoute: typeof WorkspaceWorkspaceSettingsSystemEmailRoute
   WorkspaceWorkspaceSettingsSystemUsersRoute: typeof WorkspaceWorkspaceSettingsSystemUsersRoute
   WorkspaceWorkspaceSettingsSystemIndexRoute: typeof WorkspaceWorkspaceSettingsSystemIndexRoute
@@ -1397,6 +1418,8 @@ interface WorkspaceWorkspaceSettingsSystemRouteRouteChildren {
 
 const WorkspaceWorkspaceSettingsSystemRouteRouteChildren: WorkspaceWorkspaceSettingsSystemRouteRouteChildren =
   {
+    WorkspaceWorkspaceSettingsSystemAuthenticationRoute:
+      WorkspaceWorkspaceSettingsSystemAuthenticationRoute,
     WorkspaceWorkspaceSettingsSystemEmailRoute:
       WorkspaceWorkspaceSettingsSystemEmailRoute,
     WorkspaceWorkspaceSettingsSystemUsersRoute:

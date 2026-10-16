@@ -93,6 +93,18 @@ func (_c *SystemSettingCreate) SetNillableAllowPublicSignup(v *bool) *SystemSett
 	return _c
 }
 
+// SetGoogleAuth sets the "google_auth" field.
+func (_c *SystemSettingCreate) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingCreate {
+	_c.mutation.SetGoogleAuth(v)
+	return _c
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (_c *SystemSettingCreate) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingCreate {
+	_c.mutation.SetGoogleClientSecretEncrypted(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *SystemSettingCreate) SetID(v uuid.UUID) *SystemSettingCreate {
 	_c.mutation.SetID(v)
@@ -238,6 +250,14 @@ func (_c *SystemSettingCreate) createSpec() (*SystemSetting, *sqlgraph.CreateSpe
 		_spec.SetField(systemsetting.FieldAllowPublicSignup, field.TypeBool, value)
 		_node.AllowPublicSignup = value
 	}
+	if value, ok := _c.mutation.GoogleAuth(); ok {
+		_spec.SetField(systemsetting.FieldGoogleAuth, field.TypeJSON, value)
+		_node.GoogleAuth = value
+	}
+	if value, ok := _c.mutation.GoogleClientSecretEncrypted(); ok {
+		_spec.SetField(systemsetting.FieldGoogleClientSecretEncrypted, field.TypeBytes, value)
+		_node.GoogleClientSecretEncrypted = value
+	}
 	return _node, _spec
 }
 
@@ -359,6 +379,42 @@ func (u *SystemSettingUpsert) SetAllowPublicSignup(v bool) *SystemSettingUpsert 
 // UpdateAllowPublicSignup sets the "allow_public_signup" field to the value that was provided on create.
 func (u *SystemSettingUpsert) UpdateAllowPublicSignup() *SystemSettingUpsert {
 	u.SetExcluded(systemsetting.FieldAllowPublicSignup)
+	return u
+}
+
+// SetGoogleAuth sets the "google_auth" field.
+func (u *SystemSettingUpsert) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldGoogleAuth, v)
+	return u
+}
+
+// UpdateGoogleAuth sets the "google_auth" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateGoogleAuth() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldGoogleAuth)
+	return u
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (u *SystemSettingUpsert) ClearGoogleAuth() *SystemSettingUpsert {
+	u.SetNull(systemsetting.FieldGoogleAuth)
+	return u
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsert) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldGoogleClientSecretEncrypted, v)
+	return u
+}
+
+// UpdateGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateGoogleClientSecretEncrypted() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldGoogleClientSecretEncrypted)
+	return u
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsert) ClearGoogleClientSecretEncrypted() *SystemSettingUpsert {
+	u.SetNull(systemsetting.FieldGoogleClientSecretEncrypted)
 	return u
 }
 
@@ -494,6 +550,48 @@ func (u *SystemSettingUpsertOne) SetAllowPublicSignup(v bool) *SystemSettingUpse
 func (u *SystemSettingUpsertOne) UpdateAllowPublicSignup() *SystemSettingUpsertOne {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.UpdateAllowPublicSignup()
+	})
+}
+
+// SetGoogleAuth sets the "google_auth" field.
+func (u *SystemSettingUpsertOne) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetGoogleAuth(v)
+	})
+}
+
+// UpdateGoogleAuth sets the "google_auth" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateGoogleAuth() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateGoogleAuth()
+	})
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (u *SystemSettingUpsertOne) ClearGoogleAuth() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearGoogleAuth()
+	})
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsertOne) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetGoogleClientSecretEncrypted(v)
+	})
+}
+
+// UpdateGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateGoogleClientSecretEncrypted() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateGoogleClientSecretEncrypted()
+	})
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsertOne) ClearGoogleClientSecretEncrypted() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearGoogleClientSecretEncrypted()
 	})
 }
 
@@ -796,6 +894,48 @@ func (u *SystemSettingUpsertBulk) SetAllowPublicSignup(v bool) *SystemSettingUps
 func (u *SystemSettingUpsertBulk) UpdateAllowPublicSignup() *SystemSettingUpsertBulk {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.UpdateAllowPublicSignup()
+	})
+}
+
+// SetGoogleAuth sets the "google_auth" field.
+func (u *SystemSettingUpsertBulk) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetGoogleAuth(v)
+	})
+}
+
+// UpdateGoogleAuth sets the "google_auth" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateGoogleAuth() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateGoogleAuth()
+	})
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (u *SystemSettingUpsertBulk) ClearGoogleAuth() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearGoogleAuth()
+	})
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsertBulk) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetGoogleClientSecretEncrypted(v)
+	})
+}
+
+// UpdateGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateGoogleClientSecretEncrypted() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateGoogleClientSecretEncrypted()
+	})
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (u *SystemSettingUpsertBulk) ClearGoogleClientSecretEncrypted() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearGoogleClientSecretEncrypted()
 	})
 }
 

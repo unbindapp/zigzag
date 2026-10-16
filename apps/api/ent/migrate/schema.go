@@ -1606,6 +1606,8 @@ var (
 		{Name: "email_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "email_password_encrypted", Type: field.TypeBytes, Nullable: true},
 		{Name: "allow_public_signup", Type: field.TypeBool, Default: false},
+		{Name: "google_auth", Type: field.TypeJSON, Nullable: true},
+		{Name: "google_client_secret_encrypted", Type: field.TypeBytes, Nullable: true},
 	}
 	// SystemSettingsTable holds the schema information for the "system_settings" table.
 	SystemSettingsTable = &schema.Table{
@@ -1859,6 +1861,7 @@ var (
 		{Name: "timezone", Type: field.TypeString, Default: "UTC"},
 		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
 		{Name: "github_login", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "google_subject", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "avatar_upload_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -1869,7 +1872,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_uploads_avatar_users",
-				Columns:    []*schema.Column{UsersColumns[12]},
+				Columns:    []*schema.Column{UsersColumns[13]},
 				RefColumns: []*schema.Column{UploadsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

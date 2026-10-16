@@ -55,6 +55,23 @@ func (suite *SettingsSuite) TestUpdateEmailAndClear() {
 	suite.Equal("Acme", cleared.InstanceName)
 }
 
+func (suite *SettingsSuite) TestUpdateGoogleAuthAndClear() {
+	google := &schema.GoogleAuthSettings{Enabled: true, ClientID: "id.apps.googleusercontent.com", HostedDomain: "example.com"}
+	updated, err := suite.repo.UpdateSystemSettings(suite.Ctx, &SystemSettingUpdateInput{GoogleAuth: google, GoogleSecretEncrypted: []byte{4, 5}})
+	suite.Require().NoError(err)
+	suite.Equal(google, updated.GoogleAuth)
+	suite.Equal([]byte{4, 5}, updated.GoogleClientSecretEncrypted)
+
+	kept, err := suite.repo.UpdateSystemSettings(suite.Ctx, &SystemSettingUpdateInput{GoogleAuth: &schema.GoogleAuthSettings{ClientID: "other"}})
+	suite.Require().NoError(err)
+	suite.Equal([]byte{4, 5}, kept.GoogleClientSecretEncrypted, "the secret is kept when not sent")
+
+	cleared, err := suite.repo.UpdateSystemSettings(suite.Ctx, &SystemSettingUpdateInput{ClearGoogleAuth: true})
+	suite.Require().NoError(err)
+	suite.Nil(cleared.GoogleAuth)
+	suite.Empty(cleared.GoogleClientSecretEncrypted)
+}
+
 func TestSettingsSuite(t *testing.T) {
 	suite.Run(t, new(SettingsSuite))
 }

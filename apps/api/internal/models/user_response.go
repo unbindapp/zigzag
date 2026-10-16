@@ -22,16 +22,18 @@ func avatarURL(entity *ent.User) *string {
 }
 
 type UserResponse struct {
-	ID          uuid.UUID `json:"id" format:"uuid"`
-	Email       string    `json:"email"`
-	Name        string    `json:"name"`
-	DisplayName string    `json:"display_name" doc:"Lowercase handle used in mentions"`
-	AvatarURL   *string   `json:"avatar_url" nullable:"true"`
-	Active      bool      `json:"active" doc:"False for placeholder accounts that have not joined yet"`
-	SystemAdmin bool      `json:"system_admin"`
-	Timezone    string    `json:"timezone"`
-	GithubLogin *string   `json:"github_login" nullable:"true" doc:"GitHub username used by GitHub Issues sync"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID           uuid.UUID `json:"id" format:"uuid"`
+	Email        string    `json:"email"`
+	Name         string    `json:"name"`
+	DisplayName  string    `json:"display_name" doc:"Lowercase handle used in mentions"`
+	AvatarURL    *string   `json:"avatar_url" nullable:"true"`
+	Active       bool      `json:"active" doc:"False for placeholder accounts that have not joined yet"`
+	SystemAdmin  bool      `json:"system_admin"`
+	Timezone     string    `json:"timezone"`
+	GithubLogin  *string   `json:"github_login" nullable:"true" doc:"GitHub username used by GitHub Issues sync"`
+	HasPassword  bool      `json:"has_password" doc:"Whether the account can sign in with a password"`
+	GoogleLinked bool      `json:"google_linked" doc:"Whether the account has signed in with Google"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func TransformUserEntity(entity *ent.User) *UserResponse {
@@ -39,16 +41,18 @@ func TransformUserEntity(entity *ent.User) *UserResponse {
 		return &UserResponse{}
 	}
 	return &UserResponse{
-		ID:          entity.ID,
-		Email:       entity.Email,
-		Name:        entity.Name,
-		DisplayName: entity.DisplayName,
-		AvatarURL:   avatarURL(entity),
-		Active:      entity.Active,
-		SystemAdmin: entity.SystemAdmin,
-		Timezone:    entity.Timezone,
-		GithubLogin: entity.GithubLogin,
-		CreatedAt:   entity.CreatedAt,
+		ID:           entity.ID,
+		Email:        entity.Email,
+		Name:         entity.Name,
+		DisplayName:  entity.DisplayName,
+		AvatarURL:    avatarURL(entity),
+		Active:       entity.Active,
+		SystemAdmin:  entity.SystemAdmin,
+		Timezone:     entity.Timezone,
+		GithubLogin:  entity.GithubLogin,
+		HasPassword:  entity.PasswordHash != "",
+		GoogleLinked: entity.GoogleSubject != nil,
+		CreatedAt:    entity.CreatedAt,
 	}
 }
 

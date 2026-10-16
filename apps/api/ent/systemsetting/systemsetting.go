@@ -26,6 +26,10 @@ const (
 	FieldEmailPasswordEncrypted = "email_password_encrypted"
 	// FieldAllowPublicSignup holds the string denoting the allow_public_signup field in the database.
 	FieldAllowPublicSignup = "allow_public_signup"
+	// FieldGoogleAuth holds the string denoting the google_auth field in the database.
+	FieldGoogleAuth = "google_auth"
+	// FieldGoogleClientSecretEncrypted holds the string denoting the google_client_secret_encrypted field in the database.
+	FieldGoogleClientSecretEncrypted = "google_client_secret_encrypted"
 	// Table holds the table name of the systemsetting in the database.
 	Table = "system_settings"
 )
@@ -39,6 +43,8 @@ var Columns = []string{
 	FieldEmailSettings,
 	FieldEmailPasswordEncrypted,
 	FieldAllowPublicSignup,
+	FieldGoogleAuth,
+	FieldGoogleClientSecretEncrypted,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

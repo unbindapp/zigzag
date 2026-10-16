@@ -69,6 +69,13 @@ func (self *WorkspaceRepository) ListPendingInvitations(ctx context.Context, wor
 		All(ctx)
 }
 
+func (self *WorkspaceRepository) ListPendingInvitationsForEmail(ctx context.Context, tx repository.TxInterface, email string, now time.Time) ([]*ent.Invitation, error) {
+	return self.base.Client(tx).Invitation.Query().
+		Where(invitation.EmailEqualFold(email), invitation.AcceptedAtIsNil(), invitation.ExpiresAtGT(now)).
+		Order(ent.Asc(invitation.FieldCreatedAt)).
+		All(ctx)
+}
+
 func (self *WorkspaceRepository) RotateInvitationToken(ctx context.Context, invitationID uuid.UUID, tokenHash string, expiresAt time.Time) (*ent.Invitation, error) {
 	return self.base.DB.Invitation.UpdateOneID(invitationID).
 		SetTokenHash(tokenHash).

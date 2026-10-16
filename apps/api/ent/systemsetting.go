@@ -33,7 +33,11 @@ type SystemSetting struct {
 	EmailPasswordEncrypted []byte `json:"-"`
 	// AllowPublicSignup holds the value of the "allow_public_signup" field.
 	AllowPublicSignup bool `json:"allow_public_signup,omitempty"`
-	selectValues      sql.SelectValues
+	// GoogleAuth holds the value of the "google_auth" field.
+	GoogleAuth *schema.GoogleAuthSettings `json:"google_auth,omitempty"`
+	// GoogleClientSecretEncrypted holds the value of the "google_client_secret_encrypted" field.
+	GoogleClientSecretEncrypted []byte `json:"-"`
+	selectValues                sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -41,7 +45,7 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemsetting.FieldEmailSettings, systemsetting.FieldEmailPasswordEncrypted:
+		case systemsetting.FieldEmailSettings, systemsetting.FieldEmailPasswordEncrypted, systemsetting.FieldGoogleAuth, systemsetting.FieldGoogleClientSecretEncrypted:
 			values[i] = new([]byte)
 		case systemsetting.FieldAllowPublicSignup:
 			values[i] = new(sql.NullBool)
@@ -110,6 +114,20 @@ func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AllowPublicSignup = value.Bool
 			}
+		case systemsetting.FieldGoogleAuth:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field google_auth", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.GoogleAuth); err != nil {
+					return fmt.Errorf("unmarshal field google_auth: %w", err)
+				}
+			}
+		case systemsetting.FieldGoogleClientSecretEncrypted:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field google_client_secret_encrypted", values[i])
+			} else if value != nil {
+				_m.GoogleClientSecretEncrypted = *value
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -162,6 +180,11 @@ func (_m *SystemSetting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("allow_public_signup=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AllowPublicSignup))
+	builder.WriteString(", ")
+	builder.WriteString("google_auth=")
+	builder.WriteString(fmt.Sprintf("%v", _m.GoogleAuth))
+	builder.WriteString(", ")
+	builder.WriteString("google_client_secret_encrypted=<sensitive>")
 	builder.WriteByte(')')
 	return builder.String()
 }

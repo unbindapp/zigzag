@@ -52,6 +52,32 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/reset-password",
 		Method:      http.MethodPost,
 	}, handlers.ResetPassword, oapi.Public, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-auth-providers",
+		Summary:     "Get Auth Providers",
+		Description: "List the sign-in methods offered besides email and password.",
+		Path:        "/providers",
+		Method:      http.MethodGet,
+	}, handlers.GetAuthProviders, oapi.Public, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID:   "start-google-login",
+		Summary:       "Start Google Login",
+		Description:   "Redirect the browser to Google to sign in. Answers 302 to Google, or to the sign-in page when Google sign-in is off.",
+		Path:          "/google/start",
+		Method:        http.MethodGet,
+		DefaultStatus: http.StatusFound,
+	}, handlers.StartGoogleLogin, oapi.Public, oapi.SessionOnly, oapi.NoMCP("browser redirect flow"))
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID:   "finish-google-login",
+		Summary:       "Finish Google Login",
+		Description:   "Google redirects here after sign-in. Sets the session cookies and redirects into the app, or back to the sign-in page with an error.",
+		Path:          "/google/callback",
+		Method:        http.MethodGet,
+		DefaultStatus: http.StatusFound,
+	}, handlers.FinishGoogleLogin, oapi.Public, oapi.SessionOnly, oapi.NoMCP("browser redirect flow"))
 }
 
 type LoginInput struct {

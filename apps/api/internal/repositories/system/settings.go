@@ -24,6 +24,9 @@ type SystemSettingUpdateInput struct {
 	EmailPasswordEncrypted []byte
 	ClearEmailPassword     bool
 	ClearEmailSettings     bool
+	GoogleAuth             *schema.GoogleAuthSettings
+	GoogleSecretEncrypted  []byte
+	ClearGoogleAuth        bool
 }
 
 func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error) {
@@ -50,6 +53,15 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 		}
 		if input.ClearEmailSettings {
 			m.ClearEmailSettings()
+		}
+		if input.GoogleAuth != nil {
+			m.SetGoogleAuth(input.GoogleAuth)
+		}
+		if input.GoogleSecretEncrypted != nil {
+			m.SetGoogleClientSecretEncrypted(input.GoogleSecretEncrypted)
+		}
+		if input.ClearGoogleAuth {
+			m.ClearGoogleAuth().ClearGoogleClientSecretEncrypted()
 		}
 		settings, err = m.Save(ctx)
 		return err

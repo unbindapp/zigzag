@@ -1377,6 +1377,86 @@ func (_c *WorkspaceRepositoryMock_ListPendingInvitations_Call) RunAndReturn(run 
 	return _c
 }
 
+// ListPendingInvitationsForEmail provides a mock function for the type WorkspaceRepositoryMock
+func (_mock *WorkspaceRepositoryMock) ListPendingInvitationsForEmail(ctx context.Context, tx repository.TxInterface, email string, now time.Time) ([]*ent.Invitation, error) {
+	ret := _mock.Called(ctx, tx, email, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListPendingInvitationsForEmail")
+	}
+
+	var r0 []*ent.Invitation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, time.Time) ([]*ent.Invitation, error)); ok {
+		return returnFunc(ctx, tx, email, now)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, time.Time) []*ent.Invitation); ok {
+		r0 = returnFunc(ctx, tx, email, now)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Invitation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, string, time.Time) error); ok {
+		r1 = returnFunc(ctx, tx, email, now)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListPendingInvitationsForEmail'
+type WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call struct {
+	*mock.Call
+}
+
+// ListPendingInvitationsForEmail is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - email string
+//   - now time.Time
+func (_e *WorkspaceRepositoryMock_Expecter) ListPendingInvitationsForEmail(ctx any, tx any, email any, now any) *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call {
+	return &WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call{Call: _e.mock.On("ListPendingInvitationsForEmail", ctx, tx, email, now)}
+}
+
+func (_c *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call) Run(run func(ctx context.Context, tx repository.TxInterface, email string, now time.Time)) *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call) Return(invitations []*ent.Invitation, err error) *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call {
+	_c.Call.Return(invitations, err)
+	return _c
+}
+
+func (_c *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, email string, now time.Time) ([]*ent.Invitation, error)) *WorkspaceRepositoryMock_ListPendingInvitationsForEmail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // MemberTeamIDs provides a mock function for the type WorkspaceRepositoryMock
 func (_mock *WorkspaceRepositoryMock) MemberTeamIDs(ctx context.Context, workspaceID uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
 	ret := _mock.Called(ctx, workspaceID)

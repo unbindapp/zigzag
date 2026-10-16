@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MonitorIcon, MoonIcon, SunIcon, UploadIcon, XIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { type ReactNode } from "react";
@@ -7,11 +7,13 @@ import { z } from "zod";
 
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
+import { PropertyRow } from "@/components/layout/property-row";
 import { SettingsPage } from "@/components/layout/settings-page";
 import { SettingsSection } from "@/components/layout/settings-section";
 import { defaultTheme, type TTheme } from "@/components/providers/themes";
 import { githubLoginSchema } from "@/components/integrations/github-sync";
 import { Avatar } from "@/components/shared/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileTrigger } from "@/components/ui/file-trigger";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
@@ -52,6 +54,7 @@ function AccountProfileSettingsPage() {
         <>
           <AvatarSection me={me} />
           <ProfileSection me={me} />
+          <SignInMethodsSection me={me} />
           <AppearanceSection />
         </>
       )}
@@ -158,6 +161,35 @@ function ProfileSection({ me }: { me: TMe }) {
           />
         )}
       />
+    </SettingsSection>
+  );
+}
+
+function SignInMethodsSection({ me }: { me: TMe }) {
+  return (
+    <SettingsSection title="Sign-in methods" description="Ways you can sign in to this account.">
+      <PropertyRow label="Password">
+        {me.user.has_password ? (
+          <Badge variant="success">Set</Badge>
+        ) : (
+          <>
+            <Badge variant="muted">Not set</Badge>
+            <Link
+              to="/forgot-password"
+              className="text-muted-foreground has-hover:hover:text-foreground text-sm underline-offset-4 has-hover:hover:underline"
+            >
+              Set one with a reset link
+            </Link>
+          </>
+        )}
+      </PropertyRow>
+      <PropertyRow label="Google">
+        {me.user.google_linked ? (
+          <Badge variant="success">Linked</Badge>
+        ) : (
+          <Badge variant="muted">Not linked</Badge>
+        )}
+      </PropertyRow>
     </SettingsSection>
   );
 }

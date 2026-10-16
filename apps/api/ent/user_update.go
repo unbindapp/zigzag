@@ -221,6 +221,26 @@ func (_u *UserUpdate) ClearGithubLogin() *UserUpdate {
 	return _u
 }
 
+// SetGoogleSubject sets the "google_subject" field.
+func (_u *UserUpdate) SetGoogleSubject(v string) *UserUpdate {
+	_u.mutation.SetGoogleSubject(v)
+	return _u
+}
+
+// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableGoogleSubject(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetGoogleSubject(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (_u *UserUpdate) ClearGoogleSubject() *UserUpdate {
+	_u.mutation.ClearGoogleSubject()
+	return _u
+}
+
 // SetAvatarUpload sets the "avatar_upload" edge to the Upload entity.
 func (_u *UserUpdate) SetAvatarUpload(v *Upload) *UserUpdate {
 	return _u.SetAvatarUploadID(v.ID)
@@ -1536,6 +1556,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.GithubLoginCleared() {
 		_spec.ClearField(user.FieldGithubLogin, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleSubject(); ok {
+		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSubjectCleared() {
+		_spec.ClearField(user.FieldGoogleSubject, field.TypeString)
 	}
 	if _u.mutation.AvatarUploadCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -3266,6 +3292,26 @@ func (_u *UserUpdateOne) ClearGithubLogin() *UserUpdateOne {
 	return _u
 }
 
+// SetGoogleSubject sets the "google_subject" field.
+func (_u *UserUpdateOne) SetGoogleSubject(v string) *UserUpdateOne {
+	_u.mutation.SetGoogleSubject(v)
+	return _u
+}
+
+// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableGoogleSubject(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetGoogleSubject(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (_u *UserUpdateOne) ClearGoogleSubject() *UserUpdateOne {
+	_u.mutation.ClearGoogleSubject()
+	return _u
+}
+
 // SetAvatarUpload sets the "avatar_upload" edge to the Upload entity.
 func (_u *UserUpdateOne) SetAvatarUpload(v *Upload) *UserUpdateOne {
 	return _u.SetAvatarUploadID(v.ID)
@@ -4611,6 +4657,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.GithubLoginCleared() {
 		_spec.ClearField(user.FieldGithubLogin, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleSubject(); ok {
+		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSubjectCleared() {
+		_spec.ClearField(user.FieldGoogleSubject, field.TypeString)
 	}
 	if _u.mutation.AvatarUploadCleared() {
 		edge := &sqlgraph.EdgeSpec{

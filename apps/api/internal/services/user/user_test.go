@@ -81,6 +81,17 @@ func (suite *UserServiceSuite) TestRequestPasswordReset() {
 		suite.MockEmail.EXPECT().Configured(suite.Ctx).Return(false, nil).Once()
 		suite.NoError(suite.service.RequestPasswordReset(suite.Ctx, "ada@example.com"))
 	})
+	suite.Run("placeholders without a password or Google link get nothing", func() {
+		suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, "ada@example.com").Return(&ent.User{ID: suite.userID, Email: "ada@example.com", Active: true}, nil).Once()
+		suite.NoError(suite.service.RequestPasswordReset(suite.Ctx, "ada@example.com"))
+	})
+	suite.Run("a Google account without a password can set one", func() {
+		suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, "ada@example.com").Return(&ent.User{ID: suite.userID, Email: "ada@example.com", Active: true, GoogleSubject: utils.ToPtr("sub-1")}, nil).Once()
+		suite.MockEmail.EXPECT().Configured(suite.Ctx).Return(true, nil).Once()
+		suite.MockUserRepo.EXPECT().CreatePasswordResetToken(suite.Ctx, suite.userID, mock.Anything, suite.now.Add(passwordResetTTL)).Return(&ent.PasswordResetToken{}, nil).Once()
+		suite.MockEmail.EXPECT().SendAsync(suite.Ctx, "ada@example.com", mock.Anything).Return(true).Once()
+		suite.NoError(suite.service.RequestPasswordReset(suite.Ctx, "ada@example.com"))
+	})
 	suite.Run("configured mail stores a hashed token and links to it", func() {
 		var storedHash string
 		var sent mail.Content

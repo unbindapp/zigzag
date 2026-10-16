@@ -39,6 +39,8 @@ const (
 	FieldLastSeenAt = "last_seen_at"
 	// FieldGithubLogin holds the string denoting the github_login field in the database.
 	FieldGithubLogin = "github_login"
+	// FieldGoogleSubject holds the string denoting the google_subject field in the database.
+	FieldGoogleSubject = "google_subject"
 	// EdgeAvatarUpload holds the string denoting the avatar_upload edge name in mutations.
 	EdgeAvatarUpload = "avatar_upload"
 	// EdgeWorkspaceMemberships holds the string denoting the workspace_memberships edge name in mutations.
@@ -369,6 +371,7 @@ var Columns = []string{
 	FieldTimezone,
 	FieldLastSeenAt,
 	FieldGithubLogin,
+	FieldGoogleSubject,
 }
 
 var (
@@ -477,6 +480,11 @@ func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 // ByGithubLogin orders the results by the github_login field.
 func ByGithubLogin(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGithubLogin, opts...).ToFunc()
+}
+
+// ByGoogleSubject orders the results by the google_subject field.
+func ByGoogleSubject(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleSubject, opts...).ToFunc()
 }
 
 // ByAvatarUploadField orders the results by avatar_upload field.

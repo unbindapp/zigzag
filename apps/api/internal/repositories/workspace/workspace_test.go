@@ -118,6 +118,11 @@ func (suite *WorkspaceRepositorySuite) TestInvitations() {
 
 	pending, _ := suite.repo.ListPendingInvitations(suite.Ctx, w.ID, now)
 	suite.Len(pending, 1)
+	forEmail, err := suite.repo.ListPendingInvitationsForEmail(suite.Ctx, nil, "GRACE@example.com", now)
+	suite.Require().NoError(err)
+	suite.Len(forEmail, 1, "matching ignores case")
+	forEmail, _ = suite.repo.ListPendingInvitationsForEmail(suite.Ctx, nil, "grace@example.com", now.Add(2*time.Hour))
+	suite.Empty(forEmail, "expired invitations are not pending")
 
 	claimed, err := suite.repo.ClaimInvitation(suite.Ctx, nil, second.ID, now)
 	suite.NoError(err)

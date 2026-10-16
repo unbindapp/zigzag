@@ -97,6 +97,8 @@ var limitedOperations = map[string]int{
 	"login":                  credentialAttemptsPerMinute,
 	"request-password-reset": credentialAttemptsPerMinute,
 	"accept-invitation":      credentialAttemptsPerMinute,
+	"start-google-login":     credentialAttemptsPerMinute,
+	"finish-google-login":    credentialAttemptsPerMinute,
 	"github-webhook":         webhookDeliveriesPerMinute,
 }
 

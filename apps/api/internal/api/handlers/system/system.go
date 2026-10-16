@@ -62,4 +62,28 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/email/test",
 		Method:      http.MethodPost,
 	}, handlers.SendTestEmail, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-google-auth-settings",
+		Summary:     "Get Google Auth Settings",
+		Description: "Get the Sign in with Google settings and the redirect URI to register in Google Cloud. The client secret is never returned. System admins only.",
+		Path:        "/google-auth",
+		Method:      http.MethodGet,
+	}, handlers.GetGoogleAuthSettings, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-google-auth-settings",
+		Summary:     "Update Google Auth Settings",
+		Description: "Set the Google OAuth client and turn Sign in with Google on or off. System admins only.",
+		Path:        "/google-auth",
+		Method:      http.MethodPut,
+	}, handlers.UpdateGoogleAuthSettings, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Delete, huma.Operation{
+		OperationID: "clear-google-auth-settings",
+		Summary:     "Clear Google Auth Settings",
+		Description: "Remove the Google OAuth client and its secret. Sign in with Google stops working; linked accounts keep their link. System admins only.",
+		Path:        "/google-auth",
+		Method:      http.MethodDelete,
+	}, handlers.ClearGoogleAuthSettings, oapi.SessionOnly)
 }

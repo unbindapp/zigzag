@@ -21,6 +21,8 @@ func (SystemSetting) Fields() []ent.Field {
 		field.JSON("email_settings", &EmailSettings{}).Optional(),
 		field.Bytes("email_password_encrypted").Optional().Sensitive(),
 		field.Bool("allow_public_signup").Default(false),
+		field.JSON("google_auth", &GoogleAuthSettings{}).Optional(),
+		field.Bytes("google_client_secret_encrypted").Optional().Sensitive(),
 	}
 }
 

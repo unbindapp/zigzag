@@ -71,6 +71,8 @@ export const UserResponseSchema = z
     display_name: z.string(), // Lowercase handle used in mentions
     email: z.string(),
     github_login: z.string().nullable(), // GitHub username used by GitHub Issues sync
+    google_linked: z.boolean(), // Whether the account has signed in with Google
+    has_password: z.boolean(), // Whether the account can sign in with a password
     id: z.string(),
     name: z.string(),
     system_admin: z.boolean(),
@@ -215,6 +217,24 @@ export const AttachmentResponseSchema = z
 export const AttachmentResponseBodySchema = z
   .object({
     data: AttachmentResponseSchema,
+  })
+  .strip();
+
+export const AuthProviderStatusSchema = z
+  .object({
+    enabled: z.boolean(),
+  })
+  .strip();
+
+export const AuthProvidersResponseSchema = z
+  .object({
+    google: AuthProviderStatusSchema,
+  })
+  .strip();
+
+export const AuthProvidersResponseBodySchema = z
+  .object({
+    data: AuthProvidersResponseSchema,
   })
   .strip();
 
@@ -1190,6 +1210,23 @@ export const GithubSecretResponseBodySchema = z
 export const GithubWebhookResponseBodySchema = z
   .object({
     data: GithubDeliveryResponseSchema,
+  })
+  .strip();
+
+export const GoogleAuthSettingsResponseSchema = z
+  .object({
+    client_id: z.string(), // OAuth client id from Google Cloud
+    configured: z.boolean(), // True when a client id and secret are stored
+    enabled: z.boolean(), // Whether Sign in with Google is offered
+    hosted_domain: z.string(), // Only Google Workspace accounts of this domain may sign in; empty allows any Google account
+    redirect_uri: z.string(), // Authorized redirect URI to register on the Google OAuth client
+    secret_prefix: z.string(), // First characters of the client secret, empty without one. Never the full secret.
+  })
+  .strip();
+
+export const GoogleAuthSettingsResponseBodySchema = z
+  .object({
+    data: GoogleAuthSettingsResponseSchema,
   })
   .strip();
 
@@ -2486,6 +2523,15 @@ export const UpdateGithubIntegrationInputSchema = z
   })
   .strip();
 
+export const UpdateGoogleAuthSettingsInputSchema = z
+  .object({
+    client_id: z.string(), // OAuth client id of a Google Cloud web application client
+    client_secret: z.string().optional(), // OAuth client secret. Omit to keep the stored one.
+    enabled: z.boolean(), // Offer Sign in with Google on the sign-in page
+    hosted_domain: z.string().optional(), // Only accept Google Workspace accounts of this domain, for example example.com. Empty or omitted accepts any Google account.
+  })
+  .strip();
+
 export const UpdateInitiativeInputSchema = z
   .object({
     color: z.string().optional(), // Hex color, empty to clear
@@ -2956,6 +3002,9 @@ export type AttachmentRefInput = z.infer<typeof AttachmentRefInputSchema>;
 export type UserSummary = z.infer<typeof UserSummarySchema>;
 export type AttachmentResponse = z.infer<typeof AttachmentResponseSchema>;
 export type AttachmentResponseBody = z.infer<typeof AttachmentResponseBodySchema>;
+export type AuthProviderStatus = z.infer<typeof AuthProviderStatusSchema>;
+export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponseSchema>;
+export type AuthProvidersResponseBody = z.infer<typeof AuthProvidersResponseBodySchema>;
 export type BackfillGithubRepoSyncInput = z.infer<typeof BackfillGithubRepoSyncInputSchema>;
 export type BootstrapInput = z.infer<typeof BootstrapInputSchema>;
 export type BulkUpdateIssuesInput = z.infer<typeof BulkUpdateIssuesInputSchema>;
@@ -3064,6 +3113,8 @@ export type GithubRepoSyncResponse = z.infer<typeof GithubRepoSyncResponseSchema
 export type GithubRepoSyncResponseBody = z.infer<typeof GithubRepoSyncResponseBodySchema>;
 export type GithubSecretResponseBody = z.infer<typeof GithubSecretResponseBodySchema>;
 export type GithubWebhookResponseBody = z.infer<typeof GithubWebhookResponseBodySchema>;
+export type GoogleAuthSettingsResponse = z.infer<typeof GoogleAuthSettingsResponseSchema>;
+export type GoogleAuthSettingsResponseBody = z.infer<typeof GoogleAuthSettingsResponseBodySchema>;
 export type HistorySource = z.infer<typeof HistorySourceSchema>;
 export type HistoryResponse = z.infer<typeof HistoryResponseSchema>;
 export type HistoryListResponseBody = z.infer<typeof HistoryListResponseBodySchema>;
@@ -3206,6 +3257,7 @@ export type UpdateCommentInput = z.infer<typeof UpdateCommentInputSchema>;
 export type UpdateCycleInput = z.infer<typeof UpdateCycleInputSchema>;
 export type UpdateDocumentInput = z.infer<typeof UpdateDocumentInputSchema>;
 export type UpdateGithubIntegrationInput = z.infer<typeof UpdateGithubIntegrationInputSchema>;
+export type UpdateGoogleAuthSettingsInput = z.infer<typeof UpdateGoogleAuthSettingsInputSchema>;
 export type UpdateInitiativeInput = z.infer<typeof UpdateInitiativeInputSchema>;
 export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
 export type UpdateLabelInput = z.infer<typeof UpdateLabelInputSchema>;
@@ -3250,6 +3302,20 @@ export type WorkspaceResponseBody = z.infer<typeof WorkspaceResponseBodySchema>;
 export const list_api_keysQuerySchema = z
   .object({
     user_id: z.string().optional(), // List another user's keys. Requires system admin. Defaults to your own.
+  })
+  .passthrough();
+
+export const finish_google_loginQuerySchema = z
+  .object({
+    code: z.string().optional(), // Authorization code from Google
+    state: z.string().optional(), // State echoed back by Google
+    error: z.string().optional(), // Error from Google, for example access_denied
+  })
+  .passthrough();
+
+export const start_google_loginQuerySchema = z
+  .object({
+    redirect: z.string().optional(), // App path to return to after signing in, for example /acme/my-issues
   })
   .passthrough();
 
@@ -3866,6 +3932,92 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     auth: {
+      google: {
+        callback: async (
+          params: z.infer<typeof finish_google_loginQuerySchema>,
+          fetchOptions?: RequestInit,
+        ) => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/auth/google/callback`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = finish_google_loginQuerySchema.parse(params);
+            const queryKeys = ['code', 'state', 'error'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        start: async (
+          params: z.infer<typeof start_google_loginQuerySchema>,
+          fetchOptions?: RequestInit,
+        ) => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/auth/google/start`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = start_google_loginQuerySchema.parse(params);
+            const queryKeys = ['redirect'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+      },
       login: async (
         params: LoginInputBody,
         fetchOptions?: RequestInit,
@@ -3936,6 +4088,47 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = SuccessResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      providers: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<AuthProvidersResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/auth/providers`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = AuthProvidersResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -9465,6 +9658,134 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } = SuccessResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+      },
+      googleAuth: {
+        delete: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<SuccessResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/google-auth`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = SuccessResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        get: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<GoogleAuthSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/google-auth`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              GoogleAuthSettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        put: async (
+          params: UpdateGoogleAuthSettingsInput,
+          fetchOptions?: RequestInit,
+        ): Promise<GoogleAuthSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/google-auth`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdateGoogleAuthSettingsInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              GoogleAuthSettingsResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

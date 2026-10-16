@@ -16,6 +16,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 	workspace_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/workspace"
 )
@@ -195,16 +196,7 @@ func (self *WorkspaceService) AcceptInvitation(ctx context.Context, input *Accep
 		if err != nil {
 			return err
 		}
-		if _, err := self.repo.Workspace().AddMember(ctx, tx, invitation.WorkspaceID, user.ID, invitation.Role); err != nil {
-			return err
-		}
-		for _, teamID := range invitation.TeamIds {
-			err := self.repo.Team().AddMember(ctx, tx, teamID, user.ID, false)
-			if err != nil && !ent.IsConstraintError(err) {
-				return err
-			}
-		}
-		return nil
+		return JoinClaimedInvitation(ctx, self.repo, tx, invitation, user.ID)
 	})
 	if err != nil {
 		return nil, nil, err
@@ -216,7 +208,23 @@ func (self *WorkspaceService) AcceptInvitation(ctx context.Context, input *Accep
 	return user, joined, nil
 }
 
+func JoinClaimedInvitation(ctx context.Context, repo repositories.RepositoriesInterface, tx repository.TxInterface, invitation *ent.Invitation, userID uuid.UUID) error {
+	if _, err := repo.Workspace().AddMember(ctx, tx, invitation.WorkspaceID, userID, invitation.Role); err != nil {
+		return err
+	}
+	for _, teamID := range invitation.TeamIds {
+		err := repo.Team().AddMember(ctx, tx, teamID, userID, false)
+		if err != nil && !ent.IsConstraintError(err) {
+			return err
+		}
+	}
+	return nil
+}
+
 func (self *WorkspaceService) verifyAccepter(ctx context.Context, existing *ent.User, invitation *ent.Invitation, password string) error {
+	if hasUsableAccount(existing) && existing.PasswordHash == "" {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "This account signs in with Google; sign in with Google to join the workspace")
+	}
 	if hasUsableAccount(existing) {
 		if _, err := self.repo.User().Authenticate(ctx, invitation.Email, password); err != nil {
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Enter the password of your existing account to accept")
@@ -235,7 +243,7 @@ func (self *WorkspaceService) verifyAccepter(ctx context.Context, existing *ent.
 }
 
 func (self *WorkspaceService) ensureClaimable(ctx context.Context, existing *ent.User, workspaceID uuid.UUID) error {
-	if existing.PasswordHash != "" {
+	if existing.PasswordHash != "" || existing.GoogleSubject != nil {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "This account is deactivated; ask a system admin to reactivate it")
 	}
 	memberships, err := self.repo.Workspace().MembershipsOfUser(ctx, existing.ID)
@@ -265,7 +273,7 @@ func (self *WorkspaceService) accountForInvitation(ctx context.Context, tx repos
 		}
 		return self.repo.User().Update(ctx, tx, existing.ID, update)
 	}
-	handle, err := self.uniqueDisplayName(ctx, tx, derefOr(input.DisplayName, ""), invitation.Email)
+	handle, err := UniqueDisplayName(ctx, self.repo, tx, derefOr(input.DisplayName, ""), invitation.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -281,13 +289,13 @@ func (self *WorkspaceService) accountForInvitation(ctx context.Context, tx repos
 	})
 }
 
-func (self *WorkspaceService) uniqueDisplayName(ctx context.Context, tx repository.TxInterface, requested, email string) (string, error) {
+func UniqueDisplayName(ctx context.Context, repo repositories.RepositoriesInterface, tx repository.TxInterface, requested, email string) (string, error) {
 	if requested != "" {
 		handle, err := names.DisplayName(requested)
 		if err != nil {
 			return "", err
 		}
-		_, err = self.repo.User().GetByDisplayName(ctx, tx, handle)
+		_, err = repo.User().GetByDisplayName(ctx, tx, handle)
 		if ent.IsNotFound(err) {
 			return handle, nil
 		}
@@ -302,7 +310,7 @@ func (self *WorkspaceService) uniqueDisplayName(ctx context.Context, tx reposito
 		if attempt > 1 {
 			candidate = base + strconv.Itoa(attempt)
 		}
-		_, err := self.repo.User().GetByDisplayName(ctx, tx, candidate)
+		_, err := repo.User().GetByDisplayName(ctx, tx, candidate)
 		if ent.IsNotFound(err) {
 			return candidate, nil
 		}
@@ -354,7 +362,7 @@ func (self *WorkspaceService) workspaceLink(workspace *ent.Workspace) (string, e
 }
 
 func hasUsableAccount(user *ent.User) bool {
-	return user != nil && user.Active && user.PasswordHash != ""
+	return user != nil && user.Active && (user.PasswordHash != "" || user.GoogleSubject != nil)
 }
 
 func displayOf(user *ent.User) string {

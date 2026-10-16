@@ -21,6 +21,7 @@ type WorkspaceRepositoryInterface interface {
 	GetInvitationByTokenHash(ctx context.Context, tokenHash string) (*ent.Invitation, error)
 	GetInvitation(ctx context.Context, workspaceID, invitationID uuid.UUID) (*ent.Invitation, error)
 	ListPendingInvitations(ctx context.Context, workspaceID uuid.UUID, now time.Time) ([]*ent.Invitation, error)
+	ListPendingInvitationsForEmail(ctx context.Context, tx repository.TxInterface, email string, now time.Time) ([]*ent.Invitation, error)
 	RotateInvitationToken(ctx context.Context, invitationID uuid.UUID, tokenHash string, expiresAt time.Time) (*ent.Invitation, error)
 	DeleteInvitation(ctx context.Context, workspaceID, invitationID uuid.UUID) error
 	// ClaimInvitation spends the invitation once; false means another accept got there first.

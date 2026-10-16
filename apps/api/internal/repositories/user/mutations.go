@@ -15,12 +15,13 @@ import (
 const PasswordCost = 12
 
 type CreateUserInput struct {
-	Email       string
-	Password    string
-	Name        string
-	DisplayName string
-	SystemAdmin bool
-	Active      bool
+	Email         string
+	Password      string
+	Name          string
+	DisplayName   string
+	SystemAdmin   bool
+	Active        bool
+	GoogleSubject *string
 }
 
 const maxPasswordBytes = 72
@@ -56,7 +57,17 @@ func (self *UserRepository) Create(ctx context.Context, tx repository.TxInterfac
 		SetDisplayName(strings.ToLower(input.DisplayName)).
 		SetSystemAdmin(input.SystemAdmin).
 		SetActive(input.Active).
+		SetNillableGoogleSubject(input.GoogleSubject).
 		Save(ctx)
+}
+
+// LinkGoogleSubject reports false when the user already holds a subject.
+func (self *UserRepository) LinkGoogleSubject(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, subject string) (bool, error) {
+	updated, err := self.base.Client(tx).User.Update().
+		Where(user.ID(userID), user.GoogleSubjectIsNil()).
+		SetGoogleSubject(subject).
+		Save(ctx)
+	return updated == 1, err
 }
 
 func (self *UserRepository) UpdatePassword(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, password string) error {

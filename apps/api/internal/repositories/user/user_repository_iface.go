@@ -18,6 +18,8 @@ type UserRepositoryInterface interface {
 	DisplayNamesWithPrefixes(ctx context.Context, prefixes []string) ([]string, error)
 	CreatePlaceholders(ctx context.Context, tx repository.TxInterface, users []ImportedUser) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateUserInput) (*ent.User, error)
+	// LinkGoogleSubject reports false when the user already holds a subject.
+	LinkGoogleSubject(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, subject string) (bool, error)
 	UpdatePassword(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, password string) error
 	Update(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, input *UpdateUserInput) (*ent.User, error)
 	Delete(ctx context.Context, userID uuid.UUID) error

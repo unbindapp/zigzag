@@ -15,6 +15,12 @@ type EmailSettings struct {
 	Encryption  string `json:"encryption" required:"true" enum:"starttls,tls,none" doc:"starttls upgrades the connection (usually port 587), tls connects encrypted (usually port 465), none sends in the clear"`
 }
 
+type GoogleAuthSettings struct {
+	Enabled      bool   `json:"enabled" doc:"Show Sign in with Google and accept Google logins"`
+	ClientID     string `json:"client_id" doc:"OAuth client id from Google Cloud"`
+	HostedDomain string `json:"hosted_domain,omitempty" required:"false" doc:"Only accept Google Workspace accounts of this domain"`
+}
+
 type FieldChange struct {
 	Field     string `json:"field" doc:"Changed field: title, description, state, priority, estimate, assignee, project, milestone, cycle, parent, due_date, labels_added, labels_removed, relation_added, relation_removed, attachment_added, attachment_removed, github, archived, unarchived, trashed, restored, team, created, imported"`
 	From      any    `json:"from,omitempty" required:"false" doc:"Previous value, usually an id or a scalar"`

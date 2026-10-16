@@ -88,6 +88,30 @@ func (_u *SystemSettingUpdate) SetNillableAllowPublicSignup(v *bool) *SystemSett
 	return _u
 }
 
+// SetGoogleAuth sets the "google_auth" field.
+func (_u *SystemSettingUpdate) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingUpdate {
+	_u.mutation.SetGoogleAuth(v)
+	return _u
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (_u *SystemSettingUpdate) ClearGoogleAuth() *SystemSettingUpdate {
+	_u.mutation.ClearGoogleAuth()
+	return _u
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (_u *SystemSettingUpdate) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingUpdate {
+	_u.mutation.SetGoogleClientSecretEncrypted(v)
+	return _u
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (_u *SystemSettingUpdate) ClearGoogleClientSecretEncrypted() *SystemSettingUpdate {
+	_u.mutation.ClearGoogleClientSecretEncrypted()
+	return _u
+}
+
 // Mutation returns the SystemSettingMutation object of the builder.
 func (_u *SystemSettingUpdate) Mutation() *SystemSettingMutation {
 	return _u.mutation
@@ -164,6 +188,18 @@ func (_u *SystemSettingUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.AllowPublicSignup(); ok {
 		_spec.SetField(systemsetting.FieldAllowPublicSignup, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GoogleAuth(); ok {
+		_spec.SetField(systemsetting.FieldGoogleAuth, field.TypeJSON, value)
+	}
+	if _u.mutation.GoogleAuthCleared() {
+		_spec.ClearField(systemsetting.FieldGoogleAuth, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.GoogleClientSecretEncrypted(); ok {
+		_spec.SetField(systemsetting.FieldGoogleClientSecretEncrypted, field.TypeBytes, value)
+	}
+	if _u.mutation.GoogleClientSecretEncryptedCleared() {
+		_spec.ClearField(systemsetting.FieldGoogleClientSecretEncrypted, field.TypeBytes)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -242,6 +278,30 @@ func (_u *SystemSettingUpdateOne) SetNillableAllowPublicSignup(v *bool) *SystemS
 	if v != nil {
 		_u.SetAllowPublicSignup(*v)
 	}
+	return _u
+}
+
+// SetGoogleAuth sets the "google_auth" field.
+func (_u *SystemSettingUpdateOne) SetGoogleAuth(v *schema.GoogleAuthSettings) *SystemSettingUpdateOne {
+	_u.mutation.SetGoogleAuth(v)
+	return _u
+}
+
+// ClearGoogleAuth clears the value of the "google_auth" field.
+func (_u *SystemSettingUpdateOne) ClearGoogleAuth() *SystemSettingUpdateOne {
+	_u.mutation.ClearGoogleAuth()
+	return _u
+}
+
+// SetGoogleClientSecretEncrypted sets the "google_client_secret_encrypted" field.
+func (_u *SystemSettingUpdateOne) SetGoogleClientSecretEncrypted(v []byte) *SystemSettingUpdateOne {
+	_u.mutation.SetGoogleClientSecretEncrypted(v)
+	return _u
+}
+
+// ClearGoogleClientSecretEncrypted clears the value of the "google_client_secret_encrypted" field.
+func (_u *SystemSettingUpdateOne) ClearGoogleClientSecretEncrypted() *SystemSettingUpdateOne {
+	_u.mutation.ClearGoogleClientSecretEncrypted()
 	return _u
 }
 
@@ -351,6 +411,18 @@ func (_u *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSet
 	}
 	if value, ok := _u.mutation.AllowPublicSignup(); ok {
 		_spec.SetField(systemsetting.FieldAllowPublicSignup, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GoogleAuth(); ok {
+		_spec.SetField(systemsetting.FieldGoogleAuth, field.TypeJSON, value)
+	}
+	if _u.mutation.GoogleAuthCleared() {
+		_spec.ClearField(systemsetting.FieldGoogleAuth, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.GoogleClientSecretEncrypted(); ok {
+		_spec.SetField(systemsetting.FieldGoogleClientSecretEncrypted, field.TypeBytes, value)
+	}
+	if _u.mutation.GoogleClientSecretEncryptedCleared() {
+		_spec.ClearField(systemsetting.FieldGoogleClientSecretEncrypted, field.TypeBytes)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemSetting{config: _u.config}

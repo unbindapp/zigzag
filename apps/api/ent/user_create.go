@@ -203,6 +203,20 @@ func (_c *UserCreate) SetNillableGithubLogin(v *string) *UserCreate {
 	return _c
 }
 
+// SetGoogleSubject sets the "google_subject" field.
+func (_c *UserCreate) SetGoogleSubject(v string) *UserCreate {
+	_c.mutation.SetGoogleSubject(v)
+	return _c
+}
+
+// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
+func (_c *UserCreate) SetNillableGoogleSubject(v *string) *UserCreate {
+	if v != nil {
+		_c.SetGoogleSubject(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserCreate) SetID(v uuid.UUID) *UserCreate {
 	_c.mutation.SetID(v)
@@ -913,6 +927,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.GithubLogin(); ok {
 		_spec.SetField(user.FieldGithubLogin, field.TypeString, value)
 		_node.GithubLogin = &value
+	}
+	if value, ok := _c.mutation.GoogleSubject(); ok {
+		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
+		_node.GoogleSubject = &value
 	}
 	if nodes := _c.mutation.AvatarUploadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1677,6 +1695,24 @@ func (u *UserUpsert) ClearGithubLogin() *UserUpsert {
 	return u
 }
 
+// SetGoogleSubject sets the "google_subject" field.
+func (u *UserUpsert) SetGoogleSubject(v string) *UserUpsert {
+	u.Set(user.FieldGoogleSubject, v)
+	return u
+}
+
+// UpdateGoogleSubject sets the "google_subject" field to the value that was provided on create.
+func (u *UserUpsert) UpdateGoogleSubject() *UserUpsert {
+	u.SetExcluded(user.FieldGoogleSubject)
+	return u
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (u *UserUpsert) ClearGoogleSubject() *UserUpsert {
+	u.SetNull(user.FieldGoogleSubject)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1900,6 +1936,27 @@ func (u *UserUpsertOne) UpdateGithubLogin() *UserUpsertOne {
 func (u *UserUpsertOne) ClearGithubLogin() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearGithubLogin()
+	})
+}
+
+// SetGoogleSubject sets the "google_subject" field.
+func (u *UserUpsertOne) SetGoogleSubject(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGoogleSubject(v)
+	})
+}
+
+// UpdateGoogleSubject sets the "google_subject" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateGoogleSubject() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGoogleSubject()
+	})
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (u *UserUpsertOne) ClearGoogleSubject() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGoogleSubject()
 	})
 }
 
@@ -2293,6 +2350,27 @@ func (u *UserUpsertBulk) UpdateGithubLogin() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearGithubLogin() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearGithubLogin()
+	})
+}
+
+// SetGoogleSubject sets the "google_subject" field.
+func (u *UserUpsertBulk) SetGoogleSubject(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGoogleSubject(v)
+	})
+}
+
+// UpdateGoogleSubject sets the "google_subject" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateGoogleSubject() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGoogleSubject()
+	})
+}
+
+// ClearGoogleSubject clears the value of the "google_subject" field.
+func (u *UserUpsertBulk) ClearGoogleSubject() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGoogleSubject()
 	})
 }
 

@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 
 type TProps = {
+  title?: string;
   message?: string;
   onRetry?: () => void;
   className?: string;
 };
 
-export function ErrorCard({ message, onRetry, className }: TProps) {
+export function ErrorCard({ title = "Something went wrong", message, onRetry, className }: TProps) {
   return (
     <div
       role="alert"
@@ -21,7 +22,7 @@ export function ErrorCard({ message, onRetry, className }: TProps) {
     >
       <TriangleAlertIcon className="text-destructive mt-0.5 size-4 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="text-destructive text-sm font-medium">Something went wrong</p>
+        <p className="text-destructive text-sm font-medium">{title}</p>
         {message && <p className="text-muted-foreground font-mono text-xs break-all">{message}</p>}
       </div>
       {onRetry && (
