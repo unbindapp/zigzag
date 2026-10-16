@@ -22,7 +22,7 @@ test("GitHub usernames are lowercased, lose the @ and may be cleared", () => {
 test("repository names accept owner/name and GitHub URLs", () => {
   assert.equal(repositoryNameSchema.parse("unbindapp/zigzag"), "unbindapp/zigzag");
   assert.equal(
-    repositoryNameSchema.parse("https://github.com/zigzagapp-org/zigzag.git"),
+    repositoryNameSchema.parse("https://github.com/unbindapp/zigzag.git"),
     "unbindapp/zigzag",
   );
   assert.equal(repositoryNameSchema.safeParse("zigzag").success, false);
