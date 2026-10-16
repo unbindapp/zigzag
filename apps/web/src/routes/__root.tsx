@@ -11,6 +11,7 @@ export type RouterContext = {
 };
 
 const PUBLIC_PATHS = new Set([
+  "/",
   "/sign-in",
   "/forgot-password",
   "/reset-password",
