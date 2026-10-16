@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
   LogOutIcon,
   PlusIcon,
+  ServerIcon,
   SettingsIcon,
   UserIcon,
 } from "lucide-react";
@@ -25,7 +26,7 @@ import { useLogoutMutation } from "@/lib/queries/auth";
 import { meQuery, meWorkspaces } from "@/lib/queries/me";
 
 export function WorkspaceSwitcher({ onNavigate }: { onNavigate?: () => void }) {
-  const { workspace, isAdmin } = useWorkspace();
+  const { workspace, isAdmin, isSystemAdmin } = useWorkspace();
   const { data: me } = useQuery(meQuery);
   const navigate = useNavigate();
   const router = useRouter();
@@ -94,6 +95,21 @@ export function WorkspaceSwitcher({ onNavigate }: { onNavigate?: () => void }) {
             >
               <SettingsIcon className="size-4" />
               Workspace settings
+            </DropdownMenuItem>
+          )}
+          {isSystemAdmin && (
+            <DropdownMenuItem
+              onClick={() =>
+                go(() =>
+                  navigate({
+                    to: "/$workspace/settings/system",
+                    params: { workspace: workspace.slug },
+                  }),
+                )
+              }
+            >
+              <ServerIcon className="size-4" />
+              System settings
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
