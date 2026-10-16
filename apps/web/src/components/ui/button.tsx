@@ -156,7 +156,7 @@ function Button({
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
-          layout: isText ? undefined : "flex",
+          layout: isText && !render ? undefined : "flex",
           className,
         }),
       ),
@@ -211,7 +211,7 @@ const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>
             fadeOnDisabled,
             focusVariant,
             forceMinSize,
-            layout: isText ? undefined : "flex",
+            layout: "flex",
             className,
           }),
         )}
