@@ -35,14 +35,14 @@ type Content struct {
 	Note         string
 	InstanceName string
 	InstanceURL  string
-	LogoCID      string
+	LogoCID      htmltemplate.URL
 }
 
 func Render(to string, content Content) (Message, error) {
 	if content.InstanceName == "" {
 		content.InstanceName = "Zigzag"
 	}
-	content.LogoCID = "cid:" + logoName
+	content.LogoCID = htmltemplate.URL("cid:" + logoName)
 	var text, html bytes.Buffer
 	if err := textTemplate.Execute(&text, content); err != nil {
 		return Message{}, err
