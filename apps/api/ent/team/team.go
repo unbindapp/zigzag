@@ -103,6 +103,8 @@ const (
 	EdgeWebhooks = "webhooks"
 	// EdgeIssueMoves holds the string denoting the issue_moves edge name in mutations.
 	EdgeIssueMoves = "issue_moves"
+	// EdgeGithubRepoSyncs holds the string denoting the github_repo_syncs edge name in mutations.
+	EdgeGithubRepoSyncs = "github_repo_syncs"
 	// Table holds the table name of the team in the database.
 	Table = "teams"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -208,6 +210,13 @@ const (
 	IssueMovesInverseTable = "issue_moves"
 	// IssueMovesColumn is the table column denoting the issue_moves relation/edge.
 	IssueMovesColumn = "old_team_id"
+	// GithubRepoSyncsTable is the table that holds the github_repo_syncs relation/edge.
+	GithubRepoSyncsTable = "github_repo_syncs"
+	// GithubRepoSyncsInverseTable is the table name for the GithubRepoSync entity.
+	// It exists in this package in order to avoid circular dependency with the "githubreposync" package.
+	GithubRepoSyncsInverseTable = "github_repo_syncs"
+	// GithubRepoSyncsColumn is the table column denoting the github_repo_syncs relation/edge.
+	GithubRepoSyncsColumn = "team_id"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -634,6 +643,20 @@ func ByIssueMoves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIssueMovesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByGithubRepoSyncsCount orders the results by github_repo_syncs count.
+func ByGithubRepoSyncsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubRepoSyncsStep(), opts...)
+	}
+}
+
+// ByGithubRepoSyncs orders the results by github_repo_syncs terms.
+func ByGithubRepoSyncs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubRepoSyncsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -737,5 +760,12 @@ func newIssueMovesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IssueMovesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, IssueMovesTable, IssueMovesColumn),
+	)
+}
+func newGithubRepoSyncsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubRepoSyncsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubRepoSyncsTable, GithubRepoSyncsColumn),
 	)
 }

@@ -11,6 +11,13 @@ import (
 
 // GithubServiceInterface ...
 type GithubServiceInterface interface {
+	Backfill(ctx context.Context, userID uuid.UUID, input *BackfillGithubRepoSyncInput) (*models.GithubRepoSyncResponse, error)
+	RecoverBackfills(ctx context.Context) error
+	UpdateIntegration(ctx context.Context, userID uuid.UUID, input *UpdateGithubIntegrationInput) (*models.GithubIntegrationResponse, error)
+	ListRepoSyncs(ctx context.Context, userID uuid.UUID, input *ListGithubRepoSyncsInput) ([]*models.GithubRepoSyncResponse, error)
+	GetRepoSync(ctx context.Context, userID uuid.UUID, input *GetGithubRepoSyncInput) (*models.GithubRepoSyncResponse, error)
+	AddRepoSync(ctx context.Context, userID uuid.UUID, input *AddGithubRepoSyncInput) (*models.GithubRepoSyncResponse, error)
+	RemoveRepoSync(ctx context.Context, userID uuid.UUID, input *GithubRepoSyncRefInput) (uuid.UUID, error)
 	Get(ctx context.Context, userID uuid.UUID, input *GetGithubIntegrationInput) (*models.GithubIntegrationStatusResponse, error)
 	Create(ctx context.Context, userID uuid.UUID, input *GithubIntegrationRefInput) (*models.GithubIntegrationSecretResponse, error)
 	RegenerateSecret(ctx context.Context, userID uuid.UUID, input *GithubIntegrationRefInput) (*models.GithubIntegrationSecretResponse, error)

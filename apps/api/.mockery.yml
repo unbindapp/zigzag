@@ -243,6 +243,15 @@ packages:
           filename: storage_mock.go
           structname: StoreMock
           pkgname: mocks_infrastructure_storage
+  github.com/unbindapp/zigzag-api/internal/integrations/github:
+    config:
+      dir: ./mocks/integrations/github
+    interfaces:
+      ClientInterface:
+        config:
+          filename: github_client_mock.go
+          structname: GithubClientMock
+          pkgname: mocks_integrations_github
   github.com/unbindapp/zigzag-api/internal/services/email:
     config:
       dir: ./mocks/services/email
@@ -279,3 +288,48 @@ packages:
           filename: cycle_service_mock.go
           structname: CycleServiceMock
           pkgname: mocks_services_cycle
+  github.com/unbindapp/zigzag-api/internal/services/githubsync:
+    config:
+      dir: ./mocks/services/githubsync
+    interfaces:
+      GithubSyncServiceInterface:
+        config:
+          filename: github_sync_service_mock.go
+          structname: GithubSyncServiceMock
+          pkgname: mocks_services_githubsync
+  github.com/unbindapp/zigzag-api/internal/services/issue:
+    config:
+      dir: ./mocks/services/issue
+    interfaces:
+      IssueServiceInterface:
+        config:
+          filename: issue_service_mock.go
+          structname: IssueServiceMock
+          pkgname: mocks_services_issue
+  github.com/unbindapp/zigzag-api/internal/services/comment:
+    config:
+      dir: ./mocks/services/comment
+    interfaces:
+      CommentServiceInterface:
+        config:
+          filename: comment_service_mock.go
+          structname: CommentServiceMock
+          pkgname: mocks_services_comment
+  github.com/unbindapp/zigzag-api/internal/services/label:
+    config:
+      dir: ./mocks/services/label
+    interfaces:
+      LabelServiceInterface:
+        config:
+          filename: label_service_mock.go
+          structname: LabelServiceMock
+          pkgname: mocks_services_label
+  github.com/unbindapp/zigzag-api/internal/services/project:
+    config:
+      dir: ./mocks/services/project
+    interfaces:
+      ProjectServiceInterface:
+        config:
+          filename: project_service_mock.go
+          structname: ProjectServiceMock
+          pkgname: mocks_services_project

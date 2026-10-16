@@ -30,6 +30,7 @@ type UserResponse struct {
 	Active      bool      `json:"active" doc:"False for placeholder accounts that have not joined yet"`
 	SystemAdmin bool      `json:"system_admin"`
 	Timezone    string    `json:"timezone"`
+	GithubLogin *string   `json:"github_login" nullable:"true" doc:"GitHub username used by GitHub Issues sync"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -46,6 +47,7 @@ func TransformUserEntity(entity *ent.User) *UserResponse {
 		Active:      entity.Active,
 		SystemAdmin: entity.SystemAdmin,
 		Timezone:    entity.Timezone,
+		GithubLogin: entity.GithubLogin,
 		CreatedAt:   entity.CreatedAt,
 	}
 }

@@ -9,11 +9,15 @@ import (
 	"github.com/unbindapp/zigzag-api/config"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/log"
+	"github.com/unbindapp/zigzag-api/internal/integrations/github"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	github_sync_service "github.com/unbindapp/zigzag-api/internal/services/githubsync"
 	notification_service "github.com/unbindapp/zigzag-api/internal/services/notification"
 	webhook_service "github.com/unbindapp/zigzag-api/internal/services/webhook"
 )
@@ -24,11 +28,12 @@ type IssueService struct {
 	repo          repositories.RepositoriesInterface
 	notifications notification_service.NotificationServiceInterface
 	webhooks      webhook_service.WebhookServiceInterface
+	githubSync    github_sync_service.GithubSyncServiceInterface
 	now           func() time.Time
 }
 
-func NewIssueService(cfg *config.Config, repo repositories.RepositoriesInterface, notifications notification_service.NotificationServiceInterface, webhooks webhook_service.WebhookServiceInterface) *IssueService {
-	return &IssueService{cfg: cfg, repo: repo, notifications: notifications, webhooks: webhooks, now: time.Now}
+func NewIssueService(cfg *config.Config, repo repositories.RepositoriesInterface, notifications notification_service.NotificationServiceInterface, webhooks webhook_service.WebhookServiceInterface, githubSync github_sync_service.GithubSyncServiceInterface) *IssueService {
+	return &IssueService{cfg: cfg, repo: repo, notifications: notifications, webhooks: webhooks, githubSync: githubSync, now: time.Now}
 }
 
 func issueNotFound() error {
@@ -229,6 +234,12 @@ func (self *IssueService) respondDetail(ctx context.Context, userID uuid.UUID, i
 		return nil, err
 	}
 	response.Reactions = models.TransformReactionGroups(reactions, userID)
+
+	link, err := self.repo.Github().IssueLinkByIssue(ctx, issue.ID)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	}
+	response.GithubIssue = models.TransformGithubIssueLink(link)
 	return response, nil
 }
 
@@ -257,6 +268,20 @@ func (self *IssueService) emit(ctx context.Context, workspaceID uuid.UUID, event
 	if err := self.webhooks.Emit(ctx, workspaceID, event, payload); err != nil {
 		log.Error("Failed to emit webhook", "event", event, "err", err)
 	}
+}
+
+func actorOf(userID uuid.UUID) *uuid.UUID {
+	if userID == uuid.Nil {
+		return nil
+	}
+	return &userID
+}
+
+func (self *IssueService) recordHistory(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, actorID *uuid.UUID, changes []schema.FieldChange) error {
+	if inbound, ok := github.InboundFrom(ctx); ok && len(changes) > 0 {
+		changes = append(slices.Clone(changes), schema.FieldChange{Field: "github", To: inbound.URL, ToLabel: inbound.Label})
+	}
+	return self.repo.Issue().CreateHistory(ctx, tx, issueID, actorID, apictx.HistorySource(ctx), changes)
 }
 
 func without(ids []uuid.UUID, drop ...*uuid.UUID) []uuid.UUID {

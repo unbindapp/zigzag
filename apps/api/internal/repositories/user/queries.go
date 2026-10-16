@@ -35,6 +35,10 @@ func (self *UserRepository) GetByEmail(ctx context.Context, email string) (*ent.
 	return self.base.DB.User.Query().Where(user.EmailEqualFold(strings.TrimSpace(email))).Only(ctx)
 }
 
+func (self *UserRepository) GetByGithubLogin(ctx context.Context, login string) (*ent.User, error) {
+	return self.base.DB.User.Query().Where(user.GithubLogin(strings.ToLower(login))).Only(ctx)
+}
+
 func (self *UserRepository) GetByDisplayName(ctx context.Context, tx repository.TxInterface, displayName string) (*ent.User, error) {
 	return self.base.Client(tx).User.Query().Where(user.DisplayNameEqualFold(displayName)).Only(ctx)
 }

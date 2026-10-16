@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuehistory"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
@@ -834,6 +835,25 @@ func (_u *IssueUpdate) AddMoves(v ...*IssueMove) *IssueUpdate {
 	return _u.AddMoveIDs(ids...)
 }
 
+// SetGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID.
+func (_u *IssueUpdate) SetGithubLinkID(id uuid.UUID) *IssueUpdate {
+	_u.mutation.SetGithubLinkID(id)
+	return _u
+}
+
+// SetNillableGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID if the given value is not nil.
+func (_u *IssueUpdate) SetNillableGithubLinkID(id *uuid.UUID) *IssueUpdate {
+	if id != nil {
+		_u = _u.SetGithubLinkID(*id)
+	}
+	return _u
+}
+
+// SetGithubLink sets the "github_link" edge to the GithubIssueLink entity.
+func (_u *IssueUpdate) SetGithubLink(v *GithubIssueLink) *IssueUpdate {
+	return _u.SetGithubLinkID(v.ID)
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
 func (_u *IssueUpdate) AddDocumentIDs(ids ...uuid.UUID) *IssueUpdate {
 	_u.mutation.AddDocumentIDs(ids...)
@@ -1131,6 +1151,12 @@ func (_u *IssueUpdate) RemoveMoves(v ...*IssueMove) *IssueUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMoveIDs(ids...)
+}
+
+// ClearGithubLink clears the "github_link" edge to the GithubIssueLink entity.
+func (_u *IssueUpdate) ClearGithubLink() *IssueUpdate {
+	_u.mutation.ClearGithubLink()
+	return _u
 }
 
 // ClearDocuments clears all "documents" edges to the Document entity.
@@ -2088,6 +2114,35 @@ func (_u *IssueUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubLinkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   issue.GithubLinkTable,
+			Columns: []string{issue.GithubLinkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubissuelink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubLinkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   issue.GithubLinkTable,
+			Columns: []string{issue.GithubLinkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubissuelink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.DocumentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2988,6 +3043,25 @@ func (_u *IssueUpdateOne) AddMoves(v ...*IssueMove) *IssueUpdateOne {
 	return _u.AddMoveIDs(ids...)
 }
 
+// SetGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID.
+func (_u *IssueUpdateOne) SetGithubLinkID(id uuid.UUID) *IssueUpdateOne {
+	_u.mutation.SetGithubLinkID(id)
+	return _u
+}
+
+// SetNillableGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID if the given value is not nil.
+func (_u *IssueUpdateOne) SetNillableGithubLinkID(id *uuid.UUID) *IssueUpdateOne {
+	if id != nil {
+		_u = _u.SetGithubLinkID(*id)
+	}
+	return _u
+}
+
+// SetGithubLink sets the "github_link" edge to the GithubIssueLink entity.
+func (_u *IssueUpdateOne) SetGithubLink(v *GithubIssueLink) *IssueUpdateOne {
+	return _u.SetGithubLinkID(v.ID)
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
 func (_u *IssueUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *IssueUpdateOne {
 	_u.mutation.AddDocumentIDs(ids...)
@@ -3285,6 +3359,12 @@ func (_u *IssueUpdateOne) RemoveMoves(v ...*IssueMove) *IssueUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMoveIDs(ids...)
+}
+
+// ClearGithubLink clears the "github_link" edge to the GithubIssueLink entity.
+func (_u *IssueUpdateOne) ClearGithubLink() *IssueUpdateOne {
+	_u.mutation.ClearGithubLink()
+	return _u
 }
 
 // ClearDocuments clears all "documents" edges to the Document entity.
@@ -4265,6 +4345,35 @@ func (_u *IssueUpdateOne) sqlSave(ctx context.Context) (_node *Issue, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issuemove.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubLinkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   issue.GithubLinkTable,
+			Columns: []string{issue.GithubLinkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubissuelink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubLinkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   issue.GithubLinkTable,
+			Columns: []string{issue.GithubLinkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubissuelink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

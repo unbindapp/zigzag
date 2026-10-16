@@ -19,8 +19,11 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -76,7 +79,10 @@ const (
 	TypeCycleScopeHistory      = "CycleScopeHistory"
 	TypeDocument               = "Document"
 	TypeFavorite               = "Favorite"
+	TypeGithubCommentLink      = "GithubCommentLink"
 	TypeGithubIntegration      = "GithubIntegration"
+	TypeGithubIssueLink        = "GithubIssueLink"
+	TypeGithubRepoSync         = "GithubRepoSync"
 	TypeGithubRepository       = "GithubRepository"
 	TypeImportJob              = "ImportJob"
 	TypeInitiative             = "Initiative"
@@ -8003,6 +8009,644 @@ func (m *FavoriteMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Favorite edge %s", name)
 }
 
+// GithubCommentLinkMutation represents an operation that mutates the GithubCommentLink nodes in the graph.
+type GithubCommentLinkMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	comment_id           *uuid.UUID
+	github_comment_id    *int64
+	addgithub_comment_id *int64
+	clearedFields        map[string]struct{}
+	issue_link           *uuid.UUID
+	clearedissue_link    bool
+	done                 bool
+	oldValue             func(context.Context) (*GithubCommentLink, error)
+	predicates           []predicate.GithubCommentLink
+}
+
+var _ ent.Mutation = (*GithubCommentLinkMutation)(nil)
+
+// githubcommentlinkOption allows management of the mutation configuration using functional options.
+type githubcommentlinkOption func(*GithubCommentLinkMutation)
+
+// newGithubCommentLinkMutation creates new mutation for the GithubCommentLink entity.
+func newGithubCommentLinkMutation(c config, op Op, opts ...githubcommentlinkOption) *GithubCommentLinkMutation {
+	m := &GithubCommentLinkMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubCommentLink,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubCommentLinkID sets the ID field of the mutation.
+func withGithubCommentLinkID(id uuid.UUID) githubcommentlinkOption {
+	return func(m *GithubCommentLinkMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubCommentLink
+		)
+		m.oldValue = func(ctx context.Context) (*GithubCommentLink, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubCommentLink.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubCommentLink sets the old GithubCommentLink of the mutation.
+func withGithubCommentLink(node *GithubCommentLink) githubcommentlinkOption {
+	return func(m *GithubCommentLinkMutation) {
+		m.oldValue = func(context.Context) (*GithubCommentLink, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubCommentLinkMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubCommentLinkMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GithubCommentLink entities.
+func (m *GithubCommentLinkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GithubCommentLinkMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GithubCommentLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GithubCommentLink.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GithubCommentLinkMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GithubCommentLinkMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GithubCommentLink entity.
+// If the GithubCommentLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubCommentLinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GithubCommentLinkMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GithubCommentLinkMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GithubCommentLinkMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GithubCommentLink entity.
+// If the GithubCommentLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubCommentLinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GithubCommentLinkMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetCommentID sets the "comment_id" field.
+func (m *GithubCommentLinkMutation) SetCommentID(u uuid.UUID) {
+	m.comment_id = &u
+}
+
+// CommentID returns the value of the "comment_id" field in the mutation.
+func (m *GithubCommentLinkMutation) CommentID() (r uuid.UUID, exists bool) {
+	v := m.comment_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommentID returns the old "comment_id" field's value of the GithubCommentLink entity.
+// If the GithubCommentLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubCommentLinkMutation) OldCommentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommentID: %w", err)
+	}
+	return oldValue.CommentID, nil
+}
+
+// ResetCommentID resets all changes to the "comment_id" field.
+func (m *GithubCommentLinkMutation) ResetCommentID() {
+	m.comment_id = nil
+}
+
+// SetIssueLinkID sets the "issue_link_id" field.
+func (m *GithubCommentLinkMutation) SetIssueLinkID(u uuid.UUID) {
+	m.issue_link = &u
+}
+
+// IssueLinkID returns the value of the "issue_link_id" field in the mutation.
+func (m *GithubCommentLinkMutation) IssueLinkID() (r uuid.UUID, exists bool) {
+	v := m.issue_link
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIssueLinkID returns the old "issue_link_id" field's value of the GithubCommentLink entity.
+// If the GithubCommentLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubCommentLinkMutation) OldIssueLinkID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIssueLinkID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIssueLinkID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIssueLinkID: %w", err)
+	}
+	return oldValue.IssueLinkID, nil
+}
+
+// ResetIssueLinkID resets all changes to the "issue_link_id" field.
+func (m *GithubCommentLinkMutation) ResetIssueLinkID() {
+	m.issue_link = nil
+}
+
+// SetGithubCommentID sets the "github_comment_id" field.
+func (m *GithubCommentLinkMutation) SetGithubCommentID(i int64) {
+	m.github_comment_id = &i
+	m.addgithub_comment_id = nil
+}
+
+// GithubCommentID returns the value of the "github_comment_id" field in the mutation.
+func (m *GithubCommentLinkMutation) GithubCommentID() (r int64, exists bool) {
+	v := m.github_comment_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubCommentID returns the old "github_comment_id" field's value of the GithubCommentLink entity.
+// If the GithubCommentLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubCommentLinkMutation) OldGithubCommentID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubCommentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubCommentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubCommentID: %w", err)
+	}
+	return oldValue.GithubCommentID, nil
+}
+
+// AddGithubCommentID adds i to the "github_comment_id" field.
+func (m *GithubCommentLinkMutation) AddGithubCommentID(i int64) {
+	if m.addgithub_comment_id != nil {
+		*m.addgithub_comment_id += i
+	} else {
+		m.addgithub_comment_id = &i
+	}
+}
+
+// AddedGithubCommentID returns the value that was added to the "github_comment_id" field in this mutation.
+func (m *GithubCommentLinkMutation) AddedGithubCommentID() (r int64, exists bool) {
+	v := m.addgithub_comment_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGithubCommentID resets all changes to the "github_comment_id" field.
+func (m *GithubCommentLinkMutation) ResetGithubCommentID() {
+	m.github_comment_id = nil
+	m.addgithub_comment_id = nil
+}
+
+// ClearIssueLink clears the "issue_link" edge to the GithubIssueLink entity.
+func (m *GithubCommentLinkMutation) ClearIssueLink() {
+	m.clearedissue_link = true
+	m.clearedFields[githubcommentlink.FieldIssueLinkID] = struct{}{}
+}
+
+// IssueLinkCleared reports if the "issue_link" edge to the GithubIssueLink entity was cleared.
+func (m *GithubCommentLinkMutation) IssueLinkCleared() bool {
+	return m.clearedissue_link
+}
+
+// IssueLinkIDs returns the "issue_link" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IssueLinkID instead. It exists only for internal usage by the builders.
+func (m *GithubCommentLinkMutation) IssueLinkIDs() (ids []uuid.UUID) {
+	if id := m.issue_link; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIssueLink resets all changes to the "issue_link" edge.
+func (m *GithubCommentLinkMutation) ResetIssueLink() {
+	m.issue_link = nil
+	m.clearedissue_link = false
+}
+
+// Where appends a list predicates to the GithubCommentLinkMutation builder.
+func (m *GithubCommentLinkMutation) Where(ps ...predicate.GithubCommentLink) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GithubCommentLinkMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GithubCommentLinkMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GithubCommentLink, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GithubCommentLinkMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GithubCommentLinkMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GithubCommentLink).
+func (m *GithubCommentLinkMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubCommentLinkMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.created_at != nil {
+		fields = append(fields, githubcommentlink.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, githubcommentlink.FieldUpdatedAt)
+	}
+	if m.comment_id != nil {
+		fields = append(fields, githubcommentlink.FieldCommentID)
+	}
+	if m.issue_link != nil {
+		fields = append(fields, githubcommentlink.FieldIssueLinkID)
+	}
+	if m.github_comment_id != nil {
+		fields = append(fields, githubcommentlink.FieldGithubCommentID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubCommentLinkMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubcommentlink.FieldCreatedAt:
+		return m.CreatedAt()
+	case githubcommentlink.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case githubcommentlink.FieldCommentID:
+		return m.CommentID()
+	case githubcommentlink.FieldIssueLinkID:
+		return m.IssueLinkID()
+	case githubcommentlink.FieldGithubCommentID:
+		return m.GithubCommentID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubCommentLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubcommentlink.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case githubcommentlink.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case githubcommentlink.FieldCommentID:
+		return m.OldCommentID(ctx)
+	case githubcommentlink.FieldIssueLinkID:
+		return m.OldIssueLinkID(ctx)
+	case githubcommentlink.FieldGithubCommentID:
+		return m.OldGithubCommentID(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubCommentLink field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubCommentLinkMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubcommentlink.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case githubcommentlink.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case githubcommentlink.FieldCommentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommentID(v)
+		return nil
+	case githubcommentlink.FieldIssueLinkID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIssueLinkID(v)
+		return nil
+	case githubcommentlink.FieldGithubCommentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubCommentID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubCommentLink field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubCommentLinkMutation) AddedFields() []string {
+	var fields []string
+	if m.addgithub_comment_id != nil {
+		fields = append(fields, githubcommentlink.FieldGithubCommentID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubCommentLinkMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case githubcommentlink.FieldGithubCommentID:
+		return m.AddedGithubCommentID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubCommentLinkMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case githubcommentlink.FieldGithubCommentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGithubCommentID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubCommentLink numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubCommentLinkMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubCommentLinkMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubCommentLinkMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GithubCommentLink nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubCommentLinkMutation) ResetField(name string) error {
+	switch name {
+	case githubcommentlink.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case githubcommentlink.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case githubcommentlink.FieldCommentID:
+		m.ResetCommentID()
+		return nil
+	case githubcommentlink.FieldIssueLinkID:
+		m.ResetIssueLinkID()
+		return nil
+	case githubcommentlink.FieldGithubCommentID:
+		m.ResetGithubCommentID()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubCommentLink field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubCommentLinkMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.issue_link != nil {
+		edges = append(edges, githubcommentlink.EdgeIssueLink)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubCommentLinkMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubcommentlink.EdgeIssueLink:
+		if id := m.issue_link; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubCommentLinkMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubCommentLinkMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubCommentLinkMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedissue_link {
+		edges = append(edges, githubcommentlink.EdgeIssueLink)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubCommentLinkMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubcommentlink.EdgeIssueLink:
+		return m.clearedissue_link
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubCommentLinkMutation) ClearEdge(name string) error {
+	switch name {
+	case githubcommentlink.EdgeIssueLink:
+		m.ClearIssueLink()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubCommentLink unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubCommentLinkMutation) ResetEdge(name string) error {
+	switch name {
+	case githubcommentlink.EdgeIssueLink:
+		m.ResetIssueLink()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubCommentLink edge %s", name)
+}
+
 // GithubIntegrationMutation represents an operation that mutates the GithubIntegration nodes in the graph.
 type GithubIntegrationMutation struct {
 	config
@@ -8014,6 +8658,8 @@ type GithubIntegrationMutation struct {
 	secret_encrypted    *[]byte
 	secret_prefix       *string
 	last_delivery_at    *time.Time
+	token_encrypted     *[]byte
+	token_prefix        *string
 	clearedFields       map[string]struct{}
 	workspace           *uuid.UUID
 	clearedworkspace    bool
@@ -8022,6 +8668,9 @@ type GithubIntegrationMutation struct {
 	repositories        map[uuid.UUID]struct{}
 	removedrepositories map[uuid.UUID]struct{}
 	clearedrepositories bool
+	repo_syncs          map[uuid.UUID]struct{}
+	removedrepo_syncs   map[uuid.UUID]struct{}
+	clearedrepo_syncs   bool
 	done                bool
 	oldValue            func(context.Context) (*GithubIntegration, error)
 	predicates          []predicate.GithubIntegration
@@ -8409,6 +9058,91 @@ func (m *GithubIntegrationMutation) ResetLastDeliveryAt() {
 	delete(m.clearedFields, githubintegration.FieldLastDeliveryAt)
 }
 
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (m *GithubIntegrationMutation) SetTokenEncrypted(b []byte) {
+	m.token_encrypted = &b
+}
+
+// TokenEncrypted returns the value of the "token_encrypted" field in the mutation.
+func (m *GithubIntegrationMutation) TokenEncrypted() (r []byte, exists bool) {
+	v := m.token_encrypted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenEncrypted returns the old "token_encrypted" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldTokenEncrypted(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenEncrypted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenEncrypted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenEncrypted: %w", err)
+	}
+	return oldValue.TokenEncrypted, nil
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (m *GithubIntegrationMutation) ClearTokenEncrypted() {
+	m.token_encrypted = nil
+	m.clearedFields[githubintegration.FieldTokenEncrypted] = struct{}{}
+}
+
+// TokenEncryptedCleared returns if the "token_encrypted" field was cleared in this mutation.
+func (m *GithubIntegrationMutation) TokenEncryptedCleared() bool {
+	_, ok := m.clearedFields[githubintegration.FieldTokenEncrypted]
+	return ok
+}
+
+// ResetTokenEncrypted resets all changes to the "token_encrypted" field.
+func (m *GithubIntegrationMutation) ResetTokenEncrypted() {
+	m.token_encrypted = nil
+	delete(m.clearedFields, githubintegration.FieldTokenEncrypted)
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (m *GithubIntegrationMutation) SetTokenPrefix(s string) {
+	m.token_prefix = &s
+}
+
+// TokenPrefix returns the value of the "token_prefix" field in the mutation.
+func (m *GithubIntegrationMutation) TokenPrefix() (r string, exists bool) {
+	v := m.token_prefix
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenPrefix returns the old "token_prefix" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldTokenPrefix(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenPrefix is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenPrefix requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenPrefix: %w", err)
+	}
+	return oldValue.TokenPrefix, nil
+}
+
+// ResetTokenPrefix resets all changes to the "token_prefix" field.
+func (m *GithubIntegrationMutation) ResetTokenPrefix() {
+	m.token_prefix = nil
+}
+
 // ClearWorkspace clears the "workspace" edge to the Workspace entity.
 func (m *GithubIntegrationMutation) ClearWorkspace() {
 	m.clearedworkspace = true
@@ -8517,6 +9251,60 @@ func (m *GithubIntegrationMutation) ResetRepositories() {
 	m.removedrepositories = nil
 }
 
+// AddRepoSyncIDs adds the "repo_syncs" edge to the GithubRepoSync entity by ids.
+func (m *GithubIntegrationMutation) AddRepoSyncIDs(ids ...uuid.UUID) {
+	if m.repo_syncs == nil {
+		m.repo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.repo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepoSyncs clears the "repo_syncs" edge to the GithubRepoSync entity.
+func (m *GithubIntegrationMutation) ClearRepoSyncs() {
+	m.clearedrepo_syncs = true
+}
+
+// RepoSyncsCleared reports if the "repo_syncs" edge to the GithubRepoSync entity was cleared.
+func (m *GithubIntegrationMutation) RepoSyncsCleared() bool {
+	return m.clearedrepo_syncs
+}
+
+// RemoveRepoSyncIDs removes the "repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (m *GithubIntegrationMutation) RemoveRepoSyncIDs(ids ...uuid.UUID) {
+	if m.removedrepo_syncs == nil {
+		m.removedrepo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.repo_syncs, ids[i])
+		m.removedrepo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepoSyncs returns the removed IDs of the "repo_syncs" edge to the GithubRepoSync entity.
+func (m *GithubIntegrationMutation) RemovedRepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.removedrepo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepoSyncsIDs returns the "repo_syncs" edge IDs in the mutation.
+func (m *GithubIntegrationMutation) RepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.repo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepoSyncs resets all changes to the "repo_syncs" edge.
+func (m *GithubIntegrationMutation) ResetRepoSyncs() {
+	m.repo_syncs = nil
+	m.clearedrepo_syncs = false
+	m.removedrepo_syncs = nil
+}
+
 // Where appends a list predicates to the GithubIntegrationMutation builder.
 func (m *GithubIntegrationMutation) Where(ps ...predicate.GithubIntegration) {
 	m.predicates = append(m.predicates, ps...)
@@ -8551,7 +9339,7 @@ func (m *GithubIntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GithubIntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, githubintegration.FieldCreatedAt)
 	}
@@ -8572,6 +9360,12 @@ func (m *GithubIntegrationMutation) Fields() []string {
 	}
 	if m.last_delivery_at != nil {
 		fields = append(fields, githubintegration.FieldLastDeliveryAt)
+	}
+	if m.token_encrypted != nil {
+		fields = append(fields, githubintegration.FieldTokenEncrypted)
+	}
+	if m.token_prefix != nil {
+		fields = append(fields, githubintegration.FieldTokenPrefix)
 	}
 	return fields
 }
@@ -8595,6 +9389,10 @@ func (m *GithubIntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedByID()
 	case githubintegration.FieldLastDeliveryAt:
 		return m.LastDeliveryAt()
+	case githubintegration.FieldTokenEncrypted:
+		return m.TokenEncrypted()
+	case githubintegration.FieldTokenPrefix:
+		return m.TokenPrefix()
 	}
 	return nil, false
 }
@@ -8618,6 +9416,10 @@ func (m *GithubIntegrationMutation) OldField(ctx context.Context, name string) (
 		return m.OldCreatedByID(ctx)
 	case githubintegration.FieldLastDeliveryAt:
 		return m.OldLastDeliveryAt(ctx)
+	case githubintegration.FieldTokenEncrypted:
+		return m.OldTokenEncrypted(ctx)
+	case githubintegration.FieldTokenPrefix:
+		return m.OldTokenPrefix(ctx)
 	}
 	return nil, fmt.Errorf("unknown GithubIntegration field %s", name)
 }
@@ -8676,6 +9478,20 @@ func (m *GithubIntegrationMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetLastDeliveryAt(v)
 		return nil
+	case githubintegration.FieldTokenEncrypted:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenEncrypted(v)
+		return nil
+	case githubintegration.FieldTokenPrefix:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenPrefix(v)
+		return nil
 	}
 	return fmt.Errorf("unknown GithubIntegration field %s", name)
 }
@@ -8712,6 +9528,9 @@ func (m *GithubIntegrationMutation) ClearedFields() []string {
 	if m.FieldCleared(githubintegration.FieldLastDeliveryAt) {
 		fields = append(fields, githubintegration.FieldLastDeliveryAt)
 	}
+	if m.FieldCleared(githubintegration.FieldTokenEncrypted) {
+		fields = append(fields, githubintegration.FieldTokenEncrypted)
+	}
 	return fields
 }
 
@@ -8731,6 +9550,9 @@ func (m *GithubIntegrationMutation) ClearField(name string) error {
 		return nil
 	case githubintegration.FieldLastDeliveryAt:
 		m.ClearLastDeliveryAt()
+		return nil
+	case githubintegration.FieldTokenEncrypted:
+		m.ClearTokenEncrypted()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubIntegration nullable field %s", name)
@@ -8761,13 +9583,19 @@ func (m *GithubIntegrationMutation) ResetField(name string) error {
 	case githubintegration.FieldLastDeliveryAt:
 		m.ResetLastDeliveryAt()
 		return nil
+	case githubintegration.FieldTokenEncrypted:
+		m.ResetTokenEncrypted()
+		return nil
+	case githubintegration.FieldTokenPrefix:
+		m.ResetTokenPrefix()
+		return nil
 	}
 	return fmt.Errorf("unknown GithubIntegration field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GithubIntegrationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.workspace != nil {
 		edges = append(edges, githubintegration.EdgeWorkspace)
 	}
@@ -8776,6 +9604,9 @@ func (m *GithubIntegrationMutation) AddedEdges() []string {
 	}
 	if m.repositories != nil {
 		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	if m.repo_syncs != nil {
+		edges = append(edges, githubintegration.EdgeRepoSyncs)
 	}
 	return edges
 }
@@ -8798,15 +9629,24 @@ func (m *GithubIntegrationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githubintegration.EdgeRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.repo_syncs))
+		for id := range m.repo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GithubIntegrationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedrepositories != nil {
 		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	if m.removedrepo_syncs != nil {
+		edges = append(edges, githubintegration.EdgeRepoSyncs)
 	}
 	return edges
 }
@@ -8821,13 +9661,19 @@ func (m *GithubIntegrationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githubintegration.EdgeRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.removedrepo_syncs))
+		for id := range m.removedrepo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GithubIntegrationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedworkspace {
 		edges = append(edges, githubintegration.EdgeWorkspace)
 	}
@@ -8836,6 +9682,9 @@ func (m *GithubIntegrationMutation) ClearedEdges() []string {
 	}
 	if m.clearedrepositories {
 		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	if m.clearedrepo_syncs {
+		edges = append(edges, githubintegration.EdgeRepoSyncs)
 	}
 	return edges
 }
@@ -8850,6 +9699,8 @@ func (m *GithubIntegrationMutation) EdgeCleared(name string) bool {
 		return m.clearedcreated_by
 	case githubintegration.EdgeRepositories:
 		return m.clearedrepositories
+	case githubintegration.EdgeRepoSyncs:
+		return m.clearedrepo_syncs
 	}
 	return false
 }
@@ -8881,8 +9732,2181 @@ func (m *GithubIntegrationMutation) ResetEdge(name string) error {
 	case githubintegration.EdgeRepositories:
 		m.ResetRepositories()
 		return nil
+	case githubintegration.EdgeRepoSyncs:
+		m.ResetRepoSyncs()
+		return nil
 	}
 	return fmt.Errorf("unknown GithubIntegration edge %s", name)
+}
+
+// GithubIssueLinkMutation represents an operation that mutates the GithubIssueLink nodes in the graph.
+type GithubIssueLinkMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	number               *int
+	addnumber            *int
+	node_id              *string
+	html_url             *string
+	github_updated_at    *time.Time
+	last_outbound_at     *time.Time
+	clearedFields        map[string]struct{}
+	issue                *uuid.UUID
+	clearedissue         bool
+	repo_sync            *uuid.UUID
+	clearedrepo_sync     bool
+	comment_links        map[uuid.UUID]struct{}
+	removedcomment_links map[uuid.UUID]struct{}
+	clearedcomment_links bool
+	done                 bool
+	oldValue             func(context.Context) (*GithubIssueLink, error)
+	predicates           []predicate.GithubIssueLink
+}
+
+var _ ent.Mutation = (*GithubIssueLinkMutation)(nil)
+
+// githubissuelinkOption allows management of the mutation configuration using functional options.
+type githubissuelinkOption func(*GithubIssueLinkMutation)
+
+// newGithubIssueLinkMutation creates new mutation for the GithubIssueLink entity.
+func newGithubIssueLinkMutation(c config, op Op, opts ...githubissuelinkOption) *GithubIssueLinkMutation {
+	m := &GithubIssueLinkMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubIssueLink,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubIssueLinkID sets the ID field of the mutation.
+func withGithubIssueLinkID(id uuid.UUID) githubissuelinkOption {
+	return func(m *GithubIssueLinkMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubIssueLink
+		)
+		m.oldValue = func(ctx context.Context) (*GithubIssueLink, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubIssueLink.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubIssueLink sets the old GithubIssueLink of the mutation.
+func withGithubIssueLink(node *GithubIssueLink) githubissuelinkOption {
+	return func(m *GithubIssueLinkMutation) {
+		m.oldValue = func(context.Context) (*GithubIssueLink, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubIssueLinkMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubIssueLinkMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GithubIssueLink entities.
+func (m *GithubIssueLinkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GithubIssueLinkMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GithubIssueLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GithubIssueLink.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GithubIssueLinkMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GithubIssueLinkMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GithubIssueLinkMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GithubIssueLinkMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GithubIssueLinkMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GithubIssueLinkMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIssueID sets the "issue_id" field.
+func (m *GithubIssueLinkMutation) SetIssueID(u uuid.UUID) {
+	m.issue = &u
+}
+
+// IssueID returns the value of the "issue_id" field in the mutation.
+func (m *GithubIssueLinkMutation) IssueID() (r uuid.UUID, exists bool) {
+	v := m.issue
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIssueID returns the old "issue_id" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldIssueID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIssueID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIssueID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIssueID: %w", err)
+	}
+	return oldValue.IssueID, nil
+}
+
+// ResetIssueID resets all changes to the "issue_id" field.
+func (m *GithubIssueLinkMutation) ResetIssueID() {
+	m.issue = nil
+}
+
+// SetRepoSyncID sets the "repo_sync_id" field.
+func (m *GithubIssueLinkMutation) SetRepoSyncID(u uuid.UUID) {
+	m.repo_sync = &u
+}
+
+// RepoSyncID returns the value of the "repo_sync_id" field in the mutation.
+func (m *GithubIssueLinkMutation) RepoSyncID() (r uuid.UUID, exists bool) {
+	v := m.repo_sync
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoSyncID returns the old "repo_sync_id" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldRepoSyncID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepoSyncID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepoSyncID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoSyncID: %w", err)
+	}
+	return oldValue.RepoSyncID, nil
+}
+
+// ResetRepoSyncID resets all changes to the "repo_sync_id" field.
+func (m *GithubIssueLinkMutation) ResetRepoSyncID() {
+	m.repo_sync = nil
+}
+
+// SetNumber sets the "number" field.
+func (m *GithubIssueLinkMutation) SetNumber(i int) {
+	m.number = &i
+	m.addnumber = nil
+}
+
+// Number returns the value of the "number" field in the mutation.
+func (m *GithubIssueLinkMutation) Number() (r int, exists bool) {
+	v := m.number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumber returns the old "number" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldNumber(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumber: %w", err)
+	}
+	return oldValue.Number, nil
+}
+
+// AddNumber adds i to the "number" field.
+func (m *GithubIssueLinkMutation) AddNumber(i int) {
+	if m.addnumber != nil {
+		*m.addnumber += i
+	} else {
+		m.addnumber = &i
+	}
+}
+
+// AddedNumber returns the value that was added to the "number" field in this mutation.
+func (m *GithubIssueLinkMutation) AddedNumber() (r int, exists bool) {
+	v := m.addnumber
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumber resets all changes to the "number" field.
+func (m *GithubIssueLinkMutation) ResetNumber() {
+	m.number = nil
+	m.addnumber = nil
+}
+
+// SetNodeID sets the "node_id" field.
+func (m *GithubIssueLinkMutation) SetNodeID(s string) {
+	m.node_id = &s
+}
+
+// NodeID returns the value of the "node_id" field in the mutation.
+func (m *GithubIssueLinkMutation) NodeID() (r string, exists bool) {
+	v := m.node_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNodeID returns the old "node_id" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldNodeID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNodeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNodeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNodeID: %w", err)
+	}
+	return oldValue.NodeID, nil
+}
+
+// ResetNodeID resets all changes to the "node_id" field.
+func (m *GithubIssueLinkMutation) ResetNodeID() {
+	m.node_id = nil
+}
+
+// SetHTMLURL sets the "html_url" field.
+func (m *GithubIssueLinkMutation) SetHTMLURL(s string) {
+	m.html_url = &s
+}
+
+// HTMLURL returns the value of the "html_url" field in the mutation.
+func (m *GithubIssueLinkMutation) HTMLURL() (r string, exists bool) {
+	v := m.html_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHTMLURL returns the old "html_url" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldHTMLURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHTMLURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHTMLURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHTMLURL: %w", err)
+	}
+	return oldValue.HTMLURL, nil
+}
+
+// ResetHTMLURL resets all changes to the "html_url" field.
+func (m *GithubIssueLinkMutation) ResetHTMLURL() {
+	m.html_url = nil
+}
+
+// SetGithubUpdatedAt sets the "github_updated_at" field.
+func (m *GithubIssueLinkMutation) SetGithubUpdatedAt(t time.Time) {
+	m.github_updated_at = &t
+}
+
+// GithubUpdatedAt returns the value of the "github_updated_at" field in the mutation.
+func (m *GithubIssueLinkMutation) GithubUpdatedAt() (r time.Time, exists bool) {
+	v := m.github_updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubUpdatedAt returns the old "github_updated_at" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldGithubUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubUpdatedAt: %w", err)
+	}
+	return oldValue.GithubUpdatedAt, nil
+}
+
+// ResetGithubUpdatedAt resets all changes to the "github_updated_at" field.
+func (m *GithubIssueLinkMutation) ResetGithubUpdatedAt() {
+	m.github_updated_at = nil
+}
+
+// SetLastOutboundAt sets the "last_outbound_at" field.
+func (m *GithubIssueLinkMutation) SetLastOutboundAt(t time.Time) {
+	m.last_outbound_at = &t
+}
+
+// LastOutboundAt returns the value of the "last_outbound_at" field in the mutation.
+func (m *GithubIssueLinkMutation) LastOutboundAt() (r time.Time, exists bool) {
+	v := m.last_outbound_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastOutboundAt returns the old "last_outbound_at" field's value of the GithubIssueLink entity.
+// If the GithubIssueLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIssueLinkMutation) OldLastOutboundAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastOutboundAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastOutboundAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastOutboundAt: %w", err)
+	}
+	return oldValue.LastOutboundAt, nil
+}
+
+// ClearLastOutboundAt clears the value of the "last_outbound_at" field.
+func (m *GithubIssueLinkMutation) ClearLastOutboundAt() {
+	m.last_outbound_at = nil
+	m.clearedFields[githubissuelink.FieldLastOutboundAt] = struct{}{}
+}
+
+// LastOutboundAtCleared returns if the "last_outbound_at" field was cleared in this mutation.
+func (m *GithubIssueLinkMutation) LastOutboundAtCleared() bool {
+	_, ok := m.clearedFields[githubissuelink.FieldLastOutboundAt]
+	return ok
+}
+
+// ResetLastOutboundAt resets all changes to the "last_outbound_at" field.
+func (m *GithubIssueLinkMutation) ResetLastOutboundAt() {
+	m.last_outbound_at = nil
+	delete(m.clearedFields, githubissuelink.FieldLastOutboundAt)
+}
+
+// ClearIssue clears the "issue" edge to the Issue entity.
+func (m *GithubIssueLinkMutation) ClearIssue() {
+	m.clearedissue = true
+	m.clearedFields[githubissuelink.FieldIssueID] = struct{}{}
+}
+
+// IssueCleared reports if the "issue" edge to the Issue entity was cleared.
+func (m *GithubIssueLinkMutation) IssueCleared() bool {
+	return m.clearedissue
+}
+
+// IssueIDs returns the "issue" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IssueID instead. It exists only for internal usage by the builders.
+func (m *GithubIssueLinkMutation) IssueIDs() (ids []uuid.UUID) {
+	if id := m.issue; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIssue resets all changes to the "issue" edge.
+func (m *GithubIssueLinkMutation) ResetIssue() {
+	m.issue = nil
+	m.clearedissue = false
+}
+
+// ClearRepoSync clears the "repo_sync" edge to the GithubRepoSync entity.
+func (m *GithubIssueLinkMutation) ClearRepoSync() {
+	m.clearedrepo_sync = true
+	m.clearedFields[githubissuelink.FieldRepoSyncID] = struct{}{}
+}
+
+// RepoSyncCleared reports if the "repo_sync" edge to the GithubRepoSync entity was cleared.
+func (m *GithubIssueLinkMutation) RepoSyncCleared() bool {
+	return m.clearedrepo_sync
+}
+
+// RepoSyncIDs returns the "repo_sync" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepoSyncID instead. It exists only for internal usage by the builders.
+func (m *GithubIssueLinkMutation) RepoSyncIDs() (ids []uuid.UUID) {
+	if id := m.repo_sync; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepoSync resets all changes to the "repo_sync" edge.
+func (m *GithubIssueLinkMutation) ResetRepoSync() {
+	m.repo_sync = nil
+	m.clearedrepo_sync = false
+}
+
+// AddCommentLinkIDs adds the "comment_links" edge to the GithubCommentLink entity by ids.
+func (m *GithubIssueLinkMutation) AddCommentLinkIDs(ids ...uuid.UUID) {
+	if m.comment_links == nil {
+		m.comment_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.comment_links[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCommentLinks clears the "comment_links" edge to the GithubCommentLink entity.
+func (m *GithubIssueLinkMutation) ClearCommentLinks() {
+	m.clearedcomment_links = true
+}
+
+// CommentLinksCleared reports if the "comment_links" edge to the GithubCommentLink entity was cleared.
+func (m *GithubIssueLinkMutation) CommentLinksCleared() bool {
+	return m.clearedcomment_links
+}
+
+// RemoveCommentLinkIDs removes the "comment_links" edge to the GithubCommentLink entity by IDs.
+func (m *GithubIssueLinkMutation) RemoveCommentLinkIDs(ids ...uuid.UUID) {
+	if m.removedcomment_links == nil {
+		m.removedcomment_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.comment_links, ids[i])
+		m.removedcomment_links[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCommentLinks returns the removed IDs of the "comment_links" edge to the GithubCommentLink entity.
+func (m *GithubIssueLinkMutation) RemovedCommentLinksIDs() (ids []uuid.UUID) {
+	for id := range m.removedcomment_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CommentLinksIDs returns the "comment_links" edge IDs in the mutation.
+func (m *GithubIssueLinkMutation) CommentLinksIDs() (ids []uuid.UUID) {
+	for id := range m.comment_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCommentLinks resets all changes to the "comment_links" edge.
+func (m *GithubIssueLinkMutation) ResetCommentLinks() {
+	m.comment_links = nil
+	m.clearedcomment_links = false
+	m.removedcomment_links = nil
+}
+
+// Where appends a list predicates to the GithubIssueLinkMutation builder.
+func (m *GithubIssueLinkMutation) Where(ps ...predicate.GithubIssueLink) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GithubIssueLinkMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GithubIssueLinkMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GithubIssueLink, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GithubIssueLinkMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GithubIssueLinkMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GithubIssueLink).
+func (m *GithubIssueLinkMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubIssueLinkMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.created_at != nil {
+		fields = append(fields, githubissuelink.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, githubissuelink.FieldUpdatedAt)
+	}
+	if m.issue != nil {
+		fields = append(fields, githubissuelink.FieldIssueID)
+	}
+	if m.repo_sync != nil {
+		fields = append(fields, githubissuelink.FieldRepoSyncID)
+	}
+	if m.number != nil {
+		fields = append(fields, githubissuelink.FieldNumber)
+	}
+	if m.node_id != nil {
+		fields = append(fields, githubissuelink.FieldNodeID)
+	}
+	if m.html_url != nil {
+		fields = append(fields, githubissuelink.FieldHTMLURL)
+	}
+	if m.github_updated_at != nil {
+		fields = append(fields, githubissuelink.FieldGithubUpdatedAt)
+	}
+	if m.last_outbound_at != nil {
+		fields = append(fields, githubissuelink.FieldLastOutboundAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubIssueLinkMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubissuelink.FieldCreatedAt:
+		return m.CreatedAt()
+	case githubissuelink.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case githubissuelink.FieldIssueID:
+		return m.IssueID()
+	case githubissuelink.FieldRepoSyncID:
+		return m.RepoSyncID()
+	case githubissuelink.FieldNumber:
+		return m.Number()
+	case githubissuelink.FieldNodeID:
+		return m.NodeID()
+	case githubissuelink.FieldHTMLURL:
+		return m.HTMLURL()
+	case githubissuelink.FieldGithubUpdatedAt:
+		return m.GithubUpdatedAt()
+	case githubissuelink.FieldLastOutboundAt:
+		return m.LastOutboundAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubIssueLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubissuelink.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case githubissuelink.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case githubissuelink.FieldIssueID:
+		return m.OldIssueID(ctx)
+	case githubissuelink.FieldRepoSyncID:
+		return m.OldRepoSyncID(ctx)
+	case githubissuelink.FieldNumber:
+		return m.OldNumber(ctx)
+	case githubissuelink.FieldNodeID:
+		return m.OldNodeID(ctx)
+	case githubissuelink.FieldHTMLURL:
+		return m.OldHTMLURL(ctx)
+	case githubissuelink.FieldGithubUpdatedAt:
+		return m.OldGithubUpdatedAt(ctx)
+	case githubissuelink.FieldLastOutboundAt:
+		return m.OldLastOutboundAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubIssueLink field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubIssueLinkMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubissuelink.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case githubissuelink.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case githubissuelink.FieldIssueID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIssueID(v)
+		return nil
+	case githubissuelink.FieldRepoSyncID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoSyncID(v)
+		return nil
+	case githubissuelink.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumber(v)
+		return nil
+	case githubissuelink.FieldNodeID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNodeID(v)
+		return nil
+	case githubissuelink.FieldHTMLURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHTMLURL(v)
+		return nil
+	case githubissuelink.FieldGithubUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubUpdatedAt(v)
+		return nil
+	case githubissuelink.FieldLastOutboundAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastOutboundAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubIssueLinkMutation) AddedFields() []string {
+	var fields []string
+	if m.addnumber != nil {
+		fields = append(fields, githubissuelink.FieldNumber)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubIssueLinkMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case githubissuelink.FieldNumber:
+		return m.AddedNumber()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubIssueLinkMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case githubissuelink.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumber(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubIssueLinkMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(githubissuelink.FieldLastOutboundAt) {
+		fields = append(fields, githubissuelink.FieldLastOutboundAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubIssueLinkMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubIssueLinkMutation) ClearField(name string) error {
+	switch name {
+	case githubissuelink.FieldLastOutboundAt:
+		m.ClearLastOutboundAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubIssueLinkMutation) ResetField(name string) error {
+	switch name {
+	case githubissuelink.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case githubissuelink.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case githubissuelink.FieldIssueID:
+		m.ResetIssueID()
+		return nil
+	case githubissuelink.FieldRepoSyncID:
+		m.ResetRepoSyncID()
+		return nil
+	case githubissuelink.FieldNumber:
+		m.ResetNumber()
+		return nil
+	case githubissuelink.FieldNodeID:
+		m.ResetNodeID()
+		return nil
+	case githubissuelink.FieldHTMLURL:
+		m.ResetHTMLURL()
+		return nil
+	case githubissuelink.FieldGithubUpdatedAt:
+		m.ResetGithubUpdatedAt()
+		return nil
+	case githubissuelink.FieldLastOutboundAt:
+		m.ResetLastOutboundAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubIssueLinkMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.issue != nil {
+		edges = append(edges, githubissuelink.EdgeIssue)
+	}
+	if m.repo_sync != nil {
+		edges = append(edges, githubissuelink.EdgeRepoSync)
+	}
+	if m.comment_links != nil {
+		edges = append(edges, githubissuelink.EdgeCommentLinks)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubIssueLinkMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubissuelink.EdgeIssue:
+		if id := m.issue; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubissuelink.EdgeRepoSync:
+		if id := m.repo_sync; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubissuelink.EdgeCommentLinks:
+		ids := make([]ent.Value, 0, len(m.comment_links))
+		for id := range m.comment_links {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubIssueLinkMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedcomment_links != nil {
+		edges = append(edges, githubissuelink.EdgeCommentLinks)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubIssueLinkMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case githubissuelink.EdgeCommentLinks:
+		ids := make([]ent.Value, 0, len(m.removedcomment_links))
+		for id := range m.removedcomment_links {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubIssueLinkMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedissue {
+		edges = append(edges, githubissuelink.EdgeIssue)
+	}
+	if m.clearedrepo_sync {
+		edges = append(edges, githubissuelink.EdgeRepoSync)
+	}
+	if m.clearedcomment_links {
+		edges = append(edges, githubissuelink.EdgeCommentLinks)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubIssueLinkMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubissuelink.EdgeIssue:
+		return m.clearedissue
+	case githubissuelink.EdgeRepoSync:
+		return m.clearedrepo_sync
+	case githubissuelink.EdgeCommentLinks:
+		return m.clearedcomment_links
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubIssueLinkMutation) ClearEdge(name string) error {
+	switch name {
+	case githubissuelink.EdgeIssue:
+		m.ClearIssue()
+		return nil
+	case githubissuelink.EdgeRepoSync:
+		m.ClearRepoSync()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubIssueLinkMutation) ResetEdge(name string) error {
+	switch name {
+	case githubissuelink.EdgeIssue:
+		m.ResetIssue()
+		return nil
+	case githubissuelink.EdgeRepoSync:
+		m.ResetRepoSync()
+		return nil
+	case githubissuelink.EdgeCommentLinks:
+		m.ResetCommentLinks()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIssueLink edge %s", name)
+}
+
+// GithubRepoSyncMutation represents an operation that mutates the GithubRepoSync nodes in the graph.
+type GithubRepoSyncMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	created_at         *time.Time
+	updated_at         *time.Time
+	full_name          *string
+	sync_closed        *bool
+	last_error         *string
+	last_synced_at     *time.Time
+	backfill_status    *schema.GithubBackfillStatus
+	backfill_report    **schema.GithubBackfillReport
+	clearedFields      map[string]struct{}
+	integration        *uuid.UUID
+	clearedintegration bool
+	team               *uuid.UUID
+	clearedteam        bool
+	project            *uuid.UUID
+	clearedproject     bool
+	issue_links        map[uuid.UUID]struct{}
+	removedissue_links map[uuid.UUID]struct{}
+	clearedissue_links bool
+	done               bool
+	oldValue           func(context.Context) (*GithubRepoSync, error)
+	predicates         []predicate.GithubRepoSync
+}
+
+var _ ent.Mutation = (*GithubRepoSyncMutation)(nil)
+
+// githubreposyncOption allows management of the mutation configuration using functional options.
+type githubreposyncOption func(*GithubRepoSyncMutation)
+
+// newGithubRepoSyncMutation creates new mutation for the GithubRepoSync entity.
+func newGithubRepoSyncMutation(c config, op Op, opts ...githubreposyncOption) *GithubRepoSyncMutation {
+	m := &GithubRepoSyncMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubRepoSync,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubRepoSyncID sets the ID field of the mutation.
+func withGithubRepoSyncID(id uuid.UUID) githubreposyncOption {
+	return func(m *GithubRepoSyncMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubRepoSync
+		)
+		m.oldValue = func(ctx context.Context) (*GithubRepoSync, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubRepoSync.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubRepoSync sets the old GithubRepoSync of the mutation.
+func withGithubRepoSync(node *GithubRepoSync) githubreposyncOption {
+	return func(m *GithubRepoSyncMutation) {
+		m.oldValue = func(context.Context) (*GithubRepoSync, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubRepoSyncMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubRepoSyncMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GithubRepoSync entities.
+func (m *GithubRepoSyncMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GithubRepoSyncMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GithubRepoSyncMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GithubRepoSync.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GithubRepoSyncMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GithubRepoSyncMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GithubRepoSyncMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GithubRepoSyncMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GithubRepoSyncMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GithubRepoSyncMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (m *GithubRepoSyncMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *GithubRepoSyncMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldIntegrationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *GithubRepoSyncMutation) ResetIntegrationID() {
+	m.integration = nil
+}
+
+// SetFullName sets the "full_name" field.
+func (m *GithubRepoSyncMutation) SetFullName(s string) {
+	m.full_name = &s
+}
+
+// FullName returns the value of the "full_name" field in the mutation.
+func (m *GithubRepoSyncMutation) FullName() (r string, exists bool) {
+	v := m.full_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFullName returns the old "full_name" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldFullName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFullName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFullName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFullName: %w", err)
+	}
+	return oldValue.FullName, nil
+}
+
+// ResetFullName resets all changes to the "full_name" field.
+func (m *GithubRepoSyncMutation) ResetFullName() {
+	m.full_name = nil
+}
+
+// SetTeamID sets the "team_id" field.
+func (m *GithubRepoSyncMutation) SetTeamID(u uuid.UUID) {
+	m.team = &u
+}
+
+// TeamID returns the value of the "team_id" field in the mutation.
+func (m *GithubRepoSyncMutation) TeamID() (r uuid.UUID, exists bool) {
+	v := m.team
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamID returns the old "team_id" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+	}
+	return oldValue.TeamID, nil
+}
+
+// ResetTeamID resets all changes to the "team_id" field.
+func (m *GithubRepoSyncMutation) ResetTeamID() {
+	m.team = nil
+}
+
+// SetProjectID sets the "project_id" field.
+func (m *GithubRepoSyncMutation) SetProjectID(u uuid.UUID) {
+	m.project = &u
+}
+
+// ProjectID returns the value of the "project_id" field in the mutation.
+func (m *GithubRepoSyncMutation) ProjectID() (r uuid.UUID, exists bool) {
+	v := m.project
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProjectID returns the old "project_id" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldProjectID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProjectID: %w", err)
+	}
+	return oldValue.ProjectID, nil
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (m *GithubRepoSyncMutation) ClearProjectID() {
+	m.project = nil
+	m.clearedFields[githubreposync.FieldProjectID] = struct{}{}
+}
+
+// ProjectIDCleared returns if the "project_id" field was cleared in this mutation.
+func (m *GithubRepoSyncMutation) ProjectIDCleared() bool {
+	_, ok := m.clearedFields[githubreposync.FieldProjectID]
+	return ok
+}
+
+// ResetProjectID resets all changes to the "project_id" field.
+func (m *GithubRepoSyncMutation) ResetProjectID() {
+	m.project = nil
+	delete(m.clearedFields, githubreposync.FieldProjectID)
+}
+
+// SetSyncClosed sets the "sync_closed" field.
+func (m *GithubRepoSyncMutation) SetSyncClosed(b bool) {
+	m.sync_closed = &b
+}
+
+// SyncClosed returns the value of the "sync_closed" field in the mutation.
+func (m *GithubRepoSyncMutation) SyncClosed() (r bool, exists bool) {
+	v := m.sync_closed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSyncClosed returns the old "sync_closed" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldSyncClosed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSyncClosed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSyncClosed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSyncClosed: %w", err)
+	}
+	return oldValue.SyncClosed, nil
+}
+
+// ResetSyncClosed resets all changes to the "sync_closed" field.
+func (m *GithubRepoSyncMutation) ResetSyncClosed() {
+	m.sync_closed = nil
+}
+
+// SetLastError sets the "last_error" field.
+func (m *GithubRepoSyncMutation) SetLastError(s string) {
+	m.last_error = &s
+}
+
+// LastError returns the value of the "last_error" field in the mutation.
+func (m *GithubRepoSyncMutation) LastError() (r string, exists bool) {
+	v := m.last_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastError returns the old "last_error" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldLastError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastError: %w", err)
+	}
+	return oldValue.LastError, nil
+}
+
+// ResetLastError resets all changes to the "last_error" field.
+func (m *GithubRepoSyncMutation) ResetLastError() {
+	m.last_error = nil
+}
+
+// SetLastSyncedAt sets the "last_synced_at" field.
+func (m *GithubRepoSyncMutation) SetLastSyncedAt(t time.Time) {
+	m.last_synced_at = &t
+}
+
+// LastSyncedAt returns the value of the "last_synced_at" field in the mutation.
+func (m *GithubRepoSyncMutation) LastSyncedAt() (r time.Time, exists bool) {
+	v := m.last_synced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSyncedAt returns the old "last_synced_at" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldLastSyncedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSyncedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSyncedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSyncedAt: %w", err)
+	}
+	return oldValue.LastSyncedAt, nil
+}
+
+// ClearLastSyncedAt clears the value of the "last_synced_at" field.
+func (m *GithubRepoSyncMutation) ClearLastSyncedAt() {
+	m.last_synced_at = nil
+	m.clearedFields[githubreposync.FieldLastSyncedAt] = struct{}{}
+}
+
+// LastSyncedAtCleared returns if the "last_synced_at" field was cleared in this mutation.
+func (m *GithubRepoSyncMutation) LastSyncedAtCleared() bool {
+	_, ok := m.clearedFields[githubreposync.FieldLastSyncedAt]
+	return ok
+}
+
+// ResetLastSyncedAt resets all changes to the "last_synced_at" field.
+func (m *GithubRepoSyncMutation) ResetLastSyncedAt() {
+	m.last_synced_at = nil
+	delete(m.clearedFields, githubreposync.FieldLastSyncedAt)
+}
+
+// SetBackfillStatus sets the "backfill_status" field.
+func (m *GithubRepoSyncMutation) SetBackfillStatus(sbs schema.GithubBackfillStatus) {
+	m.backfill_status = &sbs
+}
+
+// BackfillStatus returns the value of the "backfill_status" field in the mutation.
+func (m *GithubRepoSyncMutation) BackfillStatus() (r schema.GithubBackfillStatus, exists bool) {
+	v := m.backfill_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillStatus returns the old "backfill_status" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldBackfillStatus(ctx context.Context) (v schema.GithubBackfillStatus, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillStatus: %w", err)
+	}
+	return oldValue.BackfillStatus, nil
+}
+
+// ResetBackfillStatus resets all changes to the "backfill_status" field.
+func (m *GithubRepoSyncMutation) ResetBackfillStatus() {
+	m.backfill_status = nil
+}
+
+// SetBackfillReport sets the "backfill_report" field.
+func (m *GithubRepoSyncMutation) SetBackfillReport(sbr *schema.GithubBackfillReport) {
+	m.backfill_report = &sbr
+}
+
+// BackfillReport returns the value of the "backfill_report" field in the mutation.
+func (m *GithubRepoSyncMutation) BackfillReport() (r *schema.GithubBackfillReport, exists bool) {
+	v := m.backfill_report
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillReport returns the old "backfill_report" field's value of the GithubRepoSync entity.
+// If the GithubRepoSync object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepoSyncMutation) OldBackfillReport(ctx context.Context) (v *schema.GithubBackfillReport, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillReport is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillReport requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillReport: %w", err)
+	}
+	return oldValue.BackfillReport, nil
+}
+
+// ClearBackfillReport clears the value of the "backfill_report" field.
+func (m *GithubRepoSyncMutation) ClearBackfillReport() {
+	m.backfill_report = nil
+	m.clearedFields[githubreposync.FieldBackfillReport] = struct{}{}
+}
+
+// BackfillReportCleared returns if the "backfill_report" field was cleared in this mutation.
+func (m *GithubRepoSyncMutation) BackfillReportCleared() bool {
+	_, ok := m.clearedFields[githubreposync.FieldBackfillReport]
+	return ok
+}
+
+// ResetBackfillReport resets all changes to the "backfill_report" field.
+func (m *GithubRepoSyncMutation) ResetBackfillReport() {
+	m.backfill_report = nil
+	delete(m.clearedFields, githubreposync.FieldBackfillReport)
+}
+
+// ClearIntegration clears the "integration" edge to the GithubIntegration entity.
+func (m *GithubRepoSyncMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[githubreposync.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the GithubIntegration entity was cleared.
+func (m *GithubRepoSyncMutation) IntegrationCleared() bool {
+	return m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *GithubRepoSyncMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *GithubRepoSyncMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (m *GithubRepoSyncMutation) ClearTeam() {
+	m.clearedteam = true
+	m.clearedFields[githubreposync.FieldTeamID] = struct{}{}
+}
+
+// TeamCleared reports if the "team" edge to the Team entity was cleared.
+func (m *GithubRepoSyncMutation) TeamCleared() bool {
+	return m.clearedteam
+}
+
+// TeamIDs returns the "team" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamID instead. It exists only for internal usage by the builders.
+func (m *GithubRepoSyncMutation) TeamIDs() (ids []uuid.UUID) {
+	if id := m.team; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTeam resets all changes to the "team" edge.
+func (m *GithubRepoSyncMutation) ResetTeam() {
+	m.team = nil
+	m.clearedteam = false
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *GithubRepoSyncMutation) ClearProject() {
+	m.clearedproject = true
+	m.clearedFields[githubreposync.FieldProjectID] = struct{}{}
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *GithubRepoSyncMutation) ProjectCleared() bool {
+	return m.ProjectIDCleared() || m.clearedproject
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *GithubRepoSyncMutation) ProjectIDs() (ids []uuid.UUID) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *GithubRepoSyncMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// AddIssueLinkIDs adds the "issue_links" edge to the GithubIssueLink entity by ids.
+func (m *GithubRepoSyncMutation) AddIssueLinkIDs(ids ...uuid.UUID) {
+	if m.issue_links == nil {
+		m.issue_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.issue_links[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIssueLinks clears the "issue_links" edge to the GithubIssueLink entity.
+func (m *GithubRepoSyncMutation) ClearIssueLinks() {
+	m.clearedissue_links = true
+}
+
+// IssueLinksCleared reports if the "issue_links" edge to the GithubIssueLink entity was cleared.
+func (m *GithubRepoSyncMutation) IssueLinksCleared() bool {
+	return m.clearedissue_links
+}
+
+// RemoveIssueLinkIDs removes the "issue_links" edge to the GithubIssueLink entity by IDs.
+func (m *GithubRepoSyncMutation) RemoveIssueLinkIDs(ids ...uuid.UUID) {
+	if m.removedissue_links == nil {
+		m.removedissue_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.issue_links, ids[i])
+		m.removedissue_links[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIssueLinks returns the removed IDs of the "issue_links" edge to the GithubIssueLink entity.
+func (m *GithubRepoSyncMutation) RemovedIssueLinksIDs() (ids []uuid.UUID) {
+	for id := range m.removedissue_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IssueLinksIDs returns the "issue_links" edge IDs in the mutation.
+func (m *GithubRepoSyncMutation) IssueLinksIDs() (ids []uuid.UUID) {
+	for id := range m.issue_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIssueLinks resets all changes to the "issue_links" edge.
+func (m *GithubRepoSyncMutation) ResetIssueLinks() {
+	m.issue_links = nil
+	m.clearedissue_links = false
+	m.removedissue_links = nil
+}
+
+// Where appends a list predicates to the GithubRepoSyncMutation builder.
+func (m *GithubRepoSyncMutation) Where(ps ...predicate.GithubRepoSync) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GithubRepoSyncMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GithubRepoSyncMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GithubRepoSync, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GithubRepoSyncMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GithubRepoSyncMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GithubRepoSync).
+func (m *GithubRepoSyncMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubRepoSyncMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.created_at != nil {
+		fields = append(fields, githubreposync.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, githubreposync.FieldUpdatedAt)
+	}
+	if m.integration != nil {
+		fields = append(fields, githubreposync.FieldIntegrationID)
+	}
+	if m.full_name != nil {
+		fields = append(fields, githubreposync.FieldFullName)
+	}
+	if m.team != nil {
+		fields = append(fields, githubreposync.FieldTeamID)
+	}
+	if m.project != nil {
+		fields = append(fields, githubreposync.FieldProjectID)
+	}
+	if m.sync_closed != nil {
+		fields = append(fields, githubreposync.FieldSyncClosed)
+	}
+	if m.last_error != nil {
+		fields = append(fields, githubreposync.FieldLastError)
+	}
+	if m.last_synced_at != nil {
+		fields = append(fields, githubreposync.FieldLastSyncedAt)
+	}
+	if m.backfill_status != nil {
+		fields = append(fields, githubreposync.FieldBackfillStatus)
+	}
+	if m.backfill_report != nil {
+		fields = append(fields, githubreposync.FieldBackfillReport)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubRepoSyncMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubreposync.FieldCreatedAt:
+		return m.CreatedAt()
+	case githubreposync.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case githubreposync.FieldIntegrationID:
+		return m.IntegrationID()
+	case githubreposync.FieldFullName:
+		return m.FullName()
+	case githubreposync.FieldTeamID:
+		return m.TeamID()
+	case githubreposync.FieldProjectID:
+		return m.ProjectID()
+	case githubreposync.FieldSyncClosed:
+		return m.SyncClosed()
+	case githubreposync.FieldLastError:
+		return m.LastError()
+	case githubreposync.FieldLastSyncedAt:
+		return m.LastSyncedAt()
+	case githubreposync.FieldBackfillStatus:
+		return m.BackfillStatus()
+	case githubreposync.FieldBackfillReport:
+		return m.BackfillReport()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubRepoSyncMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubreposync.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case githubreposync.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case githubreposync.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
+	case githubreposync.FieldFullName:
+		return m.OldFullName(ctx)
+	case githubreposync.FieldTeamID:
+		return m.OldTeamID(ctx)
+	case githubreposync.FieldProjectID:
+		return m.OldProjectID(ctx)
+	case githubreposync.FieldSyncClosed:
+		return m.OldSyncClosed(ctx)
+	case githubreposync.FieldLastError:
+		return m.OldLastError(ctx)
+	case githubreposync.FieldLastSyncedAt:
+		return m.OldLastSyncedAt(ctx)
+	case githubreposync.FieldBackfillStatus:
+		return m.OldBackfillStatus(ctx)
+	case githubreposync.FieldBackfillReport:
+		return m.OldBackfillReport(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubRepoSync field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubRepoSyncMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubreposync.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case githubreposync.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case githubreposync.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
+	case githubreposync.FieldFullName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFullName(v)
+		return nil
+	case githubreposync.FieldTeamID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamID(v)
+		return nil
+	case githubreposync.FieldProjectID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProjectID(v)
+		return nil
+	case githubreposync.FieldSyncClosed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSyncClosed(v)
+		return nil
+	case githubreposync.FieldLastError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastError(v)
+		return nil
+	case githubreposync.FieldLastSyncedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSyncedAt(v)
+		return nil
+	case githubreposync.FieldBackfillStatus:
+		v, ok := value.(schema.GithubBackfillStatus)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillStatus(v)
+		return nil
+	case githubreposync.FieldBackfillReport:
+		v, ok := value.(*schema.GithubBackfillReport)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillReport(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepoSync field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubRepoSyncMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubRepoSyncMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubRepoSyncMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubRepoSync numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubRepoSyncMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(githubreposync.FieldProjectID) {
+		fields = append(fields, githubreposync.FieldProjectID)
+	}
+	if m.FieldCleared(githubreposync.FieldLastSyncedAt) {
+		fields = append(fields, githubreposync.FieldLastSyncedAt)
+	}
+	if m.FieldCleared(githubreposync.FieldBackfillReport) {
+		fields = append(fields, githubreposync.FieldBackfillReport)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubRepoSyncMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubRepoSyncMutation) ClearField(name string) error {
+	switch name {
+	case githubreposync.FieldProjectID:
+		m.ClearProjectID()
+		return nil
+	case githubreposync.FieldLastSyncedAt:
+		m.ClearLastSyncedAt()
+		return nil
+	case githubreposync.FieldBackfillReport:
+		m.ClearBackfillReport()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepoSync nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubRepoSyncMutation) ResetField(name string) error {
+	switch name {
+	case githubreposync.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case githubreposync.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case githubreposync.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
+	case githubreposync.FieldFullName:
+		m.ResetFullName()
+		return nil
+	case githubreposync.FieldTeamID:
+		m.ResetTeamID()
+		return nil
+	case githubreposync.FieldProjectID:
+		m.ResetProjectID()
+		return nil
+	case githubreposync.FieldSyncClosed:
+		m.ResetSyncClosed()
+		return nil
+	case githubreposync.FieldLastError:
+		m.ResetLastError()
+		return nil
+	case githubreposync.FieldLastSyncedAt:
+		m.ResetLastSyncedAt()
+		return nil
+	case githubreposync.FieldBackfillStatus:
+		m.ResetBackfillStatus()
+		return nil
+	case githubreposync.FieldBackfillReport:
+		m.ResetBackfillReport()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepoSync field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubRepoSyncMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.integration != nil {
+		edges = append(edges, githubreposync.EdgeIntegration)
+	}
+	if m.team != nil {
+		edges = append(edges, githubreposync.EdgeTeam)
+	}
+	if m.project != nil {
+		edges = append(edges, githubreposync.EdgeProject)
+	}
+	if m.issue_links != nil {
+		edges = append(edges, githubreposync.EdgeIssueLinks)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubRepoSyncMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubreposync.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubreposync.EdgeTeam:
+		if id := m.team; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubreposync.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubreposync.EdgeIssueLinks:
+		ids := make([]ent.Value, 0, len(m.issue_links))
+		for id := range m.issue_links {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubRepoSyncMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.removedissue_links != nil {
+		edges = append(edges, githubreposync.EdgeIssueLinks)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubRepoSyncMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case githubreposync.EdgeIssueLinks:
+		ids := make([]ent.Value, 0, len(m.removedissue_links))
+		for id := range m.removedissue_links {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubRepoSyncMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedintegration {
+		edges = append(edges, githubreposync.EdgeIntegration)
+	}
+	if m.clearedteam {
+		edges = append(edges, githubreposync.EdgeTeam)
+	}
+	if m.clearedproject {
+		edges = append(edges, githubreposync.EdgeProject)
+	}
+	if m.clearedissue_links {
+		edges = append(edges, githubreposync.EdgeIssueLinks)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubRepoSyncMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubreposync.EdgeIntegration:
+		return m.clearedintegration
+	case githubreposync.EdgeTeam:
+		return m.clearedteam
+	case githubreposync.EdgeProject:
+		return m.clearedproject
+	case githubreposync.EdgeIssueLinks:
+		return m.clearedissue_links
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubRepoSyncMutation) ClearEdge(name string) error {
+	switch name {
+	case githubreposync.EdgeIntegration:
+		m.ClearIntegration()
+		return nil
+	case githubreposync.EdgeTeam:
+		m.ClearTeam()
+		return nil
+	case githubreposync.EdgeProject:
+		m.ClearProject()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepoSync unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubRepoSyncMutation) ResetEdge(name string) error {
+	switch name {
+	case githubreposync.EdgeIntegration:
+		m.ResetIntegration()
+		return nil
+	case githubreposync.EdgeTeam:
+		m.ResetTeam()
+		return nil
+	case githubreposync.EdgeProject:
+		m.ResetProject()
+		return nil
+	case githubreposync.EdgeIssueLinks:
+		m.ResetIssueLinks()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepoSync edge %s", name)
 }
 
 // GithubRepositoryMutation represents an operation that mutates the GithubRepository nodes in the graph.
@@ -13890,6 +16914,8 @@ type IssueMutation struct {
 	moves                    map[uuid.UUID]struct{}
 	removedmoves             map[uuid.UUID]struct{}
 	clearedmoves             bool
+	github_link              *uuid.UUID
+	clearedgithub_link       bool
 	documents                map[uuid.UUID]struct{}
 	removeddocuments         map[uuid.UUID]struct{}
 	cleareddocuments         bool
@@ -16327,6 +19353,45 @@ func (m *IssueMutation) ResetMoves() {
 	m.removedmoves = nil
 }
 
+// SetGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by id.
+func (m *IssueMutation) SetGithubLinkID(id uuid.UUID) {
+	m.github_link = &id
+}
+
+// ClearGithubLink clears the "github_link" edge to the GithubIssueLink entity.
+func (m *IssueMutation) ClearGithubLink() {
+	m.clearedgithub_link = true
+}
+
+// GithubLinkCleared reports if the "github_link" edge to the GithubIssueLink entity was cleared.
+func (m *IssueMutation) GithubLinkCleared() bool {
+	return m.clearedgithub_link
+}
+
+// GithubLinkID returns the "github_link" edge ID in the mutation.
+func (m *IssueMutation) GithubLinkID() (id uuid.UUID, exists bool) {
+	if m.github_link != nil {
+		return *m.github_link, true
+	}
+	return
+}
+
+// GithubLinkIDs returns the "github_link" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubLinkID instead. It exists only for internal usage by the builders.
+func (m *IssueMutation) GithubLinkIDs() (ids []uuid.UUID) {
+	if id := m.github_link; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubLink resets all changes to the "github_link" edge.
+func (m *IssueMutation) ResetGithubLink() {
+	m.github_link = nil
+	m.clearedgithub_link = false
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by ids.
 func (m *IssueMutation) AddDocumentIDs(ids ...uuid.UUID) {
 	if m.documents == nil {
@@ -17293,7 +20358,7 @@ func (m *IssueMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IssueMutation) AddedEdges() []string {
-	edges := make([]string, 0, 21)
+	edges := make([]string, 0, 22)
 	if m.workspace != nil {
 		edges = append(edges, issue.EdgeWorkspace)
 	}
@@ -17350,6 +20415,9 @@ func (m *IssueMutation) AddedEdges() []string {
 	}
 	if m.moves != nil {
 		edges = append(edges, issue.EdgeMoves)
+	}
+	if m.github_link != nil {
+		edges = append(edges, issue.EdgeGithubLink)
 	}
 	if m.documents != nil {
 		edges = append(edges, issue.EdgeDocuments)
@@ -17460,6 +20528,10 @@ func (m *IssueMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case issue.EdgeGithubLink:
+		if id := m.github_link; id != nil {
+			return []ent.Value{*id}
+		}
 	case issue.EdgeDocuments:
 		ids := make([]ent.Value, 0, len(m.documents))
 		for id := range m.documents {
@@ -17478,7 +20550,7 @@ func (m *IssueMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IssueMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 21)
+	edges := make([]string, 0, 22)
 	if m.removedchildren != nil {
 		edges = append(edges, issue.EdgeChildren)
 	}
@@ -17600,7 +20672,7 @@ func (m *IssueMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IssueMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 21)
+	edges := make([]string, 0, 22)
 	if m.clearedworkspace {
 		edges = append(edges, issue.EdgeWorkspace)
 	}
@@ -17658,6 +20730,9 @@ func (m *IssueMutation) ClearedEdges() []string {
 	if m.clearedmoves {
 		edges = append(edges, issue.EdgeMoves)
 	}
+	if m.clearedgithub_link {
+		edges = append(edges, issue.EdgeGithubLink)
+	}
 	if m.cleareddocuments {
 		edges = append(edges, issue.EdgeDocuments)
 	}
@@ -17709,6 +20784,8 @@ func (m *IssueMutation) EdgeCleared(name string) bool {
 		return m.clearedreactions
 	case issue.EdgeMoves:
 		return m.clearedmoves
+	case issue.EdgeGithubLink:
+		return m.clearedgithub_link
 	case issue.EdgeDocuments:
 		return m.cleareddocuments
 	case issue.EdgeNotifications:
@@ -17747,6 +20824,9 @@ func (m *IssueMutation) ClearEdge(name string) error {
 		return nil
 	case issue.EdgeParent:
 		m.ClearParent()
+		return nil
+	case issue.EdgeGithubLink:
+		m.ClearGithubLink()
 		return nil
 	}
 	return fmt.Errorf("unknown Issue unique edge %s", name)
@@ -17812,6 +20892,9 @@ func (m *IssueMutation) ResetEdge(name string) error {
 		return nil
 	case issue.EdgeMoves:
 		m.ResetMoves()
+		return nil
+	case issue.EdgeGithubLink:
+		m.ResetGithubLink()
 		return nil
 	case issue.EdgeDocuments:
 		m.ResetDocuments()
@@ -30036,75 +33119,78 @@ func (m *PasswordResetTokenMutation) ResetEdge(name string) error {
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.
 type ProjectMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	created_at             *time.Time
-	updated_at             *time.Time
-	name                   *string
-	slug                   *string
-	summary                *string
-	description            *string
-	icon                   *string
-	color                  *string
-	priority               *int
-	addpriority            *int
-	start_date             *time.Time
-	target_date            *time.Time
-	start_date_resolution  *schema.DateResolution
-	target_date_resolution *schema.DateResolution
-	sort_order             *float64
-	addsort_order          *float64
-	started_at             *time.Time
-	completed_at           *time.Time
-	canceled_at            *time.Time
-	archived_at            *time.Time
-	trashed_at             *time.Time
-	health                 *schema.Health
-	import_source          *string
-	import_external_id     *string
-	clearedFields          map[string]struct{}
-	workspace              *uuid.UUID
-	clearedworkspace       bool
-	status                 *uuid.UUID
-	clearedstatus          bool
-	lead                   *uuid.UUID
-	clearedlead            bool
-	creator                *uuid.UUID
-	clearedcreator         bool
-	teams                  map[uuid.UUID]struct{}
-	removedteams           map[uuid.UUID]struct{}
-	clearedteams           bool
-	members                map[uuid.UUID]struct{}
-	removedmembers         map[uuid.UUID]struct{}
-	clearedmembers         bool
-	labels                 map[uuid.UUID]struct{}
-	removedlabels          map[uuid.UUID]struct{}
-	clearedlabels          bool
-	initiatives            map[uuid.UUID]struct{}
-	removedinitiatives     map[uuid.UUID]struct{}
-	clearedinitiatives     bool
-	milestones             map[uuid.UUID]struct{}
-	removedmilestones      map[uuid.UUID]struct{}
-	clearedmilestones      bool
-	issues                 map[uuid.UUID]struct{}
-	removedissues          map[uuid.UUID]struct{}
-	clearedissues          bool
-	updates                map[uuid.UUID]struct{}
-	removedupdates         map[uuid.UUID]struct{}
-	clearedupdates         bool
-	documents              map[uuid.UUID]struct{}
-	removeddocuments       map[uuid.UUID]struct{}
-	cleareddocuments       bool
-	links                  map[uuid.UUID]struct{}
-	removedlinks           map[uuid.UUID]struct{}
-	clearedlinks           bool
-	notifications          map[uuid.UUID]struct{}
-	removednotifications   map[uuid.UUID]struct{}
-	clearednotifications   bool
-	done                   bool
-	oldValue               func(context.Context) (*Project, error)
-	predicates             []predicate.Project
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	created_at               *time.Time
+	updated_at               *time.Time
+	name                     *string
+	slug                     *string
+	summary                  *string
+	description              *string
+	icon                     *string
+	color                    *string
+	priority                 *int
+	addpriority              *int
+	start_date               *time.Time
+	target_date              *time.Time
+	start_date_resolution    *schema.DateResolution
+	target_date_resolution   *schema.DateResolution
+	sort_order               *float64
+	addsort_order            *float64
+	started_at               *time.Time
+	completed_at             *time.Time
+	canceled_at              *time.Time
+	archived_at              *time.Time
+	trashed_at               *time.Time
+	health                   *schema.Health
+	import_source            *string
+	import_external_id       *string
+	clearedFields            map[string]struct{}
+	workspace                *uuid.UUID
+	clearedworkspace         bool
+	status                   *uuid.UUID
+	clearedstatus            bool
+	lead                     *uuid.UUID
+	clearedlead              bool
+	creator                  *uuid.UUID
+	clearedcreator           bool
+	teams                    map[uuid.UUID]struct{}
+	removedteams             map[uuid.UUID]struct{}
+	clearedteams             bool
+	members                  map[uuid.UUID]struct{}
+	removedmembers           map[uuid.UUID]struct{}
+	clearedmembers           bool
+	labels                   map[uuid.UUID]struct{}
+	removedlabels            map[uuid.UUID]struct{}
+	clearedlabels            bool
+	initiatives              map[uuid.UUID]struct{}
+	removedinitiatives       map[uuid.UUID]struct{}
+	clearedinitiatives       bool
+	milestones               map[uuid.UUID]struct{}
+	removedmilestones        map[uuid.UUID]struct{}
+	clearedmilestones        bool
+	issues                   map[uuid.UUID]struct{}
+	removedissues            map[uuid.UUID]struct{}
+	clearedissues            bool
+	updates                  map[uuid.UUID]struct{}
+	removedupdates           map[uuid.UUID]struct{}
+	clearedupdates           bool
+	documents                map[uuid.UUID]struct{}
+	removeddocuments         map[uuid.UUID]struct{}
+	cleareddocuments         bool
+	links                    map[uuid.UUID]struct{}
+	removedlinks             map[uuid.UUID]struct{}
+	clearedlinks             bool
+	github_repo_syncs        map[uuid.UUID]struct{}
+	removedgithub_repo_syncs map[uuid.UUID]struct{}
+	clearedgithub_repo_syncs bool
+	notifications            map[uuid.UUID]struct{}
+	removednotifications     map[uuid.UUID]struct{}
+	clearednotifications     bool
+	done                     bool
+	oldValue                 func(context.Context) (*Project, error)
+	predicates               []predicate.Project
 }
 
 var _ ent.Mutation = (*ProjectMutation)(nil)
@@ -31989,6 +35075,60 @@ func (m *ProjectMutation) ResetLinks() {
 	m.removedlinks = nil
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by ids.
+func (m *ProjectMutation) AddGithubRepoSyncIDs(ids ...uuid.UUID) {
+	if m.github_repo_syncs == nil {
+		m.github_repo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.github_repo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubRepoSyncs clears the "github_repo_syncs" edge to the GithubRepoSync entity.
+func (m *ProjectMutation) ClearGithubRepoSyncs() {
+	m.clearedgithub_repo_syncs = true
+}
+
+// GithubRepoSyncsCleared reports if the "github_repo_syncs" edge to the GithubRepoSync entity was cleared.
+func (m *ProjectMutation) GithubRepoSyncsCleared() bool {
+	return m.clearedgithub_repo_syncs
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (m *ProjectMutation) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) {
+	if m.removedgithub_repo_syncs == nil {
+		m.removedgithub_repo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.github_repo_syncs, ids[i])
+		m.removedgithub_repo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubRepoSyncs returns the removed IDs of the "github_repo_syncs" edge to the GithubRepoSync entity.
+func (m *ProjectMutation) RemovedGithubRepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgithub_repo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubRepoSyncsIDs returns the "github_repo_syncs" edge IDs in the mutation.
+func (m *ProjectMutation) GithubRepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.github_repo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubRepoSyncs resets all changes to the "github_repo_syncs" edge.
+func (m *ProjectMutation) ResetGithubRepoSyncs() {
+	m.github_repo_syncs = nil
+	m.clearedgithub_repo_syncs = false
+	m.removedgithub_repo_syncs = nil
+}
+
 // AddNotificationIDs adds the "notifications" edge to the Notification entity by ids.
 func (m *ProjectMutation) AddNotificationIDs(ids ...uuid.UUID) {
 	if m.notifications == nil {
@@ -32727,7 +35867,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.workspace != nil {
 		edges = append(edges, project.EdgeWorkspace)
 	}
@@ -32766,6 +35906,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.links != nil {
 		edges = append(edges, project.EdgeLinks)
+	}
+	if m.github_repo_syncs != nil {
+		edges = append(edges, project.EdgeGithubRepoSyncs)
 	}
 	if m.notifications != nil {
 		edges = append(edges, project.EdgeNotifications)
@@ -32847,6 +35990,12 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeGithubRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.github_repo_syncs))
+		for id := range m.github_repo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	case project.EdgeNotifications:
 		ids := make([]ent.Value, 0, len(m.notifications))
 		for id := range m.notifications {
@@ -32859,7 +36008,7 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.removedteams != nil {
 		edges = append(edges, project.EdgeTeams)
 	}
@@ -32886,6 +36035,9 @@ func (m *ProjectMutation) RemovedEdges() []string {
 	}
 	if m.removedlinks != nil {
 		edges = append(edges, project.EdgeLinks)
+	}
+	if m.removedgithub_repo_syncs != nil {
+		edges = append(edges, project.EdgeGithubRepoSyncs)
 	}
 	if m.removednotifications != nil {
 		edges = append(edges, project.EdgeNotifications)
@@ -32951,6 +36103,12 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeGithubRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.removedgithub_repo_syncs))
+		for id := range m.removedgithub_repo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	case project.EdgeNotifications:
 		ids := make([]ent.Value, 0, len(m.removednotifications))
 		for id := range m.removednotifications {
@@ -32963,7 +36121,7 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.clearedworkspace {
 		edges = append(edges, project.EdgeWorkspace)
 	}
@@ -33003,6 +36161,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	if m.clearedlinks {
 		edges = append(edges, project.EdgeLinks)
 	}
+	if m.clearedgithub_repo_syncs {
+		edges = append(edges, project.EdgeGithubRepoSyncs)
+	}
 	if m.clearednotifications {
 		edges = append(edges, project.EdgeNotifications)
 	}
@@ -33039,6 +36200,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.cleareddocuments
 	case project.EdgeLinks:
 		return m.clearedlinks
+	case project.EdgeGithubRepoSyncs:
+		return m.clearedgithub_repo_syncs
 	case project.EdgeNotifications:
 		return m.clearednotifications
 	}
@@ -33107,6 +36270,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeLinks:
 		m.ResetLinks()
+		return nil
+	case project.EdgeGithubRepoSyncs:
+		m.ResetGithubRepoSyncs()
 		return nil
 	case project.EdgeNotifications:
 		m.ResetNotifications()
@@ -38373,6 +41539,9 @@ type TeamMutation struct {
 	issue_moves                   map[uuid.UUID]struct{}
 	removedissue_moves            map[uuid.UUID]struct{}
 	clearedissue_moves            bool
+	github_repo_syncs             map[uuid.UUID]struct{}
+	removedgithub_repo_syncs      map[uuid.UUID]struct{}
+	clearedgithub_repo_syncs      bool
 	done                          bool
 	oldValue                      func(context.Context) (*Team, error)
 	predicates                    []predicate.Team
@@ -40403,6 +43572,60 @@ func (m *TeamMutation) ResetIssueMoves() {
 	m.removedissue_moves = nil
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by ids.
+func (m *TeamMutation) AddGithubRepoSyncIDs(ids ...uuid.UUID) {
+	if m.github_repo_syncs == nil {
+		m.github_repo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.github_repo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubRepoSyncs clears the "github_repo_syncs" edge to the GithubRepoSync entity.
+func (m *TeamMutation) ClearGithubRepoSyncs() {
+	m.clearedgithub_repo_syncs = true
+}
+
+// GithubRepoSyncsCleared reports if the "github_repo_syncs" edge to the GithubRepoSync entity was cleared.
+func (m *TeamMutation) GithubRepoSyncsCleared() bool {
+	return m.clearedgithub_repo_syncs
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (m *TeamMutation) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) {
+	if m.removedgithub_repo_syncs == nil {
+		m.removedgithub_repo_syncs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.github_repo_syncs, ids[i])
+		m.removedgithub_repo_syncs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubRepoSyncs returns the removed IDs of the "github_repo_syncs" edge to the GithubRepoSync entity.
+func (m *TeamMutation) RemovedGithubRepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgithub_repo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubRepoSyncsIDs returns the "github_repo_syncs" edge IDs in the mutation.
+func (m *TeamMutation) GithubRepoSyncsIDs() (ids []uuid.UUID) {
+	for id := range m.github_repo_syncs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubRepoSyncs resets all changes to the "github_repo_syncs" edge.
+func (m *TeamMutation) ResetGithubRepoSyncs() {
+	m.github_repo_syncs = nil
+	m.clearedgithub_repo_syncs = false
+	m.removedgithub_repo_syncs = nil
+}
+
 // Where appends a list predicates to the TeamMutation builder.
 func (m *TeamMutation) Where(ps ...predicate.Team) {
 	m.predicates = append(m.predicates, ps...)
@@ -41127,7 +44350,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.workspace != nil {
 		edges = append(edges, team.EdgeWorkspace)
 	}
@@ -41172,6 +44395,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.issue_moves != nil {
 		edges = append(edges, team.EdgeIssueMoves)
+	}
+	if m.github_repo_syncs != nil {
+		edges = append(edges, team.EdgeGithubRepoSyncs)
 	}
 	return edges
 }
@@ -41260,13 +44486,19 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeGithubRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.github_repo_syncs))
+		for id := range m.github_repo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.removedmembers != nil {
 		edges = append(edges, team.EdgeMembers)
 	}
@@ -41296,6 +44528,9 @@ func (m *TeamMutation) RemovedEdges() []string {
 	}
 	if m.removedissue_moves != nil {
 		edges = append(edges, team.EdgeIssueMoves)
+	}
+	if m.removedgithub_repo_syncs != nil {
+		edges = append(edges, team.EdgeGithubRepoSyncs)
 	}
 	return edges
 }
@@ -41364,13 +44599,19 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeGithubRepoSyncs:
+		ids := make([]ent.Value, 0, len(m.removedgithub_repo_syncs))
+		for id := range m.removedgithub_repo_syncs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.clearedworkspace {
 		edges = append(edges, team.EdgeWorkspace)
 	}
@@ -41416,6 +44657,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	if m.clearedissue_moves {
 		edges = append(edges, team.EdgeIssueMoves)
 	}
+	if m.clearedgithub_repo_syncs {
+		edges = append(edges, team.EdgeGithubRepoSyncs)
+	}
 	return edges
 }
 
@@ -41453,6 +44697,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.clearedwebhooks
 	case team.EdgeIssueMoves:
 		return m.clearedissue_moves
+	case team.EdgeGithubRepoSyncs:
+		return m.clearedgithub_repo_syncs
 	}
 	return false
 }
@@ -41528,6 +44774,9 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	case team.EdgeIssueMoves:
 		m.ResetIssueMoves()
+		return nil
+	case team.EdgeGithubRepoSyncs:
+		m.ResetGithubRepoSyncs()
 		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)
@@ -44590,6 +47839,7 @@ type UserMutation struct {
 	active                           *bool
 	timezone                         *string
 	last_seen_at                     *time.Time
+	github_login                     *string
 	clearedFields                    map[string]struct{}
 	avatar_upload                    *uuid.UUID
 	clearedavatar_upload             bool
@@ -45223,6 +48473,55 @@ func (m *UserMutation) LastSeenAtCleared() bool {
 func (m *UserMutation) ResetLastSeenAt() {
 	m.last_seen_at = nil
 	delete(m.clearedFields, user.FieldLastSeenAt)
+}
+
+// SetGithubLogin sets the "github_login" field.
+func (m *UserMutation) SetGithubLogin(s string) {
+	m.github_login = &s
+}
+
+// GithubLogin returns the value of the "github_login" field in the mutation.
+func (m *UserMutation) GithubLogin() (r string, exists bool) {
+	v := m.github_login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubLogin returns the old "github_login" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldGithubLogin(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubLogin: %w", err)
+	}
+	return oldValue.GithubLogin, nil
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (m *UserMutation) ClearGithubLogin() {
+	m.github_login = nil
+	m.clearedFields[user.FieldGithubLogin] = struct{}{}
+}
+
+// GithubLoginCleared returns if the "github_login" field was cleared in this mutation.
+func (m *UserMutation) GithubLoginCleared() bool {
+	_, ok := m.clearedFields[user.FieldGithubLogin]
+	return ok
+}
+
+// ResetGithubLogin resets all changes to the "github_login" field.
+func (m *UserMutation) ResetGithubLogin() {
+	m.github_login = nil
+	delete(m.clearedFields, user.FieldGithubLogin)
 }
 
 // ClearAvatarUpload clears the "avatar_upload" edge to the Upload entity.
@@ -47107,7 +50406,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -47141,6 +50440,9 @@ func (m *UserMutation) Fields() []string {
 	if m.last_seen_at != nil {
 		fields = append(fields, user.FieldLastSeenAt)
 	}
+	if m.github_login != nil {
+		fields = append(fields, user.FieldGithubLogin)
+	}
 	return fields
 }
 
@@ -47171,6 +50473,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Timezone()
 	case user.FieldLastSeenAt:
 		return m.LastSeenAt()
+	case user.FieldGithubLogin:
+		return m.GithubLogin()
 	}
 	return nil, false
 }
@@ -47202,6 +50506,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldTimezone(ctx)
 	case user.FieldLastSeenAt:
 		return m.OldLastSeenAt(ctx)
+	case user.FieldGithubLogin:
+		return m.OldGithubLogin(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -47288,6 +50594,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLastSeenAt(v)
 		return nil
+	case user.FieldGithubLogin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubLogin(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -47324,6 +50637,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldLastSeenAt) {
 		fields = append(fields, user.FieldLastSeenAt)
 	}
+	if m.FieldCleared(user.FieldGithubLogin) {
+		fields = append(fields, user.FieldGithubLogin)
+	}
 	return fields
 }
 
@@ -47343,6 +50659,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldLastSeenAt:
 		m.ClearLastSeenAt()
+		return nil
+	case user.FieldGithubLogin:
+		m.ClearGithubLogin()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -47384,6 +50703,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldLastSeenAt:
 		m.ResetLastSeenAt()
+		return nil
+	case user.FieldGithubLogin:
+		m.ResetGithubLogin()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

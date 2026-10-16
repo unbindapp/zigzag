@@ -111,3 +111,10 @@ type ImportReport struct {
 	Warnings    []ImportWarning              `json:"warnings" nullable:"false"`
 	UserMapping []ImportUserMapping          `json:"user_mapping" nullable:"false"`
 }
+
+type GithubBackfillReport struct {
+	IssuesCreated   int `json:"issues_created" doc:"GitHub issues that became new Zigzag issues"`
+	IssuesUpdated   int `json:"issues_updated" doc:"Linked issues that changed to match GitHub"`
+	CommentsCreated int `json:"comments_created" doc:"GitHub comments copied to Zigzag"`
+	Skipped         int `json:"skipped" doc:"Pull requests and linked issues that were already up to date"`
+}

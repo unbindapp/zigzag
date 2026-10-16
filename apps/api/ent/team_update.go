@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -683,6 +684,21 @@ func (_u *TeamUpdate) AddIssueMoves(v ...*IssueMove) *TeamUpdate {
 	return _u.AddIssueMoveIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *TeamUpdate) AddGithubRepoSyncIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *TeamUpdate) AddGithubRepoSyncs(v ...*GithubRepoSync) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubRepoSyncIDs(ids...)
+}
+
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdate) Mutation() *TeamMutation {
 	return _u.mutation
@@ -926,6 +942,27 @@ func (_u *TeamUpdate) RemoveIssueMoves(v ...*IssueMove) *TeamUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIssueMoveIDs(ids...)
+}
+
+// ClearGithubRepoSyncs clears all "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *TeamUpdate) ClearGithubRepoSyncs() *TeamUpdate {
+	_u.mutation.ClearGithubRepoSyncs()
+	return _u
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *TeamUpdate) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveGithubRepoSyncs removes "github_repo_syncs" edges to GithubRepoSync entities.
+func (_u *TeamUpdate) RemoveGithubRepoSyncs(v ...*GithubRepoSync) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubRepoSyncIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1699,6 +1736,51 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -2362,6 +2444,21 @@ func (_u *TeamUpdateOne) AddIssueMoves(v ...*IssueMove) *TeamUpdateOne {
 	return _u.AddIssueMoveIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *TeamUpdateOne) AddGithubRepoSyncIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *TeamUpdateOne) AddGithubRepoSyncs(v ...*GithubRepoSync) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubRepoSyncIDs(ids...)
+}
+
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdateOne) Mutation() *TeamMutation {
 	return _u.mutation
@@ -2605,6 +2702,27 @@ func (_u *TeamUpdateOne) RemoveIssueMoves(v ...*IssueMove) *TeamUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIssueMoveIDs(ids...)
+}
+
+// ClearGithubRepoSyncs clears all "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *TeamUpdateOne) ClearGithubRepoSyncs() *TeamUpdateOne {
+	_u.mutation.ClearGithubRepoSyncs()
+	return _u
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *TeamUpdateOne) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveGithubRepoSyncs removes "github_repo_syncs" edges to GithubRepoSync entities.
+func (_u *TeamUpdateOne) RemoveGithubRepoSyncs(v ...*GithubRepoSync) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubRepoSyncIDs(ids...)
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
@@ -3401,6 +3519,51 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issuemove.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

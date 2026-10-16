@@ -95,6 +95,8 @@ const (
 	EdgeDocuments = "documents"
 	// EdgeLinks holds the string denoting the links edge name in mutations.
 	EdgeLinks = "links"
+	// EdgeGithubRepoSyncs holds the string denoting the github_repo_syncs edge name in mutations.
+	EdgeGithubRepoSyncs = "github_repo_syncs"
 	// EdgeNotifications holds the string denoting the notifications edge name in mutations.
 	EdgeNotifications = "notifications"
 	// Table holds the table name of the project in the database.
@@ -182,6 +184,13 @@ const (
 	LinksInverseTable = "project_links"
 	// LinksColumn is the table column denoting the links relation/edge.
 	LinksColumn = "project_id"
+	// GithubRepoSyncsTable is the table that holds the github_repo_syncs relation/edge.
+	GithubRepoSyncsTable = "github_repo_syncs"
+	// GithubRepoSyncsInverseTable is the table name for the GithubRepoSync entity.
+	// It exists in this package in order to avoid circular dependency with the "githubreposync" package.
+	GithubRepoSyncsInverseTable = "github_repo_syncs"
+	// GithubRepoSyncsColumn is the table column denoting the github_repo_syncs relation/edge.
+	GithubRepoSyncsColumn = "project_id"
 	// NotificationsTable is the table that holds the notifications relation/edge.
 	NotificationsTable = "notifications"
 	// NotificationsInverseTable is the table name for the Notification entity.
@@ -590,6 +599,20 @@ func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByGithubRepoSyncsCount orders the results by github_repo_syncs count.
+func ByGithubRepoSyncsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubRepoSyncsStep(), opts...)
+	}
+}
+
+// ByGithubRepoSyncs orders the results by github_repo_syncs terms.
+func ByGithubRepoSyncs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubRepoSyncsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByNotificationsCount orders the results by notifications count.
 func ByNotificationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -692,6 +715,13 @@ func newLinksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LinksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LinksTable, LinksColumn),
+	)
+}
+func newGithubRepoSyncsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubRepoSyncsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubRepoSyncsTable, GithubRepoSyncsColumn),
 	)
 }
 func newNotificationsStep() *sqlgraph.Step {

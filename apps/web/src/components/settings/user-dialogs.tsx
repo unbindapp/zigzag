@@ -1,6 +1,7 @@
 import { ReactElement, useState } from "react";
 import { z } from "zod";
 
+import { githubLoginSchema } from "@/components/integrations/github-sync";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +32,7 @@ const createSchema = z.object({
 const editSchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
   display_name: handleSchema,
+  github_login: githubLoginSchema,
   system_admin: z.boolean(),
   active: z.boolean(),
 });
@@ -161,6 +163,7 @@ function EditUserForm({
     defaultValues: {
       name: user.name,
       display_name: user.display_name,
+      github_login: user.github_login ?? "",
       system_admin: user.system_admin,
       active: user.active,
     },
@@ -177,6 +180,17 @@ function EditUserForm({
         name="display_name"
         children={(field) => (
           <field.TextField label="Username" transform={(v) => v.toLowerCase()} />
+        )}
+      />
+      <form.AppField
+        name="github_login"
+        children={(field) => (
+          <field.TextField
+            label="GitHub username"
+            placeholder="octocat"
+            autoComplete="off"
+            description="Used by GitHub Issues sync to credit and assign this person."
+          />
         )}
       />
       <form.AppField

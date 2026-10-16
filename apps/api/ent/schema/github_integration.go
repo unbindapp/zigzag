@@ -24,6 +24,8 @@ func (GithubIntegration) Fields() []ent.Field {
 		field.String("secret_prefix"),
 		field.UUID("created_by_id", uuid.UUID{}).Optional().Nillable(),
 		field.Time("last_delivery_at").Optional().Nillable(),
+		field.Bytes("token_encrypted").Optional().Sensitive().Comment("GitHub token sealed with ENCRYPTION_KEY, for Issues sync"),
+		field.String("token_prefix").Default(""),
 	}
 }
 
@@ -32,6 +34,7 @@ func (GithubIntegration) Edges() []ent.Edge {
 		edge.From("workspace", Workspace.Type).Ref("github_integration").Field("workspace_id").Unique().Required(),
 		edge.From("created_by", User.Type).Ref("github_integrations").Field("created_by_id").Unique(),
 		edge.To("repositories", GithubRepository.Type).Annotations(cascade()),
+		edge.To("repo_syncs", GithubRepoSync.Type).Annotations(cascade()),
 	}
 }
 

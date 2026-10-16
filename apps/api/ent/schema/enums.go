@@ -332,3 +332,20 @@ func (ImportStatus) Values() []string { return stringValues(allImportStatuses) }
 func (ImportStatus) Schema(r huma.Registry) *huma.Schema {
 	return enumSchema(r, "ImportStatus", stringValues(allImportStatuses))
 }
+
+type GithubBackfillStatus string
+
+const (
+	GithubBackfillNone      GithubBackfillStatus = "none"
+	GithubBackfillRunning   GithubBackfillStatus = "running"
+	GithubBackfillCompleted GithubBackfillStatus = "completed"
+	GithubBackfillFailed    GithubBackfillStatus = "failed"
+)
+
+var allGithubBackfillStatuses = []GithubBackfillStatus{GithubBackfillNone, GithubBackfillRunning, GithubBackfillCompleted, GithubBackfillFailed}
+
+func (GithubBackfillStatus) Values() []string { return stringValues(allGithubBackfillStatuses) }
+
+func (GithubBackfillStatus) Schema(r huma.Registry) *huma.Schema {
+	return enumSchema(r, "GithubBackfillStatus", stringValues(allGithubBackfillStatuses))
+}

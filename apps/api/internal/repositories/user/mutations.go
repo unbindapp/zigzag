@@ -78,6 +78,7 @@ type UpdateUserInput struct {
 	ClearAvatar    bool
 	SystemAdmin    *bool
 	Active         *bool
+	GithubLogin    *string
 }
 
 func (self *UserRepository) Update(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, input *UpdateUserInput) (*ent.User, error) {
@@ -102,6 +103,13 @@ func (self *UserRepository) Update(ctx context.Context, tx repository.TxInterfac
 	}
 	if input.Active != nil {
 		m.SetActive(*input.Active)
+	}
+	switch {
+	case input.GithubLogin == nil:
+	case *input.GithubLogin == "":
+		m.ClearGithubLogin()
+	default:
+		m.SetGithubLogin(strings.ToLower(*input.GithubLogin))
 	}
 	return m.Save(ctx)
 }

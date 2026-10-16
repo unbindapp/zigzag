@@ -17,6 +17,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuehistory"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
@@ -657,6 +658,25 @@ func (_c *IssueCreate) AddMoves(v ...*IssueMove) *IssueCreate {
 	return _c.AddMoveIDs(ids...)
 }
 
+// SetGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID.
+func (_c *IssueCreate) SetGithubLinkID(id uuid.UUID) *IssueCreate {
+	_c.mutation.SetGithubLinkID(id)
+	return _c
+}
+
+// SetNillableGithubLinkID sets the "github_link" edge to the GithubIssueLink entity by ID if the given value is not nil.
+func (_c *IssueCreate) SetNillableGithubLinkID(id *uuid.UUID) *IssueCreate {
+	if id != nil {
+		_c = _c.SetGithubLinkID(*id)
+	}
+	return _c
+}
+
+// SetGithubLink sets the "github_link" edge to the GithubIssueLink entity.
+func (_c *IssueCreate) SetGithubLink(v *GithubIssueLink) *IssueCreate {
+	return _c.SetGithubLinkID(v.ID)
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
 func (_c *IssueCreate) AddDocumentIDs(ids ...uuid.UUID) *IssueCreate {
 	_c.mutation.AddDocumentIDs(ids...)
@@ -1228,6 +1248,22 @@ func (_c *IssueCreate) createSpec() (*Issue, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issuemove.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubLinkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   issue.GithubLinkTable,
+			Columns: []string{issue.GithubLinkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubissuelink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

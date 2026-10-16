@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -32,25 +33,26 @@ import (
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx               *QueryContext
-	order             []project.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Project
-	withWorkspace     *WorkspaceQuery
-	withStatus        *ProjectStatusQuery
-	withLead          *UserQuery
-	withCreator       *UserQuery
-	withTeams         *TeamQuery
-	withMembers       *UserQuery
-	withLabels        *LabelQuery
-	withInitiatives   *InitiativeQuery
-	withMilestones    *ProjectMilestoneQuery
-	withIssues        *IssueQuery
-	withUpdates       *ProjectPostQuery
-	withDocuments     *DocumentQuery
-	withLinks         *ProjectLinkQuery
-	withNotifications *NotificationQuery
-	modifiers         []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []project.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Project
+	withWorkspace       *WorkspaceQuery
+	withStatus          *ProjectStatusQuery
+	withLead            *UserQuery
+	withCreator         *UserQuery
+	withTeams           *TeamQuery
+	withMembers         *UserQuery
+	withLabels          *LabelQuery
+	withInitiatives     *InitiativeQuery
+	withMilestones      *ProjectMilestoneQuery
+	withIssues          *IssueQuery
+	withUpdates         *ProjectPostQuery
+	withDocuments       *DocumentQuery
+	withLinks           *ProjectLinkQuery
+	withGithubRepoSyncs *GithubRepoSyncQuery
+	withNotifications   *NotificationQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -373,6 +375,28 @@ func (_q *ProjectQuery) QueryLinks() *ProjectLinkQuery {
 	return query
 }
 
+// QueryGithubRepoSyncs chains the current query on the "github_repo_syncs" edge.
+func (_q *ProjectQuery) QueryGithubRepoSyncs() *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.GithubRepoSyncsTable, project.GithubRepoSyncsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryNotifications chains the current query on the "notifications" edge.
 func (_q *ProjectQuery) QueryNotifications() *NotificationQuery {
 	query := (&NotificationClient{config: _q.config}).Query()
@@ -582,25 +606,26 @@ func (_q *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]project.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.Project{}, _q.predicates...),
-		withWorkspace:     _q.withWorkspace.Clone(),
-		withStatus:        _q.withStatus.Clone(),
-		withLead:          _q.withLead.Clone(),
-		withCreator:       _q.withCreator.Clone(),
-		withTeams:         _q.withTeams.Clone(),
-		withMembers:       _q.withMembers.Clone(),
-		withLabels:        _q.withLabels.Clone(),
-		withInitiatives:   _q.withInitiatives.Clone(),
-		withMilestones:    _q.withMilestones.Clone(),
-		withIssues:        _q.withIssues.Clone(),
-		withUpdates:       _q.withUpdates.Clone(),
-		withDocuments:     _q.withDocuments.Clone(),
-		withLinks:         _q.withLinks.Clone(),
-		withNotifications: _q.withNotifications.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]project.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.Project{}, _q.predicates...),
+		withWorkspace:       _q.withWorkspace.Clone(),
+		withStatus:          _q.withStatus.Clone(),
+		withLead:            _q.withLead.Clone(),
+		withCreator:         _q.withCreator.Clone(),
+		withTeams:           _q.withTeams.Clone(),
+		withMembers:         _q.withMembers.Clone(),
+		withLabels:          _q.withLabels.Clone(),
+		withInitiatives:     _q.withInitiatives.Clone(),
+		withMilestones:      _q.withMilestones.Clone(),
+		withIssues:          _q.withIssues.Clone(),
+		withUpdates:         _q.withUpdates.Clone(),
+		withDocuments:       _q.withDocuments.Clone(),
+		withLinks:           _q.withLinks.Clone(),
+		withGithubRepoSyncs: _q.withGithubRepoSyncs.Clone(),
+		withNotifications:   _q.withNotifications.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -751,6 +776,17 @@ func (_q *ProjectQuery) WithLinks(opts ...func(*ProjectLinkQuery)) *ProjectQuery
 	return _q
 }
 
+// WithGithubRepoSyncs tells the query-builder to eager-load the nodes that are connected to
+// the "github_repo_syncs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithGithubRepoSyncs(opts ...func(*GithubRepoSyncQuery)) *ProjectQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubRepoSyncs = query
+	return _q
+}
+
 // WithNotifications tells the query-builder to eager-load the nodes that are connected to
 // the "notifications" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *ProjectQuery) WithNotifications(opts ...func(*NotificationQuery)) *ProjectQuery {
@@ -840,7 +876,7 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = _q.querySpec()
-		loadedTypes = [14]bool{
+		loadedTypes = [15]bool{
 			_q.withWorkspace != nil,
 			_q.withStatus != nil,
 			_q.withLead != nil,
@@ -854,6 +890,7 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 			_q.withUpdates != nil,
 			_q.withDocuments != nil,
 			_q.withLinks != nil,
+			_q.withGithubRepoSyncs != nil,
 			_q.withNotifications != nil,
 		}
 	)
@@ -962,6 +999,13 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := _q.loadLinks(ctx, query, nodes,
 			func(n *Project) { n.Edges.Links = []*ProjectLink{} },
 			func(n *Project, e *ProjectLink) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubRepoSyncs; query != nil {
+		if err := _q.loadGithubRepoSyncs(ctx, query, nodes,
+			func(n *Project) { n.Edges.GithubRepoSyncs = []*GithubRepoSync{} },
+			func(n *Project, e *GithubRepoSync) { n.Edges.GithubRepoSyncs = append(n.Edges.GithubRepoSyncs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1492,6 +1536,39 @@ func (_q *ProjectQuery) loadLinks(ctx context.Context, query *ProjectLinkQuery, 
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadGithubRepoSyncs(ctx context.Context, query *GithubRepoSyncQuery, nodes []*Project, init func(*Project), assign func(*Project, *GithubRepoSync)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubreposync.FieldProjectID)
+	}
+	query.Where(predicate.GithubRepoSync(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.GithubRepoSyncsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "project_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

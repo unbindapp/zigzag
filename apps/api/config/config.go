@@ -44,6 +44,7 @@ type Config struct {
 	MaxUploadBytes   int64  `env:"MAX_UPLOAD_BYTES" envDefault:"26214400"`
 	InjectDevOrigins bool   `env:"INJECT_DEV_ORIGINS" envDefault:"false"`
 	LogLevel         string `env:"LOG_LEVEL" envDefault:"info"`
+	GithubAPIURL     string `env:"GITHUB_API_URL" envDefault:"https://api.github.com"`
 
 	encryptionKey []byte
 }

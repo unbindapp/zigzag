@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -50,6 +51,7 @@ type TeamQuery struct {
 	withViews               *ViewQuery
 	withWebhooks            *WebhookQuery
 	withIssueMoves          *IssueMoveQuery
+	withGithubRepoSyncs     *GithubRepoSyncQuery
 	modifiers               []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -417,6 +419,28 @@ func (_q *TeamQuery) QueryIssueMoves() *IssueMoveQuery {
 	return query
 }
 
+// QueryGithubRepoSyncs chains the current query on the "github_repo_syncs" edge.
+func (_q *TeamQuery) QueryGithubRepoSyncs() *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.GithubRepoSyncsTable, team.GithubRepoSyncsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Team entity from the query.
 // Returns a *NotFoundError when no Team was found.
 func (_q *TeamQuery) First(ctx context.Context) (*Team, error) {
@@ -624,6 +648,7 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withViews:               _q.withViews.Clone(),
 		withWebhooks:            _q.withWebhooks.Clone(),
 		withIssueMoves:          _q.withIssueMoves.Clone(),
+		withGithubRepoSyncs:     _q.withGithubRepoSyncs.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -796,6 +821,17 @@ func (_q *TeamQuery) WithIssueMoves(opts ...func(*IssueMoveQuery)) *TeamQuery {
 	return _q
 }
 
+// WithGithubRepoSyncs tells the query-builder to eager-load the nodes that are connected to
+// the "github_repo_syncs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithGithubRepoSyncs(opts ...func(*GithubRepoSyncQuery)) *TeamQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubRepoSyncs = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -874,7 +910,7 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = _q.querySpec()
-		loadedTypes = [15]bool{
+		loadedTypes = [16]bool{
 			_q.withWorkspace != nil,
 			_q.withDefaultState != nil,
 			_q.withTriageState != nil,
@@ -890,6 +926,7 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 			_q.withViews != nil,
 			_q.withWebhooks != nil,
 			_q.withIssueMoves != nil,
+			_q.withGithubRepoSyncs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1010,6 +1047,13 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		if err := _q.loadIssueMoves(ctx, query, nodes,
 			func(n *Team) { n.Edges.IssueMoves = []*IssueMove{} },
 			func(n *Team, e *IssueMove) { n.Edges.IssueMoves = append(n.Edges.IssueMoves, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubRepoSyncs; query != nil {
+		if err := _q.loadGithubRepoSyncs(ctx, query, nodes,
+			func(n *Team) { n.Edges.GithubRepoSyncs = []*GithubRepoSync{} },
+			func(n *Team, e *GithubRepoSync) { n.Edges.GithubRepoSyncs = append(n.Edges.GithubRepoSyncs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1511,6 +1555,36 @@ func (_q *TeamQuery) loadIssueMoves(ctx context.Context, query *IssueMoveQuery, 
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "old_team_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *TeamQuery) loadGithubRepoSyncs(ctx context.Context, query *GithubRepoSyncQuery, nodes []*Team, init func(*Team), assign func(*Team, *GithubRepoSync)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubreposync.FieldTeamID)
+	}
+	query.Where(predicate.GithubRepoSync(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.GithubRepoSyncsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

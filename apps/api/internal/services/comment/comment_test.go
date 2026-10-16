@@ -18,6 +18,7 @@ import (
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	mocks_services_githubsync "github.com/unbindapp/zigzag-api/mocks/services/githubsync"
 	mocks_services_notification "github.com/unbindapp/zigzag-api/mocks/services/notification"
 	mocks_services_webhook "github.com/unbindapp/zigzag-api/mocks/services/webhook"
 )
@@ -25,6 +26,7 @@ import (
 type CommentServiceSuite struct {
 	services.ServiceTestSuite
 	service     *CommentService
+	githubSync  *mocks_services_githubsync.GithubSyncServiceMock
 	userID      uuid.UUID
 	otherID     uuid.UUID
 	workspaceID uuid.UUID
@@ -38,8 +40,12 @@ func (suite *CommentServiceSuite) SetupTest() {
 	notifications := mocks_services_notification.NewNotificationServiceMock(suite.T())
 	webhooks := mocks_services_webhook.NewWebhookServiceMock(suite.T())
 	cfg := &config.Config{ExternalUIUrl: "https://zz.example.com"}
-	issues := issue_service.NewIssueService(cfg, suite.MockRepo, notifications, webhooks)
-	suite.service = NewCommentService(cfg, suite.MockRepo, issues, notifications, webhooks)
+	suite.githubSync = mocks_services_githubsync.NewGithubSyncServiceMock(suite.T())
+	suite.githubSync.EXPECT().AfterCommentCreate(mock.Anything, mock.Anything).Maybe()
+	suite.githubSync.EXPECT().AfterCommentUpdate(mock.Anything, mock.Anything).Maybe()
+	suite.githubSync.EXPECT().AfterCommentDelete(mock.Anything, mock.Anything).Maybe()
+	issues := issue_service.NewIssueService(cfg, suite.MockRepo, notifications, webhooks, suite.githubSync)
+	suite.service = NewCommentService(cfg, suite.MockRepo, issues, notifications, webhooks, suite.githubSync)
 	suite.service.now = func() time.Time { return time.Date(2026, 10, 16, 9, 0, 0, 0, time.UTC) }
 	suite.userID, suite.otherID, suite.workspaceID = uuid.New(), uuid.New(), uuid.New()
 	team := &ent.Team{ID: uuid.New(), WorkspaceID: suite.workspaceID, Key: "ENG"}

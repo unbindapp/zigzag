@@ -31,6 +31,7 @@ type UserRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.User, error)
 	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*ent.User, error)
 	GetByEmail(ctx context.Context, email string) (*ent.User, error)
+	GetByGithubLogin(ctx context.Context, login string) (*ent.User, error)
 	GetByDisplayName(ctx context.Context, tx repository.TxInterface, displayName string) (*ent.User, error)
 	Count(ctx context.Context, tx repository.TxInterface) (int, error)
 	Authenticate(ctx context.Context, email, password string) (*ent.User, error)

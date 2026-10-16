@@ -23,8 +23,11 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -83,8 +86,14 @@ type Client struct {
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
 	Favorite *FavoriteClient
+	// GithubCommentLink is the client for interacting with the GithubCommentLink builders.
+	GithubCommentLink *GithubCommentLinkClient
 	// GithubIntegration is the client for interacting with the GithubIntegration builders.
 	GithubIntegration *GithubIntegrationClient
+	// GithubIssueLink is the client for interacting with the GithubIssueLink builders.
+	GithubIssueLink *GithubIssueLinkClient
+	// GithubRepoSync is the client for interacting with the GithubRepoSync builders.
+	GithubRepoSync *GithubRepoSyncClient
 	// GithubRepository is the client for interacting with the GithubRepository builders.
 	GithubRepository *GithubRepositoryClient
 	// ImportJob is the client for interacting with the ImportJob builders.
@@ -175,7 +184,10 @@ func (c *Client) init() {
 	c.CycleScopeHistory = NewCycleScopeHistoryClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.Favorite = NewFavoriteClient(c.config)
+	c.GithubCommentLink = NewGithubCommentLinkClient(c.config)
 	c.GithubIntegration = NewGithubIntegrationClient(c.config)
+	c.GithubIssueLink = NewGithubIssueLinkClient(c.config)
+	c.GithubRepoSync = NewGithubRepoSyncClient(c.config)
 	c.GithubRepository = NewGithubRepositoryClient(c.config)
 	c.ImportJob = NewImportJobClient(c.config)
 	c.Initiative = NewInitiativeClient(c.config)
@@ -311,7 +323,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
+		GithubCommentLink:      NewGithubCommentLinkClient(cfg),
 		GithubIntegration:      NewGithubIntegrationClient(cfg),
+		GithubIssueLink:        NewGithubIssueLinkClient(cfg),
+		GithubRepoSync:         NewGithubRepoSyncClient(cfg),
 		GithubRepository:       NewGithubRepositoryClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
 		Initiative:             NewInitiativeClient(cfg),
@@ -374,7 +389,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
+		GithubCommentLink:      NewGithubCommentLinkClient(cfg),
 		GithubIntegration:      NewGithubIntegrationClient(cfg),
+		GithubIssueLink:        NewGithubIssueLinkClient(cfg),
+		GithubRepoSync:         NewGithubRepoSyncClient(cfg),
 		GithubRepository:       NewGithubRepositoryClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
 		Initiative:             NewInitiativeClient(cfg),
@@ -441,7 +459,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
-		c.Favorite, c.GithubIntegration, c.GithubRepository, c.ImportJob, c.Initiative,
+		c.Favorite, c.GithubCommentLink, c.GithubIntegration, c.GithubIssueLink,
+		c.GithubRepoSync, c.GithubRepository, c.ImportJob, c.Initiative,
 		c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory, c.IssueMove,
 		c.IssueRelation, c.JWTKey, c.Label, c.Notification, c.NotificationSetting,
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
@@ -459,7 +478,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
-		c.Favorite, c.GithubIntegration, c.GithubRepository, c.ImportJob, c.Initiative,
+		c.Favorite, c.GithubCommentLink, c.GithubIntegration, c.GithubIssueLink,
+		c.GithubRepoSync, c.GithubRepository, c.ImportJob, c.Initiative,
 		c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory, c.IssueMove,
 		c.IssueRelation, c.JWTKey, c.Label, c.Notification, c.NotificationSetting,
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
@@ -489,8 +509,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Document.mutate(ctx, m)
 	case *FavoriteMutation:
 		return c.Favorite.mutate(ctx, m)
+	case *GithubCommentLinkMutation:
+		return c.GithubCommentLink.mutate(ctx, m)
 	case *GithubIntegrationMutation:
 		return c.GithubIntegration.mutate(ctx, m)
+	case *GithubIssueLinkMutation:
+		return c.GithubIssueLink.mutate(ctx, m)
+	case *GithubRepoSyncMutation:
+		return c.GithubRepoSync.mutate(ctx, m)
 	case *GithubRepositoryMutation:
 		return c.GithubRepository.mutate(ctx, m)
 	case *ImportJobMutation:
@@ -1867,6 +1893,155 @@ func (c *FavoriteClient) mutate(ctx context.Context, m *FavoriteMutation) (Value
 	}
 }
 
+// GithubCommentLinkClient is a client for the GithubCommentLink schema.
+type GithubCommentLinkClient struct {
+	config
+}
+
+// NewGithubCommentLinkClient returns a client for the GithubCommentLink from the given config.
+func NewGithubCommentLinkClient(c config) *GithubCommentLinkClient {
+	return &GithubCommentLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubcommentlink.Hooks(f(g(h())))`.
+func (c *GithubCommentLinkClient) Use(hooks ...Hook) {
+	c.hooks.GithubCommentLink = append(c.hooks.GithubCommentLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `githubcommentlink.Intercept(f(g(h())))`.
+func (c *GithubCommentLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GithubCommentLink = append(c.inters.GithubCommentLink, interceptors...)
+}
+
+// Create returns a builder for creating a GithubCommentLink entity.
+func (c *GithubCommentLinkClient) Create() *GithubCommentLinkCreate {
+	mutation := newGithubCommentLinkMutation(c.config, OpCreate)
+	return &GithubCommentLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubCommentLink entities.
+func (c *GithubCommentLinkClient) CreateBulk(builders ...*GithubCommentLinkCreate) *GithubCommentLinkCreateBulk {
+	return &GithubCommentLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GithubCommentLinkClient) MapCreateBulk(slice any, setFunc func(*GithubCommentLinkCreate, int)) *GithubCommentLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GithubCommentLinkCreateBulk{err: fmt.Errorf("calling to GithubCommentLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GithubCommentLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GithubCommentLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubCommentLink.
+func (c *GithubCommentLinkClient) Update() *GithubCommentLinkUpdate {
+	mutation := newGithubCommentLinkMutation(c.config, OpUpdate)
+	return &GithubCommentLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubCommentLinkClient) UpdateOne(_m *GithubCommentLink) *GithubCommentLinkUpdateOne {
+	mutation := newGithubCommentLinkMutation(c.config, OpUpdateOne, withGithubCommentLink(_m))
+	return &GithubCommentLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubCommentLinkClient) UpdateOneID(id uuid.UUID) *GithubCommentLinkUpdateOne {
+	mutation := newGithubCommentLinkMutation(c.config, OpUpdateOne, withGithubCommentLinkID(id))
+	return &GithubCommentLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubCommentLink.
+func (c *GithubCommentLinkClient) Delete() *GithubCommentLinkDelete {
+	mutation := newGithubCommentLinkMutation(c.config, OpDelete)
+	return &GithubCommentLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GithubCommentLinkClient) DeleteOne(_m *GithubCommentLink) *GithubCommentLinkDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GithubCommentLinkClient) DeleteOneID(id uuid.UUID) *GithubCommentLinkDeleteOne {
+	builder := c.Delete().Where(githubcommentlink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubCommentLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubCommentLink.
+func (c *GithubCommentLinkClient) Query() *GithubCommentLinkQuery {
+	return &GithubCommentLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGithubCommentLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GithubCommentLink entity by its id.
+func (c *GithubCommentLinkClient) Get(ctx context.Context, id uuid.UUID) (*GithubCommentLink, error) {
+	return c.Query().Where(githubcommentlink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubCommentLinkClient) GetX(ctx context.Context, id uuid.UUID) *GithubCommentLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIssueLink queries the issue_link edge of a GithubCommentLink.
+func (c *GithubCommentLinkClient) QueryIssueLink(_m *GithubCommentLink) *GithubIssueLinkQuery {
+	query := (&GithubIssueLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubcommentlink.Table, githubcommentlink.FieldID, id),
+			sqlgraph.To(githubissuelink.Table, githubissuelink.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubcommentlink.IssueLinkTable, githubcommentlink.IssueLinkColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubCommentLinkClient) Hooks() []Hook {
+	return c.hooks.GithubCommentLink
+}
+
+// Interceptors returns the client interceptors.
+func (c *GithubCommentLinkClient) Interceptors() []Interceptor {
+	return c.inters.GithubCommentLink
+}
+
+func (c *GithubCommentLinkClient) mutate(ctx context.Context, m *GithubCommentLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GithubCommentLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GithubCommentLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GithubCommentLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GithubCommentLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GithubCommentLink mutation op: %q", m.Op())
+	}
+}
+
 // GithubIntegrationClient is a client for the GithubIntegration schema.
 type GithubIntegrationClient struct {
 	config
@@ -2023,6 +2198,22 @@ func (c *GithubIntegrationClient) QueryRepositories(_m *GithubIntegration) *Gith
 	return query
 }
 
+// QueryRepoSyncs queries the repo_syncs edge of a GithubIntegration.
+func (c *GithubIntegrationClient) QueryRepoSyncs(_m *GithubIntegration) *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, id),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubintegration.RepoSyncsTable, githubintegration.RepoSyncsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GithubIntegrationClient) Hooks() []Hook {
 	return c.hooks.GithubIntegration
@@ -2045,6 +2236,384 @@ func (c *GithubIntegrationClient) mutate(ctx context.Context, m *GithubIntegrati
 		return (&GithubIntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GithubIntegration mutation op: %q", m.Op())
+	}
+}
+
+// GithubIssueLinkClient is a client for the GithubIssueLink schema.
+type GithubIssueLinkClient struct {
+	config
+}
+
+// NewGithubIssueLinkClient returns a client for the GithubIssueLink from the given config.
+func NewGithubIssueLinkClient(c config) *GithubIssueLinkClient {
+	return &GithubIssueLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubissuelink.Hooks(f(g(h())))`.
+func (c *GithubIssueLinkClient) Use(hooks ...Hook) {
+	c.hooks.GithubIssueLink = append(c.hooks.GithubIssueLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `githubissuelink.Intercept(f(g(h())))`.
+func (c *GithubIssueLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GithubIssueLink = append(c.inters.GithubIssueLink, interceptors...)
+}
+
+// Create returns a builder for creating a GithubIssueLink entity.
+func (c *GithubIssueLinkClient) Create() *GithubIssueLinkCreate {
+	mutation := newGithubIssueLinkMutation(c.config, OpCreate)
+	return &GithubIssueLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubIssueLink entities.
+func (c *GithubIssueLinkClient) CreateBulk(builders ...*GithubIssueLinkCreate) *GithubIssueLinkCreateBulk {
+	return &GithubIssueLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GithubIssueLinkClient) MapCreateBulk(slice any, setFunc func(*GithubIssueLinkCreate, int)) *GithubIssueLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GithubIssueLinkCreateBulk{err: fmt.Errorf("calling to GithubIssueLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GithubIssueLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GithubIssueLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubIssueLink.
+func (c *GithubIssueLinkClient) Update() *GithubIssueLinkUpdate {
+	mutation := newGithubIssueLinkMutation(c.config, OpUpdate)
+	return &GithubIssueLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubIssueLinkClient) UpdateOne(_m *GithubIssueLink) *GithubIssueLinkUpdateOne {
+	mutation := newGithubIssueLinkMutation(c.config, OpUpdateOne, withGithubIssueLink(_m))
+	return &GithubIssueLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubIssueLinkClient) UpdateOneID(id uuid.UUID) *GithubIssueLinkUpdateOne {
+	mutation := newGithubIssueLinkMutation(c.config, OpUpdateOne, withGithubIssueLinkID(id))
+	return &GithubIssueLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubIssueLink.
+func (c *GithubIssueLinkClient) Delete() *GithubIssueLinkDelete {
+	mutation := newGithubIssueLinkMutation(c.config, OpDelete)
+	return &GithubIssueLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GithubIssueLinkClient) DeleteOne(_m *GithubIssueLink) *GithubIssueLinkDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GithubIssueLinkClient) DeleteOneID(id uuid.UUID) *GithubIssueLinkDeleteOne {
+	builder := c.Delete().Where(githubissuelink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubIssueLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubIssueLink.
+func (c *GithubIssueLinkClient) Query() *GithubIssueLinkQuery {
+	return &GithubIssueLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGithubIssueLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GithubIssueLink entity by its id.
+func (c *GithubIssueLinkClient) Get(ctx context.Context, id uuid.UUID) (*GithubIssueLink, error) {
+	return c.Query().Where(githubissuelink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubIssueLinkClient) GetX(ctx context.Context, id uuid.UUID) *GithubIssueLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIssue queries the issue edge of a GithubIssueLink.
+func (c *GithubIssueLinkClient) QueryIssue(_m *GithubIssueLink) *IssueQuery {
+	query := (&IssueClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubissuelink.Table, githubissuelink.FieldID, id),
+			sqlgraph.To(issue.Table, issue.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, githubissuelink.IssueTable, githubissuelink.IssueColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepoSync queries the repo_sync edge of a GithubIssueLink.
+func (c *GithubIssueLinkClient) QueryRepoSync(_m *GithubIssueLink) *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubissuelink.Table, githubissuelink.FieldID, id),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubissuelink.RepoSyncTable, githubissuelink.RepoSyncColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCommentLinks queries the comment_links edge of a GithubIssueLink.
+func (c *GithubIssueLinkClient) QueryCommentLinks(_m *GithubIssueLink) *GithubCommentLinkQuery {
+	query := (&GithubCommentLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubissuelink.Table, githubissuelink.FieldID, id),
+			sqlgraph.To(githubcommentlink.Table, githubcommentlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubissuelink.CommentLinksTable, githubissuelink.CommentLinksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubIssueLinkClient) Hooks() []Hook {
+	return c.hooks.GithubIssueLink
+}
+
+// Interceptors returns the client interceptors.
+func (c *GithubIssueLinkClient) Interceptors() []Interceptor {
+	return c.inters.GithubIssueLink
+}
+
+func (c *GithubIssueLinkClient) mutate(ctx context.Context, m *GithubIssueLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GithubIssueLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GithubIssueLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GithubIssueLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GithubIssueLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GithubIssueLink mutation op: %q", m.Op())
+	}
+}
+
+// GithubRepoSyncClient is a client for the GithubRepoSync schema.
+type GithubRepoSyncClient struct {
+	config
+}
+
+// NewGithubRepoSyncClient returns a client for the GithubRepoSync from the given config.
+func NewGithubRepoSyncClient(c config) *GithubRepoSyncClient {
+	return &GithubRepoSyncClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubreposync.Hooks(f(g(h())))`.
+func (c *GithubRepoSyncClient) Use(hooks ...Hook) {
+	c.hooks.GithubRepoSync = append(c.hooks.GithubRepoSync, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `githubreposync.Intercept(f(g(h())))`.
+func (c *GithubRepoSyncClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GithubRepoSync = append(c.inters.GithubRepoSync, interceptors...)
+}
+
+// Create returns a builder for creating a GithubRepoSync entity.
+func (c *GithubRepoSyncClient) Create() *GithubRepoSyncCreate {
+	mutation := newGithubRepoSyncMutation(c.config, OpCreate)
+	return &GithubRepoSyncCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubRepoSync entities.
+func (c *GithubRepoSyncClient) CreateBulk(builders ...*GithubRepoSyncCreate) *GithubRepoSyncCreateBulk {
+	return &GithubRepoSyncCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GithubRepoSyncClient) MapCreateBulk(slice any, setFunc func(*GithubRepoSyncCreate, int)) *GithubRepoSyncCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GithubRepoSyncCreateBulk{err: fmt.Errorf("calling to GithubRepoSyncClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GithubRepoSyncCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GithubRepoSyncCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubRepoSync.
+func (c *GithubRepoSyncClient) Update() *GithubRepoSyncUpdate {
+	mutation := newGithubRepoSyncMutation(c.config, OpUpdate)
+	return &GithubRepoSyncUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubRepoSyncClient) UpdateOne(_m *GithubRepoSync) *GithubRepoSyncUpdateOne {
+	mutation := newGithubRepoSyncMutation(c.config, OpUpdateOne, withGithubRepoSync(_m))
+	return &GithubRepoSyncUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubRepoSyncClient) UpdateOneID(id uuid.UUID) *GithubRepoSyncUpdateOne {
+	mutation := newGithubRepoSyncMutation(c.config, OpUpdateOne, withGithubRepoSyncID(id))
+	return &GithubRepoSyncUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubRepoSync.
+func (c *GithubRepoSyncClient) Delete() *GithubRepoSyncDelete {
+	mutation := newGithubRepoSyncMutation(c.config, OpDelete)
+	return &GithubRepoSyncDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GithubRepoSyncClient) DeleteOne(_m *GithubRepoSync) *GithubRepoSyncDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GithubRepoSyncClient) DeleteOneID(id uuid.UUID) *GithubRepoSyncDeleteOne {
+	builder := c.Delete().Where(githubreposync.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubRepoSyncDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubRepoSync.
+func (c *GithubRepoSyncClient) Query() *GithubRepoSyncQuery {
+	return &GithubRepoSyncQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGithubRepoSync},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GithubRepoSync entity by its id.
+func (c *GithubRepoSyncClient) Get(ctx context.Context, id uuid.UUID) (*GithubRepoSync, error) {
+	return c.Query().Where(githubreposync.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubRepoSyncClient) GetX(ctx context.Context, id uuid.UUID) *GithubRepoSync {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIntegration queries the integration edge of a GithubRepoSync.
+func (c *GithubRepoSyncClient) QueryIntegration(_m *GithubRepoSync) *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubreposync.Table, githubreposync.FieldID, id),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubreposync.IntegrationTable, githubreposync.IntegrationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeam queries the team edge of a GithubRepoSync.
+func (c *GithubRepoSyncClient) QueryTeam(_m *GithubRepoSync) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubreposync.Table, githubreposync.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubreposync.TeamTable, githubreposync.TeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a GithubRepoSync.
+func (c *GithubRepoSyncClient) QueryProject(_m *GithubRepoSync) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubreposync.Table, githubreposync.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubreposync.ProjectTable, githubreposync.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIssueLinks queries the issue_links edge of a GithubRepoSync.
+func (c *GithubRepoSyncClient) QueryIssueLinks(_m *GithubRepoSync) *GithubIssueLinkQuery {
+	query := (&GithubIssueLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubreposync.Table, githubreposync.FieldID, id),
+			sqlgraph.To(githubissuelink.Table, githubissuelink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubreposync.IssueLinksTable, githubreposync.IssueLinksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubRepoSyncClient) Hooks() []Hook {
+	return c.hooks.GithubRepoSync
+}
+
+// Interceptors returns the client interceptors.
+func (c *GithubRepoSyncClient) Interceptors() []Interceptor {
+	return c.inters.GithubRepoSync
+}
+
+func (c *GithubRepoSyncClient) mutate(ctx context.Context, m *GithubRepoSyncMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GithubRepoSyncCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GithubRepoSyncUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GithubRepoSyncUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GithubRepoSyncDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GithubRepoSync mutation op: %q", m.Op())
 	}
 }
 
@@ -3310,6 +3879,22 @@ func (c *IssueClient) QueryMoves(_m *Issue) *IssueMoveQuery {
 			sqlgraph.From(issue.Table, issue.FieldID, id),
 			sqlgraph.To(issuemove.Table, issuemove.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, issue.MovesTable, issue.MovesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubLink queries the github_link edge of a Issue.
+func (c *IssueClient) QueryGithubLink(_m *Issue) *GithubIssueLinkQuery {
+	query := (&GithubIssueLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(issue.Table, issue.FieldID, id),
+			sqlgraph.To(githubissuelink.Table, githubissuelink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, issue.GithubLinkTable, issue.GithubLinkColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -5835,6 +6420,22 @@ func (c *ProjectClient) QueryLinks(_m *Project) *ProjectLinkQuery {
 	return query
 }
 
+// QueryGithubRepoSyncs queries the github_repo_syncs edge of a Project.
+func (c *ProjectClient) QueryGithubRepoSyncs(_m *Project) *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.GithubRepoSyncsTable, project.GithubRepoSyncsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryNotifications queries the notifications edge of a Project.
 func (c *ProjectClient) QueryNotifications(_m *Project) *NotificationQuery {
 	query := (&NotificationClient{config: c.config}).Query()
@@ -7239,6 +7840,22 @@ func (c *TeamClient) QueryIssueMoves(_m *Team) *IssueMoveQuery {
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(issuemove.Table, issuemove.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, team.IssueMovesTable, team.IssueMovesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubRepoSyncs queries the github_repo_syncs edge of a Team.
+func (c *TeamClient) QueryGithubRepoSyncs(_m *Team) *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.GithubRepoSyncsTable, team.GithubRepoSyncsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -9688,23 +10305,25 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 type (
 	hooks struct {
 		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
-		GithubIntegration, GithubRepository, ImportJob, Initiative, InitiativePost,
-		Invitation, Issue, IssueHistory, IssueMove, IssueRelation, JWTKey, Label,
-		Notification, NotificationSetting, OAuthAuthorizationCode, OAuthClient,
-		OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken, Project,
-		ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
-		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
-		WorkflowState, Workspace, WorkspaceMember []ent.Hook
+		GithubCommentLink, GithubIntegration, GithubIssueLink, GithubRepoSync,
+		GithubRepository, ImportJob, Initiative, InitiativePost, Invitation, Issue,
+		IssueHistory, IssueMove, IssueRelation, JWTKey, Label, Notification,
+		NotificationSetting, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		OAuthGrantToken, Oauth2Token, PasswordResetToken, Project, ProjectLink,
+		ProjectMilestone, ProjectPost, ProjectStatus, Reaction, SystemSetting, Team,
+		TeamMember, Template, Upload, User, View, Webhook, WorkflowState, Workspace,
+		WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
-		GithubIntegration, GithubRepository, ImportJob, Initiative, InitiativePost,
-		Invitation, Issue, IssueHistory, IssueMove, IssueRelation, JWTKey, Label,
-		Notification, NotificationSetting, OAuthAuthorizationCode, OAuthClient,
-		OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken, Project,
-		ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
-		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
-		WorkflowState, Workspace, WorkspaceMember []ent.Interceptor
+		GithubCommentLink, GithubIntegration, GithubIssueLink, GithubRepoSync,
+		GithubRepository, ImportJob, Initiative, InitiativePost, Invitation, Issue,
+		IssueHistory, IssueMove, IssueRelation, JWTKey, Label, Notification,
+		NotificationSetting, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		OAuthGrantToken, Oauth2Token, PasswordResetToken, Project, ProjectLink,
+		ProjectMilestone, ProjectPost, ProjectStatus, Reaction, SystemSetting, Team,
+		TeamMember, Template, Upload, User, View, Webhook, WorkflowState, Workspace,
+		WorkspaceMember []ent.Interceptor
 	}
 )
 

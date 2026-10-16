@@ -29,9 +29,13 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
 	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
+	comment_service "github.com/unbindapp/zigzag-api/internal/services/comment"
 	github_service "github.com/unbindapp/zigzag-api/internal/services/github"
+	github_sync_service "github.com/unbindapp/zigzag-api/internal/services/githubsync"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	label_service "github.com/unbindapp/zigzag-api/internal/services/label"
 	notification_service "github.com/unbindapp/zigzag-api/internal/services/notification"
+	project_service "github.com/unbindapp/zigzag-api/internal/services/project"
 	webhook_service "github.com/unbindapp/zigzag-api/internal/services/webhook"
 )
 
@@ -42,6 +46,9 @@ type GithubWebhookSuite struct {
 	workspace *ent.Workspace
 	team      *ent.Team
 	issues    map[int]*ent.Issue
+	user      *ent.User
+	api       *githubStub
+	srv       *server.Server
 }
 
 func (suite *GithubWebhookSuite) SetupTest() {
@@ -54,8 +61,16 @@ func (suite *GithubWebhookSuite) SetupTest() {
 	encryptor, err := crypto.NewEncryptor(bytes.Repeat([]byte{3}, 32))
 	suite.Require().NoError(err)
 	webhooks := webhook_service.NewWebhookService(cfg, repo)
-	issues := issue_service.NewIssueService(cfg, repo, notification_service.NewNotificationService(cfg, repo, nil), webhooks)
-	srv := &server.Server{Cfg: cfg, Repository: repo, IssueService: issues, WebhookService: webhooks, GithubService: github_service.NewGithubService(cfg, repo, encryptor, issues)}
+	notifications := notification_service.NewNotificationService(cfg, repo, nil)
+	client := github.NewClient(suite.githubAPI())
+	githubSync := github_sync_service.NewGithubSyncService(repo, encryptor, client)
+	issues := issue_service.NewIssueService(cfg, repo, notifications, webhooks, githubSync)
+	comments := comment_service.NewCommentService(cfg, repo, issues, notifications, webhooks, githubSync)
+	githubService := github_service.NewGithubService(cfg, repo, encryptor, github_service.Dependencies{
+		Issues: issues, Comments: comments, Labels: label_service.NewLabelService(cfg, repo), Projects: project_service.NewProjectService(cfg, repo, notifications, webhooks), Client: client,
+	})
+	srv := &server.Server{Cfg: cfg, Repository: repo, IssueService: issues, CommentService: comments, WebhookService: webhooks, GithubService: githubService}
+	suite.srv = srv
 
 	root := chi.NewRouter()
 	api := humachi.New(root, router.NewHumaConfig("Zigzag API", "test", cfg.CookieSecure))
@@ -65,6 +80,7 @@ func (suite *GithubWebhookSuite) SetupTest() {
 	suite.url = httpServer.URL
 
 	user := suite.DB.User.Create().SetEmail("eve@example.com").SetName("Eve").SetDisplayName("eve").SaveX(suite.Ctx)
+	suite.user = user
 	suite.workspace, err = workspace_repo.NewWorkspaceRepository(suite.DB).Create(suite.Ctx, nil, &workspace_repo.CreateWorkspaceInput{Name: "Unbind", Slug: "unbind", CreatorID: user.ID})
 	suite.Require().NoError(err)
 	suite.team, err = team_repo.NewTeamRepository(suite.DB).Create(suite.Ctx, nil, &team_repo.CreateTeamInput{WorkspaceID: suite.workspace.ID, Name: "Unbind", Key: "UNB", CreatorID: user.ID})

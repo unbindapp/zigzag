@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/user"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
+	"github.com/unbindapp/zigzag-api/internal/integrations/github"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
@@ -20,6 +21,7 @@ type UpdateMeInput struct {
 	DisplayName    *string    `json:"display_name,omitempty" required:"false" maxLength:"33" doc:"Short handle used in mentions, lowercase and unique"`
 	Timezone       *string    `json:"timezone,omitempty" required:"false" maxLength:"64" doc:"IANA time zone such as Europe/Berlin"`
 	AvatarUploadID *uuid.UUID `json:"avatar_upload_id,omitempty" required:"false" format:"uuid" doc:"An image you uploaded. Send 00000000-0000-0000-0000-000000000000 to remove the avatar."`
+	GithubLogin    *string    `json:"github_login,omitempty" required:"false" maxLength:"40" doc:"Your GitHub username, so GitHub Issues sync credits and assigns you; empty clears it"`
 }
 
 func (self *UserService) UpdateMe(ctx context.Context, userID uuid.UUID, input *UpdateMeInput) (*models.UserResponse, error) {
@@ -48,6 +50,13 @@ func (self *UserService) UpdateMe(ctx context.Context, userID uuid.UUID, input *
 		if err := self.applyAvatar(ctx, userID, *input.AvatarUploadID, update); err != nil {
 			return nil, err
 		}
+	}
+	if input.GithubLogin != nil {
+		login, err := self.freeGithubLogin(ctx, *input.GithubLogin, userID)
+		if err != nil {
+			return nil, err
+		}
+		update.GithubLogin = &login
 	}
 
 	updated, err := self.repo.User().Update(ctx, nil, userID, update)
@@ -115,6 +124,27 @@ func (self *UserService) UpdateNotificationSettings(ctx context.Context, userID 
 		return nil, err
 	}
 	return models.TransformNotificationSettings(settings), nil
+}
+
+func (self *UserService) freeGithubLogin(ctx context.Context, raw string, owner uuid.UUID) (string, error) {
+	if strings.TrimSpace(raw) == "" {
+		return "", nil
+	}
+	login, ok := github.NormalizeLogin(raw)
+	if !ok {
+		return "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "GitHub username must be letters, digits and single hyphens, at most 39 characters")
+	}
+	existing, err := self.repo.User().GetByGithubLogin(ctx, login)
+	if ent.IsNotFound(err) {
+		return login, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if existing.ID == owner {
+		return login, nil
+	}
+	return "", errdefs.NewCustomError(errdefs.ErrTypeConflict, "The GitHub username "+login+" belongs to another Zigzag user")
 }
 
 func (self *UserService) freeDisplayName(ctx context.Context, raw string, owner *uuid.UUID) (string, error) {

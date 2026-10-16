@@ -41,6 +41,7 @@ type ProjectRepositoryInterface interface {
 	List(ctx context.Context, filter *ListProjectsFilter) ([]*ent.Project, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Project, error)
 	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Project, error)
+	GetByName(ctx context.Context, workspaceID uuid.UUID, name string) (*ent.Project, error)
 	ResolveWorkspaceOfProject(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	AudienceIDs(ctx context.Context, projectID uuid.UUID) ([]uuid.UUID, error)
 	MaxSortOrder(ctx context.Context, workspaceID uuid.UUID) (float64, error)

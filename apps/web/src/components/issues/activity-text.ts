@@ -55,7 +55,7 @@ export function describeChange(change: TFieldChange): string {
     case "attachment_removed":
       return `removed attachment ${from || to}`;
     case "github":
-      return change.to_label ? `on GitHub: ${change.to_label}` : "updated from GitHub";
+      return change.to_label || "Updated from GitHub";
     case "archived":
       return "archived the issue";
     case "unarchived":
@@ -72,4 +72,22 @@ export function describeChange(change: TFieldChange): string {
       return `set ${name} to ${to}`;
     }
   }
+}
+
+export type THistoryActor =
+  { kind: "user"; name: string } | { kind: "github" } | { kind: "zigzag" };
+
+type TActorEntry = {
+  actor?: { name: string; display_name: string } | null;
+  changes: { field: string }[];
+};
+
+export function historyActorOf(entry: TActorEntry): THistoryActor {
+  if (entry.actor) return { kind: "user", name: entry.actor.name || entry.actor.display_name };
+  if (entry.changes.some((change) => change.field === "github")) return { kind: "github" };
+  return { kind: "zigzag" };
+}
+
+export function readsWithoutActor(change: { field: string }) {
+  return change.field === "github";
 }

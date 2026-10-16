@@ -48,6 +48,54 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/github/delete",
 		Method:      http.MethodDelete,
 	}, handlers.DeleteGithub, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-github-integration",
+		Summary:     "Update GitHub Integration",
+		Description: "Store or clear the GitHub token Issues sync uses to send changes made in Zigzag back to GitHub and to import existing issues. A fine-grained token with Issues read and write on the synced repositories. Only its prefix is shown afterwards. Needs admin.",
+		Path:        "/github/update",
+		Method:      http.MethodPut,
+	}, handlers.UpdateGithub, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "list-github-repo-syncs",
+		Summary:     "List Synced GitHub Repositories",
+		Description: "List the GitHub repositories whose issues sync both ways with a workspace, with their team, project, linked issue count, import status and last error. Needs admin.",
+		Path:        "/github/repo-syncs/list",
+		Method:      http.MethodGet,
+	}, handlers.ListGithubRepoSyncs, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-github-repo-sync",
+		Summary:     "Get Synced GitHub Repository",
+		Description: "Show one synced GitHub repository, including the status and counts of its running or last import. Needs admin.",
+		Path:        "/github/repo-syncs/get",
+		Method:      http.MethodGet,
+	}, handlers.GetGithubRepoSync, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Create, huma.Operation{
+		OperationID: "add-github-repo-sync",
+		Summary:     "Add Synced GitHub Repository",
+		Description: "Start syncing a GitHub repository's issues with a team. Zigzag creates or reuses a project named owner/name for them. New issues, edits, labels, assignees, state and comments from the webhook flow in; changes in Zigzag go back when a token is stored. Needs admin.",
+		Path:        "/github/repo-syncs/add",
+		Method:      http.MethodPost,
+	}, handlers.AddGithubRepoSync, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "backfill-github-repo-sync",
+		Summary:     "Import Existing GitHub Issues",
+		Description: "Import the repository's existing open issues, or all issues with sync_closed, and their comments in the background. Issues already linked are updated. Poll get-github-repo-sync for the status. Needs admin and a stored token.",
+		Path:        "/github/repo-syncs/backfill",
+		Method:      http.MethodPost,
+	}, handlers.BackfillGithubRepoSync, oapi.SessionOnly)
+
+	oapi.Register(grp, oapi.Delete, huma.Operation{
+		OperationID: "remove-github-repo-sync",
+		Summary:     "Remove Synced GitHub Repository",
+		Description: "Stop syncing a GitHub repository. Its issues stay in Zigzag without the link to GitHub. Needs admin.",
+		Path:        "/github/repo-syncs/remove",
+		Method:      http.MethodDelete,
+	}, handlers.RemoveGithubRepoSync, oapi.SessionOnly)
 }
 
 func RegisterPublicHandlers(server *server.Server, grp *huma.Group) {
@@ -56,7 +104,7 @@ func RegisterPublicHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID:  "github-webhook",
 		Summary:      "GitHub Webhook",
-		Description:  "Receive a GitHub webhook delivery for a workspace. Authenticated by the X-Hub-Signature-256 header, an HMAC-SHA256 of the raw body keyed with the workspace's GitHub secret. Handles ping, pull_request and push; other events are acknowledged and ignored.",
+		Description:  "Receive a GitHub webhook delivery for a workspace. Authenticated by the X-Hub-Signature-256 header, an HMAC-SHA256 of the raw body keyed with the workspace's GitHub secret. Handles ping, pull_request and push, and issues and issue_comment for synced repositories; other events are acknowledged and ignored.",
 		Path:         "/github/webhook",
 		Method:       http.MethodPost,
 		MaxBodyBytes: maxWebhookBodyBytes,

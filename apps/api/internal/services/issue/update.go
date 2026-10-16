@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/markdown"
 	"github.com/unbindapp/zigzag-api/internal/models"
@@ -381,7 +380,7 @@ func (self *IssueService) applyUpdate(ctx context.Context, tx repository.TxInter
 	if err := self.repo.Issue().Subscribe(ctx, tx, current.ID, subscribe...); err != nil {
 		return nil, err
 	}
-	if err := self.repo.Issue().CreateHistory(ctx, tx, current.ID, &userID, apictx.HistorySource(ctx), outcome.changes); err != nil {
+	if err := self.recordHistory(ctx, tx, current.ID, actorOf(userID), outcome.changes); err != nil {
 		return nil, err
 	}
 	return outcome, nil
@@ -506,7 +505,7 @@ func (self *IssueService) updateProject(ctx context.Context, current *ent.Issue,
 }
 
 func (self *IssueService) afterUpdate(ctx context.Context, userID uuid.UUID, outcome *issueOutcome, response *models.IssueResponse) {
-	self.announce(ctx, &userID, outcome, response)
+	self.announce(ctx, actorOf(userID), outcome, response)
 }
 
 func (self *IssueService) announce(ctx context.Context, actor *uuid.UUID, outcome *issueOutcome, response *models.IssueResponse) {
@@ -541,6 +540,7 @@ func (self *IssueService) announce(ctx context.Context, actor *uuid.UUID, outcom
 		}
 	}
 	self.emit(ctx, response.WorkspaceID, "issue.updated", map[string]any{"issue": response, "changes": outcome.changes})
+	self.githubSync.AfterIssueUpdate(ctx, response.ID, outcome.changes)
 }
 
 func (self *IssueService) respaceIfCrowded(ctx context.Context, tx repository.TxInterface, current *ent.Issue, fields *issue_repo.IssueFields, input *UpdateIssueInput) error {

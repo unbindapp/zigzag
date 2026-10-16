@@ -2,7 +2,13 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { BotIcon } from "lucide-react";
 
 import { mergeFeed } from "@/components/issues/activity-feed";
-import { describeChange } from "@/components/issues/activity-text";
+import {
+  describeChange,
+  historyActorOf,
+  readsWithoutActor,
+  type THistoryActor,
+} from "@/components/issues/activity-text";
+import { GithubIcon } from "@/components/icons/github";
 import { CommentComposer, CommentThread } from "@/components/issues/comment-thread";
 import { UserAvatar } from "@/components/issues/pickers";
 import { type TComment, type THistoryEntry, issueHistoryQuery } from "@/lib/queries/issues";
@@ -94,7 +100,7 @@ export function IssueActivity({ issueId }: { issueId: string }) {
 }
 
 function HistoryLine({ entry }: { entry: THistoryEntry }) {
-  const actorName = entry.actor ? entry.actor.name || entry.actor.display_name : "Zigzag";
+  const actor = historyActorOf(entry);
   return (
     <div className="flex flex-col gap-1">
       {entry.changes.map((change, index) => (
@@ -102,12 +108,11 @@ function HistoryLine({ entry }: { entry: THistoryEntry }) {
           key={`${change.field}-${index}`}
           className="text-muted-foreground flex min-w-0 items-center gap-1.5 px-1 text-xs"
         >
-          {entry.actor ? (
-            <UserAvatar user={entry.actor} size="xs" />
+          {readsWithoutActor(change) ? (
+            <GithubIcon className="size-3.5" />
           ) : (
-            <BotIcon className="size-3.5 shrink-0" />
+            <ActorMark entry={entry} actor={actor} />
           )}
-          <span className="text-foreground shrink-0 font-medium">{actorName}</span>
           <span className="min-w-0 truncate">{describeChange(change)}</span>
           <span aria-hidden>·</span>
           <span className="shrink-0">
@@ -117,4 +122,30 @@ function HistoryLine({ entry }: { entry: THistoryEntry }) {
       ))}
     </div>
   );
+}
+
+function ActorMark({ entry, actor }: { entry: THistoryEntry; actor: THistoryActor }) {
+  switch (actor.kind) {
+    case "user":
+      return (
+        <>
+          {entry.actor && <UserAvatar user={entry.actor} size="xs" />}
+          <span className="text-foreground shrink-0 font-medium">{actor.name}</span>
+        </>
+      );
+    case "github":
+      return (
+        <>
+          <GithubIcon className="size-3.5" />
+          <span className="text-foreground shrink-0 font-medium">GitHub</span>
+        </>
+      );
+    default:
+      return (
+        <>
+          <BotIcon className="size-3.5 shrink-0" />
+          <span className="text-foreground shrink-0 font-medium">Zigzag</span>
+        </>
+      );
+  }
 }

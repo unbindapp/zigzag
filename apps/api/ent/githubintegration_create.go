@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/user"
 	"github.com/unbindapp/zigzag-api/ent/workspace"
 )
@@ -101,6 +102,26 @@ func (_c *GithubIntegrationCreate) SetNillableLastDeliveryAt(v *time.Time) *Gith
 	return _c
 }
 
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (_c *GithubIntegrationCreate) SetTokenEncrypted(v []byte) *GithubIntegrationCreate {
+	_c.mutation.SetTokenEncrypted(v)
+	return _c
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (_c *GithubIntegrationCreate) SetTokenPrefix(v string) *GithubIntegrationCreate {
+	_c.mutation.SetTokenPrefix(v)
+	return _c
+}
+
+// SetNillableTokenPrefix sets the "token_prefix" field if the given value is not nil.
+func (_c *GithubIntegrationCreate) SetNillableTokenPrefix(v *string) *GithubIntegrationCreate {
+	if v != nil {
+		_c.SetTokenPrefix(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *GithubIntegrationCreate) SetID(v uuid.UUID) *GithubIntegrationCreate {
 	_c.mutation.SetID(v)
@@ -138,6 +159,21 @@ func (_c *GithubIntegrationCreate) AddRepositories(v ...*GithubRepository) *Gith
 		ids[i] = v[i].ID
 	}
 	return _c.AddRepositoryIDs(ids...)
+}
+
+// AddRepoSyncIDs adds the "repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_c *GithubIntegrationCreate) AddRepoSyncIDs(ids ...uuid.UUID) *GithubIntegrationCreate {
+	_c.mutation.AddRepoSyncIDs(ids...)
+	return _c
+}
+
+// AddRepoSyncs adds the "repo_syncs" edges to the GithubRepoSync entity.
+func (_c *GithubIntegrationCreate) AddRepoSyncs(v ...*GithubRepoSync) *GithubIntegrationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRepoSyncIDs(ids...)
 }
 
 // Mutation returns the GithubIntegrationMutation object of the builder.
@@ -183,6 +219,10 @@ func (_c *GithubIntegrationCreate) defaults() {
 		v := githubintegration.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.TokenPrefix(); !ok {
+		v := githubintegration.DefaultTokenPrefix
+		_c.mutation.SetTokenPrefix(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := githubintegration.DefaultID()
 		_c.mutation.SetID(v)
@@ -205,6 +245,9 @@ func (_c *GithubIntegrationCreate) check() error {
 	}
 	if _, ok := _c.mutation.SecretPrefix(); !ok {
 		return &ValidationError{Name: "secret_prefix", err: errors.New(`ent: missing required field "GithubIntegration.secret_prefix"`)}
+	}
+	if _, ok := _c.mutation.TokenPrefix(); !ok {
+		return &ValidationError{Name: "token_prefix", err: errors.New(`ent: missing required field "GithubIntegration.token_prefix"`)}
 	}
 	if len(_c.mutation.WorkspaceIDs()) == 0 {
 		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "GithubIntegration.workspace"`)}
@@ -265,6 +308,14 @@ func (_c *GithubIntegrationCreate) createSpec() (*GithubIntegration, *sqlgraph.C
 		_spec.SetField(githubintegration.FieldLastDeliveryAt, field.TypeTime, value)
 		_node.LastDeliveryAt = &value
 	}
+	if value, ok := _c.mutation.TokenEncrypted(); ok {
+		_spec.SetField(githubintegration.FieldTokenEncrypted, field.TypeBytes, value)
+		_node.TokenEncrypted = value
+	}
+	if value, ok := _c.mutation.TokenPrefix(); ok {
+		_spec.SetField(githubintegration.FieldTokenPrefix, field.TypeString, value)
+		_node.TokenPrefix = value
+	}
 	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -308,6 +359,22 @@ func (_c *GithubIntegrationCreate) createSpec() (*GithubIntegration, *sqlgraph.C
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(githubrepository.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -448,6 +515,36 @@ func (u *GithubIntegrationUpsert) UpdateLastDeliveryAt() *GithubIntegrationUpser
 // ClearLastDeliveryAt clears the value of the "last_delivery_at" field.
 func (u *GithubIntegrationUpsert) ClearLastDeliveryAt() *GithubIntegrationUpsert {
 	u.SetNull(githubintegration.FieldLastDeliveryAt)
+	return u
+}
+
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (u *GithubIntegrationUpsert) SetTokenEncrypted(v []byte) *GithubIntegrationUpsert {
+	u.Set(githubintegration.FieldTokenEncrypted, v)
+	return u
+}
+
+// UpdateTokenEncrypted sets the "token_encrypted" field to the value that was provided on create.
+func (u *GithubIntegrationUpsert) UpdateTokenEncrypted() *GithubIntegrationUpsert {
+	u.SetExcluded(githubintegration.FieldTokenEncrypted)
+	return u
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (u *GithubIntegrationUpsert) ClearTokenEncrypted() *GithubIntegrationUpsert {
+	u.SetNull(githubintegration.FieldTokenEncrypted)
+	return u
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (u *GithubIntegrationUpsert) SetTokenPrefix(v string) *GithubIntegrationUpsert {
+	u.Set(githubintegration.FieldTokenPrefix, v)
+	return u
+}
+
+// UpdateTokenPrefix sets the "token_prefix" field to the value that was provided on create.
+func (u *GithubIntegrationUpsert) UpdateTokenPrefix() *GithubIntegrationUpsert {
+	u.SetExcluded(githubintegration.FieldTokenPrefix)
 	return u
 }
 
@@ -597,6 +694,41 @@ func (u *GithubIntegrationUpsertOne) UpdateLastDeliveryAt() *GithubIntegrationUp
 func (u *GithubIntegrationUpsertOne) ClearLastDeliveryAt() *GithubIntegrationUpsertOne {
 	return u.Update(func(s *GithubIntegrationUpsert) {
 		s.ClearLastDeliveryAt()
+	})
+}
+
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (u *GithubIntegrationUpsertOne) SetTokenEncrypted(v []byte) *GithubIntegrationUpsertOne {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.SetTokenEncrypted(v)
+	})
+}
+
+// UpdateTokenEncrypted sets the "token_encrypted" field to the value that was provided on create.
+func (u *GithubIntegrationUpsertOne) UpdateTokenEncrypted() *GithubIntegrationUpsertOne {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.UpdateTokenEncrypted()
+	})
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (u *GithubIntegrationUpsertOne) ClearTokenEncrypted() *GithubIntegrationUpsertOne {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.ClearTokenEncrypted()
+	})
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (u *GithubIntegrationUpsertOne) SetTokenPrefix(v string) *GithubIntegrationUpsertOne {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.SetTokenPrefix(v)
+	})
+}
+
+// UpdateTokenPrefix sets the "token_prefix" field to the value that was provided on create.
+func (u *GithubIntegrationUpsertOne) UpdateTokenPrefix() *GithubIntegrationUpsertOne {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.UpdateTokenPrefix()
 	})
 }
 
@@ -913,6 +1045,41 @@ func (u *GithubIntegrationUpsertBulk) UpdateLastDeliveryAt() *GithubIntegrationU
 func (u *GithubIntegrationUpsertBulk) ClearLastDeliveryAt() *GithubIntegrationUpsertBulk {
 	return u.Update(func(s *GithubIntegrationUpsert) {
 		s.ClearLastDeliveryAt()
+	})
+}
+
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (u *GithubIntegrationUpsertBulk) SetTokenEncrypted(v []byte) *GithubIntegrationUpsertBulk {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.SetTokenEncrypted(v)
+	})
+}
+
+// UpdateTokenEncrypted sets the "token_encrypted" field to the value that was provided on create.
+func (u *GithubIntegrationUpsertBulk) UpdateTokenEncrypted() *GithubIntegrationUpsertBulk {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.UpdateTokenEncrypted()
+	})
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (u *GithubIntegrationUpsertBulk) ClearTokenEncrypted() *GithubIntegrationUpsertBulk {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.ClearTokenEncrypted()
+	})
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (u *GithubIntegrationUpsertBulk) SetTokenPrefix(v string) *GithubIntegrationUpsertBulk {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.SetTokenPrefix(v)
+	})
+}
+
+// UpdateTokenPrefix sets the "token_prefix" field to the value that was provided on create.
+func (u *GithubIntegrationUpsertBulk) UpdateTokenPrefix() *GithubIntegrationUpsertBulk {
+	return u.Update(func(s *GithubIntegrationUpsert) {
+		s.UpdateTokenPrefix()
 	})
 }
 

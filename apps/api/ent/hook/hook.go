@@ -93,6 +93,18 @@ func (f FavoriteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FavoriteMutation", m)
 }
 
+// The GithubCommentLinkFunc type is an adapter to allow the use of ordinary
+// function as GithubCommentLink mutator.
+type GithubCommentLinkFunc func(context.Context, *ent.GithubCommentLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubCommentLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GithubCommentLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubCommentLinkMutation", m)
+}
+
 // The GithubIntegrationFunc type is an adapter to allow the use of ordinary
 // function as GithubIntegration mutator.
 type GithubIntegrationFunc func(context.Context, *ent.GithubIntegrationMutation) (ent.Value, error)
@@ -103,6 +115,30 @@ func (f GithubIntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubIntegrationMutation", m)
+}
+
+// The GithubIssueLinkFunc type is an adapter to allow the use of ordinary
+// function as GithubIssueLink mutator.
+type GithubIssueLinkFunc func(context.Context, *ent.GithubIssueLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubIssueLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GithubIssueLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubIssueLinkMutation", m)
+}
+
+// The GithubRepoSyncFunc type is an adapter to allow the use of ordinary
+// function as GithubRepoSync mutator.
+type GithubRepoSyncFunc func(context.Context, *ent.GithubRepoSyncMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubRepoSyncFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GithubRepoSyncMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubRepoSyncMutation", m)
 }
 
 // The GithubRepositoryFunc type is an adapter to allow the use of ordinary

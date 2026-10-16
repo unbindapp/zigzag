@@ -37,6 +37,8 @@ const (
 	FieldTimezone = "timezone"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
 	FieldLastSeenAt = "last_seen_at"
+	// FieldGithubLogin holds the string denoting the github_login field in the database.
+	FieldGithubLogin = "github_login"
 	// EdgeAvatarUpload holds the string denoting the avatar_upload edge name in mutations.
 	EdgeAvatarUpload = "avatar_upload"
 	// EdgeWorkspaceMemberships holds the string denoting the workspace_memberships edge name in mutations.
@@ -366,6 +368,7 @@ var Columns = []string{
 	FieldActive,
 	FieldTimezone,
 	FieldLastSeenAt,
+	FieldGithubLogin,
 }
 
 var (
@@ -469,6 +472,11 @@ func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 // ByLastSeenAt orders the results by the last_seen_at field.
 func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
+}
+
+// ByGithubLogin orders the results by the github_login field.
+func ByGithubLogin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGithubLogin, opts...).ToFunc()
 }
 
 // ByAvatarUploadField orders the results by avatar_upload field.

@@ -9,6 +9,7 @@ import {
 } from "@/components/issues/use-issue-actions";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { GithubIssueChip } from "@/components/integrations/github-issue-chip";
 import {
   ArchiveAction,
   HeaderAction,
@@ -39,7 +40,7 @@ export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
 
   return (
     <div className="flex w-full min-w-0 items-center gap-2">
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <Breadcrumb
           items={[
             {
@@ -55,6 +56,7 @@ export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
             { label: issue.identifier },
           ]}
         />
+        {issue.github_issue && <GithubIssueChip link={issue.github_issue} />}
       </div>
       <HeaderActions>
         <FavoriteButton kind="issue" entityId={issue.id} />

@@ -967,6 +967,74 @@ func (_c *UserRepositoryMock_GetByEmails_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// GetByGithubLogin provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) GetByGithubLogin(ctx context.Context, login string) (*ent.User, error) {
+	ret := _mock.Called(ctx, login)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByGithubLogin")
+	}
+
+	var r0 *ent.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*ent.User, error)); ok {
+		return returnFunc(ctx, login)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *ent.User); ok {
+		r0 = returnFunc(ctx, login)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, login)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepositoryMock_GetByGithubLogin_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByGithubLogin'
+type UserRepositoryMock_GetByGithubLogin_Call struct {
+	*mock.Call
+}
+
+// GetByGithubLogin is a helper method to define mock.On call
+//   - ctx context.Context
+//   - login string
+func (_e *UserRepositoryMock_Expecter) GetByGithubLogin(ctx any, login any) *UserRepositoryMock_GetByGithubLogin_Call {
+	return &UserRepositoryMock_GetByGithubLogin_Call{Call: _e.mock.On("GetByGithubLogin", ctx, login)}
+}
+
+func (_c *UserRepositoryMock_GetByGithubLogin_Call) Run(run func(ctx context.Context, login string)) *UserRepositoryMock_GetByGithubLogin_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetByGithubLogin_Call) Return(user *ent.User, err error) *UserRepositoryMock_GetByGithubLogin_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetByGithubLogin_Call) RunAndReturn(run func(ctx context.Context, login string) (*ent.User, error)) *UserRepositoryMock_GetByGithubLogin_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type UserRepositoryMock
 func (_mock *UserRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.User, error) {
 	ret := _mock.Called(ctx, id)

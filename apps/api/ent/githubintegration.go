@@ -35,6 +35,10 @@ type GithubIntegration struct {
 	CreatedByID *uuid.UUID `json:"created_by_id,omitempty"`
 	// LastDeliveryAt holds the value of the "last_delivery_at" field.
 	LastDeliveryAt *time.Time `json:"last_delivery_at,omitempty"`
+	// GitHub token sealed with ENCRYPTION_KEY, for Issues sync
+	TokenEncrypted []byte `json:"-"`
+	// TokenPrefix holds the value of the "token_prefix" field.
+	TokenPrefix string `json:"token_prefix,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GithubIntegrationQuery when eager-loading is set.
 	Edges        GithubIntegrationEdges `json:"edges"`
@@ -49,9 +53,11 @@ type GithubIntegrationEdges struct {
 	CreatedBy *User `json:"created_by,omitempty"`
 	// Repositories holds the value of the repositories edge.
 	Repositories []*GithubRepository `json:"repositories,omitempty"`
+	// RepoSyncs holds the value of the repo_syncs edge.
+	RepoSyncs []*GithubRepoSync `json:"repo_syncs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -85,6 +91,15 @@ func (e GithubIntegrationEdges) RepositoriesOrErr() ([]*GithubRepository, error)
 	return nil, &NotLoadedError{edge: "repositories"}
 }
 
+// RepoSyncsOrErr returns the RepoSyncs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GithubIntegrationEdges) RepoSyncsOrErr() ([]*GithubRepoSync, error) {
+	if e.loadedTypes[3] {
+		return e.RepoSyncs, nil
+	}
+	return nil, &NotLoadedError{edge: "repo_syncs"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GithubIntegration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -92,9 +107,9 @@ func (*GithubIntegration) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case githubintegration.FieldCreatedByID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case githubintegration.FieldSecretEncrypted:
+		case githubintegration.FieldSecretEncrypted, githubintegration.FieldTokenEncrypted:
 			values[i] = new([]byte)
-		case githubintegration.FieldSecretPrefix:
+		case githubintegration.FieldSecretPrefix, githubintegration.FieldTokenPrefix:
 			values[i] = new(sql.NullString)
 		case githubintegration.FieldCreatedAt, githubintegration.FieldUpdatedAt, githubintegration.FieldLastDeliveryAt:
 			values[i] = new(sql.NullTime)
@@ -165,6 +180,18 @@ func (_m *GithubIntegration) assignValues(columns []string, values []any) error 
 				_m.LastDeliveryAt = new(time.Time)
 				*_m.LastDeliveryAt = value.Time
 			}
+		case githubintegration.FieldTokenEncrypted:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field token_encrypted", values[i])
+			} else if value != nil {
+				_m.TokenEncrypted = *value
+			}
+		case githubintegration.FieldTokenPrefix:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field token_prefix", values[i])
+			} else if value.Valid {
+				_m.TokenPrefix = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -191,6 +218,11 @@ func (_m *GithubIntegration) QueryCreatedBy() *UserQuery {
 // QueryRepositories queries the "repositories" edge of the GithubIntegration entity.
 func (_m *GithubIntegration) QueryRepositories() *GithubRepositoryQuery {
 	return NewGithubIntegrationClient(_m.config).QueryRepositories(_m)
+}
+
+// QueryRepoSyncs queries the "repo_syncs" edge of the GithubIntegration entity.
+func (_m *GithubIntegration) QueryRepoSyncs() *GithubRepoSyncQuery {
+	return NewGithubIntegrationClient(_m.config).QueryRepoSyncs(_m)
 }
 
 // Update returns a builder for updating this GithubIntegration.
@@ -239,6 +271,11 @@ func (_m *GithubIntegration) String() string {
 		builder.WriteString("last_delivery_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("token_encrypted=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("token_prefix=")
+	builder.WriteString(_m.TokenPrefix)
 	builder.WriteByte(')')
 	return builder.String()
 }

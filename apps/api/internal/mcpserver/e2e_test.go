@@ -31,6 +31,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/crypto"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/storage"
+	"github.com/unbindapp/zigzag-api/internal/integrations/github"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	"github.com/unbindapp/zigzag-api/internal/oauthserver"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
@@ -43,6 +44,7 @@ import (
 	document_service "github.com/unbindapp/zigzag-api/internal/services/document"
 	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
 	favorite_service "github.com/unbindapp/zigzag-api/internal/services/favorite"
+	github_sync_service "github.com/unbindapp/zigzag-api/internal/services/githubsync"
 	import_service "github.com/unbindapp/zigzag-api/internal/services/import"
 	initiative_service "github.com/unbindapp/zigzag-api/internal/services/initiative"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
@@ -97,6 +99,7 @@ func (suite *EndToEndSuite) SetupTest() {
 	oauthService := oauthserver_service.NewOAuthServerService(repo, oauthserver.NewMetadataFetcher(oauthserver.DefaultIPPolicy, cache.NewMemoryCache[oauthserver.ClientMetadata]()), issuer)
 	notifications := notification_service.NewNotificationService(cfg, repo, emails)
 	webhooks := webhook_service.NewWebhookService(cfg, repo)
+	githubSync := github_sync_service.NewGithubSyncService(repo, nil, github.NewClient(""))
 	cycles := cycle_service.NewCycleService(cfg, repo, webhooks)
 	srv := &server.Server{
 		Cfg:                 cfg,
@@ -111,7 +114,7 @@ func (suite *EndToEndSuite) SetupTest() {
 		OAuthServerService:  oauthService,
 		SystemService:       system_service.NewSystemService(repo),
 		UploadService:       upload_service.NewUploadService(cfg, repo, store),
-		IssueService:        issue_service.NewIssueService(cfg, repo, notifications, webhooks),
+		IssueService:        issue_service.NewIssueService(cfg, repo, notifications, webhooks, githubSync),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notifications, webhooks),
 		LabelService:        label_service.NewLabelService(cfg, repo),
 		CycleService:        cycles,
@@ -125,7 +128,7 @@ func (suite *EndToEndSuite) SetupTest() {
 	}
 	srv.SearchService = search_service.NewSearchService(cfg, repo, srv.IssueService)
 	srv.DocumentService = document_service.NewDocumentService(cfg, repo, srv.IssueService)
-	srv.CommentService = comment_service.NewCommentService(cfg, repo, srv.IssueService, notifications, webhooks)
+	srv.CommentService = comment_service.NewCommentService(cfg, repo, srv.IssueService, notifications, webhooks, githubSync)
 
 	root := chi.NewRouter()
 	limiter := middleware.NewRateLimiter()

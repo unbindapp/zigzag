@@ -75,6 +75,7 @@ func (Issue) Edges() []ent.Edge {
 		edge.To("history", IssueHistory.Type).Annotations(cascade()),
 		edge.To("reactions", Reaction.Type).Annotations(cascade()),
 		edge.To("moves", IssueMove.Type).Annotations(cascade()),
+		edge.To("github_link", GithubIssueLink.Type).Unique().Annotations(cascade()),
 		edge.To("documents", Document.Type).Annotations(cascade()),
 		edge.To("notifications", Notification.Type).Annotations(setNull()),
 	}

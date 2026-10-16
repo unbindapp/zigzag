@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -593,6 +594,21 @@ func (_c *TeamCreate) AddIssueMoves(v ...*IssueMove) *TeamCreate {
 	return _c.AddIssueMoveIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_c *TeamCreate) AddGithubRepoSyncIDs(ids ...uuid.UUID) *TeamCreate {
+	_c.mutation.AddGithubRepoSyncIDs(ids...)
+	return _c
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_c *TeamCreate) AddGithubRepoSyncs(v ...*GithubRepoSync) *TeamCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGithubRepoSyncIDs(ids...)
+}
+
 // Mutation returns the TeamMutation object of the builder.
 func (_c *TeamCreate) Mutation() *TeamMutation {
 	return _c.mutation
@@ -1141,6 +1157,22 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issuemove.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubRepoSyncsTable,
+			Columns: []string{team.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

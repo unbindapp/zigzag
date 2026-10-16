@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/user"
 	"github.com/unbindapp/zigzag-api/ent/workspace"
@@ -113,6 +114,32 @@ func (_u *GithubIntegrationUpdate) ClearLastDeliveryAt() *GithubIntegrationUpdat
 	return _u
 }
 
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (_u *GithubIntegrationUpdate) SetTokenEncrypted(v []byte) *GithubIntegrationUpdate {
+	_u.mutation.SetTokenEncrypted(v)
+	return _u
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (_u *GithubIntegrationUpdate) ClearTokenEncrypted() *GithubIntegrationUpdate {
+	_u.mutation.ClearTokenEncrypted()
+	return _u
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (_u *GithubIntegrationUpdate) SetTokenPrefix(v string) *GithubIntegrationUpdate {
+	_u.mutation.SetTokenPrefix(v)
+	return _u
+}
+
+// SetNillableTokenPrefix sets the "token_prefix" field if the given value is not nil.
+func (_u *GithubIntegrationUpdate) SetNillableTokenPrefix(v *string) *GithubIntegrationUpdate {
+	if v != nil {
+		_u.SetTokenPrefix(*v)
+	}
+	return _u
+}
+
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *GithubIntegrationUpdate) SetWorkspace(v *Workspace) *GithubIntegrationUpdate {
 	return _u.SetWorkspaceID(v.ID)
@@ -136,6 +163,21 @@ func (_u *GithubIntegrationUpdate) AddRepositories(v ...*GithubRepository) *Gith
 		ids[i] = v[i].ID
 	}
 	return _u.AddRepositoryIDs(ids...)
+}
+
+// AddRepoSyncIDs adds the "repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *GithubIntegrationUpdate) AddRepoSyncIDs(ids ...uuid.UUID) *GithubIntegrationUpdate {
+	_u.mutation.AddRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddRepoSyncs adds the "repo_syncs" edges to the GithubRepoSync entity.
+func (_u *GithubIntegrationUpdate) AddRepoSyncs(v ...*GithubRepoSync) *GithubIntegrationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRepoSyncIDs(ids...)
 }
 
 // Mutation returns the GithubIntegrationMutation object of the builder.
@@ -174,6 +216,27 @@ func (_u *GithubIntegrationUpdate) RemoveRepositories(v ...*GithubRepository) *G
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRepositoryIDs(ids...)
+}
+
+// ClearRepoSyncs clears all "repo_syncs" edges to the GithubRepoSync entity.
+func (_u *GithubIntegrationUpdate) ClearRepoSyncs() *GithubIntegrationUpdate {
+	_u.mutation.ClearRepoSyncs()
+	return _u
+}
+
+// RemoveRepoSyncIDs removes the "repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *GithubIntegrationUpdate) RemoveRepoSyncIDs(ids ...uuid.UUID) *GithubIntegrationUpdate {
+	_u.mutation.RemoveRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveRepoSyncs removes "repo_syncs" edges to GithubRepoSync entities.
+func (_u *GithubIntegrationUpdate) RemoveRepoSyncs(v ...*GithubRepoSync) *GithubIntegrationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRepoSyncIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -252,6 +315,15 @@ func (_u *GithubIntegrationUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	if _u.mutation.LastDeliveryAtCleared() {
 		_spec.ClearField(githubintegration.FieldLastDeliveryAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.TokenEncrypted(); ok {
+		_spec.SetField(githubintegration.FieldTokenEncrypted, field.TypeBytes, value)
+	}
+	if _u.mutation.TokenEncryptedCleared() {
+		_spec.ClearField(githubintegration.FieldTokenEncrypted, field.TypeBytes)
+	}
+	if value, ok := _u.mutation.TokenPrefix(); ok {
+		_spec.SetField(githubintegration.FieldTokenPrefix, field.TypeString, value)
 	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -349,6 +421,51 @@ func (_u *GithubIntegrationUpdate) sqlSave(ctx context.Context) (_node int, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(githubrepository.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.RepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -458,6 +575,32 @@ func (_u *GithubIntegrationUpdateOne) ClearLastDeliveryAt() *GithubIntegrationUp
 	return _u
 }
 
+// SetTokenEncrypted sets the "token_encrypted" field.
+func (_u *GithubIntegrationUpdateOne) SetTokenEncrypted(v []byte) *GithubIntegrationUpdateOne {
+	_u.mutation.SetTokenEncrypted(v)
+	return _u
+}
+
+// ClearTokenEncrypted clears the value of the "token_encrypted" field.
+func (_u *GithubIntegrationUpdateOne) ClearTokenEncrypted() *GithubIntegrationUpdateOne {
+	_u.mutation.ClearTokenEncrypted()
+	return _u
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (_u *GithubIntegrationUpdateOne) SetTokenPrefix(v string) *GithubIntegrationUpdateOne {
+	_u.mutation.SetTokenPrefix(v)
+	return _u
+}
+
+// SetNillableTokenPrefix sets the "token_prefix" field if the given value is not nil.
+func (_u *GithubIntegrationUpdateOne) SetNillableTokenPrefix(v *string) *GithubIntegrationUpdateOne {
+	if v != nil {
+		_u.SetTokenPrefix(*v)
+	}
+	return _u
+}
+
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *GithubIntegrationUpdateOne) SetWorkspace(v *Workspace) *GithubIntegrationUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
@@ -481,6 +624,21 @@ func (_u *GithubIntegrationUpdateOne) AddRepositories(v ...*GithubRepository) *G
 		ids[i] = v[i].ID
 	}
 	return _u.AddRepositoryIDs(ids...)
+}
+
+// AddRepoSyncIDs adds the "repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *GithubIntegrationUpdateOne) AddRepoSyncIDs(ids ...uuid.UUID) *GithubIntegrationUpdateOne {
+	_u.mutation.AddRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddRepoSyncs adds the "repo_syncs" edges to the GithubRepoSync entity.
+func (_u *GithubIntegrationUpdateOne) AddRepoSyncs(v ...*GithubRepoSync) *GithubIntegrationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRepoSyncIDs(ids...)
 }
 
 // Mutation returns the GithubIntegrationMutation object of the builder.
@@ -519,6 +677,27 @@ func (_u *GithubIntegrationUpdateOne) RemoveRepositories(v ...*GithubRepository)
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRepositoryIDs(ids...)
+}
+
+// ClearRepoSyncs clears all "repo_syncs" edges to the GithubRepoSync entity.
+func (_u *GithubIntegrationUpdateOne) ClearRepoSyncs() *GithubIntegrationUpdateOne {
+	_u.mutation.ClearRepoSyncs()
+	return _u
+}
+
+// RemoveRepoSyncIDs removes the "repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *GithubIntegrationUpdateOne) RemoveRepoSyncIDs(ids ...uuid.UUID) *GithubIntegrationUpdateOne {
+	_u.mutation.RemoveRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveRepoSyncs removes "repo_syncs" edges to GithubRepoSync entities.
+func (_u *GithubIntegrationUpdateOne) RemoveRepoSyncs(v ...*GithubRepoSync) *GithubIntegrationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRepoSyncIDs(ids...)
 }
 
 // Where appends a list predicates to the GithubIntegrationUpdate builder.
@@ -628,6 +807,15 @@ func (_u *GithubIntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Githu
 	if _u.mutation.LastDeliveryAtCleared() {
 		_spec.ClearField(githubintegration.FieldLastDeliveryAt, field.TypeTime)
 	}
+	if value, ok := _u.mutation.TokenEncrypted(); ok {
+		_spec.SetField(githubintegration.FieldTokenEncrypted, field.TypeBytes, value)
+	}
+	if _u.mutation.TokenEncryptedCleared() {
+		_spec.ClearField(githubintegration.FieldTokenEncrypted, field.TypeBytes)
+	}
+	if value, ok := _u.mutation.TokenPrefix(); ok {
+		_spec.SetField(githubintegration.FieldTokenPrefix, field.TypeString, value)
+	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -724,6 +912,51 @@ func (_u *GithubIntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Githu
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(githubrepository.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.RepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubintegration.RepoSyncsTable,
+			Columns: []string{githubintegration.RepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -17,4 +17,5 @@ type CommentServiceInterface interface {
 	Delete(ctx context.Context, userID uuid.UUID, input *CommentRefInput) error
 	Resolve(ctx context.Context, userID uuid.UUID, input *CommentRefInput) (*models.CommentResponse, error)
 	Unresolve(ctx context.Context, userID uuid.UUID, input *CommentRefInput) (*models.CommentResponse, error)
+	CreateFromGithub(ctx context.Context, input *GithubCommentInput) (*models.CommentResponse, error)
 }

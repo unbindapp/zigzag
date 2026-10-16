@@ -1,0 +1,87 @@
+{
+  "action": "edited",
+  "issue": {
+    "url": "https://api.github.com/repos/unbindapp/unbind/issues/1347",
+    "repository_url": "https://api.github.com/repos/unbindapp/unbind",
+    "labels_url": "https://api.github.com/repos/unbindapp/unbind/issues/1347/labels{/name}",
+    "comments_url": "https://api.github.com/repos/unbindapp/unbind/issues/1347/comments",
+    "events_url": "https://api.github.com/repos/unbindapp/unbind/issues/1347/events",
+    "html_url": "https://github.com/unbindapp/unbind/issues/1347",
+    "id": 3500001347,
+    "node_id": "I_kwDOKbcdef6zAAAB",
+    "number": 1347,
+    "title": "Deploy logs stop streaming after 10 minutes on Firefox",
+    "user": {
+      "login": "octocat",
+      "id": 583231,
+      "node_id": "MDQ6VXNlcjU4MzIzMQ==",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 208045946,
+        "node_id": "MDU6TGFiZWwyMDgwNDU5NDY=",
+        "url": "https://api.github.com/repos/unbindapp/unbind/labels/bug",
+        "name": "bug",
+        "color": "d73a4a",
+        "default": true,
+        "description": "Something isn't working"
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "Eve-GH",
+      "id": 9000001,
+      "type": "User"
+    },
+    "assignees": [
+      {
+        "login": "Eve-GH",
+        "id": 9000001,
+        "type": "User"
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2026-10-16T10:00:00Z",
+    "updated_at": "2026-10-16T09:30:00Z",
+    "closed_at": null,
+    "author_association": "NONE",
+    "active_lock_reason": null,
+    "body": "The log stream closes with **1006** after about ten minutes.",
+    "reactions": {
+      "url": "https://api.github.com/repos/unbindapp/unbind/issues/1347/reactions",
+      "total_count": 0
+    },
+    "timeline_url": "https://api.github.com/repos/unbindapp/unbind/issues/1347/timeline",
+    "performed_via_github_app": null,
+    "state_reason": null
+  },
+  "repository": {
+    "id": 700000001,
+    "node_id": "R_kgDOKbcdef",
+    "name": "unbind",
+    "full_name": "unbindapp/unbind",
+    "private": false,
+    "owner": {
+      "login": "unbindapp",
+      "id": 150000001,
+      "type": "Organization"
+    },
+    "html_url": "https://github.com/unbindapp/unbind",
+    "has_issues": true,
+    "default_branch": "master"
+  },
+  "sender": {
+    "login": "octocat",
+    "id": 583231,
+    "type": "User"
+  },
+  "changes": {
+    "title": {
+      "from": "Deploy logs stop streaming after 10 minutes"
+    }
+  }
+}

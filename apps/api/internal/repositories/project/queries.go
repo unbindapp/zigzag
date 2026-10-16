@@ -126,6 +126,13 @@ func (self *ProjectRepository) GetBySlug(ctx context.Context, workspaceID uuid.U
 	return withProjectEdges(self.base.DB.Project.Query().Where(project.WorkspaceID(workspaceID), project.Slug(slug))).Only(ctx)
 }
 
+func (self *ProjectRepository) GetByName(ctx context.Context, workspaceID uuid.UUID, name string) (*ent.Project, error) {
+	return withProjectEdges(self.base.DB.Project.Query().
+		Where(project.WorkspaceID(workspaceID), project.NameEqualFold(name), project.TrashedAtIsNil()).
+		Order(ent.Asc(project.FieldCreatedAt))).
+		First(ctx)
+}
+
 func (self *ProjectRepository) ResolveWorkspaceOfProject(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	found, err := self.base.DB.Project.Query().Where(project.ID(id)).Select(project.FieldWorkspaceID).Only(ctx)
 	if err != nil {

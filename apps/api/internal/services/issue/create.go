@@ -8,13 +8,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/common/markdown"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
+	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 )
 
 type CreateIssueInput struct {
@@ -43,6 +43,19 @@ type createdIssue struct {
 }
 
 func (self *IssueService) Create(ctx context.Context, userID uuid.UUID, input *CreateIssueInput) (*models.IssueResponse, error) {
+	return self.create(ctx, userID, input, nil)
+}
+
+type LinkInTx func(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID) error
+
+func (self *IssueService) CreateFromGithub(ctx context.Context, actorID uuid.UUID, input *CreateIssueInput, link LinkInTx) (*models.IssueResponse, error) {
+	if !permissions_repo.IsSystemCaller(ctx) {
+		return nil, errdefs.ErrUnauthorized
+	}
+	return self.create(ctx, actorID, input, link)
+}
+
+func (self *IssueService) create(ctx context.Context, userID uuid.UUID, input *CreateIssueInput, link LinkInTx) (*models.IssueResponse, error) {
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if ent.IsNotFound(err) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Team not found")
@@ -77,6 +90,11 @@ func (self *IssueService) Create(ctx context.Context, userID uuid.UUID, input *C
 		created, err = self.insert(ctx, tx, userID, team, input)
 		if err != nil {
 			return err
+		}
+		if link != nil {
+			if err := link(ctx, tx, created.issue.ID); err != nil {
+				return err
+			}
 		}
 		for _, sub := range subIssues {
 			child, err := self.insert(ctx, tx, userID, team, &CreateIssueInput{TeamID: team.ID, Title: sub.Title, Description: sub.Description, ParentID: &created.issue.ID})
@@ -161,7 +179,7 @@ func (self *IssueService) insert(ctx context.Context, tx repository.TxInterface,
 		Title:           title,
 		Description:     input.Description,
 		DescriptionText: markdown.PlainText(input.Description),
-		CreatorID:       &userID,
+		CreatorID:       actorOf(userID),
 	}
 
 	state, err := self.initialState(ctx, team, userID, input.StateID)
@@ -232,7 +250,8 @@ func (self *IssueService) insert(ctx context.Context, tx repository.TxInterface,
 	if create.AssigneeID != nil {
 		subscribers = append(subscribers, *create.AssigneeID)
 	}
-	create.SubscriberIDs = without(subscribers)
+	nobody := uuid.Nil
+	create.SubscriberIDs = without(subscribers, &nobody)
 
 	if input.SortOrder != nil {
 		create.SortOrder = *input.SortOrder
@@ -248,9 +267,8 @@ func (self *IssueService) insert(ctx context.Context, tx repository.TxInterface,
 	if err != nil {
 		return nil, err
 	}
-	actor := &userID
 	change := schema.FieldChange{Field: "created", ToLabel: models.Identifier(team.Key, create.Number)}
-	if err := self.repo.Issue().CreateHistory(ctx, tx, issue.ID, actor, apictx.HistorySource(ctx), []schema.FieldChange{change}); err != nil {
+	if err := self.recordHistory(ctx, tx, issue.ID, actorOf(userID), []schema.FieldChange{change}); err != nil {
 		return nil, err
 	}
 	return &createdIssue{issue: issue, assignee: create.AssigneeID, mentioned: mentioned}, nil
@@ -295,7 +313,7 @@ func issueTitle(response *models.IssueResponse) string {
 }
 
 func (self *IssueService) notifyCreated(ctx context.Context, userID uuid.UUID, created *createdIssue, response *models.IssueResponse) {
-	actor := &userID
+	actor := actorOf(userID)
 	if created.assignee != nil {
 		self.notify(ctx, models.NotificationEvent{
 			Type: schema.NotificationIssueAssigned, WorkspaceID: response.WorkspaceID, ActorID: actor,

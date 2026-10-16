@@ -117,6 +117,8 @@ const (
 	EdgeReactions = "reactions"
 	// EdgeMoves holds the string denoting the moves edge name in mutations.
 	EdgeMoves = "moves"
+	// EdgeGithubLink holds the string denoting the github_link edge name in mutations.
+	EdgeGithubLink = "github_link"
 	// EdgeDocuments holds the string denoting the documents edge name in mutations.
 	EdgeDocuments = "documents"
 	// EdgeNotifications holds the string denoting the notifications edge name in mutations.
@@ -246,6 +248,13 @@ const (
 	MovesInverseTable = "issue_moves"
 	// MovesColumn is the table column denoting the moves relation/edge.
 	MovesColumn = "issue_id"
+	// GithubLinkTable is the table that holds the github_link relation/edge.
+	GithubLinkTable = "github_issue_links"
+	// GithubLinkInverseTable is the table name for the GithubIssueLink entity.
+	// It exists in this package in order to avoid circular dependency with the "githubissuelink" package.
+	GithubLinkInverseTable = "github_issue_links"
+	// GithubLinkColumn is the table column denoting the github_link relation/edge.
+	GithubLinkColumn = "issue_id"
 	// DocumentsTable is the table that holds the documents relation/edge.
 	DocumentsTable = "documents"
 	// DocumentsInverseTable is the table name for the Document entity.
@@ -708,6 +717,13 @@ func ByMoves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByGithubLinkField orders the results by github_link field.
+func ByGithubLinkField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubLinkStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByDocumentsCount orders the results by documents count.
 func ByDocumentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -866,6 +882,13 @@ func newMovesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MovesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MovesTable, MovesColumn),
+	)
+}
+func newGithubLinkStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubLinkInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, GithubLinkTable, GithubLinkColumn),
 	)
 }
 func newDocumentsStep() *sqlgraph.Step {

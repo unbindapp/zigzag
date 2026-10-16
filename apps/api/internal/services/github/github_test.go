@@ -25,6 +25,7 @@ import (
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	mocks_services_githubsync "github.com/unbindapp/zigzag-api/mocks/services/githubsync"
 	mocks_services_notification "github.com/unbindapp/zigzag-api/mocks/services/notification"
 	mocks_services_webhook "github.com/unbindapp/zigzag-api/mocks/services/webhook"
 )
@@ -75,8 +76,10 @@ func (suite *GithubServiceSuite) SetupTest() {
 	suite.notifications = mocks_services_notification.NewNotificationServiceMock(suite.T())
 	suite.webhooks = mocks_services_webhook.NewWebhookServiceMock(suite.T())
 	cfg := &config.Config{ExternalUIUrl: "https://zz.example.com"}
-	issues := issue_service.NewIssueService(cfg, suite.MockRepo, suite.notifications, suite.webhooks)
-	suite.service = NewGithubService(cfg, suite.MockRepo, suite.encryptor, issues)
+	githubSync := mocks_services_githubsync.NewGithubSyncServiceMock(suite.T())
+	githubSync.EXPECT().AfterIssueUpdate(mock.Anything, mock.Anything, mock.Anything).Maybe()
+	issues := issue_service.NewIssueService(cfg, suite.MockRepo, suite.notifications, suite.webhooks, githubSync)
+	suite.service = NewGithubService(cfg, suite.MockRepo, suite.encryptor, Dependencies{Issues: issues})
 	suite.now = time.Date(2026, 10, 16, 9, 0, 0, 0, time.UTC)
 	suite.service.now = func() time.Time { return suite.now }
 	suite.userID, suite.workspaceID = uuid.New(), uuid.New()
@@ -416,6 +419,7 @@ func (suite *GithubServiceSuite) TestPingRecordsTheRepository() {
 }
 
 func (suite *GithubServiceSuite) TestOtherEventsAreIgnored() {
+	suite.MockGithubRepo.EXPECT().RepoSyncByName(mock.Anything, suite.integration.ID, repoName).Return(nil, &ent.NotFoundError{}).Once()
 	handled, err := suite.deliver("issues", map[string]any{"action": "opened", "repository": map[string]any{"full_name": repoName}})
 	suite.Require().NoError(err)
 	suite.False(handled)

@@ -30,6 +30,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/database"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/storage"
+	"github.com/unbindapp/zigzag-api/internal/integrations/github"
 	"github.com/unbindapp/zigzag-api/internal/mcpserver"
 	"github.com/unbindapp/zigzag-api/internal/oauthserver"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
@@ -41,6 +42,7 @@ import (
 	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
 	favorite_service "github.com/unbindapp/zigzag-api/internal/services/favorite"
 	github_service "github.com/unbindapp/zigzag-api/internal/services/github"
+	github_sync_service "github.com/unbindapp/zigzag-api/internal/services/githubsync"
 	import_service "github.com/unbindapp/zigzag-api/internal/services/import"
 	initiative_service "github.com/unbindapp/zigzag-api/internal/services/initiative"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
@@ -140,6 +142,8 @@ func startAPI(cfg *config.Config) {
 	notificationService := notification_service.NewNotificationService(cfg, repo, emailService)
 	webhookService := webhook_service.NewWebhookService(cfg, repo)
 	cycleService := cycle_service.NewCycleService(cfg, repo, webhookService)
+	githubClient := github.NewClient(cfg.GithubAPIURL)
+	githubSyncService := github_sync_service.NewGithubSyncService(repo, encryptor, githubClient)
 
 	srvImpl := &server.Server{
 		Cfg:                 cfg,
@@ -154,7 +158,7 @@ func startAPI(cfg *config.Config) {
 		OAuthServerService:  oauthServerService,
 		SystemService:       system_service.NewSystemService(repo),
 		UploadService:       upload_service.NewUploadService(cfg, repo, store),
-		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService),
+		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService, githubSyncService),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notificationService, webhookService),
 		LabelService:        label_service.NewLabelService(cfg, repo),
 		CycleService:        cycleService,
@@ -168,8 +172,13 @@ func startAPI(cfg *config.Config) {
 	}
 	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
 	srvImpl.DocumentService = document_service.NewDocumentService(cfg, repo, srvImpl.IssueService)
-	srvImpl.CommentService = comment_service.NewCommentService(cfg, repo, srvImpl.IssueService, notificationService, webhookService)
-	srvImpl.GithubService = github_service.NewGithubService(cfg, repo, encryptor, srvImpl.IssueService)
+	srvImpl.CommentService = comment_service.NewCommentService(cfg, repo, srvImpl.IssueService, notificationService, webhookService, githubSyncService)
+	srvImpl.GithubService = github_service.NewGithubService(cfg, repo, encryptor, github_service.Dependencies{
+		Issues: srvImpl.IssueService, Comments: srvImpl.CommentService, Labels: srvImpl.LabelService, Projects: srvImpl.ProjectService, Client: githubClient,
+	})
+	if err := srvImpl.GithubService.RecoverBackfills(ctx); err != nil {
+		log.Error("Failed to mark interrupted GitHub imports", "err", err)
+	}
 
 	allowedOrigins := []string{cfg.ExternalUIUrl}
 	if cfg.InjectDevOrigins {

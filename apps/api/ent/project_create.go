@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -538,6 +539,21 @@ func (_c *ProjectCreate) AddLinks(v ...*ProjectLink) *ProjectCreate {
 	return _c.AddLinkIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_c *ProjectCreate) AddGithubRepoSyncIDs(ids ...uuid.UUID) *ProjectCreate {
+	_c.mutation.AddGithubRepoSyncIDs(ids...)
+	return _c
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_c *ProjectCreate) AddGithubRepoSyncs(v ...*GithubRepoSync) *ProjectCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGithubRepoSyncIDs(ids...)
+}
+
 // AddNotificationIDs adds the "notifications" edge to the Notification entity by IDs.
 func (_c *ProjectCreate) AddNotificationIDs(ids ...uuid.UUID) *ProjectCreate {
 	_c.mutation.AddNotificationIDs(ids...)
@@ -1005,6 +1021,22 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(projectlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -17,6 +17,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/issuehistory"
 	"github.com/unbindapp/zigzag-api/ent/issuemove"
@@ -59,6 +60,7 @@ type IssueQuery struct {
 	withHistory          *IssueHistoryQuery
 	withReactions        *ReactionQuery
 	withMoves            *IssueMoveQuery
+	withGithubLink       *GithubIssueLinkQuery
 	withDocuments        *DocumentQuery
 	withNotifications    *NotificationQuery
 	modifiers            []func(*sql.Selector)
@@ -516,6 +518,28 @@ func (_q *IssueQuery) QueryMoves() *IssueMoveQuery {
 	return query
 }
 
+// QueryGithubLink chains the current query on the "github_link" edge.
+func (_q *IssueQuery) QueryGithubLink() *GithubIssueLinkQuery {
+	query := (&GithubIssueLinkClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(issue.Table, issue.FieldID, selector),
+			sqlgraph.To(githubissuelink.Table, githubissuelink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, issue.GithubLinkTable, issue.GithubLinkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryDocuments chains the current query on the "documents" edge.
 func (_q *IssueQuery) QueryDocuments() *DocumentQuery {
 	query := (&DocumentClient{config: _q.config}).Query()
@@ -771,6 +795,7 @@ func (_q *IssueQuery) Clone() *IssueQuery {
 		withHistory:          _q.withHistory.Clone(),
 		withReactions:        _q.withReactions.Clone(),
 		withMoves:            _q.withMoves.Clone(),
+		withGithubLink:       _q.withGithubLink.Clone(),
 		withDocuments:        _q.withDocuments.Clone(),
 		withNotifications:    _q.withNotifications.Clone(),
 		// clone intermediate query.
@@ -989,6 +1014,17 @@ func (_q *IssueQuery) WithMoves(opts ...func(*IssueMoveQuery)) *IssueQuery {
 	return _q
 }
 
+// WithGithubLink tells the query-builder to eager-load the nodes that are connected to
+// the "github_link" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IssueQuery) WithGithubLink(opts ...func(*GithubIssueLinkQuery)) *IssueQuery {
+	query := (&GithubIssueLinkClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubLink = query
+	return _q
+}
+
 // WithDocuments tells the query-builder to eager-load the nodes that are connected to
 // the "documents" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IssueQuery) WithDocuments(opts ...func(*DocumentQuery)) *IssueQuery {
@@ -1089,7 +1125,7 @@ func (_q *IssueQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Issue,
 	var (
 		nodes       = []*Issue{}
 		_spec       = _q.querySpec()
-		loadedTypes = [21]bool{
+		loadedTypes = [22]bool{
 			_q.withWorkspace != nil,
 			_q.withTeam != nil,
 			_q.withState != nil,
@@ -1109,6 +1145,7 @@ func (_q *IssueQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Issue,
 			_q.withHistory != nil,
 			_q.withReactions != nil,
 			_q.withMoves != nil,
+			_q.withGithubLink != nil,
 			_q.withDocuments != nil,
 			_q.withNotifications != nil,
 		}
@@ -1255,6 +1292,12 @@ func (_q *IssueQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Issue,
 		if err := _q.loadMoves(ctx, query, nodes,
 			func(n *Issue) { n.Edges.Moves = []*IssueMove{} },
 			func(n *Issue, e *IssueMove) { n.Edges.Moves = append(n.Edges.Moves, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubLink; query != nil {
+		if err := _q.loadGithubLink(ctx, query, nodes, nil,
+			func(n *Issue, e *GithubIssueLink) { n.Edges.GithubLink = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1907,6 +1950,33 @@ func (_q *IssueQuery) loadMoves(ctx context.Context, query *IssueMoveQuery, node
 	}
 	query.Where(predicate.IssueMove(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(issue.MovesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IssueID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "issue_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *IssueQuery) loadGithubLink(ctx context.Context, query *GithubIssueLinkQuery, nodes []*Issue, init func(*Issue), assign func(*Issue, *GithubIssueLink)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Issue)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubissuelink.FieldIssueID)
+	}
+	query.Where(predicate.GithubIssueLink(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(issue.GithubLinkColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

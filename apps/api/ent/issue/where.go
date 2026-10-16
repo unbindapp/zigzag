@@ -2123,6 +2123,29 @@ func HasMovesWith(preds ...predicate.IssueMove) predicate.Issue {
 	})
 }
 
+// HasGithubLink applies the HasEdge predicate on the "github_link" edge.
+func HasGithubLink() predicate.Issue {
+	return predicate.Issue(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, GithubLinkTable, GithubLinkColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubLinkWith applies the HasEdge predicate on the "github_link" edge with a given conditions (other predicates).
+func HasGithubLinkWith(preds ...predicate.GithubIssueLink) predicate.Issue {
+	return predicate.Issue(func(s *sql.Selector) {
+		step := newGithubLinkStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasDocuments applies the HasEdge predicate on the "documents" edge.
 func HasDocuments() predicate.Issue {
 	return predicate.Issue(func(s *sql.Selector) {

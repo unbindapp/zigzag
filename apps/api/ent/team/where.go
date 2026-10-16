@@ -1577,6 +1577,29 @@ func HasIssueMovesWith(preds ...predicate.IssueMove) predicate.Team {
 	})
 }
 
+// HasGithubRepoSyncs applies the HasEdge predicate on the "github_repo_syncs" edge.
+func HasGithubRepoSyncs() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GithubRepoSyncsTable, GithubRepoSyncsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubRepoSyncsWith applies the HasEdge predicate on the "github_repo_syncs" edge with a given conditions (other predicates).
+func HasGithubRepoSyncsWith(preds ...predicate.GithubRepoSync) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newGithubRepoSyncsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Team) predicate.Team {
 	return predicate.Team(sql.AndPredicates(predicates...))

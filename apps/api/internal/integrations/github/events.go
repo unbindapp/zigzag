@@ -3,9 +3,11 @@ package github
 import "strings"
 
 const (
-	EventPing        = "ping"
-	EventPullRequest = "pull_request"
-	EventPush        = "push"
+	EventPing         = "ping"
+	EventPullRequest  = "pull_request"
+	EventPush         = "push"
+	EventIssues       = "issues"
+	EventIssueComment = "issue_comment"
 )
 
 const (
@@ -22,6 +24,13 @@ type Repository struct {
 
 type Account struct {
 	Login string `json:"login"`
+}
+
+func (self *Account) LoginOrEmpty() string {
+	if self == nil {
+		return ""
+	}
+	return self.Login
 }
 
 type Envelope struct {
@@ -88,4 +97,25 @@ func (self PushEvent) Branch() (string, bool) {
 
 func BranchURL(repository Repository, branch string) string {
 	return strings.TrimRight(repository.HTMLURL, "/") + "/tree/" + branch
+}
+
+type IssuesEvent struct {
+	Action     string     `json:"action"`
+	Issue      Issue      `json:"issue"`
+	Label      *Label     `json:"label"`
+	Assignee   *Account   `json:"assignee"`
+	Repository Repository `json:"repository"`
+	Sender     Account    `json:"sender"`
+	Changes    struct {
+		NewIssue      *Issue      `json:"new_issue"`
+		NewRepository *Repository `json:"new_repository"`
+	} `json:"changes"`
+}
+
+type IssueCommentEvent struct {
+	Action     string     `json:"action"`
+	Issue      Issue      `json:"issue"`
+	Comment    Comment    `json:"comment"`
+	Repository Repository `json:"repository"`
+	Sender     Account    `json:"sender"`
 }

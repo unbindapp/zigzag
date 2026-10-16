@@ -12,10 +12,11 @@ import (
 )
 
 type CreateCommentInput struct {
-	IssueID  uuid.UUID
-	AuthorID *uuid.UUID
-	Body     string
-	ParentID *uuid.UUID
+	IssueID   uuid.UUID
+	AuthorID  *uuid.UUID
+	Body      string
+	ParentID  *uuid.UUID
+	CreatedAt *time.Time
 }
 
 func (self *CommentRepository) Create(ctx context.Context, tx repository.TxInterface, input *CreateCommentInput) (*ent.Comment, error) {
@@ -24,6 +25,7 @@ func (self *CommentRepository) Create(ctx context.Context, tx repository.TxInter
 		SetNillableAuthorID(input.AuthorID).
 		SetBody(input.Body).
 		SetNillableParentID(input.ParentID).
+		SetNillableCreatedAt(input.CreatedAt).
 		Save(ctx)
 }
 

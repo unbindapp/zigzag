@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { describeChange } from "./activity-text.ts";
+import { describeChange, historyActorOf, readsWithoutActor } from "./activity-text.ts";
 
 const change = (field: string, from = "", to = "", fromLabel = "", toLabel = "") => ({
   field,
@@ -43,7 +43,23 @@ test("GitHub events read with their label", () => {
     describeChange(
       change("github", "", "https://github.com/a/b/pull/42", "", "Pull request #42 opened"),
     ),
-    "on GitHub: Pull request #42 opened",
+    "Pull request #42 opened",
   );
-  assert.equal(describeChange(change("github")), "updated from GitHub");
+  assert.equal(describeChange(change("github")), "Updated from GitHub");
+});
+
+test("entries from GitHub read as GitHub unless a linked user made them", () => {
+  const github = change("github", "", "https://github.com/a/b/issues/1", "", "Closed on GitHub");
+  assert.deepEqual(historyActorOf({ actor: null, changes: [change("state"), github] }), {
+    kind: "github",
+  });
+  assert.deepEqual(
+    historyActorOf({ actor: { name: "Eve", display_name: "eve" }, changes: [github] }),
+    { kind: "user", name: "Eve" },
+  );
+  assert.deepEqual(historyActorOf({ actor: null, changes: [change("archived")] }), {
+    kind: "zigzag",
+  });
+  assert.equal(readsWithoutActor(github), true);
+  assert.equal(readsWithoutActor(change("state")), false);
 });

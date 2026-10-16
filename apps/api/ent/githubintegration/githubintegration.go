@@ -29,12 +29,18 @@ const (
 	FieldCreatedByID = "created_by_id"
 	// FieldLastDeliveryAt holds the string denoting the last_delivery_at field in the database.
 	FieldLastDeliveryAt = "last_delivery_at"
+	// FieldTokenEncrypted holds the string denoting the token_encrypted field in the database.
+	FieldTokenEncrypted = "token_encrypted"
+	// FieldTokenPrefix holds the string denoting the token_prefix field in the database.
+	FieldTokenPrefix = "token_prefix"
 	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
 	EdgeWorkspace = "workspace"
 	// EdgeCreatedBy holds the string denoting the created_by edge name in mutations.
 	EdgeCreatedBy = "created_by"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
 	EdgeRepositories = "repositories"
+	// EdgeRepoSyncs holds the string denoting the repo_syncs edge name in mutations.
+	EdgeRepoSyncs = "repo_syncs"
 	// Table holds the table name of the githubintegration in the database.
 	Table = "github_integrations"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -58,6 +64,13 @@ const (
 	RepositoriesInverseTable = "github_repositories"
 	// RepositoriesColumn is the table column denoting the repositories relation/edge.
 	RepositoriesColumn = "integration_id"
+	// RepoSyncsTable is the table that holds the repo_syncs relation/edge.
+	RepoSyncsTable = "github_repo_syncs"
+	// RepoSyncsInverseTable is the table name for the GithubRepoSync entity.
+	// It exists in this package in order to avoid circular dependency with the "githubreposync" package.
+	RepoSyncsInverseTable = "github_repo_syncs"
+	// RepoSyncsColumn is the table column denoting the repo_syncs relation/edge.
+	RepoSyncsColumn = "integration_id"
 )
 
 // Columns holds all SQL columns for githubintegration fields.
@@ -70,6 +83,8 @@ var Columns = []string{
 	FieldSecretPrefix,
 	FieldCreatedByID,
 	FieldLastDeliveryAt,
+	FieldTokenEncrypted,
+	FieldTokenPrefix,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -89,6 +104,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultTokenPrefix holds the default value on creation for the "token_prefix" field.
+	DefaultTokenPrefix string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -131,6 +148,11 @@ func ByLastDeliveryAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastDeliveryAt, opts...).ToFunc()
 }
 
+// ByTokenPrefix orders the results by the token_prefix field.
+func ByTokenPrefix(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTokenPrefix, opts...).ToFunc()
+}
+
 // ByWorkspaceField orders the results by workspace field.
 func ByWorkspaceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -158,6 +180,20 @@ func ByRepositories(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRepositoriesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRepoSyncsCount orders the results by repo_syncs count.
+func ByRepoSyncsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRepoSyncsStep(), opts...)
+	}
+}
+
+// ByRepoSyncs orders the results by repo_syncs terms.
+func ByRepoSyncs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRepoSyncsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -177,5 +213,12 @@ func newRepositoriesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RepositoriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RepositoriesTable, RepositoriesColumn),
+	)
+}
+func newRepoSyncsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RepoSyncsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RepoSyncsTable, RepoSyncsColumn),
 	)
 }

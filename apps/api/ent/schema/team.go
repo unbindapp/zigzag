@@ -66,6 +66,7 @@ func (Team) Edges() []ent.Edge {
 		edge.To("views", View.Type).Annotations(cascade()),
 		edge.To("webhooks", Webhook.Type).Annotations(cascade()),
 		edge.To("issue_moves", IssueMove.Type).Annotations(cascade()),
+		edge.To("github_repo_syncs", GithubRepoSync.Type).Annotations(cascade()),
 	}
 }
 

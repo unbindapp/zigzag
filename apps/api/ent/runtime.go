@@ -13,8 +13,11 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -231,6 +234,27 @@ func init() {
 	favoriteDescID := favoriteMixinFields0[0].Descriptor()
 	// favorite.DefaultID holds the default value on creation for the id field.
 	favorite.DefaultID = favoriteDescID.Default.(func() uuid.UUID)
+	githubcommentlinkMixin := schema.GithubCommentLink{}.Mixin()
+	githubcommentlinkMixinFields0 := githubcommentlinkMixin[0].Fields()
+	_ = githubcommentlinkMixinFields0
+	githubcommentlinkMixinFields1 := githubcommentlinkMixin[1].Fields()
+	_ = githubcommentlinkMixinFields1
+	githubcommentlinkFields := schema.GithubCommentLink{}.Fields()
+	_ = githubcommentlinkFields
+	// githubcommentlinkDescCreatedAt is the schema descriptor for created_at field.
+	githubcommentlinkDescCreatedAt := githubcommentlinkMixinFields1[0].Descriptor()
+	// githubcommentlink.DefaultCreatedAt holds the default value on creation for the created_at field.
+	githubcommentlink.DefaultCreatedAt = githubcommentlinkDescCreatedAt.Default.(func() time.Time)
+	// githubcommentlinkDescUpdatedAt is the schema descriptor for updated_at field.
+	githubcommentlinkDescUpdatedAt := githubcommentlinkMixinFields1[1].Descriptor()
+	// githubcommentlink.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	githubcommentlink.DefaultUpdatedAt = githubcommentlinkDescUpdatedAt.Default.(func() time.Time)
+	// githubcommentlink.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	githubcommentlink.UpdateDefaultUpdatedAt = githubcommentlinkDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubcommentlinkDescID is the schema descriptor for id field.
+	githubcommentlinkDescID := githubcommentlinkMixinFields0[0].Descriptor()
+	// githubcommentlink.DefaultID holds the default value on creation for the id field.
+	githubcommentlink.DefaultID = githubcommentlinkDescID.Default.(func() uuid.UUID)
 	githubintegrationMixin := schema.GithubIntegration{}.Mixin()
 	githubintegrationMixinFields0 := githubintegrationMixin[0].Fields()
 	_ = githubintegrationMixinFields0
@@ -248,10 +272,72 @@ func init() {
 	githubintegration.DefaultUpdatedAt = githubintegrationDescUpdatedAt.Default.(func() time.Time)
 	// githubintegration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	githubintegration.UpdateDefaultUpdatedAt = githubintegrationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubintegrationDescTokenPrefix is the schema descriptor for token_prefix field.
+	githubintegrationDescTokenPrefix := githubintegrationFields[6].Descriptor()
+	// githubintegration.DefaultTokenPrefix holds the default value on creation for the token_prefix field.
+	githubintegration.DefaultTokenPrefix = githubintegrationDescTokenPrefix.Default.(string)
 	// githubintegrationDescID is the schema descriptor for id field.
 	githubintegrationDescID := githubintegrationMixinFields0[0].Descriptor()
 	// githubintegration.DefaultID holds the default value on creation for the id field.
 	githubintegration.DefaultID = githubintegrationDescID.Default.(func() uuid.UUID)
+	githubissuelinkMixin := schema.GithubIssueLink{}.Mixin()
+	githubissuelinkMixinFields0 := githubissuelinkMixin[0].Fields()
+	_ = githubissuelinkMixinFields0
+	githubissuelinkMixinFields1 := githubissuelinkMixin[1].Fields()
+	_ = githubissuelinkMixinFields1
+	githubissuelinkFields := schema.GithubIssueLink{}.Fields()
+	_ = githubissuelinkFields
+	// githubissuelinkDescCreatedAt is the schema descriptor for created_at field.
+	githubissuelinkDescCreatedAt := githubissuelinkMixinFields1[0].Descriptor()
+	// githubissuelink.DefaultCreatedAt holds the default value on creation for the created_at field.
+	githubissuelink.DefaultCreatedAt = githubissuelinkDescCreatedAt.Default.(func() time.Time)
+	// githubissuelinkDescUpdatedAt is the schema descriptor for updated_at field.
+	githubissuelinkDescUpdatedAt := githubissuelinkMixinFields1[1].Descriptor()
+	// githubissuelink.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	githubissuelink.DefaultUpdatedAt = githubissuelinkDescUpdatedAt.Default.(func() time.Time)
+	// githubissuelink.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	githubissuelink.UpdateDefaultUpdatedAt = githubissuelinkDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubissuelinkDescNodeID is the schema descriptor for node_id field.
+	githubissuelinkDescNodeID := githubissuelinkFields[3].Descriptor()
+	// githubissuelink.NodeIDValidator is a validator for the "node_id" field. It is called by the builders before save.
+	githubissuelink.NodeIDValidator = githubissuelinkDescNodeID.Validators[0].(func(string) error)
+	// githubissuelinkDescID is the schema descriptor for id field.
+	githubissuelinkDescID := githubissuelinkMixinFields0[0].Descriptor()
+	// githubissuelink.DefaultID holds the default value on creation for the id field.
+	githubissuelink.DefaultID = githubissuelinkDescID.Default.(func() uuid.UUID)
+	githubreposyncMixin := schema.GithubRepoSync{}.Mixin()
+	githubreposyncMixinFields0 := githubreposyncMixin[0].Fields()
+	_ = githubreposyncMixinFields0
+	githubreposyncMixinFields1 := githubreposyncMixin[1].Fields()
+	_ = githubreposyncMixinFields1
+	githubreposyncFields := schema.GithubRepoSync{}.Fields()
+	_ = githubreposyncFields
+	// githubreposyncDescCreatedAt is the schema descriptor for created_at field.
+	githubreposyncDescCreatedAt := githubreposyncMixinFields1[0].Descriptor()
+	// githubreposync.DefaultCreatedAt holds the default value on creation for the created_at field.
+	githubreposync.DefaultCreatedAt = githubreposyncDescCreatedAt.Default.(func() time.Time)
+	// githubreposyncDescUpdatedAt is the schema descriptor for updated_at field.
+	githubreposyncDescUpdatedAt := githubreposyncMixinFields1[1].Descriptor()
+	// githubreposync.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	githubreposync.DefaultUpdatedAt = githubreposyncDescUpdatedAt.Default.(func() time.Time)
+	// githubreposync.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	githubreposync.UpdateDefaultUpdatedAt = githubreposyncDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubreposyncDescFullName is the schema descriptor for full_name field.
+	githubreposyncDescFullName := githubreposyncFields[1].Descriptor()
+	// githubreposync.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
+	githubreposync.FullNameValidator = githubreposyncDescFullName.Validators[0].(func(string) error)
+	// githubreposyncDescSyncClosed is the schema descriptor for sync_closed field.
+	githubreposyncDescSyncClosed := githubreposyncFields[4].Descriptor()
+	// githubreposync.DefaultSyncClosed holds the default value on creation for the sync_closed field.
+	githubreposync.DefaultSyncClosed = githubreposyncDescSyncClosed.Default.(bool)
+	// githubreposyncDescLastError is the schema descriptor for last_error field.
+	githubreposyncDescLastError := githubreposyncFields[5].Descriptor()
+	// githubreposync.DefaultLastError holds the default value on creation for the last_error field.
+	githubreposync.DefaultLastError = githubreposyncDescLastError.Default.(string)
+	// githubreposyncDescID is the schema descriptor for id field.
+	githubreposyncDescID := githubreposyncMixinFields0[0].Descriptor()
+	// githubreposync.DefaultID holds the default value on creation for the id field.
+	githubreposync.DefaultID = githubreposyncDescID.Default.(func() uuid.UUID)
 	githubrepositoryMixin := schema.GithubRepository{}.Mixin()
 	githubrepositoryMixinFields0 := githubrepositoryMixin[0].Fields()
 	_ = githubrepositoryMixinFields0

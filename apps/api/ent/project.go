@@ -109,11 +109,13 @@ type ProjectEdges struct {
 	Documents []*Document `json:"documents,omitempty"`
 	// Links holds the value of the links edge.
 	Links []*ProjectLink `json:"links,omitempty"`
+	// GithubRepoSyncs holds the value of the github_repo_syncs edge.
+	GithubRepoSyncs []*GithubRepoSync `json:"github_repo_syncs,omitempty"`
 	// Notifications holds the value of the notifications edge.
 	Notifications []*Notification `json:"notifications,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [14]bool
+	loadedTypes [15]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -241,10 +243,19 @@ func (e ProjectEdges) LinksOrErr() ([]*ProjectLink, error) {
 	return nil, &NotLoadedError{edge: "links"}
 }
 
+// GithubRepoSyncsOrErr returns the GithubRepoSyncs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) GithubRepoSyncsOrErr() ([]*GithubRepoSync, error) {
+	if e.loadedTypes[13] {
+		return e.GithubRepoSyncs, nil
+	}
+	return nil, &NotLoadedError{edge: "github_repo_syncs"}
+}
+
 // NotificationsOrErr returns the Notifications value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) NotificationsOrErr() ([]*Notification, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.Notifications, nil
 	}
 	return nil, &NotLoadedError{edge: "notifications"}
@@ -530,6 +541,11 @@ func (_m *Project) QueryDocuments() *DocumentQuery {
 // QueryLinks queries the "links" edge of the Project entity.
 func (_m *Project) QueryLinks() *ProjectLinkQuery {
 	return NewProjectClient(_m.config).QueryLinks(_m)
+}
+
+// QueryGithubRepoSyncs queries the "github_repo_syncs" edge of the Project entity.
+func (_m *Project) QueryGithubRepoSyncs() *GithubRepoSyncQuery {
+	return NewProjectClient(_m.config).QueryGithubRepoSyncs(_m)
 }
 
 // QueryNotifications queries the "notifications" edge of the Project entity.

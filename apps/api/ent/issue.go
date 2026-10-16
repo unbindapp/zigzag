@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/project"
 	"github.com/unbindapp/zigzag-api/ent/projectmilestone"
@@ -136,13 +137,15 @@ type IssueEdges struct {
 	Reactions []*Reaction `json:"reactions,omitempty"`
 	// Moves holds the value of the moves edge.
 	Moves []*IssueMove `json:"moves,omitempty"`
+	// GithubLink holds the value of the github_link edge.
+	GithubLink *GithubIssueLink `json:"github_link,omitempty"`
 	// Documents holds the value of the documents edge.
 	Documents []*Document `json:"documents,omitempty"`
 	// Notifications holds the value of the notifications edge.
 	Notifications []*Notification `json:"notifications,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [21]bool
+	loadedTypes [22]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -334,10 +337,21 @@ func (e IssueEdges) MovesOrErr() ([]*IssueMove, error) {
 	return nil, &NotLoadedError{edge: "moves"}
 }
 
+// GithubLinkOrErr returns the GithubLink value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IssueEdges) GithubLinkOrErr() (*GithubIssueLink, error) {
+	if e.GithubLink != nil {
+		return e.GithubLink, nil
+	} else if e.loadedTypes[19] {
+		return nil, &NotFoundError{label: githubissuelink.Label}
+	}
+	return nil, &NotLoadedError{edge: "github_link"}
+}
+
 // DocumentsOrErr returns the Documents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IssueEdges) DocumentsOrErr() ([]*Document, error) {
-	if e.loadedTypes[19] {
+	if e.loadedTypes[20] {
 		return e.Documents, nil
 	}
 	return nil, &NotLoadedError{edge: "documents"}
@@ -346,7 +360,7 @@ func (e IssueEdges) DocumentsOrErr() ([]*Document, error) {
 // NotificationsOrErr returns the Notifications value or an error if the edge
 // was not loaded in eager-loading.
 func (e IssueEdges) NotificationsOrErr() ([]*Notification, error) {
-	if e.loadedTypes[20] {
+	if e.loadedTypes[21] {
 		return e.Notifications, nil
 	}
 	return nil, &NotLoadedError{edge: "notifications"}
@@ -705,6 +719,11 @@ func (_m *Issue) QueryReactions() *ReactionQuery {
 // QueryMoves queries the "moves" edge of the Issue entity.
 func (_m *Issue) QueryMoves() *IssueMoveQuery {
 	return NewIssueClient(_m.config).QueryMoves(_m)
+}
+
+// QueryGithubLink queries the "github_link" edge of the Issue entity.
+func (_m *Issue) QueryGithubLink() *GithubIssueLinkQuery {
+	return NewIssueClient(_m.config).QueryGithubLink(_m)
 }
 
 // QueryDocuments queries the "documents" edge of the Issue entity.

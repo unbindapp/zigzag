@@ -43,6 +43,8 @@ type User struct {
 	Timezone string `json:"timezone,omitempty"`
 	// LastSeenAt holds the value of the "last_seen_at" field.
 	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
+	// Stored lowercased
+	GithubLogin *string `json:"github_login,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -454,7 +456,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case user.FieldSystemAdmin, user.FieldActive:
 			values[i] = new(sql.NullBool)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldName, user.FieldDisplayName, user.FieldTimezone:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldName, user.FieldDisplayName, user.FieldTimezone, user.FieldGithubLogin:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
@@ -548,6 +550,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.LastSeenAt = new(time.Time)
 				*_m.LastSeenAt = value.Time
+			}
+		case user.FieldGithubLogin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field github_login", values[i])
+			} else if value.Valid {
+				_m.GithubLogin = new(string)
+				*_m.GithubLogin = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -794,6 +803,11 @@ func (_m *User) String() string {
 	if v := _m.LastSeenAt; v != nil {
 		builder.WriteString("last_seen_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GithubLogin; v != nil {
+		builder.WriteString("github_login=")
+		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')
 	return builder.String()

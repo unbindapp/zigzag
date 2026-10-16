@@ -3,8 +3,10 @@ import { FolderGit2Icon, RefreshCwIcon, UnplugIcon } from "lucide-react";
 import { useState } from "react";
 
 import { GithubIcon } from "@/components/icons/github";
+import { GithubRepoSyncs } from "@/components/integrations/github-repo-syncs";
 import { GithubRepositoryRow } from "@/components/integrations/github-repository-row";
 import { GithubSecretDialog } from "@/components/integrations/github-secret-dialog";
+import { GithubTokenSection } from "@/components/integrations/github-token-section";
 import { GithubWebhookSteps } from "@/components/integrations/github-webhook-steps";
 import { ErrorCard } from "@/components/layout/error-card";
 import { List } from "@/components/layout/list";
@@ -27,7 +29,7 @@ import {
 } from "@/lib/queries/integrations";
 
 const description =
-  "Pull requests and branches that mention an issue identifier link to the issue and move it through the workflow.";
+  "Pull requests and branches that mention an issue identifier link to the issue and move it through the workflow. Synced repositories also keep their issues in step with Zigzag.";
 
 export function GithubSettings() {
   const { workspace } = useWorkspace();
@@ -135,6 +137,8 @@ function ConnectedGithub({ integration, onSecret }: TConnectedProps) {
         </PropertyRow>
         <GithubWebhookSteps />
       </SettingsSection>
+      <GithubTokenSection integration={integration} />
+      <GithubRepoSyncs />
       <SettingsSection
         title="Repositories"
         description="Repositories whose webhooks delivered events with a valid signature."

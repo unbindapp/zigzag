@@ -18,6 +18,7 @@ import (
 	comment_repo "github.com/unbindapp/zigzag-api/internal/repositories/comment"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	github_sync_service "github.com/unbindapp/zigzag-api/internal/services/githubsync"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
 	notification_service "github.com/unbindapp/zigzag-api/internal/services/notification"
 	webhook_service "github.com/unbindapp/zigzag-api/internal/services/webhook"
@@ -30,11 +31,12 @@ type CommentService struct {
 	issues        *issue_service.IssueService
 	notifications notification_service.NotificationServiceInterface
 	webhooks      webhook_service.WebhookServiceInterface
+	githubSync    github_sync_service.GithubSyncServiceInterface
 	now           func() time.Time
 }
 
-func NewCommentService(cfg *config.Config, repo repositories.RepositoriesInterface, issues *issue_service.IssueService, notifications notification_service.NotificationServiceInterface, webhooks webhook_service.WebhookServiceInterface) *CommentService {
-	return &CommentService{cfg: cfg, repo: repo, issues: issues, notifications: notifications, webhooks: webhooks, now: time.Now}
+func NewCommentService(cfg *config.Config, repo repositories.RepositoriesInterface, issues *issue_service.IssueService, notifications notification_service.NotificationServiceInterface, webhooks webhook_service.WebhookServiceInterface, githubSync github_sync_service.GithubSyncServiceInterface) *CommentService {
+	return &CommentService{cfg: cfg, repo: repo, issues: issues, notifications: notifications, webhooks: webhooks, githubSync: githubSync, now: time.Now}
 }
 
 const snippetRunes = 280
@@ -101,43 +103,63 @@ func (self *CommentService) Create(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return nil, err
 	}
-	mentioned, err := self.members(ctx, issue.WorkspaceID, markdown.Mentions(body))
+	return self.create(ctx, issue, &comment_repo.CreateCommentInput{IssueID: issue.ID, AuthorID: &userID, Body: body, ParentID: parentID}, nil)
+}
+
+type LinkInTx func(ctx context.Context, tx repository.TxInterface, commentID uuid.UUID) error
+
+func (self *CommentService) create(ctx context.Context, issue *ent.Issue, input *comment_repo.CreateCommentInput, link LinkInTx) (*models.CommentResponse, error) {
+	mentioned, err := self.members(ctx, issue.WorkspaceID, markdown.Mentions(input.Body))
 	if err != nil {
 		return nil, err
+	}
+	subscribe := mentioned
+	if input.AuthorID != nil {
+		subscribe = append([]uuid.UUID{*input.AuthorID}, mentioned...)
 	}
 
 	var created *ent.Comment
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		created, err = self.repo.Comment().Create(ctx, tx, &comment_repo.CreateCommentInput{IssueID: issue.ID, AuthorID: &userID, Body: body, ParentID: parentID})
+		created, err = self.repo.Comment().Create(ctx, tx, input)
 		if err != nil {
 			return err
 		}
-		return self.repo.Issue().Subscribe(ctx, tx, issue.ID, append([]uuid.UUID{userID}, mentioned...)...)
+		if link != nil {
+			if err := link(ctx, tx, created.ID); err != nil {
+				return err
+			}
+		}
+		return self.repo.Issue().Subscribe(ctx, tx, issue.ID, subscribe...)
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := self.respondOne(ctx, userID, created.ID)
+	viewer := uuid.Nil
+	if input.AuthorID != nil {
+		viewer = *input.AuthorID
+	}
+	response, err := self.respondOne(ctx, viewer, created.ID)
 	if err != nil {
 		return nil, err
 	}
 	title := models.Identifier(issue.Edges.Team.Key, issue.Number) + " " + issue.Title
-	self.notify(ctx, userID, issue, created.ID, schema.NotificationCommentMentioned, mentioned, title, body)
+	self.notify(ctx, input.AuthorID, issue, created.ID, schema.NotificationCommentMentioned, mentioned, title, input.Body)
 	subscribers, err := self.repo.Issue().SubscriberIDs(ctx, issue.ID)
 	if err != nil {
 		log.Error("Failed to load issue subscribers", "issue", issue.ID, "err", err)
 	}
 	others := []uuid.UUID{}
 	for _, id := range subscribers {
-		if id != userID && !slices.Contains(mentioned, id) {
+		if id != viewer && !slices.Contains(mentioned, id) {
 			others = append(others, id)
 		}
 	}
-	self.notify(ctx, userID, issue, created.ID, schema.NotificationIssueCommented, others, title, body)
+	self.notify(ctx, input.AuthorID, issue, created.ID, schema.NotificationIssueCommented, others, title, input.Body)
 	if err := self.webhooks.Emit(ctx, issue.WorkspaceID, "comment.created", map[string]any{"comment": response, "issue_id": issue.ID}); err != nil {
 		log.Error("Failed to emit webhook", "event", "comment.created", "err", err)
 	}
+	self.githubSync.AfterCommentCreate(ctx, created.ID)
 	return response, nil
 }
 
@@ -193,7 +215,8 @@ func (self *CommentService) Update(ctx context.Context, userID uuid.UUID, input 
 		return nil, err
 	}
 	title := models.Identifier(issue.Edges.Team.Key, issue.Number) + " " + issue.Title
-	self.notify(ctx, userID, issue, comment.ID, schema.NotificationCommentMentioned, mentioned, title, body)
+	self.notify(ctx, actorOf(userID), issue, comment.ID, schema.NotificationCommentMentioned, mentioned, title, body)
+	self.githubSync.AfterCommentUpdate(ctx, comment.ID)
 	return self.respondOne(ctx, userID, comment.ID)
 }
 
@@ -206,7 +229,11 @@ func (self *CommentService) Delete(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return err
 	}
-	return self.repo.Comment().Delete(ctx, comment.ID)
+	if err := self.repo.Comment().Delete(ctx, comment.ID); err != nil {
+		return err
+	}
+	self.githubSync.AfterCommentDelete(ctx, comment.ID)
+	return nil
 }
 
 func (self *CommentService) Resolve(ctx context.Context, userID uuid.UUID, input *CommentRefInput) (*models.CommentResponse, error) {
@@ -316,24 +343,30 @@ func (self *CommentService) members(ctx context.Context, workspaceID uuid.UUID, 
 	return members, nil
 }
 
-func (self *CommentService) notify(ctx context.Context, userID uuid.UUID, issue *ent.Issue, commentID uuid.UUID, kind schema.NotificationType, recipients []uuid.UUID, title, body string) {
+func (self *CommentService) notify(ctx context.Context, actor *uuid.UUID, issue *ent.Issue, commentID uuid.UUID, kind schema.NotificationType, recipients []uuid.UUID, title, body string) {
 	filtered := make([]uuid.UUID, 0, len(recipients))
 	for _, id := range recipients {
-		if id != userID && !slices.Contains(filtered, id) {
+		if (actor == nil || id != *actor) && !slices.Contains(filtered, id) {
 			filtered = append(filtered, id)
 		}
 	}
 	if len(filtered) == 0 {
 		return
 	}
-	actor := userID
 	err := self.notifications.Notify(ctx, models.NotificationEvent{
-		Type: kind, WorkspaceID: issue.WorkspaceID, ActorID: &actor, RecipientIDs: filtered,
+		Type: kind, WorkspaceID: issue.WorkspaceID, ActorID: actor, RecipientIDs: filtered,
 		IssueID: &issue.ID, CommentID: &commentID, Title: title, Body: snippet(markdown.PlainText(body)),
 	})
 	if err != nil {
 		log.Error("Failed to record notifications", "type", kind, "err", err)
 	}
+}
+
+func actorOf(userID uuid.UUID) *uuid.UUID {
+	if userID == uuid.Nil {
+		return nil
+	}
+	return &userID
 }
 
 func snippet(text string) string {

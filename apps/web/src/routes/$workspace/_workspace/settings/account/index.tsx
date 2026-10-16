@@ -10,6 +10,7 @@ import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { SettingsPage } from "@/components/layout/settings-page";
 import { SettingsSection } from "@/components/layout/settings-section";
 import { defaultTheme, type TTheme } from "@/components/providers/themes";
+import { githubLoginSchema } from "@/components/integrations/github-sync";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
 import { FileTrigger } from "@/components/ui/file-trigger";
@@ -38,6 +39,7 @@ const formSchema = z.object({
     .trim()
     .regex(/^[a-z0-9._-]{2,32}$/, "Use 2 to 32 lowercase letters, numbers, dots or dashes."),
   timezone: z.string().min(1),
+  github_login: githubLoginSchema,
 });
 
 function AccountProfileSettingsPage() {
@@ -105,6 +107,7 @@ function ProfileSection({ me }: { me: TMe }) {
       name: me.user.name,
       display_name: me.user.display_name,
       timezone: me.user.timezone || "UTC",
+      github_login: me.user.github_login ?? "",
     },
     validators: { onChange: formSchema },
     onSubmit: async ({ value, formApi }) => {
@@ -143,6 +146,17 @@ function ProfileSection({ me }: { me: TMe }) {
       <form.AppField
         name="timezone"
         children={(field) => <field.SelectField label="Timezone" items={timezones} />}
+      />
+      <form.AppField
+        name="github_login"
+        children={(field) => (
+          <field.TextField
+            label="GitHub username"
+            placeholder="octocat"
+            autoComplete="off"
+            description="Issues and comments you write on synced repositories show as yours, and assigning you here assigns you on GitHub."
+          />
+        )}
       />
     </SettingsSection>
   );

@@ -201,6 +201,26 @@ func (_u *UserUpdate) ClearLastSeenAt() *UserUpdate {
 	return _u
 }
 
+// SetGithubLogin sets the "github_login" field.
+func (_u *UserUpdate) SetGithubLogin(v string) *UserUpdate {
+	_u.mutation.SetGithubLogin(v)
+	return _u
+}
+
+// SetNillableGithubLogin sets the "github_login" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableGithubLogin(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetGithubLogin(*v)
+	}
+	return _u
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (_u *UserUpdate) ClearGithubLogin() *UserUpdate {
+	_u.mutation.ClearGithubLogin()
+	return _u
+}
+
 // SetAvatarUpload sets the "avatar_upload" edge to the Upload entity.
 func (_u *UserUpdate) SetAvatarUpload(v *Upload) *UserUpdate {
 	return _u.SetAvatarUploadID(v.ID)
@@ -1510,6 +1530,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LastSeenAtCleared() {
 		_spec.ClearField(user.FieldLastSeenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GithubLogin(); ok {
+		_spec.SetField(user.FieldGithubLogin, field.TypeString, value)
+	}
+	if _u.mutation.GithubLoginCleared() {
+		_spec.ClearField(user.FieldGithubLogin, field.TypeString)
 	}
 	if _u.mutation.AvatarUploadCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -3220,6 +3246,26 @@ func (_u *UserUpdateOne) ClearLastSeenAt() *UserUpdateOne {
 	return _u
 }
 
+// SetGithubLogin sets the "github_login" field.
+func (_u *UserUpdateOne) SetGithubLogin(v string) *UserUpdateOne {
+	_u.mutation.SetGithubLogin(v)
+	return _u
+}
+
+// SetNillableGithubLogin sets the "github_login" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableGithubLogin(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetGithubLogin(*v)
+	}
+	return _u
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (_u *UserUpdateOne) ClearGithubLogin() *UserUpdateOne {
+	_u.mutation.ClearGithubLogin()
+	return _u
+}
+
 // SetAvatarUpload sets the "avatar_upload" edge to the Upload entity.
 func (_u *UserUpdateOne) SetAvatarUpload(v *Upload) *UserUpdateOne {
 	return _u.SetAvatarUploadID(v.ID)
@@ -4559,6 +4605,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.LastSeenAtCleared() {
 		_spec.ClearField(user.FieldLastSeenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GithubLogin(); ok {
+		_spec.SetField(user.FieldGithubLogin, field.TypeString, value)
+	}
+	if _u.mutation.GithubLoginCleared() {
+		_spec.ClearField(user.FieldGithubLogin, field.TypeString)
 	}
 	if _u.mutation.AvatarUploadCleared() {
 		edge := &sqlgraph.EdgeSpec{

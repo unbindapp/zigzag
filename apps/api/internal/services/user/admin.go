@@ -70,6 +70,7 @@ type UpdateUserInput struct {
 	SystemAdmin *bool     `json:"system_admin,omitempty" required:"false" doc:"Grant or revoke instance administration"`
 	Active      *bool     `json:"active,omitempty" required:"false" doc:"Inactive users cannot sign in"`
 	Password    *string   `json:"password,omitempty" required:"false" minLength:"8" maxLength:"72" doc:"Set a new password; also activates placeholder accounts when active is sent"`
+	GithubLogin *string   `json:"github_login,omitempty" required:"false" maxLength:"40" doc:"GitHub username used by GitHub Issues sync; empty clears it"`
 }
 
 func (self *UserService) UpdateUser(ctx context.Context, requesterUserID uuid.UUID, input *UpdateUserInput) (*models.UserResponse, error) {
@@ -106,6 +107,13 @@ func (self *UserService) UpdateUser(ctx context.Context, requesterUserID uuid.UU
 			return nil, err
 		}
 		update.DisplayName = &handle
+	}
+	if input.GithubLogin != nil {
+		login, err := self.freeGithubLogin(ctx, *input.GithubLogin, target.ID)
+		if err != nil {
+			return nil, err
+		}
+		update.GithubLogin = &login
 	}
 	if input.Password != nil {
 		if len(*input.Password) < MinPasswordLength {

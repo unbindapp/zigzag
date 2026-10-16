@@ -63,6 +63,7 @@ func (Project) Edges() []ent.Edge {
 		edge.To("updates", ProjectPost.Type).Annotations(cascade()),
 		edge.To("documents", Document.Type).Annotations(cascade()),
 		edge.To("links", ProjectLink.Type).Annotations(cascade()),
+		edge.To("github_repo_syncs", GithubRepoSync.Type).Annotations(setNull()),
 		edge.To("notifications", Notification.Type).Annotations(setNull()),
 	}
 }

@@ -70,6 +70,7 @@ export const UserResponseSchema = z
     created_at: z.string().datetime({ offset: true }),
     display_name: z.string(), // Lowercase handle used in mentions
     email: z.string(),
+    github_login: z.string().nullable(), // GitHub username used by GitHub Issues sync
     id: z.string(),
     name: z.string(),
     system_admin: z.boolean(),
@@ -103,6 +104,15 @@ export const SessionWorkspaceResponseSchema = z
 export const AcceptInvitationResponseBodySchema = z
   .object({
     data: SessionWorkspaceResponseSchema,
+  })
+  .strip();
+
+export const AddGithubRepoSyncInputSchema = z
+  .object({
+    full_name: z.string(), // Repository as owner/name, like unbindapp/zigzag
+    sync_closed: z.boolean().optional(), // Include closed issues when importing existing issues
+    team_id: z.string(), // Team new issues from GitHub are created in
+    workspace_id: z.string(), // Workspace to sync the repository into
   })
   .strip();
 
@@ -205,6 +215,13 @@ export const AttachmentResponseSchema = z
 export const AttachmentResponseBodySchema = z
   .object({
     data: AttachmentResponseSchema,
+  })
+  .strip();
+
+export const BackfillGithubRepoSyncInputSchema = z
+  .object({
+    repo_sync_id: z.string(), // The synced repository to import existing issues from
+    sync_closed: z.boolean().optional(), // Include closed issues; defaults to the repository's setting and becomes it
   })
   .strip();
 
@@ -1029,10 +1046,12 @@ export const GithubIntegrationResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     created_by: UserSummarySchema.optional(),
+    has_token: z.boolean(), // Whether a GitHub token is stored for Issues sync
     id: z.string(),
     last_delivery_at: z.string().datetime({ offset: true }).nullable(), // When GitHub last delivered an event with a valid signature
     repositories: z.array(GithubRepositoryResponseSchema), // Repositories that delivered events, most recent first
     secret_prefix: z.string(), // First characters of the webhook secret, to tell secrets apart
+    token_prefix: z.string(), // First characters of the GitHub token, empty without one
     webhook_url: z.string(), // Payload URL for the GitHub webhook
     workspace_id: z.string(),
   })
@@ -1068,6 +1087,17 @@ export const GetInvitationResponseBodySchema = z
   })
   .strip();
 
+export const GithubBackfillReportSchema = z
+  .object({
+    comments_created: z.number(), // GitHub comments copied to Zigzag
+    issues_created: z.number(), // GitHub issues that became new Zigzag issues
+    issues_updated: z.number(), // Linked issues that changed to match GitHub
+    skipped: z.number(), // Pull requests and linked issues that were already up to date
+  })
+  .strip();
+
+export const GithubBackfillStatusSchema = z.enum(['none', 'running', 'completed', 'failed']);
+
 export const GithubDeliveryResponseSchema = z
   .object({
     event: z.string(), // The X-GitHub-Event header
@@ -1081,17 +1111,73 @@ export const GithubIntegrationRefInputSchema = z
   })
   .strip();
 
+export const GithubIntegrationResponseBodySchema = z
+  .object({
+    data: GithubIntegrationResponseSchema,
+  })
+  .strip();
+
 export const GithubIntegrationSecretResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     created_by: UserSummarySchema.optional(),
+    has_token: z.boolean(), // Whether a GitHub token is stored for Issues sync
     id: z.string(),
     last_delivery_at: z.string().datetime({ offset: true }).nullable(), // When GitHub last delivered an event with a valid signature
     repositories: z.array(GithubRepositoryResponseSchema), // Repositories that delivered events, most recent first
     secret: z.string(), // Webhook secret to paste into GitHub. Returned only here, store it now
     secret_prefix: z.string(), // First characters of the webhook secret, to tell secrets apart
+    token_prefix: z.string(), // First characters of the GitHub token, empty without one
     webhook_url: z.string(), // Payload URL for the GitHub webhook
     workspace_id: z.string(),
+  })
+  .strip();
+
+export const GithubIssueLinkResponseSchema = z
+  .object({
+    html_url: z.string(), // The issue on GitHub
+    number: z.number(), // Issue number on GitHub
+    repository: z.string(), // owner/name on GitHub
+  })
+  .strip();
+
+export const GithubRepoSyncRefInputSchema = z
+  .object({
+    repo_sync_id: z.string(), // The synced repository
+  })
+  .strip();
+
+export const TeamSummarySchema = z
+  .object({
+    color: z.string(),
+    icon: z.string(),
+    id: z.string(),
+    key: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const GithubRepoSyncResponseSchema = z
+  .object({
+    backfill_report: GithubBackfillReportSchema.optional(), // Counts of the running or last import
+    backfill_status: GithubBackfillStatusSchema, // none, running, completed or failed
+    created_at: z.string().datetime({ offset: true }),
+    full_name: z.string(), // owner/name on GitHub
+    html_url: z.string(), // The repository on GitHub
+    id: z.string(),
+    last_error: z.string(), // Last error talking to GitHub, empty after a success
+    last_synced_at: z.string().datetime({ offset: true }).nullable(), // Last successful import or change sent to GitHub
+    linked_issues: z.number(), // Zigzag issues linked to an issue of this repository
+    project: ProjectSummarySchema.optional(), // Project new issues from GitHub join; missing when it was deleted
+    sync_closed: z.boolean(), // Whether imports include closed issues
+    team: TeamSummarySchema.optional(), // Team new issues from GitHub land in
+    workspace_id: z.string(),
+  })
+  .strip();
+
+export const GithubRepoSyncResponseBodySchema = z
+  .object({
+    data: GithubRepoSyncResponseSchema,
   })
   .strip();
 
@@ -1669,6 +1755,7 @@ export const IssueDetailResponseSchema = z
     due_date: z.string().nullable(),
     estimate: z.number().nullable(),
     git_branch_name: z.string(),
+    github_issue: GithubIssueLinkResponseSchema.optional(), // The GitHub issue this issue syncs with, when its repository is synced
     id: z.string(),
     identifier: z.string(), // Team key and number, like ENG-123
     import_url: z.string(),
@@ -1801,6 +1888,12 @@ export const LinkResponseBodySchema = z
 export const ListAPIKeysResponseBodySchema = z
   .object({
     data: z.array(APIKeyResponseSchema),
+  })
+  .strip();
+
+export const ListGithubRepoSyncsResponseBodySchema = z
+  .object({
+    data: z.array(GithubRepoSyncResponseSchema),
   })
   .strip();
 
@@ -1983,16 +2076,6 @@ export const ProjectStatusResponseSchema = z
   })
   .strip();
 
-export const TeamSummarySchema = z
-  .object({
-    color: z.string(),
-    icon: z.string(),
-    id: z.string(),
-    key: z.string(),
-    name: z.string(),
-  })
-  .strip();
-
 export const ProjectResponseSchema = z
   .object({
     archived_at: z.string().datetime({ offset: true }).nullable(),
@@ -2097,6 +2180,12 @@ export const RelationRefInputSchema = z
 export const RelationResponseBodySchema = z
   .object({
     data: RelationResponseSchema,
+  })
+  .strip();
+
+export const RemoveGithubRepoSyncResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -2390,6 +2479,13 @@ export const UpdateDocumentInputSchema = z
   })
   .strip();
 
+export const UpdateGithubIntegrationInputSchema = z
+  .object({
+    token: z.string(), // Fine-grained GitHub token with Issues read and write on the synced repositories; empty clears it
+    workspace_id: z.string(), // Workspace whose GitHub connection to change
+  })
+  .strip();
+
 export const UpdateInitiativeInputSchema = z
   .object({
     color: z.string().optional(), // Hex color, empty to clear
@@ -2445,6 +2541,7 @@ export const UpdateMeInputSchema = z
   .object({
     avatar_upload_id: z.string().optional(), // An image you uploaded. Send 00000000-0000-0000-0000-000000000000 to remove the avatar.
     display_name: z.string().optional(), // Short handle used in mentions, lowercase and unique
+    github_login: z.string().optional(), // Your GitHub username, so GitHub Issues sync credits and assigns you; empty clears it
     name: z.string().optional(), // Full name
     timezone: z.string().optional(), // IANA time zone such as Europe/Berlin
   })
@@ -2581,6 +2678,7 @@ export const UpdateUserInputSchema = z
   .object({
     active: z.boolean().optional(), // Inactive users cannot sign in
     display_name: z.string().optional(), // Short handle used in mentions
+    github_login: z.string().optional(), // GitHub username used by GitHub Issues sync; empty clears it
     name: z.string().optional(), // Full name
     password: z.string().optional(), // Set a new password; also activates placeholder accounts when active is sent
     system_admin: z.boolean().optional(), // Grant or revoke instance administration
@@ -2846,6 +2944,7 @@ export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type WorkspaceResponse = z.infer<typeof WorkspaceResponseSchema>;
 export type SessionWorkspaceResponse = z.infer<typeof SessionWorkspaceResponseSchema>;
 export type AcceptInvitationResponseBody = z.infer<typeof AcceptInvitationResponseBodySchema>;
+export type AddGithubRepoSyncInput = z.infer<typeof AddGithubRepoSyncInputSchema>;
 export type AddMemberInput = z.infer<typeof AddMemberInputSchema>;
 export type InvitationResponse = z.infer<typeof InvitationResponseSchema>;
 export type MemberUser = z.infer<typeof MemberUserSchema>;
@@ -2857,6 +2956,7 @@ export type AttachmentRefInput = z.infer<typeof AttachmentRefInputSchema>;
 export type UserSummary = z.infer<typeof UserSummarySchema>;
 export type AttachmentResponse = z.infer<typeof AttachmentResponseSchema>;
 export type AttachmentResponseBody = z.infer<typeof AttachmentResponseBodySchema>;
+export type BackfillGithubRepoSyncInput = z.infer<typeof BackfillGithubRepoSyncInputSchema>;
 export type BootstrapInput = z.infer<typeof BootstrapInputSchema>;
 export type BulkUpdateIssuesInput = z.infer<typeof BulkUpdateIssuesInputSchema>;
 export type ChangePasswordInput = z.infer<typeof ChangePasswordInputSchema>;
@@ -2951,9 +3051,17 @@ export type GithubIntegrationStatusResponse = z.infer<typeof GithubIntegrationSt
 export type GetGithubResponseBody = z.infer<typeof GetGithubResponseBodySchema>;
 export type InvitationPreviewResponse = z.infer<typeof InvitationPreviewResponseSchema>;
 export type GetInvitationResponseBody = z.infer<typeof GetInvitationResponseBodySchema>;
+export type GithubBackfillReport = z.infer<typeof GithubBackfillReportSchema>;
+export type GithubBackfillStatus = z.infer<typeof GithubBackfillStatusSchema>;
 export type GithubDeliveryResponse = z.infer<typeof GithubDeliveryResponseSchema>;
 export type GithubIntegrationRefInput = z.infer<typeof GithubIntegrationRefInputSchema>;
+export type GithubIntegrationResponseBody = z.infer<typeof GithubIntegrationResponseBodySchema>;
 export type GithubIntegrationSecretResponse = z.infer<typeof GithubIntegrationSecretResponseSchema>;
+export type GithubIssueLinkResponse = z.infer<typeof GithubIssueLinkResponseSchema>;
+export type GithubRepoSyncRefInput = z.infer<typeof GithubRepoSyncRefInputSchema>;
+export type TeamSummary = z.infer<typeof TeamSummarySchema>;
+export type GithubRepoSyncResponse = z.infer<typeof GithubRepoSyncResponseSchema>;
+export type GithubRepoSyncResponseBody = z.infer<typeof GithubRepoSyncResponseBodySchema>;
 export type GithubSecretResponseBody = z.infer<typeof GithubSecretResponseBodySchema>;
 export type GithubWebhookResponseBody = z.infer<typeof GithubWebhookResponseBodySchema>;
 export type HistorySource = z.infer<typeof HistorySourceSchema>;
@@ -3023,6 +3131,7 @@ export type LabelResponseBody = z.infer<typeof LabelResponseBodySchema>;
 export type ProjectLinkResponse = z.infer<typeof ProjectLinkResponseSchema>;
 export type LinkResponseBody = z.infer<typeof LinkResponseBodySchema>;
 export type ListAPIKeysResponseBody = z.infer<typeof ListAPIKeysResponseBodySchema>;
+export type ListGithubRepoSyncsResponseBody = z.infer<typeof ListGithubRepoSyncsResponseBodySchema>;
 export type ListResponseBody = z.infer<typeof ListResponseBodySchema>;
 export type ListUsersResponseBody = z.infer<typeof ListUsersResponseBodySchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
@@ -3046,7 +3155,6 @@ export type PlainSuccessResponseBody = z.infer<typeof PlainSuccessResponseBodySc
 export type ProjectLinkRefInput = z.infer<typeof ProjectLinkRefInputSchema>;
 export type ProjectUpdateResponse = z.infer<typeof ProjectUpdateResponseSchema>;
 export type ProjectStatusResponse = z.infer<typeof ProjectStatusResponseSchema>;
-export type TeamSummary = z.infer<typeof TeamSummarySchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type ProjectListResponseBody = z.infer<typeof ProjectListResponseBodySchema>;
 export type ProjectRefInput = z.infer<typeof ProjectRefInputSchema>;
@@ -3059,6 +3167,9 @@ export type ReactionsResponseBody = z.infer<typeof ReactionsResponseBodySchema>;
 export type RedirectResponseBody = z.infer<typeof RedirectResponseBodySchema>;
 export type RelationRefInput = z.infer<typeof RelationRefInputSchema>;
 export type RelationResponseBody = z.infer<typeof RelationResponseBodySchema>;
+export type RemoveGithubRepoSyncResponseBody = z.infer<
+  typeof RemoveGithubRepoSyncResponseBodySchema
+>;
 export type RemoveMemberInput = z.infer<typeof RemoveMemberInputSchema>;
 export type RemoveTeamMemberInput = z.infer<typeof RemoveTeamMemberInputSchema>;
 export type ReorderFavoritesInput = z.infer<typeof ReorderFavoritesInputSchema>;
@@ -3094,6 +3205,7 @@ export type UpdateAttachmentInput = z.infer<typeof UpdateAttachmentInputSchema>;
 export type UpdateCommentInput = z.infer<typeof UpdateCommentInputSchema>;
 export type UpdateCycleInput = z.infer<typeof UpdateCycleInputSchema>;
 export type UpdateDocumentInput = z.infer<typeof UpdateDocumentInputSchema>;
+export type UpdateGithubIntegrationInput = z.infer<typeof UpdateGithubIntegrationInputSchema>;
 export type UpdateInitiativeInput = z.infer<typeof UpdateInitiativeInputSchema>;
 export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
 export type UpdateLabelInput = z.infer<typeof UpdateLabelInputSchema>;
@@ -3222,6 +3334,18 @@ export const list_initiative_updatesQuerySchema = z
 export const get_github_integrationQuerySchema = z
   .object({
     workspace_id: z.string(), // Workspace whose GitHub connection to read
+  })
+  .passthrough();
+
+export const get_github_repo_syncQuerySchema = z
+  .object({
+    repo_sync_id: z.string(), // The synced repository
+  })
+  .passthrough();
+
+export const list_github_repo_syncsQuerySchema = z
+  .object({
+    workspace_id: z.string(), // Workspace whose synced repositories to list
   })
   .passthrough();
 
@@ -5756,6 +5880,274 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubSecretResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        repoSyncs: {
+          add: async (
+            params: AddGithubRepoSyncInput,
+            fetchOptions?: RequestInit,
+          ): Promise<GithubRepoSyncResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/integrations/github/repo-syncs/add`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = AddGithubRepoSyncInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = GithubRepoSyncResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          backfill: async (
+            params: BackfillGithubRepoSyncInput,
+            fetchOptions?: RequestInit,
+          ): Promise<GithubRepoSyncResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/integrations/github/repo-syncs/backfill`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = BackfillGithubRepoSyncInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = GithubRepoSyncResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          get: async (
+            params: z.infer<typeof get_github_repo_syncQuerySchema>,
+            fetchOptions?: RequestInit,
+          ): Promise<GithubRepoSyncResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/integrations/github/repo-syncs/get`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+              const validatedQuery = get_github_repo_syncQuerySchema.parse(params);
+              const queryKeys = ['repo_sync_id'];
+              queryKeys.forEach((key) => {
+                const value = validatedQuery[key as keyof typeof validatedQuery];
+                if (value !== undefined && value !== null) {
+                  url.searchParams.append(key, String(value));
+                }
+              });
+              const options: RequestInit = {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = GithubRepoSyncResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          list: async (
+            params: z.infer<typeof list_github_repo_syncsQuerySchema>,
+            fetchOptions?: RequestInit,
+          ): Promise<ListGithubRepoSyncsResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/integrations/github/repo-syncs/list`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+              const validatedQuery = list_github_repo_syncsQuerySchema.parse(params);
+              const queryKeys = ['workspace_id'];
+              queryKeys.forEach((key) => {
+                const value = validatedQuery[key as keyof typeof validatedQuery];
+                if (value !== undefined && value !== null) {
+                  url.searchParams.append(key, String(value));
+                }
+              });
+              const options: RequestInit = {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                ListGithubRepoSyncsResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          remove: async (
+            params: GithubRepoSyncRefInput,
+            fetchOptions?: RequestInit,
+          ): Promise<RemoveGithubRepoSyncResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/integrations/github/repo-syncs/remove`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = GithubRepoSyncRefInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RemoveGithubRepoSyncResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+        },
+        update: async (
+          params: UpdateGithubIntegrationInput,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubIntegrationResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdateGithubIntegrationInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubIntegrationResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

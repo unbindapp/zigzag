@@ -1761,6 +1761,29 @@ func HasLinksWith(preds ...predicate.ProjectLink) predicate.Project {
 	})
 }
 
+// HasGithubRepoSyncs applies the HasEdge predicate on the "github_repo_syncs" edge.
+func HasGithubRepoSyncs() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GithubRepoSyncsTable, GithubRepoSyncsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubRepoSyncsWith applies the HasEdge predicate on the "github_repo_syncs" edge with a given conditions (other predicates).
+func HasGithubRepoSyncsWith(preds ...predicate.GithubRepoSync) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newGithubRepoSyncsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasNotifications applies the HasEdge predicate on the "notifications" edge.
 func HasNotifications() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

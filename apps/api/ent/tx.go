@@ -28,8 +28,14 @@ type Tx struct {
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
 	Favorite *FavoriteClient
+	// GithubCommentLink is the client for interacting with the GithubCommentLink builders.
+	GithubCommentLink *GithubCommentLinkClient
 	// GithubIntegration is the client for interacting with the GithubIntegration builders.
 	GithubIntegration *GithubIntegrationClient
+	// GithubIssueLink is the client for interacting with the GithubIssueLink builders.
+	GithubIssueLink *GithubIssueLinkClient
+	// GithubRepoSync is the client for interacting with the GithubRepoSync builders.
+	GithubRepoSync *GithubRepoSyncClient
 	// GithubRepository is the client for interacting with the GithubRepository builders.
 	GithubRepository *GithubRepositoryClient
 	// ImportJob is the client for interacting with the ImportJob builders.
@@ -240,7 +246,10 @@ func (tx *Tx) init() {
 	tx.CycleScopeHistory = NewCycleScopeHistoryClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.Favorite = NewFavoriteClient(tx.config)
+	tx.GithubCommentLink = NewGithubCommentLinkClient(tx.config)
 	tx.GithubIntegration = NewGithubIntegrationClient(tx.config)
+	tx.GithubIssueLink = NewGithubIssueLinkClient(tx.config)
+	tx.GithubRepoSync = NewGithubRepoSyncClient(tx.config)
 	tx.GithubRepository = NewGithubRepositoryClient(tx.config)
 	tx.ImportJob = NewImportJobClient(tx.config)
 	tx.Initiative = NewInitiativeClient(tx.config)

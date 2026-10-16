@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // GithubRepositoryInterface ...
@@ -17,4 +19,29 @@ type GithubRepositoryInterface interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	RecordDelivery(ctx context.Context, integrationID uuid.UUID, fullName, event string, at time.Time) error
 	GetByWorkspace(ctx context.Context, workspaceID uuid.UUID) (*ent.GithubIntegration, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*ent.GithubIntegration, error)
+	UpdateToken(ctx context.Context, id uuid.UUID, tokenEncrypted []byte, tokenPrefix string) (*ent.GithubIntegration, error)
+	ListRepoSyncs(ctx context.Context, integrationID uuid.UUID) ([]*ent.GithubRepoSync, error)
+	GetRepoSync(ctx context.Context, id uuid.UUID) (*ent.GithubRepoSync, error)
+	RepoSyncByName(ctx context.Context, integrationID uuid.UUID, fullName string) (*ent.GithubRepoSync, error)
+	RepoSyncNameTaken(ctx context.Context, fullName string) (bool, error)
+	CreateRepoSync(ctx context.Context, input *CreateRepoSyncInput) (*ent.GithubRepoSync, error)
+	DeleteRepoSync(ctx context.Context, id uuid.UUID) error
+	StartBackfill(ctx context.Context, id uuid.UUID, syncClosed bool) (bool, error)
+	RecordBackfillProgress(ctx context.Context, id uuid.UUID, report *schema.GithubBackfillReport) error
+	FinishBackfill(ctx context.Context, id uuid.UUID, status schema.GithubBackfillStatus, report *schema.GithubBackfillReport, lastError string, at time.Time) error
+	FailInterruptedBackfills(ctx context.Context) error
+	RecordSyncResult(ctx context.Context, id uuid.UUID, lastError string, at time.Time) error
+	LinkedIssueCounts(ctx context.Context, repoSyncIDs []uuid.UUID) (map[uuid.UUID]int, error)
+	IssueLinkByNodeID(ctx context.Context, nodeID string) (*ent.GithubIssueLink, error)
+	IssueLinkByIssue(ctx context.Context, issueID uuid.UUID) (*ent.GithubIssueLink, error)
+	CreateIssueLink(ctx context.Context, tx repository.TxInterface, input *IssueLinkInput) (*ent.GithubIssueLink, error)
+	Relink(ctx context.Context, id uuid.UUID, input *IssueLinkInput) error
+	RecordInbound(ctx context.Context, id uuid.UUID, githubUpdatedAt time.Time) error
+	RecordOutbound(ctx context.Context, id uuid.UUID, githubUpdatedAt *time.Time, at time.Time) error
+	DeleteIssueLink(ctx context.Context, id uuid.UUID) error
+	CommentLinkByGithubID(ctx context.Context, githubCommentID int64) (*ent.GithubCommentLink, error)
+	CommentLinkByComment(ctx context.Context, commentID uuid.UUID) (*ent.GithubCommentLink, error)
+	CreateCommentLink(ctx context.Context, tx repository.TxInterface, commentID, issueLinkID uuid.UUID, githubCommentID int64) error
+	DeleteCommentLink(ctx context.Context, id uuid.UUID) error
 }

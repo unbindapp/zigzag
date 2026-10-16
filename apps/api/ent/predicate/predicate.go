@@ -27,8 +27,17 @@ type Document func(*sql.Selector)
 // Favorite is the predicate function for favorite builders.
 type Favorite func(*sql.Selector)
 
+// GithubCommentLink is the predicate function for githubcommentlink builders.
+type GithubCommentLink func(*sql.Selector)
+
 // GithubIntegration is the predicate function for githubintegration builders.
 type GithubIntegration func(*sql.Selector)
+
+// GithubIssueLink is the predicate function for githubissuelink builders.
+type GithubIssueLink func(*sql.Selector)
+
+// GithubRepoSync is the predicate function for githubreposync builders.
+type GithubRepoSync func(*sql.Selector)
 
 // GithubRepository is the predicate function for githubrepository builders.
 type GithubRepository func(*sql.Selector)

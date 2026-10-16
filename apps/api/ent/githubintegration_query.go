@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/user"
 	"github.com/unbindapp/zigzag-api/ent/workspace"
@@ -30,6 +31,7 @@ type GithubIntegrationQuery struct {
 	withWorkspace    *WorkspaceQuery
 	withCreatedBy    *UserQuery
 	withRepositories *GithubRepositoryQuery
+	withRepoSyncs    *GithubRepoSyncQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -126,6 +128,28 @@ func (_q *GithubIntegrationQuery) QueryRepositories() *GithubRepositoryQuery {
 			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, selector),
 			sqlgraph.To(githubrepository.Table, githubrepository.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, githubintegration.RepositoriesTable, githubintegration.RepositoriesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRepoSyncs chains the current query on the "repo_syncs" edge.
+func (_q *GithubIntegrationQuery) QueryRepoSyncs() *GithubRepoSyncQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, selector),
+			sqlgraph.To(githubreposync.Table, githubreposync.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubintegration.RepoSyncsTable, githubintegration.RepoSyncsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -328,6 +352,7 @@ func (_q *GithubIntegrationQuery) Clone() *GithubIntegrationQuery {
 		withWorkspace:    _q.withWorkspace.Clone(),
 		withCreatedBy:    _q.withCreatedBy.Clone(),
 		withRepositories: _q.withRepositories.Clone(),
+		withRepoSyncs:    _q.withRepoSyncs.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -365,6 +390,17 @@ func (_q *GithubIntegrationQuery) WithRepositories(opts ...func(*GithubRepositor
 		opt(query)
 	}
 	_q.withRepositories = query
+	return _q
+}
+
+// WithRepoSyncs tells the query-builder to eager-load the nodes that are connected to
+// the "repo_syncs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GithubIntegrationQuery) WithRepoSyncs(opts ...func(*GithubRepoSyncQuery)) *GithubIntegrationQuery {
+	query := (&GithubRepoSyncClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRepoSyncs = query
 	return _q
 }
 
@@ -446,10 +482,11 @@ func (_q *GithubIntegrationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*GithubIntegration{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withWorkspace != nil,
 			_q.withCreatedBy != nil,
 			_q.withRepositories != nil,
+			_q.withRepoSyncs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -491,6 +528,13 @@ func (_q *GithubIntegrationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			func(n *GithubIntegration, e *GithubRepository) {
 				n.Edges.Repositories = append(n.Edges.Repositories, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRepoSyncs; query != nil {
+		if err := _q.loadRepoSyncs(ctx, query, nodes,
+			func(n *GithubIntegration) { n.Edges.RepoSyncs = []*GithubRepoSync{} },
+			func(n *GithubIntegration, e *GithubRepoSync) { n.Edges.RepoSyncs = append(n.Edges.RepoSyncs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -573,6 +617,36 @@ func (_q *GithubIntegrationQuery) loadRepositories(ctx context.Context, query *G
 	}
 	query.Where(predicate.GithubRepository(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(githubintegration.RepositoriesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IntegrationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "integration_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GithubIntegrationQuery) loadRepoSyncs(ctx context.Context, query *GithubRepoSyncQuery, nodes []*GithubIntegration, init func(*GithubIntegration), assign func(*GithubIntegration, *GithubRepoSync)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*GithubIntegration)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubreposync.FieldIntegrationID)
+	}
+	query.Where(predicate.GithubRepoSync(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(githubintegration.RepoSyncsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

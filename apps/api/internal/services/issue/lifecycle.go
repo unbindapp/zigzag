@@ -115,7 +115,7 @@ func (self *IssueService) setLifecycle(ctx context.Context, userID, issueID uuid
 		if err := self.repo.Issue().Update(ctx, tx, issue.ID, &fields); err != nil {
 			return err
 		}
-		return self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, apictx.HistorySource(ctx), []schema.FieldChange{{Field: field}})
+		return self.recordHistory(ctx, tx, issue.ID, actorOf(userID), []schema.FieldChange{{Field: field}})
 	})
 	if err != nil {
 		return nil, err

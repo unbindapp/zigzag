@@ -189,6 +189,20 @@ func (_c *UserCreate) SetNillableLastSeenAt(v *time.Time) *UserCreate {
 	return _c
 }
 
+// SetGithubLogin sets the "github_login" field.
+func (_c *UserCreate) SetGithubLogin(v string) *UserCreate {
+	_c.mutation.SetGithubLogin(v)
+	return _c
+}
+
+// SetNillableGithubLogin sets the "github_login" field if the given value is not nil.
+func (_c *UserCreate) SetNillableGithubLogin(v *string) *UserCreate {
+	if v != nil {
+		_c.SetGithubLogin(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserCreate) SetID(v uuid.UUID) *UserCreate {
 	_c.mutation.SetID(v)
@@ -895,6 +909,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(user.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = &value
+	}
+	if value, ok := _c.mutation.GithubLogin(); ok {
+		_spec.SetField(user.FieldGithubLogin, field.TypeString, value)
+		_node.GithubLogin = &value
 	}
 	if nodes := _c.mutation.AvatarUploadIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1641,6 +1659,24 @@ func (u *UserUpsert) ClearLastSeenAt() *UserUpsert {
 	return u
 }
 
+// SetGithubLogin sets the "github_login" field.
+func (u *UserUpsert) SetGithubLogin(v string) *UserUpsert {
+	u.Set(user.FieldGithubLogin, v)
+	return u
+}
+
+// UpdateGithubLogin sets the "github_login" field to the value that was provided on create.
+func (u *UserUpsert) UpdateGithubLogin() *UserUpsert {
+	u.SetExcluded(user.FieldGithubLogin)
+	return u
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (u *UserUpsert) ClearGithubLogin() *UserUpsert {
+	u.SetNull(user.FieldGithubLogin)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1843,6 +1879,27 @@ func (u *UserUpsertOne) UpdateLastSeenAt() *UserUpsertOne {
 func (u *UserUpsertOne) ClearLastSeenAt() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearLastSeenAt()
+	})
+}
+
+// SetGithubLogin sets the "github_login" field.
+func (u *UserUpsertOne) SetGithubLogin(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGithubLogin(v)
+	})
+}
+
+// UpdateGithubLogin sets the "github_login" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateGithubLogin() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGithubLogin()
+	})
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (u *UserUpsertOne) ClearGithubLogin() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGithubLogin()
 	})
 }
 
@@ -2215,6 +2272,27 @@ func (u *UserUpsertBulk) UpdateLastSeenAt() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearLastSeenAt() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearLastSeenAt()
+	})
+}
+
+// SetGithubLogin sets the "github_login" field.
+func (u *UserUpsertBulk) SetGithubLogin(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGithubLogin(v)
+	})
+}
+
+// UpdateGithubLogin sets the "github_login" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateGithubLogin() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGithubLogin()
+	})
+}
+
+// ClearGithubLogin clears the value of the "github_login" field.
+func (u *UserUpsertBulk) ClearGithubLogin() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGithubLogin()
 	})
 }
 

@@ -116,9 +116,11 @@ type TeamEdges struct {
 	Webhooks []*Webhook `json:"webhooks,omitempty"`
 	// IssueMoves holds the value of the issue_moves edge.
 	IssueMoves []*IssueMove `json:"issue_moves,omitempty"`
+	// GithubRepoSyncs holds the value of the github_repo_syncs edge.
+	GithubRepoSyncs []*GithubRepoSync `json:"github_repo_syncs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [16]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -264,6 +266,15 @@ func (e TeamEdges) IssueMovesOrErr() ([]*IssueMove, error) {
 		return e.IssueMoves, nil
 	}
 	return nil, &NotLoadedError{edge: "issue_moves"}
+}
+
+// GithubRepoSyncsOrErr returns the GithubRepoSyncs value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) GithubRepoSyncsOrErr() ([]*GithubRepoSync, error) {
+	if e.loadedTypes[15] {
+		return e.GithubRepoSyncs, nil
+	}
+	return nil, &NotLoadedError{edge: "github_repo_syncs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -564,6 +575,11 @@ func (_m *Team) QueryWebhooks() *WebhookQuery {
 // QueryIssueMoves queries the "issue_moves" edge of the Team entity.
 func (_m *Team) QueryIssueMoves() *IssueMoveQuery {
 	return NewTeamClient(_m.config).QueryIssueMoves(_m)
+}
+
+// QueryGithubRepoSyncs queries the "github_repo_syncs" edge of the Team entity.
+func (_m *Team) QueryGithubRepoSyncs() *GithubRepoSyncQuery {
+	return NewTeamClient(_m.config).QueryGithubRepoSyncs(_m)
 }
 
 // Update returns a builder for updating this Team.

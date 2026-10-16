@@ -28,6 +28,7 @@ func (User) Fields() []ent.Field {
 		field.Bool("active").Default(true),
 		field.String("timezone").Default("UTC"),
 		field.Time("last_seen_at").Optional().Nillable(),
+		field.String("github_login").Optional().Nillable().Unique().Comment("Stored lowercased"),
 	}
 }
 

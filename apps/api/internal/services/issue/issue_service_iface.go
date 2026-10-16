@@ -17,6 +17,7 @@ type IssueServiceInterface interface {
 	AutoCloseStaleIssues(ctx context.Context) error
 	AutoArchiveDoneIssues(ctx context.Context) error
 	Create(ctx context.Context, userID uuid.UUID, input *CreateIssueInput) (*models.IssueResponse, error)
+	CreateFromGithub(ctx context.Context, actorID uuid.UUID, input *CreateIssueInput, link LinkInTx) (*models.IssueResponse, error)
 	ApplyGithubLink(ctx context.Context, link *GithubLink) error
 	// VisibleTeams expects the caller to hold viewer on the workspace already.
 	VisibleTeams(ctx context.Context, userID, workspaceID uuid.UUID) (*VisibleTeams, error)

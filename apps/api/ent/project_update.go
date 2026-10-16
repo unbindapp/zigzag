@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/githubreposync"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/label"
@@ -650,6 +651,21 @@ func (_u *ProjectUpdate) AddLinks(v ...*ProjectLink) *ProjectUpdate {
 	return _u.AddLinkIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *ProjectUpdate) AddGithubRepoSyncIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.AddGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *ProjectUpdate) AddGithubRepoSyncs(v ...*GithubRepoSync) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubRepoSyncIDs(ids...)
+}
+
 // AddNotificationIDs adds the "notifications" edge to the Notification entity by IDs.
 func (_u *ProjectUpdate) AddNotificationIDs(ids ...uuid.UUID) *ProjectUpdate {
 	_u.mutation.AddNotificationIDs(ids...)
@@ -881,6 +897,27 @@ func (_u *ProjectUpdate) RemoveLinks(v ...*ProjectLink) *ProjectUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLinkIDs(ids...)
+}
+
+// ClearGithubRepoSyncs clears all "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *ProjectUpdate) ClearGithubRepoSyncs() *ProjectUpdate {
+	_u.mutation.ClearGithubRepoSyncs()
+	return _u
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *ProjectUpdate) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.RemoveGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveGithubRepoSyncs removes "github_repo_syncs" edges to GithubRepoSync entities.
+func (_u *ProjectUpdate) RemoveGithubRepoSyncs(v ...*GithubRepoSync) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubRepoSyncIDs(ids...)
 }
 
 // ClearNotifications clears all "notifications" edges to the Notification entity.
@@ -1621,6 +1658,51 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.NotificationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2295,6 +2377,21 @@ func (_u *ProjectUpdateOne) AddLinks(v ...*ProjectLink) *ProjectUpdateOne {
 	return _u.AddLinkIDs(ids...)
 }
 
+// AddGithubRepoSyncIDs adds the "github_repo_syncs" edge to the GithubRepoSync entity by IDs.
+func (_u *ProjectUpdateOne) AddGithubRepoSyncIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.AddGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// AddGithubRepoSyncs adds the "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *ProjectUpdateOne) AddGithubRepoSyncs(v ...*GithubRepoSync) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubRepoSyncIDs(ids...)
+}
+
 // AddNotificationIDs adds the "notifications" edge to the Notification entity by IDs.
 func (_u *ProjectUpdateOne) AddNotificationIDs(ids ...uuid.UUID) *ProjectUpdateOne {
 	_u.mutation.AddNotificationIDs(ids...)
@@ -2526,6 +2623,27 @@ func (_u *ProjectUpdateOne) RemoveLinks(v ...*ProjectLink) *ProjectUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLinkIDs(ids...)
+}
+
+// ClearGithubRepoSyncs clears all "github_repo_syncs" edges to the GithubRepoSync entity.
+func (_u *ProjectUpdateOne) ClearGithubRepoSyncs() *ProjectUpdateOne {
+	_u.mutation.ClearGithubRepoSyncs()
+	return _u
+}
+
+// RemoveGithubRepoSyncIDs removes the "github_repo_syncs" edge to GithubRepoSync entities by IDs.
+func (_u *ProjectUpdateOne) RemoveGithubRepoSyncIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.RemoveGithubRepoSyncIDs(ids...)
+	return _u
+}
+
+// RemoveGithubRepoSyncs removes "github_repo_syncs" edges to GithubRepoSync entities.
+func (_u *ProjectUpdateOne) RemoveGithubRepoSyncs(v ...*GithubRepoSync) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubRepoSyncIDs(ids...)
 }
 
 // ClearNotifications clears all "notifications" edges to the Notification entity.
@@ -3289,6 +3407,51 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(projectlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubRepoSyncsIDs(); len(nodes) > 0 && !_u.mutation.GithubRepoSyncsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubRepoSyncsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.GithubRepoSyncsTable,
+			Columns: []string{project.GithubRepoSyncsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubreposync.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

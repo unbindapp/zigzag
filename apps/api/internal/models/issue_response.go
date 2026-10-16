@@ -138,11 +138,12 @@ type IssueResponse struct {
 
 type IssueDetailResponse struct {
 	IssueResponse
-	Children    []*IssueResponse      `json:"children" nullable:"false" doc:"Sub-issues"`
-	Relations   *IssueRelations       `json:"relations"`
-	Attachments []*AttachmentResponse `json:"attachments" nullable:"false"`
-	Subscribers []*UserSummary        `json:"subscribers" nullable:"false"`
-	Reactions   []*ReactionGroup      `json:"reactions" nullable:"false"`
+	Children    []*IssueResponse         `json:"children" nullable:"false" doc:"Sub-issues"`
+	Relations   *IssueRelations          `json:"relations"`
+	Attachments []*AttachmentResponse    `json:"attachments" nullable:"false"`
+	Subscribers []*UserSummary           `json:"subscribers" nullable:"false"`
+	Reactions   []*ReactionGroup         `json:"reactions" nullable:"false"`
+	GithubIssue *GithubIssueLinkResponse `json:"github_issue,omitempty" required:"false" doc:"The GitHub issue this issue syncs with, when its repository is synced"`
 }
 
 func issueIdentifier(entity *ent.Issue) string {

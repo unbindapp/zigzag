@@ -91,6 +91,16 @@ func LastDeliveryAt(v time.Time) predicate.GithubIntegration {
 	return predicate.GithubIntegration(sql.FieldEQ(FieldLastDeliveryAt, v))
 }
 
+// TokenEncrypted applies equality check predicate on the "token_encrypted" field. It's identical to TokenEncryptedEQ.
+func TokenEncrypted(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldEQ(FieldTokenEncrypted, v))
+}
+
+// TokenPrefix applies equality check predicate on the "token_prefix" field. It's identical to TokenPrefixEQ.
+func TokenPrefix(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldEQ(FieldTokenPrefix, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.GithubIntegration {
 	return predicate.GithubIntegration(sql.FieldEQ(FieldCreatedAt, v))
@@ -376,6 +386,121 @@ func LastDeliveryAtNotNil() predicate.GithubIntegration {
 	return predicate.GithubIntegration(sql.FieldNotNull(FieldLastDeliveryAt))
 }
 
+// TokenEncryptedEQ applies the EQ predicate on the "token_encrypted" field.
+func TokenEncryptedEQ(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldEQ(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedNEQ applies the NEQ predicate on the "token_encrypted" field.
+func TokenEncryptedNEQ(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldNEQ(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedIn applies the In predicate on the "token_encrypted" field.
+func TokenEncryptedIn(vs ...[]byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldIn(FieldTokenEncrypted, vs...))
+}
+
+// TokenEncryptedNotIn applies the NotIn predicate on the "token_encrypted" field.
+func TokenEncryptedNotIn(vs ...[]byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldNotIn(FieldTokenEncrypted, vs...))
+}
+
+// TokenEncryptedGT applies the GT predicate on the "token_encrypted" field.
+func TokenEncryptedGT(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldGT(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedGTE applies the GTE predicate on the "token_encrypted" field.
+func TokenEncryptedGTE(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldGTE(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedLT applies the LT predicate on the "token_encrypted" field.
+func TokenEncryptedLT(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldLT(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedLTE applies the LTE predicate on the "token_encrypted" field.
+func TokenEncryptedLTE(v []byte) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldLTE(FieldTokenEncrypted, v))
+}
+
+// TokenEncryptedIsNil applies the IsNil predicate on the "token_encrypted" field.
+func TokenEncryptedIsNil() predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldIsNull(FieldTokenEncrypted))
+}
+
+// TokenEncryptedNotNil applies the NotNil predicate on the "token_encrypted" field.
+func TokenEncryptedNotNil() predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldNotNull(FieldTokenEncrypted))
+}
+
+// TokenPrefixEQ applies the EQ predicate on the "token_prefix" field.
+func TokenPrefixEQ(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldEQ(FieldTokenPrefix, v))
+}
+
+// TokenPrefixNEQ applies the NEQ predicate on the "token_prefix" field.
+func TokenPrefixNEQ(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldNEQ(FieldTokenPrefix, v))
+}
+
+// TokenPrefixIn applies the In predicate on the "token_prefix" field.
+func TokenPrefixIn(vs ...string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldIn(FieldTokenPrefix, vs...))
+}
+
+// TokenPrefixNotIn applies the NotIn predicate on the "token_prefix" field.
+func TokenPrefixNotIn(vs ...string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldNotIn(FieldTokenPrefix, vs...))
+}
+
+// TokenPrefixGT applies the GT predicate on the "token_prefix" field.
+func TokenPrefixGT(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldGT(FieldTokenPrefix, v))
+}
+
+// TokenPrefixGTE applies the GTE predicate on the "token_prefix" field.
+func TokenPrefixGTE(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldGTE(FieldTokenPrefix, v))
+}
+
+// TokenPrefixLT applies the LT predicate on the "token_prefix" field.
+func TokenPrefixLT(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldLT(FieldTokenPrefix, v))
+}
+
+// TokenPrefixLTE applies the LTE predicate on the "token_prefix" field.
+func TokenPrefixLTE(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldLTE(FieldTokenPrefix, v))
+}
+
+// TokenPrefixContains applies the Contains predicate on the "token_prefix" field.
+func TokenPrefixContains(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldContains(FieldTokenPrefix, v))
+}
+
+// TokenPrefixHasPrefix applies the HasPrefix predicate on the "token_prefix" field.
+func TokenPrefixHasPrefix(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldHasPrefix(FieldTokenPrefix, v))
+}
+
+// TokenPrefixHasSuffix applies the HasSuffix predicate on the "token_prefix" field.
+func TokenPrefixHasSuffix(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldHasSuffix(FieldTokenPrefix, v))
+}
+
+// TokenPrefixEqualFold applies the EqualFold predicate on the "token_prefix" field.
+func TokenPrefixEqualFold(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldEqualFold(FieldTokenPrefix, v))
+}
+
+// TokenPrefixContainsFold applies the ContainsFold predicate on the "token_prefix" field.
+func TokenPrefixContainsFold(v string) predicate.GithubIntegration {
+	return predicate.GithubIntegration(sql.FieldContainsFold(FieldTokenPrefix, v))
+}
+
 // HasWorkspace applies the HasEdge predicate on the "workspace" edge.
 func HasWorkspace() predicate.GithubIntegration {
 	return predicate.GithubIntegration(func(s *sql.Selector) {
@@ -437,6 +562,29 @@ func HasRepositories() predicate.GithubIntegration {
 func HasRepositoriesWith(preds ...predicate.GithubRepository) predicate.GithubIntegration {
 	return predicate.GithubIntegration(func(s *sql.Selector) {
 		step := newRepositoriesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRepoSyncs applies the HasEdge predicate on the "repo_syncs" edge.
+func HasRepoSyncs() predicate.GithubIntegration {
+	return predicate.GithubIntegration(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RepoSyncsTable, RepoSyncsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRepoSyncsWith applies the HasEdge predicate on the "repo_syncs" edge with a given conditions (other predicates).
+func HasRepoSyncsWith(preds ...predicate.GithubRepoSync) predicate.GithubIntegration {
+	return predicate.GithubIntegration(func(s *sql.Selector) {
+		step := newRepoSyncsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

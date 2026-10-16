@@ -91,6 +91,18 @@ func (self *GithubService) HandleWebhook(ctx context.Context, delivery *Delivery
 			return false, nil
 		}
 		return self.handlePush(ctx, delivery.WorkspaceID, &event)
+	case github.EventIssues:
+		var event github.IssuesEvent
+		if err := json.Unmarshal(delivery.Body, &event); err != nil {
+			return false, nil
+		}
+		return self.handleIssues(ctx, integration, &event)
+	case github.EventIssueComment:
+		var event github.IssueCommentEvent
+		if err := json.Unmarshal(delivery.Body, &event); err != nil {
+			return false, nil
+		}
+		return self.handleIssueComment(ctx, integration, &event)
 	default:
 		return false, nil
 	}

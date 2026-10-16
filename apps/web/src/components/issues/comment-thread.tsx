@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { GithubIcon } from "@/components/icons/github";
+import { githubCommentAuthor } from "@/components/integrations/github-sync";
 import { UserAvatar } from "@/components/issues/pickers";
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
 import { ReactionBar } from "@/components/issues/reaction-bar";
@@ -184,9 +186,12 @@ function CommentItem({
   const { mutate: toggleReaction } = useToggleCommentReactionMutation();
   const isAuthor = Boolean(me && comment.author?.id === me.user.id);
   const canModify = isAuthor || isAdmin;
+  const fromGithub = comment.author ? null : githubCommentAuthor(comment.body);
   const authorName = comment.author
     ? comment.author.name || comment.author.display_name
-    : "Deleted user";
+    : fromGithub
+      ? `@${fromGithub.login}`
+      : "Deleted user";
 
   const save = async () => {
     if (!draft.trim()) return;
@@ -198,7 +203,9 @@ function CommentItem({
     <article aria-label={`Comment from ${authorName}`} className="flex flex-col gap-2 p-4">
       <header className="flex items-center gap-2">
         {comment.author && <UserAvatar user={comment.author} size="sm" />}
+        {fromGithub && <GithubIcon />}
         <span className="truncate text-sm font-medium">{authorName}</span>
+        {fromGithub && <span className="text-muted-foreground text-xs">on GitHub</span>}
         <span className="text-muted-foreground text-xs">
           <RelativeTime value={comment.created_at} />
         </span>
@@ -286,7 +293,7 @@ function CommentItem({
           </div>
         </div>
       ) : (
-        <MarkdownView markdown={comment.body} />
+        <MarkdownView markdown={fromGithub?.body ?? comment.body} />
       )}
       <ReactionBar
         reactions={comment.reactions}

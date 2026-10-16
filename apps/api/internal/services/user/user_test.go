@@ -243,6 +243,46 @@ func (suite *UserServiceSuite) TestUpdateMeValidates() {
 	})
 }
 
+func (suite *UserServiceSuite) TestGithubUsernames() {
+	suite.Run("invalid", func() {
+		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{GithubLogin: utils.ToPtr("not a login")})
+		suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	})
+	suite.Run("linked to someone else", func() {
+		suite.MockUserRepo.EXPECT().GetByGithubLogin(suite.Ctx, "octocat").Return(&ent.User{ID: uuid.New()}, nil).Once()
+		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{GithubLogin: utils.ToPtr("@OctoCat")})
+		suite.ErrorIs(err, errdefs.ErrConflict)
+	})
+	suite.Run("stored lowercased", func() {
+		suite.MockUserRepo.EXPECT().GetByGithubLogin(suite.Ctx, "octocat").Return(nil, &ent.NotFoundError{}).Once()
+		suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.userID, mock.MatchedBy(func(input *user_repo.UpdateUserInput) bool {
+			return input.GithubLogin != nil && *input.GithubLogin == "octocat"
+		})).Return(&ent.User{ID: suite.userID, GithubLogin: utils.ToPtr("octocat")}, nil).Once()
+		updated, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{GithubLogin: utils.ToPtr("OctoCat")})
+		suite.Require().NoError(err)
+		suite.Equal("octocat", *updated.GithubLogin)
+	})
+	suite.Run("empty clears", func() {
+		suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.userID, mock.MatchedBy(func(input *user_repo.UpdateUserInput) bool {
+			return input.GithubLogin != nil && *input.GithubLogin == ""
+		})).Return(&ent.User{ID: suite.userID}, nil).Once()
+		updated, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{GithubLogin: utils.ToPtr(" ")})
+		suite.Require().NoError(err)
+		suite.Nil(updated.GithubLogin)
+	})
+	suite.Run("system admins set it for others", func() {
+		target := &ent.User{ID: uuid.New()}
+		suite.MockPermissionsRepo.EXPECT().CheckSystemAdmin(suite.Ctx, suite.userID).Return(nil).Once()
+		suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, target.ID).Return(target, nil).Once()
+		suite.MockUserRepo.EXPECT().GetByGithubLogin(suite.Ctx, "eve-gh").Return(target, nil).Once()
+		suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, target.ID, mock.MatchedBy(func(input *user_repo.UpdateUserInput) bool {
+			return input.GithubLogin != nil && *input.GithubLogin == "eve-gh"
+		})).Return(target, nil).Once()
+		_, err := suite.service.UpdateUser(suite.Ctx, suite.userID, &UpdateUserInput{UserID: target.ID, GithubLogin: utils.ToPtr("Eve-GH")})
+		suite.NoError(err)
+	})
+}
+
 func (suite *UserServiceSuite) TestChangePasswordNeedsTheCurrentOne() {
 	suite.MockUserRepo.EXPECT().VerifyPassword(suite.Ctx, suite.userID, "wrong").Return(user_repo.ErrInvalidPassword).Once()
 	err := suite.service.ChangePassword(suite.Ctx, suite.userID, &ChangePasswordInput{CurrentPassword: "wrong", NewPassword: "new-password"})

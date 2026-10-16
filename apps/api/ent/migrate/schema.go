@@ -340,6 +340,29 @@ var (
 			},
 		},
 	}
+	// GithubCommentLinksColumns holds the columns for the "github_comment_links" table.
+	GithubCommentLinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "comment_id", Type: field.TypeUUID, Unique: true},
+		{Name: "github_comment_id", Type: field.TypeInt64, Unique: true},
+		{Name: "issue_link_id", Type: field.TypeUUID},
+	}
+	// GithubCommentLinksTable holds the schema information for the "github_comment_links" table.
+	GithubCommentLinksTable = &schema.Table{
+		Name:       "github_comment_links",
+		Columns:    GithubCommentLinksColumns,
+		PrimaryKey: []*schema.Column{GithubCommentLinksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_comment_links_github_issue_links_comment_links",
+				Columns:    []*schema.Column{GithubCommentLinksColumns[5]},
+				RefColumns: []*schema.Column{GithubIssueLinksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// GithubIntegrationsColumns holds the columns for the "github_integrations" table.
 	GithubIntegrationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -348,6 +371,8 @@ var (
 		{Name: "secret_encrypted", Type: field.TypeBytes},
 		{Name: "secret_prefix", Type: field.TypeString},
 		{Name: "last_delivery_at", Type: field.TypeTime, Nullable: true},
+		{Name: "token_encrypted", Type: field.TypeBytes, Nullable: true},
+		{Name: "token_prefix", Type: field.TypeString, Default: ""},
 		{Name: "created_by_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "workspace_id", Type: field.TypeUUID, Unique: true},
 	}
@@ -359,14 +384,95 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "github_integrations_users_github_integrations",
-				Columns:    []*schema.Column{GithubIntegrationsColumns[6]},
+				Columns:    []*schema.Column{GithubIntegrationsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "github_integrations_workspaces_github_integration",
-				Columns:    []*schema.Column{GithubIntegrationsColumns[7]},
+				Columns:    []*schema.Column{GithubIntegrationsColumns[9]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// GithubIssueLinksColumns holds the columns for the "github_issue_links" table.
+	GithubIssueLinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "number", Type: field.TypeInt},
+		{Name: "node_id", Type: field.TypeString, Unique: true},
+		{Name: "html_url", Type: field.TypeString},
+		{Name: "github_updated_at", Type: field.TypeTime},
+		{Name: "last_outbound_at", Type: field.TypeTime, Nullable: true},
+		{Name: "repo_sync_id", Type: field.TypeUUID},
+		{Name: "issue_id", Type: field.TypeUUID, Unique: true},
+	}
+	// GithubIssueLinksTable holds the schema information for the "github_issue_links" table.
+	GithubIssueLinksTable = &schema.Table{
+		Name:       "github_issue_links",
+		Columns:    GithubIssueLinksColumns,
+		PrimaryKey: []*schema.Column{GithubIssueLinksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_issue_links_github_repo_syncs_issue_links",
+				Columns:    []*schema.Column{GithubIssueLinksColumns[8]},
+				RefColumns: []*schema.Column{GithubRepoSyncsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "github_issue_links_issues_github_link",
+				Columns:    []*schema.Column{GithubIssueLinksColumns[9]},
+				RefColumns: []*schema.Column{IssuesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "githubissuelink_repo_sync_id_number",
+				Unique:  false,
+				Columns: []*schema.Column{GithubIssueLinksColumns[8], GithubIssueLinksColumns[3]},
+			},
+		},
+	}
+	// GithubRepoSyncsColumns holds the columns for the "github_repo_syncs" table.
+	GithubRepoSyncsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "full_name", Type: field.TypeString, Unique: true},
+		{Name: "sync_closed", Type: field.TypeBool, Default: false},
+		{Name: "last_error", Type: field.TypeString, Default: ""},
+		{Name: "last_synced_at", Type: field.TypeTime, Nullable: true},
+		{Name: "backfill_status", Type: field.TypeEnum, Enums: []string{"none", "running", "completed", "failed"}, Default: "none"},
+		{Name: "backfill_report", Type: field.TypeJSON, Nullable: true},
+		{Name: "integration_id", Type: field.TypeUUID},
+		{Name: "project_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "team_id", Type: field.TypeUUID},
+	}
+	// GithubRepoSyncsTable holds the schema information for the "github_repo_syncs" table.
+	GithubRepoSyncsTable = &schema.Table{
+		Name:       "github_repo_syncs",
+		Columns:    GithubRepoSyncsColumns,
+		PrimaryKey: []*schema.Column{GithubRepoSyncsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_repo_syncs_github_integrations_repo_syncs",
+				Columns:    []*schema.Column{GithubRepoSyncsColumns[9]},
+				RefColumns: []*schema.Column{GithubIntegrationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "github_repo_syncs_projects_github_repo_syncs",
+				Columns:    []*schema.Column{GithubRepoSyncsColumns[10]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "github_repo_syncs_teams_github_repo_syncs",
+				Columns:    []*schema.Column{GithubRepoSyncsColumns[11]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1731,6 +1837,7 @@ var (
 		{Name: "active", Type: field.TypeBool, Default: true},
 		{Name: "timezone", Type: field.TypeString, Default: "UTC"},
 		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
+		{Name: "github_login", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "avatar_upload_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -1741,7 +1848,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_uploads_avatar_users",
-				Columns:    []*schema.Column{UsersColumns[11]},
+				Columns:    []*schema.Column{UsersColumns[12]},
 				RefColumns: []*schema.Column{UploadsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2098,7 +2205,10 @@ var (
 		CycleScopeHistoryTable,
 		DocumentsTable,
 		FavoritesTable,
+		GithubCommentLinksTable,
 		GithubIntegrationsTable,
+		GithubIssueLinksTable,
+		GithubRepoSyncsTable,
 		GithubRepositoriesTable,
 		ImportsTable,
 		InitiativesTable,
@@ -2184,10 +2294,25 @@ func init() {
 	FavoritesTable.Annotation = &entsql.Annotation{
 		Table: "favorites",
 	}
+	GithubCommentLinksTable.ForeignKeys[0].RefTable = GithubIssueLinksTable
+	GithubCommentLinksTable.Annotation = &entsql.Annotation{
+		Table: "github_comment_links",
+	}
 	GithubIntegrationsTable.ForeignKeys[0].RefTable = UsersTable
 	GithubIntegrationsTable.ForeignKeys[1].RefTable = WorkspacesTable
 	GithubIntegrationsTable.Annotation = &entsql.Annotation{
 		Table: "github_integrations",
+	}
+	GithubIssueLinksTable.ForeignKeys[0].RefTable = GithubRepoSyncsTable
+	GithubIssueLinksTable.ForeignKeys[1].RefTable = IssuesTable
+	GithubIssueLinksTable.Annotation = &entsql.Annotation{
+		Table: "github_issue_links",
+	}
+	GithubRepoSyncsTable.ForeignKeys[0].RefTable = GithubIntegrationsTable
+	GithubRepoSyncsTable.ForeignKeys[1].RefTable = ProjectsTable
+	GithubRepoSyncsTable.ForeignKeys[2].RefTable = TeamsTable
+	GithubRepoSyncsTable.Annotation = &entsql.Annotation{
+		Table: "github_repo_syncs",
 	}
 	GithubRepositoriesTable.ForeignKeys[0].RefTable = GithubIntegrationsTable
 	GithubRepositoriesTable.Annotation = &entsql.Annotation{

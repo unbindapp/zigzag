@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/github"
 )
 
@@ -48,6 +50,142 @@ type GithubRepositoryMock_Expecter struct {
 
 func (_m *GithubRepositoryMock) EXPECT() *GithubRepositoryMock_Expecter {
 	return &GithubRepositoryMock_Expecter{mock: &_m.Mock}
+}
+
+// CommentLinkByComment provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CommentLinkByComment(ctx context.Context, commentID uuid.UUID) (*ent.GithubCommentLink, error) {
+	ret := _mock.Called(ctx, commentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CommentLinkByComment")
+	}
+
+	var r0 *ent.GithubCommentLink
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.GithubCommentLink, error)); ok {
+		return returnFunc(ctx, commentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.GithubCommentLink); ok {
+		r0 = returnFunc(ctx, commentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubCommentLink)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, commentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_CommentLinkByComment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CommentLinkByComment'
+type GithubRepositoryMock_CommentLinkByComment_Call struct {
+	*mock.Call
+}
+
+// CommentLinkByComment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - commentID uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) CommentLinkByComment(ctx any, commentID any) *GithubRepositoryMock_CommentLinkByComment_Call {
+	return &GithubRepositoryMock_CommentLinkByComment_Call{Call: _e.mock.On("CommentLinkByComment", ctx, commentID)}
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByComment_Call) Run(run func(ctx context.Context, commentID uuid.UUID)) *GithubRepositoryMock_CommentLinkByComment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByComment_Call) Return(githubCommentLink *ent.GithubCommentLink, err error) *GithubRepositoryMock_CommentLinkByComment_Call {
+	_c.Call.Return(githubCommentLink, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByComment_Call) RunAndReturn(run func(ctx context.Context, commentID uuid.UUID) (*ent.GithubCommentLink, error)) *GithubRepositoryMock_CommentLinkByComment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CommentLinkByGithubID provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CommentLinkByGithubID(ctx context.Context, githubCommentID int64) (*ent.GithubCommentLink, error) {
+	ret := _mock.Called(ctx, githubCommentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CommentLinkByGithubID")
+	}
+
+	var r0 *ent.GithubCommentLink
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) (*ent.GithubCommentLink, error)); ok {
+		return returnFunc(ctx, githubCommentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) *ent.GithubCommentLink); ok {
+		r0 = returnFunc(ctx, githubCommentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubCommentLink)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = returnFunc(ctx, githubCommentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_CommentLinkByGithubID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CommentLinkByGithubID'
+type GithubRepositoryMock_CommentLinkByGithubID_Call struct {
+	*mock.Call
+}
+
+// CommentLinkByGithubID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - githubCommentID int64
+func (_e *GithubRepositoryMock_Expecter) CommentLinkByGithubID(ctx any, githubCommentID any) *GithubRepositoryMock_CommentLinkByGithubID_Call {
+	return &GithubRepositoryMock_CommentLinkByGithubID_Call{Call: _e.mock.On("CommentLinkByGithubID", ctx, githubCommentID)}
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByGithubID_Call) Run(run func(ctx context.Context, githubCommentID int64)) *GithubRepositoryMock_CommentLinkByGithubID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByGithubID_Call) Return(githubCommentLink *ent.GithubCommentLink, err error) *GithubRepositoryMock_CommentLinkByGithubID_Call {
+	_c.Call.Return(githubCommentLink, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CommentLinkByGithubID_Call) RunAndReturn(run func(ctx context.Context, githubCommentID int64) (*ent.GithubCommentLink, error)) *GithubRepositoryMock_CommentLinkByGithubID_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Create provides a mock function for the type GithubRepositoryMock
@@ -118,6 +256,223 @@ func (_c *GithubRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// CreateCommentLink provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CreateCommentLink(ctx context.Context, tx repository.TxInterface, commentID uuid.UUID, issueLinkID uuid.UUID, githubCommentID int64) error {
+	ret := _mock.Called(ctx, tx, commentID, issueLinkID, githubCommentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateCommentLink")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, uuid.UUID, int64) error); ok {
+		r0 = returnFunc(ctx, tx, commentID, issueLinkID, githubCommentID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_CreateCommentLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateCommentLink'
+type GithubRepositoryMock_CreateCommentLink_Call struct {
+	*mock.Call
+}
+
+// CreateCommentLink is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - commentID uuid.UUID
+//   - issueLinkID uuid.UUID
+//   - githubCommentID int64
+func (_e *GithubRepositoryMock_Expecter) CreateCommentLink(ctx any, tx any, commentID any, issueLinkID any, githubCommentID any) *GithubRepositoryMock_CreateCommentLink_Call {
+	return &GithubRepositoryMock_CreateCommentLink_Call{Call: _e.mock.On("CreateCommentLink", ctx, tx, commentID, issueLinkID, githubCommentID)}
+}
+
+func (_c *GithubRepositoryMock_CreateCommentLink_Call) Run(run func(ctx context.Context, tx repository.TxInterface, commentID uuid.UUID, issueLinkID uuid.UUID, githubCommentID int64)) *GithubRepositoryMock_CreateCommentLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		var arg4 int64
+		if args[4] != nil {
+			arg4 = args[4].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateCommentLink_Call) Return(err error) *GithubRepositoryMock_CreateCommentLink_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateCommentLink_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, commentID uuid.UUID, issueLinkID uuid.UUID, githubCommentID int64) error) *GithubRepositoryMock_CreateCommentLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateIssueLink provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CreateIssueLink(ctx context.Context, tx repository.TxInterface, input *github_repo.IssueLinkInput) (*ent.GithubIssueLink, error) {
+	ret := _mock.Called(ctx, tx, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateIssueLink")
+	}
+
+	var r0 *ent.GithubIssueLink
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *github_repo.IssueLinkInput) (*ent.GithubIssueLink, error)); ok {
+		return returnFunc(ctx, tx, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *github_repo.IssueLinkInput) *ent.GithubIssueLink); ok {
+		r0 = returnFunc(ctx, tx, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubIssueLink)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, *github_repo.IssueLinkInput) error); ok {
+		r1 = returnFunc(ctx, tx, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_CreateIssueLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateIssueLink'
+type GithubRepositoryMock_CreateIssueLink_Call struct {
+	*mock.Call
+}
+
+// CreateIssueLink is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - input *github_repo.IssueLinkInput
+func (_e *GithubRepositoryMock_Expecter) CreateIssueLink(ctx any, tx any, input any) *GithubRepositoryMock_CreateIssueLink_Call {
+	return &GithubRepositoryMock_CreateIssueLink_Call{Call: _e.mock.On("CreateIssueLink", ctx, tx, input)}
+}
+
+func (_c *GithubRepositoryMock_CreateIssueLink_Call) Run(run func(ctx context.Context, tx repository.TxInterface, input *github_repo.IssueLinkInput)) *GithubRepositoryMock_CreateIssueLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 *github_repo.IssueLinkInput
+		if args[2] != nil {
+			arg2 = args[2].(*github_repo.IssueLinkInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateIssueLink_Call) Return(githubIssueLink *ent.GithubIssueLink, err error) *GithubRepositoryMock_CreateIssueLink_Call {
+	_c.Call.Return(githubIssueLink, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateIssueLink_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, input *github_repo.IssueLinkInput) (*ent.GithubIssueLink, error)) *GithubRepositoryMock_CreateIssueLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateRepoSync provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CreateRepoSync(ctx context.Context, input *github_repo.CreateRepoSyncInput) (*ent.GithubRepoSync, error) {
+	ret := _mock.Called(ctx, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateRepoSync")
+	}
+
+	var r0 *ent.GithubRepoSync
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *github_repo.CreateRepoSyncInput) (*ent.GithubRepoSync, error)); ok {
+		return returnFunc(ctx, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *github_repo.CreateRepoSyncInput) *ent.GithubRepoSync); ok {
+		r0 = returnFunc(ctx, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubRepoSync)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *github_repo.CreateRepoSyncInput) error); ok {
+		r1 = returnFunc(ctx, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_CreateRepoSync_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateRepoSync'
+type GithubRepositoryMock_CreateRepoSync_Call struct {
+	*mock.Call
+}
+
+// CreateRepoSync is a helper method to define mock.On call
+//   - ctx context.Context
+//   - input *github_repo.CreateRepoSyncInput
+func (_e *GithubRepositoryMock_Expecter) CreateRepoSync(ctx any, input any) *GithubRepositoryMock_CreateRepoSync_Call {
+	return &GithubRepositoryMock_CreateRepoSync_Call{Call: _e.mock.On("CreateRepoSync", ctx, input)}
+}
+
+func (_c *GithubRepositoryMock_CreateRepoSync_Call) Run(run func(ctx context.Context, input *github_repo.CreateRepoSyncInput)) *GithubRepositoryMock_CreateRepoSync_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *github_repo.CreateRepoSyncInput
+		if args[1] != nil {
+			arg1 = args[1].(*github_repo.CreateRepoSyncInput)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateRepoSync_Call) Return(githubRepoSync *ent.GithubRepoSync, err error) *GithubRepositoryMock_CreateRepoSync_Call {
+	_c.Call.Return(githubRepoSync, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CreateRepoSync_Call) RunAndReturn(run func(ctx context.Context, input *github_repo.CreateRepoSyncInput) (*ent.GithubRepoSync, error)) *GithubRepositoryMock_CreateRepoSync_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Delete provides a mock function for the type GithubRepositoryMock
 func (_mock *GithubRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
 	ret := _mock.Called(ctx, id)
@@ -171,6 +526,377 @@ func (_c *GithubRepositoryMock_Delete_Call) Return(err error) *GithubRepositoryM
 }
 
 func (_c *GithubRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *GithubRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteCommentLink provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeleteCommentLink(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteCommentLink")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_DeleteCommentLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteCommentLink'
+type GithubRepositoryMock_DeleteCommentLink_Call struct {
+	*mock.Call
+}
+
+// DeleteCommentLink is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) DeleteCommentLink(ctx any, id any) *GithubRepositoryMock_DeleteCommentLink_Call {
+	return &GithubRepositoryMock_DeleteCommentLink_Call{Call: _e.mock.On("DeleteCommentLink", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_DeleteCommentLink_Call) Run(run func(ctx context.Context, id uuid.UUID)) *GithubRepositoryMock_DeleteCommentLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteCommentLink_Call) Return(err error) *GithubRepositoryMock_DeleteCommentLink_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteCommentLink_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *GithubRepositoryMock_DeleteCommentLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteIssueLink provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeleteIssueLink(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteIssueLink")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_DeleteIssueLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteIssueLink'
+type GithubRepositoryMock_DeleteIssueLink_Call struct {
+	*mock.Call
+}
+
+// DeleteIssueLink is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) DeleteIssueLink(ctx any, id any) *GithubRepositoryMock_DeleteIssueLink_Call {
+	return &GithubRepositoryMock_DeleteIssueLink_Call{Call: _e.mock.On("DeleteIssueLink", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_DeleteIssueLink_Call) Run(run func(ctx context.Context, id uuid.UUID)) *GithubRepositoryMock_DeleteIssueLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteIssueLink_Call) Return(err error) *GithubRepositoryMock_DeleteIssueLink_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteIssueLink_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *GithubRepositoryMock_DeleteIssueLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteRepoSync provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeleteRepoSync(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteRepoSync")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_DeleteRepoSync_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteRepoSync'
+type GithubRepositoryMock_DeleteRepoSync_Call struct {
+	*mock.Call
+}
+
+// DeleteRepoSync is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) DeleteRepoSync(ctx any, id any) *GithubRepositoryMock_DeleteRepoSync_Call {
+	return &GithubRepositoryMock_DeleteRepoSync_Call{Call: _e.mock.On("DeleteRepoSync", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_DeleteRepoSync_Call) Run(run func(ctx context.Context, id uuid.UUID)) *GithubRepositoryMock_DeleteRepoSync_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteRepoSync_Call) Return(err error) *GithubRepositoryMock_DeleteRepoSync_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteRepoSync_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *GithubRepositoryMock_DeleteRepoSync_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FailInterruptedBackfills provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) FailInterruptedBackfills(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FailInterruptedBackfills")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_FailInterruptedBackfills_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FailInterruptedBackfills'
+type GithubRepositoryMock_FailInterruptedBackfills_Call struct {
+	*mock.Call
+}
+
+// FailInterruptedBackfills is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *GithubRepositoryMock_Expecter) FailInterruptedBackfills(ctx any) *GithubRepositoryMock_FailInterruptedBackfills_Call {
+	return &GithubRepositoryMock_FailInterruptedBackfills_Call{Call: _e.mock.On("FailInterruptedBackfills", ctx)}
+}
+
+func (_c *GithubRepositoryMock_FailInterruptedBackfills_Call) Run(run func(ctx context.Context)) *GithubRepositoryMock_FailInterruptedBackfills_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_FailInterruptedBackfills_Call) Return(err error) *GithubRepositoryMock_FailInterruptedBackfills_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_FailInterruptedBackfills_Call) RunAndReturn(run func(ctx context.Context) error) *GithubRepositoryMock_FailInterruptedBackfills_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FinishBackfill provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) FinishBackfill(ctx context.Context, id uuid.UUID, status schema.GithubBackfillStatus, report *schema.GithubBackfillReport, lastError string, at time.Time) error {
+	ret := _mock.Called(ctx, id, status, report, lastError, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FinishBackfill")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.GithubBackfillStatus, *schema.GithubBackfillReport, string, time.Time) error); ok {
+		r0 = returnFunc(ctx, id, status, report, lastError, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_FinishBackfill_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FinishBackfill'
+type GithubRepositoryMock_FinishBackfill_Call struct {
+	*mock.Call
+}
+
+// FinishBackfill is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - status schema.GithubBackfillStatus
+//   - report *schema.GithubBackfillReport
+//   - lastError string
+//   - at time.Time
+func (_e *GithubRepositoryMock_Expecter) FinishBackfill(ctx any, id any, status any, report any, lastError any, at any) *GithubRepositoryMock_FinishBackfill_Call {
+	return &GithubRepositoryMock_FinishBackfill_Call{Call: _e.mock.On("FinishBackfill", ctx, id, status, report, lastError, at)}
+}
+
+func (_c *GithubRepositoryMock_FinishBackfill_Call) Run(run func(ctx context.Context, id uuid.UUID, status schema.GithubBackfillStatus, report *schema.GithubBackfillReport, lastError string, at time.Time)) *GithubRepositoryMock_FinishBackfill_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.GithubBackfillStatus
+		if args[2] != nil {
+			arg2 = args[2].(schema.GithubBackfillStatus)
+		}
+		var arg3 *schema.GithubBackfillReport
+		if args[3] != nil {
+			arg3 = args[3].(*schema.GithubBackfillReport)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 time.Time
+		if args[5] != nil {
+			arg5 = args[5].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_FinishBackfill_Call) Return(err error) *GithubRepositoryMock_FinishBackfill_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_FinishBackfill_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, status schema.GithubBackfillStatus, report *schema.GithubBackfillReport, lastError string, at time.Time) error) *GithubRepositoryMock_FinishBackfill_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.GithubIntegration, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *ent.GithubIntegration
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.GithubIntegration, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.GithubIntegration); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubIntegration)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type GithubRepositoryMock_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) GetByID(ctx any, id any) *GithubRepositoryMock_GetByID_Call {
+	return &GithubRepositoryMock_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_GetByID_Call) Run(run func(ctx context.Context, id uuid.UUID)) *GithubRepositoryMock_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetByID_Call) Return(githubIntegration *ent.GithubIntegration, err error) *GithubRepositoryMock_GetByID_Call {
+	_c.Call.Return(githubIntegration, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.GithubIntegration, error)) *GithubRepositoryMock_GetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -239,6 +965,409 @@ func (_c *GithubRepositoryMock_GetByWorkspace_Call) Return(githubIntegration *en
 }
 
 func (_c *GithubRepositoryMock_GetByWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) (*ent.GithubIntegration, error)) *GithubRepositoryMock_GetByWorkspace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRepoSync provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetRepoSync(ctx context.Context, id uuid.UUID) (*ent.GithubRepoSync, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRepoSync")
+	}
+
+	var r0 *ent.GithubRepoSync
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.GithubRepoSync, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.GithubRepoSync); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubRepoSync)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetRepoSync_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRepoSync'
+type GithubRepositoryMock_GetRepoSync_Call struct {
+	*mock.Call
+}
+
+// GetRepoSync is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) GetRepoSync(ctx any, id any) *GithubRepositoryMock_GetRepoSync_Call {
+	return &GithubRepositoryMock_GetRepoSync_Call{Call: _e.mock.On("GetRepoSync", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_GetRepoSync_Call) Run(run func(ctx context.Context, id uuid.UUID)) *GithubRepositoryMock_GetRepoSync_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetRepoSync_Call) Return(githubRepoSync *ent.GithubRepoSync, err error) *GithubRepositoryMock_GetRepoSync_Call {
+	_c.Call.Return(githubRepoSync, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetRepoSync_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.GithubRepoSync, error)) *GithubRepositoryMock_GetRepoSync_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssueLinkByIssue provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) IssueLinkByIssue(ctx context.Context, issueID uuid.UUID) (*ent.GithubIssueLink, error) {
+	ret := _mock.Called(ctx, issueID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssueLinkByIssue")
+	}
+
+	var r0 *ent.GithubIssueLink
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.GithubIssueLink, error)); ok {
+		return returnFunc(ctx, issueID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.GithubIssueLink); ok {
+		r0 = returnFunc(ctx, issueID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubIssueLink)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, issueID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_IssueLinkByIssue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssueLinkByIssue'
+type GithubRepositoryMock_IssueLinkByIssue_Call struct {
+	*mock.Call
+}
+
+// IssueLinkByIssue is a helper method to define mock.On call
+//   - ctx context.Context
+//   - issueID uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) IssueLinkByIssue(ctx any, issueID any) *GithubRepositoryMock_IssueLinkByIssue_Call {
+	return &GithubRepositoryMock_IssueLinkByIssue_Call{Call: _e.mock.On("IssueLinkByIssue", ctx, issueID)}
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByIssue_Call) Run(run func(ctx context.Context, issueID uuid.UUID)) *GithubRepositoryMock_IssueLinkByIssue_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByIssue_Call) Return(githubIssueLink *ent.GithubIssueLink, err error) *GithubRepositoryMock_IssueLinkByIssue_Call {
+	_c.Call.Return(githubIssueLink, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByIssue_Call) RunAndReturn(run func(ctx context.Context, issueID uuid.UUID) (*ent.GithubIssueLink, error)) *GithubRepositoryMock_IssueLinkByIssue_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssueLinkByNodeID provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) IssueLinkByNodeID(ctx context.Context, nodeID string) (*ent.GithubIssueLink, error) {
+	ret := _mock.Called(ctx, nodeID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssueLinkByNodeID")
+	}
+
+	var r0 *ent.GithubIssueLink
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*ent.GithubIssueLink, error)); ok {
+		return returnFunc(ctx, nodeID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *ent.GithubIssueLink); ok {
+		r0 = returnFunc(ctx, nodeID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubIssueLink)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, nodeID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_IssueLinkByNodeID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssueLinkByNodeID'
+type GithubRepositoryMock_IssueLinkByNodeID_Call struct {
+	*mock.Call
+}
+
+// IssueLinkByNodeID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - nodeID string
+func (_e *GithubRepositoryMock_Expecter) IssueLinkByNodeID(ctx any, nodeID any) *GithubRepositoryMock_IssueLinkByNodeID_Call {
+	return &GithubRepositoryMock_IssueLinkByNodeID_Call{Call: _e.mock.On("IssueLinkByNodeID", ctx, nodeID)}
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByNodeID_Call) Run(run func(ctx context.Context, nodeID string)) *GithubRepositoryMock_IssueLinkByNodeID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByNodeID_Call) Return(githubIssueLink *ent.GithubIssueLink, err error) *GithubRepositoryMock_IssueLinkByNodeID_Call {
+	_c.Call.Return(githubIssueLink, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_IssueLinkByNodeID_Call) RunAndReturn(run func(ctx context.Context, nodeID string) (*ent.GithubIssueLink, error)) *GithubRepositoryMock_IssueLinkByNodeID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LinkedIssueCounts provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) LinkedIssueCounts(ctx context.Context, repoSyncIDs []uuid.UUID) (map[uuid.UUID]int, error) {
+	ret := _mock.Called(ctx, repoSyncIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LinkedIssueCounts")
+	}
+
+	var r0 map[uuid.UUID]int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID]int, error)); ok {
+		return returnFunc(ctx, repoSyncIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID]int); ok {
+		r0 = returnFunc(ctx, repoSyncIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]int)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, repoSyncIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_LinkedIssueCounts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LinkedIssueCounts'
+type GithubRepositoryMock_LinkedIssueCounts_Call struct {
+	*mock.Call
+}
+
+// LinkedIssueCounts is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repoSyncIDs []uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) LinkedIssueCounts(ctx any, repoSyncIDs any) *GithubRepositoryMock_LinkedIssueCounts_Call {
+	return &GithubRepositoryMock_LinkedIssueCounts_Call{Call: _e.mock.On("LinkedIssueCounts", ctx, repoSyncIDs)}
+}
+
+func (_c *GithubRepositoryMock_LinkedIssueCounts_Call) Run(run func(ctx context.Context, repoSyncIDs []uuid.UUID)) *GithubRepositoryMock_LinkedIssueCounts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_LinkedIssueCounts_Call) Return(uUIDToInt map[uuid.UUID]int, err error) *GithubRepositoryMock_LinkedIssueCounts_Call {
+	_c.Call.Return(uUIDToInt, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_LinkedIssueCounts_Call) RunAndReturn(run func(ctx context.Context, repoSyncIDs []uuid.UUID) (map[uuid.UUID]int, error)) *GithubRepositoryMock_LinkedIssueCounts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListRepoSyncs provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) ListRepoSyncs(ctx context.Context, integrationID uuid.UUID) ([]*ent.GithubRepoSync, error) {
+	ret := _mock.Called(ctx, integrationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListRepoSyncs")
+	}
+
+	var r0 []*ent.GithubRepoSync
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.GithubRepoSync, error)); ok {
+		return returnFunc(ctx, integrationID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.GithubRepoSync); ok {
+		r0 = returnFunc(ctx, integrationID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.GithubRepoSync)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, integrationID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_ListRepoSyncs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListRepoSyncs'
+type GithubRepositoryMock_ListRepoSyncs_Call struct {
+	*mock.Call
+}
+
+// ListRepoSyncs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - integrationID uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) ListRepoSyncs(ctx any, integrationID any) *GithubRepositoryMock_ListRepoSyncs_Call {
+	return &GithubRepositoryMock_ListRepoSyncs_Call{Call: _e.mock.On("ListRepoSyncs", ctx, integrationID)}
+}
+
+func (_c *GithubRepositoryMock_ListRepoSyncs_Call) Run(run func(ctx context.Context, integrationID uuid.UUID)) *GithubRepositoryMock_ListRepoSyncs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_ListRepoSyncs_Call) Return(githubRepoSyncs []*ent.GithubRepoSync, err error) *GithubRepositoryMock_ListRepoSyncs_Call {
+	_c.Call.Return(githubRepoSyncs, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_ListRepoSyncs_Call) RunAndReturn(run func(ctx context.Context, integrationID uuid.UUID) ([]*ent.GithubRepoSync, error)) *GithubRepositoryMock_ListRepoSyncs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordBackfillProgress provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RecordBackfillProgress(ctx context.Context, id uuid.UUID, report *schema.GithubBackfillReport) error {
+	ret := _mock.Called(ctx, id, report)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordBackfillProgress")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *schema.GithubBackfillReport) error); ok {
+		r0 = returnFunc(ctx, id, report)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_RecordBackfillProgress_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordBackfillProgress'
+type GithubRepositoryMock_RecordBackfillProgress_Call struct {
+	*mock.Call
+}
+
+// RecordBackfillProgress is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - report *schema.GithubBackfillReport
+func (_e *GithubRepositoryMock_Expecter) RecordBackfillProgress(ctx any, id any, report any) *GithubRepositoryMock_RecordBackfillProgress_Call {
+	return &GithubRepositoryMock_RecordBackfillProgress_Call{Call: _e.mock.On("RecordBackfillProgress", ctx, id, report)}
+}
+
+func (_c *GithubRepositoryMock_RecordBackfillProgress_Call) Run(run func(ctx context.Context, id uuid.UUID, report *schema.GithubBackfillReport)) *GithubRepositoryMock_RecordBackfillProgress_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *schema.GithubBackfillReport
+		if args[2] != nil {
+			arg2 = args[2].(*schema.GithubBackfillReport)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordBackfillProgress_Call) Return(err error) *GithubRepositoryMock_RecordBackfillProgress_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordBackfillProgress_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, report *schema.GithubBackfillReport) error) *GithubRepositoryMock_RecordBackfillProgress_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -314,6 +1443,482 @@ func (_c *GithubRepositoryMock_RecordDelivery_Call) Return(err error) *GithubRep
 }
 
 func (_c *GithubRepositoryMock_RecordDelivery_Call) RunAndReturn(run func(ctx context.Context, integrationID uuid.UUID, fullName string, event string, at time.Time) error) *GithubRepositoryMock_RecordDelivery_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordInbound provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RecordInbound(ctx context.Context, id uuid.UUID, githubUpdatedAt time.Time) error {
+	ret := _mock.Called(ctx, id, githubUpdatedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordInbound")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) error); ok {
+		r0 = returnFunc(ctx, id, githubUpdatedAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_RecordInbound_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordInbound'
+type GithubRepositoryMock_RecordInbound_Call struct {
+	*mock.Call
+}
+
+// RecordInbound is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - githubUpdatedAt time.Time
+func (_e *GithubRepositoryMock_Expecter) RecordInbound(ctx any, id any, githubUpdatedAt any) *GithubRepositoryMock_RecordInbound_Call {
+	return &GithubRepositoryMock_RecordInbound_Call{Call: _e.mock.On("RecordInbound", ctx, id, githubUpdatedAt)}
+}
+
+func (_c *GithubRepositoryMock_RecordInbound_Call) Run(run func(ctx context.Context, id uuid.UUID, githubUpdatedAt time.Time)) *GithubRepositoryMock_RecordInbound_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordInbound_Call) Return(err error) *GithubRepositoryMock_RecordInbound_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordInbound_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, githubUpdatedAt time.Time) error) *GithubRepositoryMock_RecordInbound_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordOutbound provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RecordOutbound(ctx context.Context, id uuid.UUID, githubUpdatedAt *time.Time, at time.Time) error {
+	ret := _mock.Called(ctx, id, githubUpdatedAt, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordOutbound")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *time.Time, time.Time) error); ok {
+		r0 = returnFunc(ctx, id, githubUpdatedAt, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_RecordOutbound_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordOutbound'
+type GithubRepositoryMock_RecordOutbound_Call struct {
+	*mock.Call
+}
+
+// RecordOutbound is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - githubUpdatedAt *time.Time
+//   - at time.Time
+func (_e *GithubRepositoryMock_Expecter) RecordOutbound(ctx any, id any, githubUpdatedAt any, at any) *GithubRepositoryMock_RecordOutbound_Call {
+	return &GithubRepositoryMock_RecordOutbound_Call{Call: _e.mock.On("RecordOutbound", ctx, id, githubUpdatedAt, at)}
+}
+
+func (_c *GithubRepositoryMock_RecordOutbound_Call) Run(run func(ctx context.Context, id uuid.UUID, githubUpdatedAt *time.Time, at time.Time)) *GithubRepositoryMock_RecordOutbound_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *time.Time
+		if args[2] != nil {
+			arg2 = args[2].(*time.Time)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordOutbound_Call) Return(err error) *GithubRepositoryMock_RecordOutbound_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordOutbound_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, githubUpdatedAt *time.Time, at time.Time) error) *GithubRepositoryMock_RecordOutbound_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordSyncResult provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RecordSyncResult(ctx context.Context, id uuid.UUID, lastError string, at time.Time) error {
+	ret := _mock.Called(ctx, id, lastError, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordSyncResult")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, time.Time) error); ok {
+		r0 = returnFunc(ctx, id, lastError, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_RecordSyncResult_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordSyncResult'
+type GithubRepositoryMock_RecordSyncResult_Call struct {
+	*mock.Call
+}
+
+// RecordSyncResult is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - lastError string
+//   - at time.Time
+func (_e *GithubRepositoryMock_Expecter) RecordSyncResult(ctx any, id any, lastError any, at any) *GithubRepositoryMock_RecordSyncResult_Call {
+	return &GithubRepositoryMock_RecordSyncResult_Call{Call: _e.mock.On("RecordSyncResult", ctx, id, lastError, at)}
+}
+
+func (_c *GithubRepositoryMock_RecordSyncResult_Call) Run(run func(ctx context.Context, id uuid.UUID, lastError string, at time.Time)) *GithubRepositoryMock_RecordSyncResult_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordSyncResult_Call) Return(err error) *GithubRepositoryMock_RecordSyncResult_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RecordSyncResult_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, lastError string, at time.Time) error) *GithubRepositoryMock_RecordSyncResult_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Relink provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) Relink(ctx context.Context, id uuid.UUID, input *github_repo.IssueLinkInput) error {
+	ret := _mock.Called(ctx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Relink")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *github_repo.IssueLinkInput) error); ok {
+		r0 = returnFunc(ctx, id, input)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_Relink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Relink'
+type GithubRepositoryMock_Relink_Call struct {
+	*mock.Call
+}
+
+// Relink is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - input *github_repo.IssueLinkInput
+func (_e *GithubRepositoryMock_Expecter) Relink(ctx any, id any, input any) *GithubRepositoryMock_Relink_Call {
+	return &GithubRepositoryMock_Relink_Call{Call: _e.mock.On("Relink", ctx, id, input)}
+}
+
+func (_c *GithubRepositoryMock_Relink_Call) Run(run func(ctx context.Context, id uuid.UUID, input *github_repo.IssueLinkInput)) *GithubRepositoryMock_Relink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *github_repo.IssueLinkInput
+		if args[2] != nil {
+			arg2 = args[2].(*github_repo.IssueLinkInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_Relink_Call) Return(err error) *GithubRepositoryMock_Relink_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_Relink_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, input *github_repo.IssueLinkInput) error) *GithubRepositoryMock_Relink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RepoSyncByName provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RepoSyncByName(ctx context.Context, integrationID uuid.UUID, fullName string) (*ent.GithubRepoSync, error) {
+	ret := _mock.Called(ctx, integrationID, fullName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RepoSyncByName")
+	}
+
+	var r0 *ent.GithubRepoSync
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) (*ent.GithubRepoSync, error)); ok {
+		return returnFunc(ctx, integrationID, fullName)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) *ent.GithubRepoSync); ok {
+		r0 = returnFunc(ctx, integrationID, fullName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubRepoSync)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string) error); ok {
+		r1 = returnFunc(ctx, integrationID, fullName)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_RepoSyncByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RepoSyncByName'
+type GithubRepositoryMock_RepoSyncByName_Call struct {
+	*mock.Call
+}
+
+// RepoSyncByName is a helper method to define mock.On call
+//   - ctx context.Context
+//   - integrationID uuid.UUID
+//   - fullName string
+func (_e *GithubRepositoryMock_Expecter) RepoSyncByName(ctx any, integrationID any, fullName any) *GithubRepositoryMock_RepoSyncByName_Call {
+	return &GithubRepositoryMock_RepoSyncByName_Call{Call: _e.mock.On("RepoSyncByName", ctx, integrationID, fullName)}
+}
+
+func (_c *GithubRepositoryMock_RepoSyncByName_Call) Run(run func(ctx context.Context, integrationID uuid.UUID, fullName string)) *GithubRepositoryMock_RepoSyncByName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RepoSyncByName_Call) Return(githubRepoSync *ent.GithubRepoSync, err error) *GithubRepositoryMock_RepoSyncByName_Call {
+	_c.Call.Return(githubRepoSync, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RepoSyncByName_Call) RunAndReturn(run func(ctx context.Context, integrationID uuid.UUID, fullName string) (*ent.GithubRepoSync, error)) *GithubRepositoryMock_RepoSyncByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RepoSyncNameTaken provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) RepoSyncNameTaken(ctx context.Context, fullName string) (bool, error) {
+	ret := _mock.Called(ctx, fullName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RepoSyncNameTaken")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
+		return returnFunc(ctx, fullName)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = returnFunc(ctx, fullName)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, fullName)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_RepoSyncNameTaken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RepoSyncNameTaken'
+type GithubRepositoryMock_RepoSyncNameTaken_Call struct {
+	*mock.Call
+}
+
+// RepoSyncNameTaken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - fullName string
+func (_e *GithubRepositoryMock_Expecter) RepoSyncNameTaken(ctx any, fullName any) *GithubRepositoryMock_RepoSyncNameTaken_Call {
+	return &GithubRepositoryMock_RepoSyncNameTaken_Call{Call: _e.mock.On("RepoSyncNameTaken", ctx, fullName)}
+}
+
+func (_c *GithubRepositoryMock_RepoSyncNameTaken_Call) Run(run func(ctx context.Context, fullName string)) *GithubRepositoryMock_RepoSyncNameTaken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RepoSyncNameTaken_Call) Return(b bool, err error) *GithubRepositoryMock_RepoSyncNameTaken_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_RepoSyncNameTaken_Call) RunAndReturn(run func(ctx context.Context, fullName string) (bool, error)) *GithubRepositoryMock_RepoSyncNameTaken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StartBackfill provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) StartBackfill(ctx context.Context, id uuid.UUID, syncClosed bool) (bool, error) {
+	ret := _mock.Called(ctx, id, syncClosed)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartBackfill")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, bool) (bool, error)); ok {
+		return returnFunc(ctx, id, syncClosed)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, bool) bool); ok {
+		r0 = returnFunc(ctx, id, syncClosed)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, bool) error); ok {
+		r1 = returnFunc(ctx, id, syncClosed)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_StartBackfill_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartBackfill'
+type GithubRepositoryMock_StartBackfill_Call struct {
+	*mock.Call
+}
+
+// StartBackfill is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - syncClosed bool
+func (_e *GithubRepositoryMock_Expecter) StartBackfill(ctx any, id any, syncClosed any) *GithubRepositoryMock_StartBackfill_Call {
+	return &GithubRepositoryMock_StartBackfill_Call{Call: _e.mock.On("StartBackfill", ctx, id, syncClosed)}
+}
+
+func (_c *GithubRepositoryMock_StartBackfill_Call) Run(run func(ctx context.Context, id uuid.UUID, syncClosed bool)) *GithubRepositoryMock_StartBackfill_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_StartBackfill_Call) Return(b bool, err error) *GithubRepositoryMock_StartBackfill_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_StartBackfill_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, syncClosed bool) (bool, error)) *GithubRepositoryMock_StartBackfill_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -394,6 +1999,86 @@ func (_c *GithubRepositoryMock_UpdateSecret_Call) Return(githubIntegration *ent.
 }
 
 func (_c *GithubRepositoryMock_UpdateSecret_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, secretEncrypted []byte, secretPrefix string) (*ent.GithubIntegration, error)) *GithubRepositoryMock_UpdateSecret_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateToken provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) UpdateToken(ctx context.Context, id uuid.UUID, tokenEncrypted []byte, tokenPrefix string) (*ent.GithubIntegration, error) {
+	ret := _mock.Called(ctx, id, tokenEncrypted, tokenPrefix)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateToken")
+	}
+
+	var r0 *ent.GithubIntegration
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []byte, string) (*ent.GithubIntegration, error)); ok {
+		return returnFunc(ctx, id, tokenEncrypted, tokenPrefix)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []byte, string) *ent.GithubIntegration); ok {
+		r0 = returnFunc(ctx, id, tokenEncrypted, tokenPrefix)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubIntegration)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []byte, string) error); ok {
+		r1 = returnFunc(ctx, id, tokenEncrypted, tokenPrefix)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_UpdateToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateToken'
+type GithubRepositoryMock_UpdateToken_Call struct {
+	*mock.Call
+}
+
+// UpdateToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - tokenEncrypted []byte
+//   - tokenPrefix string
+func (_e *GithubRepositoryMock_Expecter) UpdateToken(ctx any, id any, tokenEncrypted any, tokenPrefix any) *GithubRepositoryMock_UpdateToken_Call {
+	return &GithubRepositoryMock_UpdateToken_Call{Call: _e.mock.On("UpdateToken", ctx, id, tokenEncrypted, tokenPrefix)}
+}
+
+func (_c *GithubRepositoryMock_UpdateToken_Call) Run(run func(ctx context.Context, id uuid.UUID, tokenEncrypted []byte, tokenPrefix string)) *GithubRepositoryMock_UpdateToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []byte
+		if args[2] != nil {
+			arg2 = args[2].([]byte)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateToken_Call) Return(githubIntegration *ent.GithubIntegration, err error) *GithubRepositoryMock_UpdateToken_Call {
+	_c.Call.Return(githubIntegration, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateToken_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, tokenEncrypted []byte, tokenPrefix string) (*ent.GithubIntegration, error)) *GithubRepositoryMock_UpdateToken_Call {
 	_c.Call.Return(run)
 	return _c
 }
