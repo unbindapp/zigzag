@@ -274,13 +274,9 @@ function VirtualIssueList({
                       depth={item.depth}
                       properties={properties}
                       isSelected={selectedIds.includes(item.issue.id)}
-                      isSelecting={selectedIds.length > 0}
                       isActive={peek?.peek?.toUpperCase() === item.issue.identifier}
                       canEdit={canEdit}
                       onClick={handleClick}
-                      onToggleSelect={(issue, extendRange) =>
-                        extendRange ? selectRange(orderedIds, issue.id) : toggle(issue.id)
-                      }
                       onFocus={(issue) => setFocused(issue.id)}
                     />
                   )}

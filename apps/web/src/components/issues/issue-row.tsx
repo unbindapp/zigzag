@@ -8,8 +8,6 @@ import { useIssuePatch } from "@/components/issues/use-issue-actions";
 import { LabelChip } from "@/components/shared/label-chip";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { EstimateBadge } from "@/components/shared/estimate-badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/components/ui/utils";
 import { useTeams } from "@/components/workspace/teams-provider";
 import type { TEstimateType } from "@/lib/helpers/estimates";
 
@@ -20,11 +18,9 @@ type TProps = {
   depth?: number;
   properties: TDisplaySettings["properties"];
   isSelected: boolean;
-  isSelecting: boolean;
   isActive: boolean;
   canEdit: boolean;
   onClick: (event: ReactMouseEvent, issue: TIssue) => void;
-  onToggleSelect: (issue: TIssue, extendRange: boolean) => void;
   onFocus: (issue: TIssue) => void;
 };
 
@@ -33,11 +29,9 @@ export function IssueRow({
   depth = 0,
   properties,
   isSelected,
-  isSelecting,
   isActive,
   canEdit,
   onClick,
-  onToggleSelect,
   onFocus,
 }: TProps) {
   const patch = useIssuePatch();
@@ -62,24 +56,8 @@ export function IssueRow({
       }}
       onMouseEnter={() => onFocus(issue)}
       onFocus={() => onFocus(issue)}
-      className="group/row has-hover:hover:bg-accent data-selected:bg-primary/1-10 data-active:bg-accent focus-visible:ring-primary/8-10 relative flex h-9 w-full cursor-default items-center gap-2 border-b pr-3 pl-6 text-sm outline-hidden focus-visible:ring-1 focus-visible:ring-inset"
+      className="group/row has-hover:hover:bg-accent data-selected:bg-primary/1-10 data-active:bg-accent focus-visible:ring-primary/8-10 flex h-9 w-full cursor-default items-center gap-2 border-b px-3 text-sm outline-hidden focus-visible:ring-1 focus-visible:ring-inset"
     >
-      <span
-        className="absolute top-1/2 left-1.5 flex -translate-y-1/2 items-center"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <Checkbox
-          aria-label={`Select ${issue.identifier}`}
-          checked={isSelected}
-          onCheckedChange={(_checked, details) =>
-            onToggleSelect(issue, (details.event as MouseEvent | undefined)?.shiftKey ?? false)
-          }
-          className={cn(
-            "opacity-0 group-has-hover/row:group-hover/row:opacity-100 focus-visible:opacity-100",
-            (isSelected || isSelecting) && "opacity-100",
-          )}
-        />
-      </span>
       {show("priority") && (
         <PriorityPicker
           appearance="icon"

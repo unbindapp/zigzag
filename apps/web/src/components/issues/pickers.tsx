@@ -79,7 +79,7 @@ export function PickerTrigger({
           size="icon"
           forceMinSize={false}
           aria-label={label}
-          className="shrink-0"
+          className="size-6 shrink-0"
           {...props}
         >
           {icon}
