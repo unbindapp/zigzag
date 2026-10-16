@@ -160,8 +160,7 @@ func (suite *JWTKeySuite) TestDecodePrivateKeySuccess() {
 
 	suite.Equal(originalKey.N, decodedKey.N)
 	suite.Equal(originalKey.D, decodedKey.D)
-	suite.Equal(originalKey.PublicKey.N, decodedKey.PublicKey.N)
-	suite.Equal(originalKey.PublicKey.E, decodedKey.PublicKey.E)
+	suite.Equal(originalKey.E, decodedKey.E)
 }
 
 func (suite *JWTKeySuite) TestDecodePrivateKeyInvalidPEM() {

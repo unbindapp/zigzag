@@ -228,7 +228,7 @@ func (suite *HandlerSuite) TestCodeExchangeRefreshAndRevocation() {
 	suite.Equal("no-store", rec.Header().Get("Cache-Control"))
 	tokens := suite.decode(rec)
 	access := tokens["access_token"].(string)
-	refresh := tokens["refresh_token"].(string)
+	suite.NotEmpty(tokens["refresh_token"])
 	suite.Equal("Bearer", tokens["token_type"])
 	suite.Equal(float64(3600), tokens["expires_in"])
 
@@ -250,7 +250,7 @@ func (suite *HandlerSuite) TestCodeExchangeRefreshAndRevocation() {
 		"redirect_uri": {callback}, "code_verifier": {verifier},
 	})
 	suite.Require().Equal(http.StatusOK, rec.Code, rec.Body.String())
-	refresh = suite.decode(rec)["refresh_token"].(string)
+	refresh := suite.decode(rec)["refresh_token"].(string)
 
 	rec = suite.postForm("/oauth/token", url.Values{"grant_type": {"refresh_token"}, "client_id": {claudeCode}, "refresh_token": {refresh}})
 	suite.Equal(http.StatusOK, rec.Code, rec.Body.String())

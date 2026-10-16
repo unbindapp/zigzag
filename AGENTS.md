@@ -1,51 +1,83 @@
-# Zigzag
+## What is this?
 
-Zigzag is a self-hosted issue tracker modeled on Linear. It ships as one binary: a Go API that embeds and serves a React SPA, backed by PostgreSQL. It also ships an MCP server so agents can work issues through the same API.
+Zigzag is an open-source, self-hosted issue tracker modeled on Linear. This is the monorepo for it. It ships as one binary: a Go API that embeds and serves a React SPA, backed by PostgreSQL, with an MCP server so agents can work issues through the same API.
 
-The architecture, conventions and toolkits are copied from Unbind (https://github.com/unbindapp/unbind, MIT). Where this repo and Unbind differ, this repo's `docs/design/*.md` wins. Where this repo is silent, do what Unbind does. Do not invent new patterns, libraries or folder layouts when Unbind already has one for the same job.
+The architecture, conventions and toolkits are copied from Unbind (https://github.com/unbindapp/unbind). Where this repo and Unbind differ, this repo's `docs/design/*.md` wins. Where this repo is silent, do what Unbind does.
 
-## Repo layout
+## Repo Structure:
 
-```
-apps/web    React SPA: Vite, TanStack Router, TanStack Query, TanStack Form, Zod, shadcn (base-ui), Tailwind v4
-apps/api    Go API: Huma v2 on chi, ent, goose migrations, MCP server. module github.com/unbindapp/zigzag-api
-deploy/     docker compose for local Postgres
-docs/design Design documents. Read them before touching code.
-```
+There are 2 main apps in the repo:
 
-## Design documents (binding)
+### 1- apps/web:
 
-- `docs/design/architecture.md` request flow, auth, MCP, mail, config, dev environment
-- `docs/design/data-model.md` every ent entity and field
-- `docs/design/api.md` every operation: id, path, input, output, permission, MCP exposure
-- `docs/design/ui.md` routes, layout primitives, spacing and typography rules, component inventory
-- `docs/design/linear-import.md` the Linear export format and how it maps
+The UI. A React app using Vite. Tanstack Router, Tanstack Query, Tanstack Forms, Tanstack Virtual, Zod, shadcn (on base-ui), Tailwind v4, TipTap for markdown editing and dnd-kit for drag and drop are the core libraries. The UI is served by the API server. The API client in `src/lib/server/client.gen.ts` is generated from the API's OpenAPI spec with `make gen-web-types`; every call goes through it and the query modules in `src/lib/queries`.
 
-If you need something these documents do not cover, follow Unbind's convention and add a line to the relevant document. Never change a documented decision silently.
+### 2- apps/api
 
-## Hard rules
+The server built with Go. Huma on chi, ent for the database, goose for migrations. The UI interacts with this server to manage workspaces, teams, issues, projects, cycles, labels, notifications and everything else. It also serves the static UI and the MCP server. Module `github.com/unbindapp/zigzag-api`.
 
-- Self-documenting code, near-zero comments. Names and structure carry meaning. A comment survives only for a trap the code cannot show, one terse line. Never narrate what code does, never put design rationale in code.
-- Guard clauses. Bail early, happy path at the leftmost indent. No nested if/else pyramids. switch/case when dispatching on one value.
-- Keep it simple. Reinvent the wheel, not the car: no library for a simple problem, a modern library for a complex common one.
-- Security and reliability first. Every operation checks permissions in the service layer through the permissions repository. Handlers never check permissions themselves.
-- Generated code is never edited by hand: `apps/api/ent/*` (ent), `*_iface.go` (ifacemaker), `apps/api/mocks/*` (mockery), `apps/web/src/lib/server/client.gen.ts` (generate-sdk), `apps/web/src/routeTree.gen.ts` (router plugin).
-- Tests cover input and output behavior. No tests that assert a file exists or a function is defined.
-- Every API operation is registered through `oapi.Register` with an `Action`, and either `oapi.MCP` or `oapi.NoMCP("reason")`. The MCP coverage test fails otherwise.
-- An operation takes either query parameters or a JSON body, never both. No path parameters. Responses wrap in `{ "data": ... }`.
-- The web talks to the API only through the generated client in `src/lib/server/client.gen.ts` and the query modules in `src/lib/queries/*`. No hand-written fetch calls.
-- UI consistency is a correctness requirement. Use the layout primitives and spacing scale in `docs/design/ui.md`. If two screens show the same kind of thing, they use the same component with the same props. A one-off margin, font size or button size is a bug.
-- Guard against the same mistake in both directions: if the API gains a field, the web client is regenerated and the UI shows it; if the UI needs a field, the API grows it.
-- No Claude or AI attribution anywhere in code, commits or PRs.
+### Design documents
 
-## Workflow
+`docs/design` holds the binding design: `architecture.md` (request flow, auth, roles, MCP, mail, config, dev environment), `data-model.md` (every ent entity and field), `api.md` (every operation with its permission and MCP decision), `ui.md` (routes, layout primitives, spacing and type scale, component inventory) and `linear-import.md` (the Linear export format and mapping). Read them before touching code. If a decision has to change, change the document in the same change.
 
-- Run `make` targets, not ad hoc commands. `make help` lists them.
-- After changing the API: `make gen-web-types` then `make api-test`, `make web-typecheck`, `make web-lint`.
-- After changing ent schemas: `make api-ent`, then `make api-migrate NAME=<snake_case>` and review the SQL.
-- Before finishing any task: `make check` (fmt, vet, test, typecheck, lint, type sync) must pass.
-- Commit messages: `api: ...`, `web: ...`, `web | api: ...`, lowercase, imperative, short.
+## MCP Server
 
-## MCP server
+Zigzag ships an MCP server inside `apps/api`, served at `/mcp` (code in `apps/api/internal/mcpserver`). It has no tool code of its own: every tool is an API operation, called in process through the API router, so a tool validates, authorizes and answers exactly like its endpoint. Clients authenticate with an OAuth grant (Connected Apps) or an API key, and both are limited to the role (viewer, member, admin) and the workspaces the user picked.
 
-`apps/api/internal/mcpserver` serves `/mcp`. It has no tool code of its own: every tool is an API operation registered with `oapi.MCP`, called in process through the router, so a tool validates, authorizes and answers exactly like its endpoint. Clients authenticate with an OAuth grant (connected apps) or an API key. Both carry a role and an optional workspace scope. Tool name, title, description and input schema come from the operation's `OperationID`, `Summary`, `Description` and input struct. Write them for an agent to read, and use `doc` tags on every input field. If the way resources relate changes, update `instructions` in `mcpserver.go`.
+Keep it in sync with the API:
+
+- Every operation an API key can reach must be registered with `oapi.MCP` (it becomes a tool) or `oapi.NoMCP("reason")`. `go test ./internal/mcpserver/` fails until a new endpoint picks one. Public and session only operations can never be tools.
+- The tool name, title, description, input schema and hints come from the operation's `OperationID`, `Summary`, `Description`, input struct and `oapi` action. Write them for an agent to read, and use `doc` tags on input fields.
+- A tool takes either query parameters or a JSON body, never both. Path, header and cookie parameters are not supported.
+- Response structs are never recursive; the web client generator cannot type them.
+- Opt out anything that returns or accepts credentials, streams, or only makes sense in the UI.
+- If the way resources relate changes, update the `instructions` text in `mcpserver.go`.
+
+In the dev environment the server is at `http://localhost:8091/mcp`. Test it with an API key as the bearer token.
+
+## General Rules:
+
+- Keep it simple. Do not overcomplicate things.
+- Follow each app's own conventions. `apps/web` has a design system and a certain way of doing things, follow it as much as possible. The spacing and type scale in `docs/design/ui.md` is not a suggestion: if two screens show the same kind of thing, they use the same component with the same props.
+- Security and reliability are extremely important. Multiple workspaces with different members share one instance, do not treat it like a hobby project. Every operation checks permissions in the service layer through the permissions repository, never in handlers.
+- `apps/web` and `apps/api` are tightly coupled. When you are changing one, be mindful of the consequences for the other. After changing the API, regenerate the web client.
+- Do not start editing code in response to a question. We'll tell you when to edit code.
+- Do not leave paragraphs of comments on top of the code. Avoid comments as much as possible with understandable function names and code. If they are necessary even then, make them concise. Remove such comments when you come by them in the codebase. Comments always move with code, not be left behind.
+- Use guard statement patterns in any code you write.
+- Do not write any useless tests, tests should cover input output validation - not useless things like "main.go contains func main()".
+- Do not edit generated code directly: mocks generated with mockery, interfaces generated with ifacemaker, the ent folder generated by ent, `client.gen.ts` and `routeTree.gen.ts` in the web app. Not edited by hand.
+- Reinvent the wheel but do not reinvent the car. If you are solving a simple problem do not introduce a library. If you are solving a complex but a common problem, there is likely a modern library for it, if so, use it.
+- If we are missing a glaring issue when we ask you to do something, do not hesitate to point it out.
+- Never commit or push code unless explicitly asked to do so.
+- Never make a PR unless explicitly asked to do so.
+- Do not insert yourself into our code, commits or PRs in any way. Our codebase is not your ad space.
+- After you make code changes, run the pre-commit hooks (`prek run --all-files`, or `pre-commit run --all-files`) and `make check`, and fix anything they report. CI runs the same checks.
+- Always keep the docs in `docs/design` in sync with the code.
+
+## Commit Messages
+
+Commit subjects are lowercase conventional commits, short and imperative:
+
+    feat: add issue relations
+    fix: keep imported descriptions on first open
+    chore: bump ent
+
+Add a body only when the subject cannot carry it, and keep it plain. No em dashes, no filler.
+
+## Local Dev Environment
+
+Postgres runs in docker compose (`deploy/compose/docker-compose.yaml`, container `zigzag_postgres`, `127.0.0.1:54329`, database `zigzag`):
+
+    make dev-infra      # start postgres
+    make dev-api        # API on :8091
+    make dev-web        # Vite on :5174, proxying /api/go to the API
+    make app            # single binary with the SPA embedded, apps/api/bin/zigzag
+    make check          # fmt, vet, tests, type sync, typecheck, lint
+
+The API needs `ENCRYPTION_KEY` (64 hex chars) and, for local http, `COOKIE_SECURE=false` and `INJECT_DEV_ORIGINS=true`. Open http://localhost:5174; the first visit creates the first user and workspace. API docs are at http://localhost:8091/docs.
+
+Migrations: `make api-migrate NAME=what_changed` after a schema change, then review the SQL and run `make api-migrate-checksum`. Migrations apply on startup.
+
+### Browser demos and UI verification
+
+Use a headless browser on this machine. Drive Chromium with Playwright from a directory outside the repo (for example `~/demos/<task>-demo/`, `npm init -y && npm i playwright-core`, `npx playwright install chromium`), launch headless with `--no-sandbox`, viewport 1440x900, sign in, do the flow like a user would, take screenshots at each step and hand back their paths. Never install Playwright into `apps/web/node_modules`.

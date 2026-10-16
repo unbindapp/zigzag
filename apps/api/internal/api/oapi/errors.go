@@ -38,7 +38,7 @@ func classifyError(err error) error {
 	case ent.IsNotFound(err) || errors.Is(err, errdefs.ErrNotFound):
 		return errdefs.WithCause(huma.Error404NotFound("Not found", clientDetail(err, "Not found")), err)
 	case errors.Is(err, errdefs.ErrAlreadyBootstrapped):
-		return huma.Error409Conflict("Conflict", errors.New("Setup is already complete"))
+		return huma.Error409Conflict("Conflict", errors.New("setup is already complete"))
 	case errors.Is(err, errdefs.ErrConflict) || ent.IsConstraintError(err):
 		return errdefs.WithCause(huma.Error409Conflict("Conflict", clientDetail(err, "This conflicts with an existing record")), err)
 	case errors.Is(err, context.Canceled):

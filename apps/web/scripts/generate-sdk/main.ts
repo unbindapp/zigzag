@@ -341,9 +341,13 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     const options: RequestInit = {
       method: "${method.toUpperCase()}",
       credentials: "include",
-      ${requestBody.isMultipart ? "" : `headers: {
+      ${
+        requestBody.isMultipart
+          ? ""
+          : `headers: {
         "Content-Type": "application/json"
-      },`}
+      },`
+      }
       ...fetchOptions
     };
     ${

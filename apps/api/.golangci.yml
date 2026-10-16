@@ -1,0 +1,58 @@
+version: "2"
+
+linters:
+  enable:
+    - revive
+
+  settings:
+    revive:
+      rules:
+        - name: use-any
+          severity: error
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (net.Conn).Close
+        - (*os.Process).Signal
+        - (*os.Process).Kill
+        - (*encoding/json.Encoder).Encode
+        - (net.Conn).Write
+        - (*bufio.Writer).Flush
+        - fmt.Fprintln
+        - fmt.Fprintf
+        - fmt.Fprint
+        - (*io.PipeWriter).Write
+        - (*os.File).Write
+        - os.Remove
+        - os.RemoveAll
+
+  exclusions:
+    rules:
+      - path: ent/
+        linters:
+          - errcheck
+          - govet
+          - unused
+          - ineffassign
+          - staticcheck
+          - revive
+      - path: mocks/
+        linters:
+          - errcheck
+          - govet
+          - unused
+          - ineffassign
+          - staticcheck
+          - revive
+      - path: _test\.go
+        linters:
+          - errcheck
+      - linters:
+          - errcheck
+        text: "Error return value of `.+\\.(Close|Flush|Rollback)` is not checked"
+      - linters:
+          - staticcheck
+        text: "ST1006:"

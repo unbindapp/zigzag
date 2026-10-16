@@ -1,5 +1,5 @@
 .PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
-	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-fmt-check api-vet api-run \
+	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-fmt-check api-vet api-lint api-run \
 	web-build web-dev web-lint web-fmt web-typecheck web-test web-gen docker check
 
 WEB_DIR := apps/web
@@ -103,6 +103,9 @@ api-fmt-check:
 api-vet:
 	cd $(API_DIR) && go vet ./...
 
+api-lint:
+	cd $(API_DIR) && go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0 run
+
 api-run:
 	cd $(API_DIR) && go run ./cmd/api
 
@@ -127,4 +130,4 @@ web-test:
 web-gen:
 	cd $(WEB_DIR) && npm run generate-sdk
 
-check: api-fmt-check api-vet api-test check-web-types web-typecheck web-lint web-test
+check: api-fmt-check api-vet api-lint api-test check-web-types web-typecheck web-lint web-test
