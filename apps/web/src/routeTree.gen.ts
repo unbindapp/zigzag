@@ -14,8 +14,10 @@ import { Route as WorkspaceWorkspaceRouteRouteImport } from './routes/$workspace
 import { Route as CreateWorkspaceIndexRouteImport } from './routes/create-workspace/index'
 import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as WelcomeIndexRouteImport } from './routes/welcome/index'
 import { Route as WorkspaceWorkspaceIndexRouteImport } from './routes/$workspace/_workspace/index'
 import { Route as WorkspaceWorkspaceDocumentsRouteImport } from './routes/$workspace/_workspace/documents'
@@ -101,6 +103,11 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordIndexRoute = ResetPasswordIndexRouteImport.update({
   id: '/reset-password/',
   path: '/reset-password/',
@@ -109,6 +116,11 @@ const ResetPasswordIndexRoute = ResetPasswordIndexRouteImport.update({
 const SignInIndexRoute = SignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WelcomeIndexRoute = WelcomeIndexRouteImport.update({
@@ -467,8 +479,10 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/create-workspace/': typeof CreateWorkspaceIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/sign-in/': typeof SignInIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/welcome/': typeof WelcomeIndexRoute
   '/$workspace/documents': typeof WorkspaceWorkspaceDocumentsRoute
   '/$workspace/inbox': typeof WorkspaceWorkspaceInboxRoute
@@ -534,8 +548,10 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/create-workspace': typeof CreateWorkspaceIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
   '/sign-in': typeof SignInIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/welcome': typeof WelcomeIndexRoute
   '/$workspace/documents': typeof WorkspaceWorkspaceDocumentsRoute
   '/$workspace/inbox': typeof WorkspaceWorkspaceInboxRoute
@@ -598,8 +614,10 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/create-workspace/': typeof CreateWorkspaceIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/sign-in/': typeof SignInIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/welcome/': typeof WelcomeIndexRoute
   '/$workspace/_workspace/documents': typeof WorkspaceWorkspaceDocumentsRoute
   '/$workspace/_workspace/inbox': typeof WorkspaceWorkspaceInboxRoute
@@ -668,8 +686,10 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/create-workspace/'
     | '/forgot-password/'
+    | '/privacy/'
     | '/reset-password/'
     | '/sign-in/'
+    | '/terms/'
     | '/welcome/'
     | '/$workspace/documents'
     | '/$workspace/inbox'
@@ -735,8 +755,10 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/create-workspace'
     | '/forgot-password'
+    | '/privacy'
     | '/reset-password'
     | '/sign-in'
+    | '/terms'
     | '/welcome'
     | '/$workspace/documents'
     | '/$workspace/inbox'
@@ -798,8 +820,10 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/create-workspace/'
     | '/forgot-password/'
+    | '/privacy/'
     | '/reset-password/'
     | '/sign-in/'
+    | '/terms/'
     | '/welcome/'
     | '/$workspace/_workspace/documents'
     | '/$workspace/_workspace/inbox'
@@ -867,8 +891,10 @@ export interface RootRouteChildren {
   InviteTokenRoute: typeof InviteTokenRoute
   CreateWorkspaceIndexRoute: typeof CreateWorkspaceIndexRoute
   ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
   ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
   WelcomeIndexRoute: typeof WelcomeIndexRoute
   OauthConsentIndexRoute: typeof OauthConsentIndexRoute
 }
@@ -910,6 +936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy/'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password/': {
       id: '/reset-password/'
       path: '/reset-password'
@@ -922,6 +955,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in/'
       preLoaderRoute: typeof SignInIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof TermsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/welcome/': {
@@ -1574,8 +1614,10 @@ const rootRouteChildren: RootRouteChildren = {
   InviteTokenRoute: InviteTokenRoute,
   CreateWorkspaceIndexRoute: CreateWorkspaceIndexRoute,
   ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
   ResetPasswordIndexRoute: ResetPasswordIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
   WelcomeIndexRoute: WelcomeIndexRoute,
   OauthConsentIndexRoute: OauthConsentIndexRoute,
 }

@@ -10,7 +10,14 @@ export type RouterContext = {
   queryClient: QueryClient;
 };
 
-const PUBLIC_PATHS = new Set(["/sign-in", "/forgot-password", "/reset-password", "/welcome"]);
+const PUBLIC_PATHS = new Set([
+  "/sign-in",
+  "/forgot-password",
+  "/reset-password",
+  "/welcome",
+  "/privacy",
+  "/terms",
+]);
 const PUBLIC_PREFIXES = ["/invite/"];
 
 function isPublicPath(pathname: string) {
