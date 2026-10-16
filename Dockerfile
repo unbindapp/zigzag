@@ -20,7 +20,8 @@ ARG VERSION=development
 COPY apps/api/ ./
 RUN rm -rf internal/web/dist
 COPY --from=web /src/apps/web/dist ./internal/web/dist
-RUN go build -ldflags "-s -w -X main.Version=${VERSION}" -o /out/zigzag ./cmd/api
+RUN --mount=type=cache,target=/gocache,from=deps,source=/gocache \
+    go build -ldflags "-s -w -X main.Version=${VERSION}" -o /out/zigzag ./cmd/api
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=api /out/zigzag /app/zigzag
