@@ -9,7 +9,7 @@ import { FileTrigger } from "@/components/ui/file-trigger";
 import { WorkspaceIcon } from "@/components/workspace/workspace-icon";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { submitHandler, useAppForm } from "@/lib/hooks/use-app-form";
-import { useCreateUploadMutation } from "@/lib/queries/uploads";
+import { imageUploadAccept, useCreateUploadMutation } from "@/lib/queries/uploads";
 import {
   NO_WORKSPACE_ICON_UPLOAD_ID,
   useUpdateWorkspaceMutation,
@@ -116,7 +116,7 @@ function WorkspaceImageField() {
           />
         )}
         <FileTrigger
-          accept="image/*"
+          accept={imageUploadAccept}
           onSelect={async ([file]) => {
             const res = await upload({ workspaceId: workspace.id, file }).catch(() => null);
             if (!res) return;

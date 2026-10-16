@@ -5,6 +5,8 @@ import type { TGoClient, TResponseData } from "@/lib/server/types";
 
 export type TUpload = TResponseData<TGoClient["uploads"]["create"]>;
 
+export const imageUploadAccept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml";
+
 export async function createUpload(input: { workspaceId: string; file: File }) {
   const body = new FormData();
   body.append("workspace_id", input.workspaceId);

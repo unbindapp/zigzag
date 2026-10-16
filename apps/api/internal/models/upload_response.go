@@ -11,8 +11,8 @@ type UploadResponse struct {
 	FileName    string    `json:"file_name"`
 	ContentType string    `json:"content_type"`
 	SizeBytes   int64     `json:"size_bytes"`
-	Width       *int      `json:"width,omitempty" nullable:"true" required:"false" doc:"Pixel width for png, jpeg, gif and webp images"`
-	Height      *int      `json:"height,omitempty" nullable:"true" required:"false" doc:"Pixel height for png, jpeg, gif and webp images"`
+	Width       *int      `json:"width,omitempty" nullable:"true" required:"false" doc:"Pixel width for png, jpeg, gif and webp images; for svg, the width from its width attribute or viewBox when given"`
+	Height      *int      `json:"height,omitempty" nullable:"true" required:"false" doc:"Pixel height for png, jpeg, gif and webp images; for svg, the height from its height attribute or viewBox when given"`
 }
 
 func TransformUploadEntity(entity *ent.Upload) *UploadResponse {

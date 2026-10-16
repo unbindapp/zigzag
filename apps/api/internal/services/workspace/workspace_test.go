@@ -123,9 +123,15 @@ func (suite *WorkspaceServiceSuite) TestUpdateIconUpload() {
 		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "application/pdf"}, nil).Once()
 		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
 	})
-	suite.Run("image type without decoded dimensions", func() {
-		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml"}, nil).Once()
+	suite.Run("raster image without decoded dimensions", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/x-icon"}, nil).Once()
 		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
+	})
+	suite.Run("svg without dimensions", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml"}, nil).Once()
+		suite.MockWorkspaceRepo.EXPECT().Update(suite.Ctx, suite.workspaceID, &workspace_repo.UpdateWorkspaceInput{IconUploadID: &uploadID}).
+			Return(&ent.Workspace{ID: suite.workspaceID, IconUploadID: &uploadID}, nil).Once()
+		suite.NoError(update(uploadID))
 	})
 	suite.Run("image of this workspace", func() {
 		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/png", Width: utils.ToPtr(64)}, nil).Once()

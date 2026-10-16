@@ -3,6 +3,7 @@ package upload_service
 import (
 	"bytes"
 	"context"
+	"encoding/xml"
 	"errors"
 	"image"
 	_ "image/gif"
@@ -20,6 +21,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/svg"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
@@ -63,10 +65,19 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 
 	contentType := detectContentType(header, input.ContentType)
 	width, height := imageSize(header, contentType)
+	body := io.MultiReader(bytes.NewReader(header), input.Body)
+	if contentType == svg.ContentType {
+		data, svgWidth, svgHeight, err := readSVG(body)
+		if err != nil {
+			return nil, err
+		}
+		body = bytes.NewReader(data)
+		width, height = positive(svgWidth), positive(svgHeight)
+	}
 	id := uuid.New()
 	key := input.WorkspaceID.String() + "/" + id.String() + extensionOf(input.FileName)
 
-	counter := &countingReader{reader: io.LimitReader(io.MultiReader(bytes.NewReader(header), input.Body), self.cfg.MaxUploadBytes+1)}
+	counter := &countingReader{reader: io.LimitReader(body, self.cfg.MaxUploadBytes+1)}
 	if err := self.store.Put(ctx, key, counter); err != nil {
 		return nil, errdefs.NewInternalError(err, "Failed to store the file")
 	}
@@ -115,7 +126,48 @@ func (self *UploadService) Open(ctx context.Context, userID, uploadID uuid.UUID)
 	if err != nil {
 		return nil, errdefs.NewInternalError(err, "Failed to read the stored file")
 	}
+	if upload.ContentType == svg.ContentType {
+		return openSVG(upload, body)
+	}
 	return &OpenedUpload{Upload: upload, Body: body, Inline: inlineTypes[upload.ContentType]}, nil
+}
+
+type prefixedBody struct {
+	io.Reader
+	io.Closer
+}
+
+func openSVG(upload *ent.Upload, body io.ReadCloser) (*OpenedUpload, error) {
+	data, err := io.ReadAll(io.LimitReader(body, svg.MaxBytes+1))
+	if err != nil {
+		body.Close()
+		return nil, errdefs.NewInternalError(err, "Failed to read the stored file")
+	}
+	_, _, err = svg.Validate(data)
+	return &OpenedUpload{
+		Upload: upload,
+		Body:   prefixedBody{Reader: io.MultiReader(bytes.NewReader(data), body), Closer: body},
+		Inline: err == nil,
+	}, nil
+}
+
+func readSVG(body io.Reader) ([]byte, int, int, error) {
+	data, err := io.ReadAll(io.LimitReader(body, svg.MaxBytes+1))
+	if err != nil {
+		return nil, 0, 0, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Could not read the uploaded file")
+	}
+	width, height, err := svg.Validate(data)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	return data, width, height, nil
+}
+
+func positive(value int) *int {
+	if value <= 0 {
+		return nil
+	}
+	return &value
 }
 
 func (self *UploadService) discard(ctx context.Context, key string) {
@@ -136,7 +188,24 @@ func detectContentType(header []byte, declared string) string {
 	if err != nil || mediaType == "" {
 		mediaType, _, _ = mime.ParseMediaType(sniffed)
 	}
-	return strings.ToLower(mediaType)
+	mediaType = strings.ToLower(mediaType)
+	if mediaType == svg.ContentType || startsWithSVG(header) {
+		return svg.ContentType
+	}
+	return mediaType
+}
+
+func startsWithSVG(header []byte) bool {
+	decoder := xml.NewDecoder(bytes.NewReader(header))
+	for {
+		token, err := decoder.Token()
+		if err != nil {
+			return false
+		}
+		if element, ok := token.(xml.StartElement); ok {
+			return strings.EqualFold(element.Name.Local, "svg")
+		}
+	}
 }
 
 func imageSize(header []byte, contentType string) (*int, *int) {

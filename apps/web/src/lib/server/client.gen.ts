@@ -2736,11 +2736,11 @@ export const UploadResponseSchema = z
   .object({
     content_type: z.string(),
     file_name: z.string(),
-    height: z.number().nullable().optional(), // Pixel height for png, jpeg, gif and webp images
+    height: z.number().nullable().optional(), // Pixel height for png, jpeg, gif and webp images; for svg, the height from its height attribute or viewBox when given
     id: z.string(),
     size_bytes: z.number(),
     url: z.string(), // Same-origin path that serves the file; use it in markdown
-    width: z.number().nullable().optional(), // Pixel width for png, jpeg, gif and webp images
+    width: z.number().nullable().optional(), // Pixel width for png, jpeg, gif and webp images; for svg, the width from its width attribute or viewBox when given
   })
   .strip();
 

@@ -234,6 +234,33 @@ func (suite *UserServiceSuite) TestUpdateMeValidates() {
 		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{AvatarUploadID: &uploadID})
 		suite.ErrorIs(err, errdefs.ErrInvalidInput)
 	})
+	suite.Run("avatar that is not an image", func() {
+		uploadID := uuid.New()
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, UploaderID: &suite.userID, ContentType: "application/pdf"}, nil).Once()
+		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{AvatarUploadID: &uploadID})
+		suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	})
+	suite.Run("raster avatar without decoded dimensions", func() {
+		uploadID := uuid.New()
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, UploaderID: &suite.userID, ContentType: "image/x-icon"}, nil).Once()
+		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{AvatarUploadID: &uploadID})
+		suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	})
+	for name, upload := range map[string]*ent.Upload{
+		"png avatar":              {ContentType: "image/png", Width: utils.ToPtr(64), Height: utils.ToPtr(64)},
+		"svg avatar without size": {ContentType: "image/svg+xml"},
+	} {
+		suite.Run(name, func() {
+			upload.ID = uuid.New()
+			upload.UploaderID = &suite.userID
+			suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, upload.ID).Return(upload, nil).Once()
+			suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.userID, &user_repo.UpdateUserInput{AvatarUploadID: &upload.ID}).
+				Return(&ent.User{ID: suite.userID, AvatarUploadID: &upload.ID}, nil).Once()
+			resp, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{AvatarUploadID: &upload.ID})
+			suite.Require().NoError(err)
+			suite.Equal(utils.ToPtr("/api/go/uploads/get?upload_id="+upload.ID.String()), resp.AvatarURL)
+		})
+	}
 	suite.Run("nil uuid clears the avatar", func() {
 		suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.userID, mock.MatchedBy(func(input *user_repo.UpdateUserInput) bool { return input.ClearAvatar })).
 			Return(&ent.User{ID: suite.userID}, nil).Once()

@@ -9,6 +9,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/svg"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
@@ -136,8 +137,8 @@ func (self *WorkspaceService) applyIconUpload(ctx context.Context, workspaceID, 
 	if err != nil {
 		return err
 	}
-	if !strings.HasPrefix(upload.ContentType, "image/") || upload.Width == nil {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The logo must be a png, jpeg, gif or webp image")
+	if !strings.HasPrefix(upload.ContentType, "image/") || (upload.Width == nil && upload.ContentType != svg.ContentType) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The logo must be a png, jpeg, gif, webp or svg image")
 	}
 	update.IconUploadID = &uploadID
 	return nil

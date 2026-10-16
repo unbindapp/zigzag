@@ -13,6 +13,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/svg"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	upload_service "github.com/zigzagapp-org/zigzag-api/internal/services/upload"
 )
@@ -36,7 +37,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID:  "create-upload",
 		Summary:      "Create Upload",
-		Description:  "Upload a file to a workspace as multipart form data with workspace_id and file. Images get their pixel size recorded. Returns the url to use in markdown.",
+		Description:  "Upload a file to a workspace as multipart form data with workspace_id and file. Images get their pixel size recorded. SVG files are refused when they contain scripts, event handlers, javascript: urls, foreignObject, a DOCTYPE or remote images, and are limited to 1 MiB. Returns the url to use in markdown.",
 		Path:         "/create",
 		Method:       http.MethodPost,
 		MaxBodyBytes: maxBytes + multipartOverhead,
@@ -121,10 +122,17 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetUploadInput) (*huma
 		hctx.SetHeader("Content-Disposition", mime.FormatMediaType(disposition, map[string]string{"filename": opened.Upload.FileName}))
 		hctx.SetHeader("Cache-Control", "private, max-age=31536000, immutable")
 		hctx.SetHeader("X-Content-Type-Options", "nosniff")
-		hctx.SetHeader("Content-Security-Policy", "default-src 'none'; sandbox")
+		hctx.SetHeader("Content-Security-Policy", contentSecurityPolicy(contentType))
 		hctx.SetStatus(http.StatusOK)
 		if _, err := io.Copy(hctx.BodyWriter(), opened.Body); err != nil {
 			log.Warn("Failed to stream an upload", "upload_id", opened.Upload.ID, "err", err)
 		}
 	}}, nil
+}
+
+func contentSecurityPolicy(contentType string) string {
+	if contentType == svg.ContentType {
+		return "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"
+	}
+	return "default-src 'none'; sandbox"
 }

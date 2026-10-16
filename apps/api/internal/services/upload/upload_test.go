@@ -10,6 +10,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -19,6 +20,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent"
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
@@ -113,6 +115,57 @@ func (suite *UploadServiceSuite) TestOtherFilesKeepTheirDeclaredType() {
 	suite.Equal("notes.TXT", stored.FileName, "path segments are dropped from file names")
 }
 
+func (suite *UploadServiceSuite) TestSVGsAreValidatedAndSized() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
+	suite.allow(schema.WorkspaceRoleMember, nil)
+	cases := []struct {
+		name     string
+		declared string
+		body     string
+		width    *int
+		height   *int
+	}{
+		{name: "declared svg with viewBox", declared: "image/svg+xml; charset=utf-8", body: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16"><path d="M0 0h24v16z"/></svg>`, width: utils.ToPtr(24), height: utils.ToPtr(16)},
+		{name: "sniffed svg without size", declared: "application/octet-stream", body: `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"><circle r="4"/></svg>`},
+	}
+	for _, tc := range cases {
+		suite.Run(tc.name, func() {
+			stored := suite.expectStored()
+			resp, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "logo.svg", ContentType: tc.declared, Body: bytes.NewReader([]byte(tc.body))})
+			suite.Require().NoError(err)
+			suite.Equal("image/svg+xml", resp.ContentType)
+			suite.Equal(tc.width, resp.Width)
+			suite.Equal(tc.height, resp.Height)
+			suite.Equal(int64(len(tc.body)), stored.SizeBytes)
+			body, err := suite.store.Open(suite.Ctx, stored.StorageKey)
+			suite.Require().NoError(err)
+			defer body.Close()
+			content, _ := io.ReadAll(body)
+			suite.Equal(tc.body, string(content))
+		})
+	}
+}
+
+func (suite *UploadServiceSuite) TestUnsafeSVGsAreRefused() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
+	suite.allow(schema.WorkspaceRoleMember, nil)
+	cases := map[string]struct {
+		declared string
+		body     string
+	}{
+		"declared svg with a script":     {declared: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`},
+		"sniffed svg with onload":        {declared: "text/plain", body: `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>`},
+		"declared svg that is html":      {declared: "image/svg+xml", body: `<html><body>hi</body></html>`},
+		"declared svg larger than 1 MiB": {declared: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg">` + strings.Repeat(" ", 1<<20) + `</svg>`},
+	}
+	for name, tc := range cases {
+		suite.Run(name, func() {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "logo.svg", ContentType: tc.declared, Body: bytes.NewReader([]byte(tc.body))})
+			suite.ErrorIs(err, errdefs.ErrInvalidInput)
+		})
+	}
+}
+
 func (suite *UploadServiceSuite) TestTooLargeFilesAreRemoved() {
 	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
@@ -160,6 +213,31 @@ func (suite *UploadServiceSuite) TestOpenChecksTheWorkspaceAndMarksSafeTypesInli
 	suite.Require().NoError(err)
 	opened.Body.Close()
 	suite.True(opened.Inline)
+}
+
+func (suite *UploadServiceSuite) TestOpenServesOnlySafeSVGsInline() {
+	cases := map[string]struct {
+		body   string
+		inline bool
+	}{
+		"clean svg":            {body: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 4"/>`, inline: true},
+		"svg stored unchecked": {body: `<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`, inline: false},
+	}
+	suite.allow(schema.WorkspaceRoleViewer, nil)
+	for name, tc := range cases {
+		suite.Run(name, func() {
+			key := suite.workspaceID.String() + "/" + uuid.NewString() + ".svg"
+			suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte(tc.body))))
+			upload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml", StorageKey: key}
+			suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, upload.ID).Return(upload, nil).Once()
+			opened, err := suite.service.Open(suite.Ctx, suite.userID, upload.ID)
+			suite.Require().NoError(err)
+			defer opened.Body.Close()
+			content, _ := io.ReadAll(opened.Body)
+			suite.Equal(tc.body, string(content))
+			suite.Equal(tc.inline, opened.Inline)
+		})
+	}
 }
 
 func (suite *UploadServiceSuite) TestOpenMasksOtherWorkspaces() {

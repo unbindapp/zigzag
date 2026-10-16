@@ -18,7 +18,7 @@ import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { timezoneOptions } from "@/lib/helpers/timezones";
 import { submitHandler, useAppForm } from "@/lib/hooks/use-app-form";
 import { meQuery, NO_AVATAR_UPLOAD_ID, type TMe, useUpdateMeMutation } from "@/lib/queries/me";
-import { useCreateUploadMutation } from "@/lib/queries/uploads";
+import { imageUploadAccept, useCreateUploadMutation } from "@/lib/queries/uploads";
 
 export const Route = createFileRoute("/$workspace/_workspace/settings/account/")({
   component: AccountProfileSettingsPage,
@@ -69,7 +69,7 @@ function AvatarSection({ me }: { me: TMe }) {
       <div className="flex items-center gap-4">
         <Avatar id={user.id} name={user.name} src={user.avatar_url} size="xl" />
         <FileTrigger
-          accept="image/*"
+          accept={imageUploadAccept}
           onSelect={async ([file]) => {
             const res = await upload({ workspaceId: workspace.id, file }).catch(() => null);
             if (!res) return;
