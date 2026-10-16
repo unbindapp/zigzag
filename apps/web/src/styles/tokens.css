@@ -1,0 +1,227 @@
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DMSansVF.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMonoVF.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* If you change --background, also update the anti-flash <style> in index.html */
+  --background: hsl(220 20% 98%);
+  --foreground: hsl(220 25% 8%);
+  --card: hsl(0 0% 100%);
+  --card-hover: hsl(220 16% 96%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 25% 8%);
+  --primary: hsl(235 60% 55%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 14% 94%);
+  --secondary-foreground: hsl(220 25% 8%);
+  --muted: hsl(220 14% 94%);
+  --muted-foreground: hsl(220 10% 42%);
+  --muted-more-foreground: hsl(220 9% 58%);
+  --muted-most-foreground: hsl(220 9% 74%);
+  --accent: hsl(220 14% 93%);
+  --accent-foreground: hsl(220 25% 8%);
+  --destructive: hsl(0 72% 45%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --warning: hsl(28 90% 42%);
+  --warning-foreground: hsl(0 0% 100%);
+  --success: hsl(150 60% 30%);
+  --success-foreground: hsl(0 0% 100%);
+  --process: hsl(212 80% 45%);
+  --process-foreground: hsl(0 0% 100%);
+  --change: hsl(170 80% 28%);
+  --change-foreground: hsl(0 0% 100%);
+  --wait: hsl(28 90% 42%);
+  --wait-foreground: hsl(0 0% 100%);
+  --shadow-color: hsl(220 30% 10%);
+  --border: hsl(220 14% 90%);
+  --input: hsl(0 0% 100%);
+  --ring: hsl(235 60% 55%);
+
+  --chart-1: hsl(235 60% 55%);
+  --chart-2: hsl(212 80% 45%);
+  --chart-3: hsl(300 50% 45%);
+  --chart-4: hsl(35 90% 42%);
+  --chart-5: hsl(0 70% 45%);
+  --chart-6: hsl(190 80% 35%);
+  --chart-7: hsl(150 60% 32%);
+  --chart-8: hsl(330 70% 45%);
+  --chart-9: hsl(265 55% 45%);
+  --chart-10: hsl(20 85% 40%);
+
+  --top-loader: hsl(235 60% 55%);
+
+  --barrier: hsl(220 30% 6%);
+
+  --opacity-barrier: 50%;
+  --opacity-shadow: 8%;
+  --opacity-shadow-stronger: 12%;
+
+  --opacity-1-10: 6%;
+  --opacity-2-10: 8%;
+  --opacity-3-10: 10%;
+  --opacity-4-10: 14%;
+  --opacity-5-10: 18%;
+  --opacity-6-10: 24%;
+  --opacity-7-10: 28%;
+  --opacity-8-10: 50%;
+  --opacity-9-10: 75%;
+  --opacity-10-10: 85%;
+  --opacity-selected-border: 85%;
+}
+
+.dark {
+  /* If you change --background, also update the anti-flash <style> in index.html */
+  --background: hsl(222 16% 9%);
+  --foreground: hsl(220 15% 93%);
+  --card: hsl(222 14% 12%);
+  --card-hover: hsl(222 12% 16%);
+  --popover: hsl(222 14% 12%);
+  --popover-foreground: hsl(220 15% 93%);
+  --primary: hsl(235 70% 68%);
+  --primary-foreground: hsl(222 16% 9%);
+  --secondary: hsl(222 12% 17%);
+  --secondary-foreground: hsl(220 15% 93%);
+  --muted: hsl(222 12% 17%);
+  --muted-foreground: hsl(220 10% 64%);
+  --muted-more-foreground: hsl(220 8% 46%);
+  --muted-most-foreground: hsl(220 8% 32%);
+  --accent: hsl(222 12% 17%);
+  --accent-foreground: hsl(220 15% 93%);
+  --destructive: hsl(0 80% 68%);
+  --destructive-foreground: hsl(222 16% 9%);
+  --warning: hsl(32 85% 60%);
+  --warning-foreground: hsl(222 16% 9%);
+  --success: hsl(150 50% 58%);
+  --success-foreground: hsl(222 16% 9%);
+  --process: hsl(212 90% 70%);
+  --process-foreground: hsl(222 16% 9%);
+  --change: hsl(165 60% 60%);
+  --change-foreground: hsl(222 16% 9%);
+  --wait: hsl(32 85% 60%);
+  --wait-foreground: hsl(222 16% 9%);
+  --shadow-color: hsl(222 20% 3%);
+  --border: hsl(222 12% 20%);
+  --input: hsl(222 14% 11%);
+  --ring: hsl(235 70% 68%);
+
+  --chart-1: hsl(235 70% 68%);
+  --chart-2: hsl(212 90% 65%);
+  --chart-3: hsl(285 70% 72%);
+  --chart-4: hsl(32 80% 62%);
+  --chart-5: hsl(0 85% 68%);
+  --chart-6: hsl(195 75% 62%);
+  --chart-7: hsl(150 50% 58%);
+  --chart-8: hsl(325 60% 65%);
+  --chart-9: hsl(255 80% 75%);
+  --chart-10: hsl(40 80% 62%);
+
+  --top-loader: hsl(235 70% 68%);
+
+  --barrier: hsl(222 20% 3%);
+
+  --opacity-barrier: 70%;
+  --opacity-shadow: 50%;
+  --opacity-shadow-stronger: 75%;
+
+  --opacity-1-10: 4%;
+  --opacity-2-10: 6%;
+  --opacity-3-10: 8%;
+  --opacity-4-10: 12%;
+  --opacity-5-10: 16%;
+  --opacity-6-10: 20%;
+  --opacity-7-10: 24%;
+  --opacity-8-10: 50%;
+  --opacity-9-10: 75%;
+  --opacity-10-10: 85%;
+  --opacity-selected-border: 16%;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-more-foreground: var(--muted-more-foreground);
+  --color-muted-most-foreground: var(--muted-most-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-process: var(--process);
+  --color-process-foreground: var(--process-foreground);
+
+  --color-change: var(--change);
+  --color-change-foreground: var(--change-foreground);
+
+  --color-wait: var(--wait);
+  --color-wait-foreground: var(--wait-foreground);
+
+  --color-shadow-color: var(--shadow-color);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+
+  --color-top-loader: var(--top-loader);
+  --color-barrier: var(--barrier);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-xxs: calc(var(--radius) - 8px);
+
+  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans);
+}

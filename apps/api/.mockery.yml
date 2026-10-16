@@ -1,0 +1,245 @@
+template: testify
+template-data:
+  unroll-variadic: true
+include-auto-generated: true
+packages:
+  github.com/unbindapp/zigzag-api/internal/repositories:
+    config:
+      dir: ./mocks/repository
+    interfaces:
+      BaseRepositoryInterface:
+        config:
+          filename: base_repository_mock.go
+          structname: BaseRepositoryMock
+          pkgname: mocks_repository
+      TxInterface:
+        config:
+          dir: ./mocks/repository/tx
+          filename: tx_mock.go
+          structname: TxMock
+          pkgname: mocks_repository_tx
+  github.com/unbindapp/zigzag-api/internal/repositories/user:
+    config:
+      dir: ./mocks/repository/user
+    interfaces:
+      UserRepositoryInterface:
+        config:
+          filename: user_repository_mock.go
+          structname: UserRepositoryMock
+          pkgname: mocks_repository_user
+  github.com/unbindapp/zigzag-api/internal/repositories/oauth:
+    config:
+      dir: ./mocks/repository/oauth
+    interfaces:
+      OauthRepositoryInterface:
+        config:
+          filename: oauth_repository_mock.go
+          structname: OauthRepositoryMock
+          pkgname: mocks_repository_oauth
+  github.com/unbindapp/zigzag-api/internal/repositories/oauthserver:
+    config:
+      dir: ./mocks/repository/oauthserver
+    interfaces:
+      OAuthServerRepositoryInterface:
+        config:
+          filename: oauthserver_repository_mock.go
+          structname: OAuthServerRepositoryMock
+          pkgname: mocks_repository_oauthserver
+  github.com/unbindapp/zigzag-api/internal/repositories/apikey:
+    config:
+      dir: ./mocks/repository/apikey
+    interfaces:
+      APIKeyRepositoryInterface:
+        config:
+          filename: apikey_repository_mock.go
+          structname: APIKeyRepositoryMock
+          pkgname: mocks_repository_apikey
+  github.com/unbindapp/zigzag-api/internal/repositories/system:
+    config:
+      dir: ./mocks/repository/system
+    interfaces:
+      SystemRepositoryInterface:
+        config:
+          filename: system_repository_mock.go
+          structname: SystemRepositoryMock
+          pkgname: mocks_repository_system
+  github.com/unbindapp/zigzag-api/internal/repositories/workspace:
+    config:
+      dir: ./mocks/repository/workspace
+    interfaces:
+      WorkspaceRepositoryInterface:
+        config:
+          filename: workspace_repository_mock.go
+          structname: WorkspaceRepositoryMock
+          pkgname: mocks_repository_workspace
+  github.com/unbindapp/zigzag-api/internal/repositories/team:
+    config:
+      dir: ./mocks/repository/team
+    interfaces:
+      TeamRepositoryInterface:
+        config:
+          filename: team_repository_mock.go
+          structname: TeamRepositoryMock
+          pkgname: mocks_repository_team
+  github.com/unbindapp/zigzag-api/internal/repositories/label:
+    config:
+      dir: ./mocks/repository/label
+    interfaces:
+      LabelRepositoryInterface:
+        config:
+          filename: label_repository_mock.go
+          structname: LabelRepositoryMock
+          pkgname: mocks_repository_label
+  github.com/unbindapp/zigzag-api/internal/repositories/project:
+    config:
+      dir: ./mocks/repository/project
+    interfaces:
+      ProjectRepositoryInterface:
+        config:
+          filename: project_repository_mock.go
+          structname: ProjectRepositoryMock
+          pkgname: mocks_repository_project
+  github.com/unbindapp/zigzag-api/internal/repositories/initiative:
+    config:
+      dir: ./mocks/repository/initiative
+    interfaces:
+      InitiativeRepositoryInterface:
+        config:
+          filename: initiative_repository_mock.go
+          structname: InitiativeRepositoryMock
+          pkgname: mocks_repository_initiative
+  github.com/unbindapp/zigzag-api/internal/repositories/cycle:
+    config:
+      dir: ./mocks/repository/cycle
+    interfaces:
+      CycleRepositoryInterface:
+        config:
+          filename: cycle_repository_mock.go
+          structname: CycleRepositoryMock
+          pkgname: mocks_repository_cycle
+  github.com/unbindapp/zigzag-api/internal/repositories/issue:
+    config:
+      dir: ./mocks/repository/issue
+    interfaces:
+      IssueRepositoryInterface:
+        config:
+          filename: issue_repository_mock.go
+          structname: IssueRepositoryMock
+          pkgname: mocks_repository_issue
+  github.com/unbindapp/zigzag-api/internal/repositories/comment:
+    config:
+      dir: ./mocks/repository/comment
+    interfaces:
+      CommentRepositoryInterface:
+        config:
+          filename: comment_repository_mock.go
+          structname: CommentRepositoryMock
+          pkgname: mocks_repository_comment
+  github.com/unbindapp/zigzag-api/internal/repositories/notification:
+    config:
+      dir: ./mocks/repository/notification
+    interfaces:
+      NotificationRepositoryInterface:
+        config:
+          filename: notification_repository_mock.go
+          structname: NotificationRepositoryMock
+          pkgname: mocks_repository_notification
+  github.com/unbindapp/zigzag-api/internal/repositories/document:
+    config:
+      dir: ./mocks/repository/document
+    interfaces:
+      DocumentRepositoryInterface:
+        config:
+          filename: document_repository_mock.go
+          structname: DocumentRepositoryMock
+          pkgname: mocks_repository_document
+  github.com/unbindapp/zigzag-api/internal/repositories/view:
+    config:
+      dir: ./mocks/repository/view
+    interfaces:
+      ViewRepositoryInterface:
+        config:
+          filename: view_repository_mock.go
+          structname: ViewRepositoryMock
+          pkgname: mocks_repository_view
+  github.com/unbindapp/zigzag-api/internal/repositories/template:
+    config:
+      dir: ./mocks/repository/template
+    interfaces:
+      TemplateRepositoryInterface:
+        config:
+          filename: template_repository_mock.go
+          structname: TemplateRepositoryMock
+          pkgname: mocks_repository_template
+  github.com/unbindapp/zigzag-api/internal/repositories/favorite:
+    config:
+      dir: ./mocks/repository/favorite
+    interfaces:
+      FavoriteRepositoryInterface:
+        config:
+          filename: favorite_repository_mock.go
+          structname: FavoriteRepositoryMock
+          pkgname: mocks_repository_favorite
+  github.com/unbindapp/zigzag-api/internal/repositories/webhook:
+    config:
+      dir: ./mocks/repository/webhook
+    interfaces:
+      WebhookRepositoryInterface:
+        config:
+          filename: webhook_repository_mock.go
+          structname: WebhookRepositoryMock
+          pkgname: mocks_repository_webhook
+  github.com/unbindapp/zigzag-api/internal/repositories/upload:
+    config:
+      dir: ./mocks/repository/upload
+    interfaces:
+      UploadRepositoryInterface:
+        config:
+          filename: upload_repository_mock.go
+          structname: UploadRepositoryMock
+          pkgname: mocks_repository_upload
+  github.com/unbindapp/zigzag-api/internal/repositories/importjob:
+    config:
+      dir: ./mocks/repository/importjob
+    interfaces:
+      ImportJobRepositoryInterface:
+        config:
+          filename: importjob_repository_mock.go
+          structname: ImportJobRepositoryMock
+          pkgname: mocks_repository_importjob
+  github.com/unbindapp/zigzag-api/internal/repositories/permissions:
+    config:
+      dir: ./mocks/repository/permissions
+    interfaces:
+      PermissionsRepositoryInterface:
+        config:
+          filename: permissions_repository_mock.go
+          structname: PermissionsRepositoryMock
+          pkgname: mocks_repository_permissions
+  github.com/unbindapp/zigzag-api/internal/repositories/repositories:
+    config:
+      dir: ./mocks/repositories
+    interfaces:
+      RepositoriesInterface:
+        config:
+          filename: repositories_mock.go
+          structname: RepositoriesMock
+          pkgname: mocks_repositories
+  github.com/unbindapp/zigzag-api/internal/infrastructure/storage:
+    config:
+      dir: ./mocks/infrastructure/storage
+    interfaces:
+      StoreInterface:
+        config:
+          filename: storage_mock.go
+          structname: StoreMock
+          pkgname: mocks_infrastructure_storage
+  github.com/unbindapp/zigzag-api/internal/services/email:
+    config:
+      dir: ./mocks/services/email
+    interfaces:
+      EmailServiceInterface:
+        config:
+          filename: email_service_mock.go
+          structname: EmailServiceMock
+          pkgname: mocks_services_email

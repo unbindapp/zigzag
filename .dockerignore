@@ -1,0 +1,10 @@
+.git
+**/node_modules
+**/.data
+**/bin
+**/.env
+apps/web/dist
+deploy
+docs
+*.md
+!apps/web/**/*.md

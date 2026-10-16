@@ -1,0 +1,431 @@
+@import "tailwindcss";
+
+@import "tw-animate-css";
+
+@import "./styles/tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@custom-variant has-hover {
+  @media (hover: hover) {
+    @slot;
+  }
+}
+
+@custom-variant touch {
+  @media (pointer: coarse) {
+    @slot;
+  }
+}
+
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+@utility line-icon {
+  display: flex;
+  height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+@utility inline-icon {
+  display: inline-flex;
+  height: 1lh;
+  align-items: center;
+  vertical-align: bottom;
+}
+
+:root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --keyboard-inset-height: 0px;
+  --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
+  --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
+
+  --dialog-top-padding: 1.5rem;
+  --dialog-bottom-padding: 1.5rem;
+  --dialog-top-padding-sm: 3rem;
+  --dialog-bottom-padding-sm: 3rem;
+}
+
+:root {
+  --skeleton-smooth-opacity: 25%;
+  --skeleton-smooth-weaker-opacity: 50%;
+  --skeleton-smooth-lead-in: 250ms;
+}
+
+@theme {
+  --transition-delay-*: initial;
+
+  --animate-pulse: initial;
+  --animate-bounce: initial;
+  --animate-skeleton: skeleton 1.25s ease-in-out infinite;
+  --animate-skeleton-smooth: skeleton-smooth 1.25s ease-in-out var(--skeleton-smooth-lead-in)
+    infinite;
+  --animate-skeleton-smooth-weaker: skeleton-smooth-weaker 1.25s ease-in-out
+    var(--skeleton-smooth-lead-in) infinite;
+  --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
+  --animate-ping: ping 1s ease-in-out infinite;
+  --animate-spin: spin 1s linear infinite;
+  --animate-hourglass: hourglass 3s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-hourglass-long: hourglass 4s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-loading-bar: loading-bar 45s linear infinite;
+  --animate-line-in: line-in 0.01s step-end forwards;
+  --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-ping-pong-long: ping-pong 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+
+  --radius-px: 1px;
+  --radius-2px: 2px;
+
+  --spacing-2px: 2px;
+  --spacing-0.375: 0.09375rem;
+  --spacing-1.875: 0.46875rem;
+
+  --shadow-navbar: 0rem 0rem 0.5rem 0rem, 0rem 0rem 0.75rem 0rem;
+  --shadow-dialog: 0rem 0.5rem 1rem 0rem;
+  --shadow-card-highlight: inset 0rem 0rem 0rem 4px;
+  --shadow-underline: inset 0rem -3px 0rem 0rem;
+  --shadow-block-card-highlight-active: 0rem 0rem 0rem 1px, 0rem 0rem 0.7rem 0rem;
+  --shadow-block-card-highlight-idle: 0rem 0rem 0rem 0px, 0rem 0rem 0rem 0rem, 0rem 0rem 0rem 0rem;
+
+  --opacity-barrier: var(--opacity-barrier);
+  --opacity-shadow-opacity: var(--opacity-shadow);
+  --opacity-shadow-opacity-stronger: var(--opacity-shadow-stronger);
+  --opacity-1-10: var(--opacity-1-10);
+  --opacity-2-10: var(--opacity-2-10);
+  --opacity-3-10: var(--opacity-3-10);
+  --opacity-4-10: var(--opacity-4-10);
+  --opacity-5-10: var(--opacity-5-10);
+  --opacity-6-10: var(--opacity-6-10);
+  --opacity-7-10: var(--opacity-7-10);
+  --opacity-8-10: var(--opacity-8-10);
+  --opacity-9-10: var(--opacity-9-10);
+  --opacity-10-10: var(--opacity-10-10);
+  --opacity-selected-border: var(--opacity-selected-border);
+
+  @keyframes skeleton {
+    0% {
+      opacity: 20%;
+    }
+    50% {
+      opacity: 40%;
+    }
+    100% {
+      opacity: 20%;
+    }
+  }
+
+  @keyframes skeleton-smooth {
+    0% {
+      opacity: var(--skeleton-smooth-opacity);
+    }
+    50% {
+      opacity: 50%;
+    }
+    100% {
+      opacity: var(--skeleton-smooth-opacity);
+    }
+  }
+
+  @keyframes skeleton-smooth-weaker {
+    0% {
+      opacity: var(--skeleton-smooth-weaker-opacity);
+    }
+    50% {
+      opacity: 100%;
+    }
+    100% {
+      opacity: var(--skeleton-smooth-weaker-opacity);
+    }
+  }
+
+  @keyframes loading-bar {
+    0% {
+      transform: scaleX(0%);
+    }
+    100% {
+      transform: scaleX(100%);
+    }
+  }
+  @keyframes pulse-scale {
+    0% {
+      transform: scale(0.7);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+    100% {
+      transform: scale(0.7);
+    }
+  }
+  @keyframes ping {
+    0% {
+      transform: scale(0.8);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(0.8);
+    }
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes hourglass {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes line-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes ping-pong {
+    0% {
+      transform: translateX(-95%);
+    }
+    50% {
+      transform: translateX(95%);
+    }
+    100% {
+      transform: translateX(-95%);
+    }
+  }
+}
+
+@theme inline {
+  --background-size-pattern: 10px 10px;
+  --background-position-pattern: 0px 0px, 5px 5px;
+}
+
+@layer utilities {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  html,
+  body {
+    scroll-padding-top: 5rem;
+  }
+
+  a:focus,
+  button:focus {
+    outline: none;
+  }
+
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Hide the clear "X" button for the input[type="search"] */
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* For Firefox */
+  input[type="search"]::-moz-search-cancel-button {
+    display: none;
+  }
+
+  /* (Optional) For Edge and other modern browsers */
+  input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--top-loader) var(--opacity-8-10), transparent);
+    color: color-mix(in oklab, var(--foreground) 100%, transparent);
+  }
+
+  textarea {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    resize: none;
+  }
+
+  input[type="checkbox"],
+  label {
+    touch-action: manipulation;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 100px
+      color-mix(in oklab, var(--success) var(--opacity-4-10), var(--background)) inset !important;
+    -webkit-text-fill-color: var(--success) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    border-color: color-mix(in oklab, var(--success) var(--opacity-7-10), var(--background));
+  }
+}
+
+/* iOS zooms the page into any focused field smaller than 16px. Unlayered so it
+   beats text-* utilities. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: max(1rem, 1em);
+  }
+}
+
+@layer base {
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"]:disabled {
+    cursor: default;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  #root {
+    @apply bg-background text-foreground flex min-h-svh flex-col;
+  }
+  p {
+    @apply wrap-break-word;
+  }
+}
+
+@layer components {
+  .zz-prose {
+    @apply text-sm leading-relaxed wrap-break-word;
+  }
+  .zz-prose > * + * {
+    @apply mt-2;
+  }
+  .zz-prose h1 {
+    @apply mt-4 text-xl leading-tight font-semibold;
+  }
+  .zz-prose h2 {
+    @apply mt-4 text-lg leading-tight font-semibold;
+  }
+  .zz-prose h3 {
+    @apply mt-3 text-base leading-tight font-semibold;
+  }
+  .zz-prose a {
+    @apply text-primary underline underline-offset-2;
+  }
+  .zz-prose ul {
+    @apply list-disc pl-5;
+  }
+  .zz-prose ol {
+    @apply list-decimal pl-5;
+  }
+  .zz-prose li > p {
+    @apply m-0;
+  }
+  .zz-prose blockquote {
+    @apply text-muted-foreground border-l-2 pl-3;
+  }
+  .zz-prose hr {
+    @apply my-4 border-t;
+  }
+  .zz-prose code {
+    @apply bg-muted rounded-sm px-1 py-0.5 font-mono text-xs;
+  }
+  .zz-prose pre {
+    @apply bg-card overflow-x-auto rounded-md border p-3 font-mono text-xs;
+  }
+  .zz-prose pre code {
+    @apply bg-transparent p-0;
+  }
+  .zz-prose img {
+    @apply max-w-full rounded-md border;
+  }
+  .zz-prose table {
+    @apply w-full border-collapse text-sm;
+  }
+  .zz-prose th,
+  .zz-prose td {
+    @apply border px-2 py-1 text-left;
+  }
+  .zz-prose ul[data-type="taskList"],
+  .zz-prose ul.contains-task-list {
+    @apply list-none pl-0;
+  }
+  .zz-prose ul[data-type="taskList"] li {
+    @apply flex items-start gap-2;
+  }
+  .zz-prose ul[data-type="taskList"] li > label {
+    @apply mt-0.5 flex shrink-0 items-center;
+  }
+  .zz-prose ul[data-type="taskList"] li > div {
+    @apply min-w-0 flex-1;
+  }
+  .zz-prose [data-type="mention"] {
+    @apply bg-primary/3-10 text-primary rounded-sm px-1 font-medium;
+  }
+  .zz-prose .ProseMirror {
+    @apply outline-none;
+  }
+  .zz-prose .ProseMirror > * + * {
+    @apply mt-2;
+  }
+  .zz-prose p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+    content: attr(data-placeholder);
+  }
+  .zz-prose .hljs-comment,
+  .zz-prose .hljs-quote {
+    @apply text-muted-foreground italic;
+  }
+  .zz-prose .hljs-keyword,
+  .zz-prose .hljs-selector-tag,
+  .zz-prose .hljs-built_in {
+    @apply text-primary;
+  }
+  .zz-prose .hljs-string,
+  .zz-prose .hljs-attr,
+  .zz-prose .hljs-template-variable {
+    @apply text-success;
+  }
+  .zz-prose .hljs-number,
+  .zz-prose .hljs-literal,
+  .zz-prose .hljs-type {
+    @apply text-warning;
+  }
+  .zz-prose .hljs-title,
+  .zz-prose .hljs-function,
+  .zz-prose .hljs-name {
+    @apply text-process;
+  }
+}
