@@ -1,4 +1,3 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ListTodoIcon, PlusIcon } from "lucide-react";
 import {
@@ -18,6 +17,7 @@ import type { TIssueGroup } from "@/components/issues/grouping";
 import { IssueGroupHeader } from "@/components/issues/issue-group-header";
 import { useIsPeekable, useIssuePeek } from "@/components/issues/issue-peek";
 import { IssueRow } from "@/components/issues/issue-row";
+import { nestSubIssues } from "@/components/issues/nesting";
 import { useNewIssueStore } from "@/components/issues/new-issue-store";
 import type { TIssue } from "@/lib/queries/issues";
 import {
@@ -31,6 +31,7 @@ import { List } from "@/components/layout/list";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 import { useIssueSelectionStore } from "@/lib/stores/issue-selection";
 
 export type TIssueListProps = {
@@ -46,7 +47,8 @@ const OVERSCAN = 12;
 const PREFETCH_ROWS = 20;
 
 type TListItem =
-  { kind: "header"; key: string; group: TIssueGroup } | { kind: "row"; key: string; issue: TIssue };
+  | { kind: "header"; key: string; group: TIssueGroup }
+  | { kind: "row"; key: string; issue: TIssue; depth: number };
 
 function findScrollParent(element: HTMLElement | null): HTMLElement | null {
   let current = element?.parentElement ?? null;
@@ -95,6 +97,7 @@ export function IssueList(props: TIssueListProps) {
       groups={groups}
       issues={issues}
       showHeaders={display.group_by !== "none"}
+      nestSubIssues={display.show_sub_issues}
       properties={display.properties}
       fixedTeamId={fixedTeamId}
       hasNextPage={query.hasNextPage}
@@ -108,6 +111,7 @@ type TVirtualProps = {
   groups: TIssueGroup[];
   issues: TIssue[];
   showHeaders: boolean;
+  nestSubIssues: boolean;
   properties: DisplaySettings["properties"];
   fixedTeamId: string | undefined;
   hasNextPage: boolean;
@@ -119,6 +123,7 @@ function VirtualIssueList({
   groups,
   issues,
   showHeaders,
+  nestSubIssues: shouldNest,
   properties,
   fixedTeamId,
   hasNextPage,
@@ -147,16 +152,20 @@ function VirtualIssueList({
           ? [{ kind: "header", key: `group:${group.key}`, group }]
           : [];
         if (showHeaders && collapsed.includes(group.key)) return header;
+        const rows = shouldNest
+          ? nestSubIssues(group.issues)
+          : group.issues.map((issue) => ({ issue, depth: 0 }));
         return [
           ...header,
-          ...group.issues.map((issue): TListItem => ({
+          ...rows.map(({ issue, depth }): TListItem => ({
             kind: "row",
             key: `${group.key}:${issue.id}`,
             issue,
+            depth,
           })),
         ];
       }),
-    [groups, showHeaders, collapsed],
+    [groups, showHeaders, shouldNest, collapsed],
   );
   const orderedIds = useMemo(
     () => items.flatMap((item) => (item.kind === "row" ? [item.issue.id] : [])),
@@ -199,15 +208,16 @@ function VirtualIssueList({
     fetchNextPage();
   }, [lastIndex, items.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  useHotkey("X", () => {
-    const focusedId = useIssueSelectionStore.getState().focusedId;
-    if (focusedId && orderedIds.includes(focusedId)) toggle(focusedId);
-  });
-  useHotkey("Escape", clear, {
-    enabled: selectedIds.length > 0,
-    ignoreInputs: true,
-    conflictBehavior: "allow",
-  });
+  useHotkeyScope([
+    {
+      hotkey: "X",
+      callback: () => {
+        const focusedId = useIssueSelectionStore.getState().focusedId;
+        if (focusedId && orderedIds.includes(focusedId)) toggle(focusedId);
+      },
+    },
+    { hotkey: "Escape", callback: clear, enabled: selectedIds.length > 0, ignoreInputs: true },
+  ]);
 
   const handleClick = (event: MouseEvent, issue: TIssue) => {
     if (event.metaKey || event.ctrlKey) {
@@ -261,6 +271,7 @@ function VirtualIssueList({
                   ) : (
                     <IssueRow
                       issue={item.issue}
+                      depth={item.depth}
                       properties={properties}
                       isSelected={selectedIds.includes(item.issue.id)}
                       isSelecting={selectedIds.length > 0}

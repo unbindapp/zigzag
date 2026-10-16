@@ -56,14 +56,13 @@ export function ProjectList({ workspaceId, filters, emptyState }: TProps) {
   if (isPending) return <ListSkeleton />;
   if (error) return <ErrorCard message={error.message} onRetry={refetch} />;
   if (projects.length === 0) {
+    if (emptyState !== undefined) return emptyState;
     return (
-      emptyState ?? (
-        <EmptyState
-          icon={BoxIcon}
-          title="No projects"
-          description="Projects group issues toward a goal."
-        />
-      )
+      <EmptyState
+        icon={BoxIcon}
+        title="No projects yet"
+        description="Projects group issues toward a goal."
+      />
     );
   }
 

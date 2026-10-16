@@ -31,6 +31,7 @@ type TProps = {
   defaultDisplay?: Partial<DisplaySettings>;
   hiddenFilterFields?: TFilterField[];
   tabs?: ReactNode;
+  header?: ReactNode;
   emptyState?: ReactNode;
 };
 
@@ -46,6 +47,7 @@ export function IssuesView({
   defaultDisplay,
   hiddenFilterFields,
   tabs,
+  header,
   emptyState,
 }: TProps) {
   const { workspace, canEdit } = useWorkspace();
@@ -68,51 +70,62 @@ export function IssuesView({
     emptyState,
   };
 
+  const toolbar = (
+    <PageToolbar
+      actions={
+        <>
+          {canEdit && (
+            <Button variant="ghost" size="sm" onClick={openSaveView}>
+              <BookmarkPlusIcon className="size-4" />
+              Save view
+            </Button>
+          )}
+          <DisplayOptions
+            value={display}
+            onChange={setDisplay}
+            onReset={isDefault ? undefined : reset}
+          />
+        </>
+      }
+    >
+      <IssueFilters
+        filters={filters}
+        onChange={onFiltersChange}
+        teamId={teamId}
+        hiddenFields={hiddenFilterFields}
+      />
+    </PageToolbar>
+  );
+
   return (
     <IssuePeekHost>
       <PageContainer>
-        <PageHeader
-          title={title}
-          icon={icon}
-          breadcrumb={breadcrumb}
-          actions={
-            canEdit && (
-              <Button onClick={() => openNewIssue()}>
-                <PlusIcon className="size-4" />
-                New issue
-              </Button>
-            )
-          }
-          toolbar={
-            <div className="flex w-full flex-col gap-2">
-              {tabs}
-              <PageToolbar
-                actions={
-                  <>
-                    {canEdit && (
-                      <Button variant="ghost" size="sm" onClick={openSaveView}>
-                        <BookmarkPlusIcon className="size-4" />
-                        Save view
-                      </Button>
-                    )}
-                    <DisplayOptions
-                      value={display}
-                      onChange={setDisplay}
-                      onReset={isDefault ? undefined : reset}
-                    />
-                  </>
-                }
-              >
-                <IssueFilters
-                  filters={filters}
-                  onChange={onFiltersChange}
-                  teamId={teamId}
-                  hiddenFields={hiddenFilterFields}
-                />
-              </PageToolbar>
-            </div>
-          }
-        />
+        {header ? (
+          <div className="flex w-full flex-col gap-2">
+            {header}
+            {toolbar}
+          </div>
+        ) : (
+          <PageHeader
+            title={title}
+            icon={icon}
+            breadcrumb={breadcrumb}
+            actions={
+              canEdit && (
+                <Button onClick={() => openNewIssue()}>
+                  <PlusIcon className="size-4" />
+                  New issue
+                </Button>
+              )
+            }
+            toolbar={
+              <div className="flex w-full flex-col gap-2">
+                {tabs}
+                {toolbar}
+              </div>
+            }
+          />
+        )}
         {display.layout === "board" ? <IssueBoard {...listProps} /> : <IssueList {...listProps} />}
         {saveViewDialog}
       </PageContainer>

@@ -127,7 +127,7 @@ function TeamMemberRow({ team, member }: { team: TTeam; member: TTeamMember }) {
           }
           title={`Remove ${name}`}
           description={`${name} leaves ${team.name} but stays in the workspace.`}
-          confirmLabel="Remove"
+          confirmLabel="Remove member"
           onConfirm={() => removeMember({ teamId: team.id, userId: member.user.id })}
         />
       }

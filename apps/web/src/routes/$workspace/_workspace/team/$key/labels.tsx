@@ -4,6 +4,7 @@ import { TagIcon } from "lucide-react";
 import { LabelManager } from "@/components/labels/label-manager";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
+import { teamCrumb } from "@/components/workspace/team-crumb";
 import { useRequiredTeamFromRoute } from "@/components/workspace/use-team-from-route";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 
@@ -19,7 +20,7 @@ function TeamKeyLabelsPage() {
       <PageHeader
         title="Labels"
         icon={<TagIcon />}
-        breadcrumb={[{ label: team.name }, { label: "Labels" }]}
+        breadcrumb={[teamCrumb(team, workspace.slug), { label: "Labels" }]}
       />
       <LabelManager
         workspaceId={workspace.id}

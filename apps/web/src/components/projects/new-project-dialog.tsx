@@ -16,7 +16,7 @@ import {
   TeamsPicker,
   useProjectStatuses,
 } from "@/components/projects/project-pickers";
-import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { MarkdownField } from "@/components/shared/markdown-editor";
 import { type TUserSummary } from "@/components/shared/user-chip";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,10 +130,10 @@ function NewProjectForm({
           <field.TextField label="Summary" placeholder="One line about the project" />
         )}
       />
-      <MarkdownEditor
+      <MarkdownField
         value={description}
         onChange={setDescription}
-        placeholder="Describe the project…"
+        placeholder="Add a description…"
         label="Description"
       />
       <div className="flex flex-wrap items-center gap-2">

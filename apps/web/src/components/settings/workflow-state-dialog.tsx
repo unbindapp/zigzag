@@ -18,15 +18,9 @@ import {
   useCreateWorkflowStateMutation,
   useUpdateWorkflowStateMutation,
 } from "@/lib/queries/teams";
+import { DEFAULT_STATE_COLORS } from "@/lib/helpers/colors";
 
-export const defaultStateColors: Record<TStateType, string> = {
-  triage: "#f2994a",
-  backlog: "#95a2b3",
-  unstarted: "#e2e2e2",
-  started: "#f2c94c",
-  completed: "#5e6ad2",
-  canceled: "#95a2b3",
-};
+export const defaultStateColors: Record<TStateType, string> = DEFAULT_STATE_COLORS;
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(64, "Keep the name under 64 characters."),

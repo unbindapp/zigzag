@@ -82,7 +82,7 @@ export function CommentComposer({
       />
       <div className="flex items-center justify-end gap-2">
         {onDone && (
-          <Button variant="ghost" size="sm" onClick={onDone}>
+          <Button variant="outline" size="sm" onClick={onDone}>
             Cancel
           </Button>
         )}
@@ -272,7 +272,7 @@ function CommentItem({
             autoFocus
           />
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
               Cancel
             </Button>
             <Button
@@ -302,7 +302,7 @@ function CommentItem({
             ? "The comment and its replies are deleted for everyone."
             : "The comment is deleted for everyone."
         }
-        confirmLabel="Delete"
+        confirmLabel="Delete comment"
         onConfirm={() => deleteComment({ commentId: comment.id })}
       />
     </article>

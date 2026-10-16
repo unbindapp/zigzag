@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { LayersIcon } from "lucide-react";
+import { LayersIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorites/favorite-button";
-import { compactFilters, type ListIssuesFilters } from "@/components/issues/filters";
+import { compactFilters, type ListIssuesFilters, mergeFilters } from "@/components/issues/filters";
 import { IssueBoard } from "@/components/issues/issue-board";
 import { IssueFilters } from "@/components/issues/issue-filters";
 import { IssueList } from "@/components/issues/issue-list";
 import { IssuePeekHost } from "@/components/issues/issue-peek";
+import { useNewIssueContext, useNewIssueStore } from "@/components/issues/new-issue-store";
+import { useFilterDefaults } from "@/components/issues/use-filter-defaults";
 import type { TBreadcrumbItem } from "@/components/layout/breadcrumb";
-import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { PageContainer } from "@/components/layout/page-container";
@@ -23,6 +24,7 @@ import { useCanEditView, ViewMenu } from "@/components/views/view-menu";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { isApiError } from "@/lib/server/errors";
 import { type TView, useUpdateViewMutation, viewQuery } from "@/lib/queries/views";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export const Route = createFileRoute("/$workspace/_workspace/view/$view_id")({
   component: ViewPage,
@@ -41,10 +43,9 @@ function ViewPage() {
         <PageHeader title="View" icon={<LayersIcon />} breadcrumb={breadcrumb} />
         {isPending && <ListSkeleton />}
         {error && isApiError(error, 404) && (
-          <EmptyState
-            icon={LayersIcon}
-            title="View not found"
-            description="It was deleted, or it is private to someone else."
+          <EntityNotFound
+            Icon={LayersIcon}
+            description="View not found. It was deleted, or it is private to someone else."
           />
         )}
         {error && !isApiError(error, 404) && (
@@ -57,19 +58,21 @@ function ViewPage() {
 }
 
 function SavedView({ view, breadcrumb }: { view: TView; breadcrumb: TBreadcrumbItem[] }) {
-  const { workspace } = useWorkspace();
+  const { workspace, canEdit: canCreateIssues } = useWorkspace();
   const canEdit = useCanEditView(view);
   const saved = filtersOf(view);
   const [filters, setFilters] = useState<ListIssuesFilters>(saved);
   const { mutate: updateView, isPending: isSaving } = useUpdateViewMutation();
   const isDirty = JSON.stringify(compactFilters(filters)) !== JSON.stringify(saved);
   const display = displaySettingsOf(view);
-  const listProps = {
-    workspaceId: workspace.id,
-    filters,
-    display,
-    fixedFilters: view.team_id ? { team_ids: [view.team_id] } : undefined,
-  };
+  const fixedFilters = view.team_id ? { team_ids: [view.team_id] } : undefined;
+  const listProps = { workspaceId: workspace.id, filters, display, fixedFilters };
+  const defaults = useFilterDefaults(
+    mergeFilters(filters, fixedFilters),
+    view.team_id ?? undefined,
+  );
+  const openNewIssue = useNewIssueStore((state) => state.open);
+  useNewIssueContext(defaults);
 
   return (
     <IssuePeekHost>
@@ -83,6 +86,12 @@ function SavedView({ view, breadcrumb }: { view: TView; breadcrumb: TBreadcrumbI
             <>
               <FavoriteButton kind="view" entityId={view.id} />
               {canEdit && <ViewMenu view={view} leaveOnDelete />}
+              {canCreateIssues && (
+                <Button onClick={() => openNewIssue()}>
+                  <PlusIcon className="size-4" />
+                  New issue
+                </Button>
+              )}
             </>
           }
           toolbar={

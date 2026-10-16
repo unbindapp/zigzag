@@ -34,7 +34,7 @@ export function ProjectsView({ title, breadcrumb, storageKey, filters }: TProps)
       description="Projects group issues from one or more teams toward a goal."
       action={
         canEdit && (
-          <Button size="sm" onClick={create}>
+          <Button size="sm" variant="outline" onClick={create}>
             <PlusIcon className="size-4" />
             New project
           </Button>

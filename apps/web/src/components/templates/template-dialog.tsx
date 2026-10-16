@@ -3,7 +3,7 @@ import { PlusIcon, XIcon } from "lucide-react";
 import { ReactElement, useState } from "react";
 
 import { CheckboxList } from "@/components/shared/checkbox-list";
-import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { MarkdownField } from "@/components/shared/markdown-editor";
 import { PRIORITIES, PriorityIcon, priorityLabel } from "@/components/shared/priority-icon";
 import { StateIcon } from "@/components/shared/state-icon";
 import { Button } from "@/components/ui/button";
@@ -178,15 +178,12 @@ function TemplateForm(props: TProps & { onDone: () => void }) {
       <form.Field
         name="body"
         children={(field) => (
-          <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Issue description</span>
-            <MarkdownEditor
-              label="Issue description"
-              value={field.state.value}
-              onChange={field.handleChange}
-              placeholder="Steps to reproduce, expected result…"
-            />
-          </div>
+          <MarkdownField
+            label="Issue description"
+            value={field.state.value}
+            onChange={field.handleChange}
+            placeholder="Steps to reproduce, expected result…"
+          />
         )}
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

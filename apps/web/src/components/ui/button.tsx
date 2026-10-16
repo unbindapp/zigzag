@@ -226,7 +226,6 @@ LinkButtonBase.displayName = "LinkButtonBase";
 
 const CreatedLinkButton = createLink(LinkButtonBase);
 
-// Router default is `preload: "intent"`, so hover/touch prefetching is automatic.
 const LinkButton: LinkComponent<typeof LinkButtonBase> = (props) => (
   <CreatedLinkButton {...props} />
 );

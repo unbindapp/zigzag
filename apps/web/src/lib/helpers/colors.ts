@@ -13,6 +13,26 @@ export const PRESET_COLORS = [
   "#4b5563",
 ] as const;
 
+const UNSTARTED_COLOR = "#e2e2e2";
+
+export const DEFAULT_STATE_COLORS = {
+  triage: "#f2994a",
+  backlog: "#95a2b3",
+  unstarted: UNSTARTED_COLOR,
+  started: "#f2c94c",
+  completed: "#5e6ad2",
+  canceled: "#95a2b3",
+} as const;
+
+export const DEFAULT_PROJECT_STATUS_COLORS = {
+  backlog: DEFAULT_STATE_COLORS.backlog,
+  planned: DEFAULT_STATE_COLORS.unstarted,
+  started: DEFAULT_STATE_COLORS.started,
+  paused: DEFAULT_STATE_COLORS.triage,
+  completed: DEFAULT_STATE_COLORS.completed,
+  canceled: DEFAULT_STATE_COLORS.canceled,
+} as const;
+
 export const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
 
 export function isHexColor(value: string | null | undefined): value is string {

@@ -130,7 +130,7 @@ function MemberRow({ member }: { member: TWorkspaceMember }) {
             }
             title={`Remove ${name}`}
             description="They lose access to this workspace and leave all of its teams."
-            confirmLabel="Remove"
+            confirmLabel="Remove member"
             onConfirm={() => remove({ workspaceId: workspace.id, userId: member.user.id })}
           />
         </>
@@ -158,7 +158,7 @@ function InvitationsSection() {
         onRetry={refetch}
         isEmpty={invitations.length === 0}
         skeletonRows={2}
-        empty={{ icon: MailIcon, title: "No pending invitations" }}
+        empty={{ icon: MailIcon, title: "No pending invitations yet" }}
       >
         <List>
           {invitations.map((invitation) => (
@@ -236,7 +236,7 @@ function InvitationRow({ invitation }: { invitation: TInvitation }) {
             }
             title="Revoke invitation"
             description={`${invitation.email} can no longer use the invitation link.`}
-            confirmLabel="Revoke"
+            confirmLabel="Revoke invitation"
             onConfirm={() => revoke(input)}
           />
         </>

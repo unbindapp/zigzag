@@ -43,7 +43,6 @@ function WorkspaceTeamsSettingsPage() {
             icon: UsersRoundIcon,
             title: "No teams yet",
             description: "Create a team to start tracking issues.",
-            action: createButton,
           }}
         >
           <List>

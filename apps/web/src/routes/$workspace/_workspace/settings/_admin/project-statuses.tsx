@@ -72,7 +72,7 @@ function ProjectStatusesSettingsPage() {
       {isPending && <ListSkeleton />}
       {!isPending && error && <ErrorCard message={error.message} onRetry={() => void refetch()} />}
       {!isPending && !error && statuses.length === 0 && (
-        <EmptyState icon={BoxIcon} title="No project statuses" />
+        <EmptyState icon={BoxIcon} title="No project statuses yet" />
       )}
       {!isPending &&
         !error &&

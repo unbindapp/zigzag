@@ -40,7 +40,7 @@ export function ApiKeyRow({ apiKey }: { apiKey: TApiKeyShallow }) {
             }
             title="Revoke API key"
             description={`Anything using ${apiKey.name} stops working immediately.`}
-            confirmLabel="Revoke"
+            confirmLabel="Revoke key"
             onConfirm={() => deleteKey({ id: apiKey.id })}
           />
         </>

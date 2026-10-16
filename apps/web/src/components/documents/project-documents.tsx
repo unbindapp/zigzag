@@ -15,7 +15,6 @@ type TProps = {
 export function ProjectDocuments({ workspaceId, projectId, initiativeId }: TProps) {
   const { canEdit } = useWorkspace();
   const { create, isPending } = useCreateDocument();
-  const parentName = projectId ? "project" : "initiative";
   return (
     <section aria-label="Documents" className="flex w-full flex-col gap-4">
       <SectionTitle
@@ -39,7 +38,6 @@ export function ProjectDocuments({ workspaceId, projectId, initiativeId }: TProp
         projectId={projectId}
         initiativeId={initiativeId}
         skeletonRows={2}
-        emptyDescription={`Specs, notes and decisions for this ${parentName}.`}
       />
     </section>
   );

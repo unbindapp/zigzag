@@ -56,7 +56,10 @@ export function Sidebar({ onNavigate }: TProps) {
             variant="outline"
             size="icon"
             aria-label="New issue"
-            onClick={() => openNewIssue()}
+            onClick={() => {
+              onNavigate?.();
+              openNewIssue();
+            }}
           >
             <SquarePenIcon className="size-4" />
           </Button>
@@ -67,7 +70,10 @@ export function Sidebar({ onNavigate }: TProps) {
           variant="outline"
           size="sm"
           forceMinSize={false}
-          onClick={() => openCommandPanel(true)}
+          onClick={() => {
+            onNavigate?.();
+            openCommandPanel(true);
+          }}
           className="text-muted-foreground w-full justify-start font-normal"
         >
           <SearchIcon className="size-4" />

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CalendarIcon, CircleUserIcon, UsersIcon, XIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
 import { PropertyPicker, type TPickerOption } from "@/components/issues/property-picker";
@@ -28,51 +28,11 @@ import {
 import { useTeams } from "@/components/workspace/teams-provider";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { type TProject, type TProjectStatus, projectStatusesQuery } from "@/lib/queries/projects";
+import { PickerTrigger } from "@/components/issues/pickers";
 
 export type TProjectPickerAppearance = "row" | "compact";
 
 const NONE = "__none__";
-
-type TTriggerProps = {
-  appearance: TProjectPickerAppearance;
-  label: string;
-  icon: ReactNode;
-  text: ReactNode;
-  muted?: boolean;
-};
-
-function PickerTrigger({ appearance, label, icon, text, muted, ...props }: TTriggerProps) {
-  if (appearance === "compact") {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        forceMinSize={false}
-        aria-label={label}
-        data-muted={muted || undefined}
-        className="data-muted:text-muted-foreground max-w-48 font-normal"
-        {...props}
-      >
-        {icon}
-        <span className="truncate">{text}</span>
-      </Button>
-    );
-  }
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      forceMinSize={false}
-      aria-label={label}
-      data-muted={muted || undefined}
-      className="data-muted:text-muted-foreground w-full min-w-0 justify-start font-normal"
-      {...props}
-    >
-      {icon}
-      <span className="min-w-0 truncate">{text}</span>
-    </Button>
-  );
-}
 
 function UserIcon({ user }: { user: TUserSummary }) {
   return (

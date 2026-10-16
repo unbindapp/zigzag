@@ -1,4 +1,3 @@
-import { type RegisterableHotkey, useHotkeys } from "@tanstack/react-hotkeys";
 import { type ReactNode, useState } from "react";
 
 import { applyPatch, type TIssueDraft, type TIssuePatch } from "@/components/issues/issue-draft";
@@ -19,6 +18,7 @@ import {
 import { useCycles, useTeam } from "@/components/issues/picker-sources";
 import type { TUserSummary } from "@/lib/queries/issues";
 import { PropertyRow } from "@/components/layout/property-row";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 
 export type TPropertyKey =
   | "state"
@@ -48,7 +48,7 @@ type TProps = {
   disabled?: boolean;
 };
 
-const SHORTCUTS: { hotkey: RegisterableHotkey; property: TPropertyKey }[] = [
+const SHORTCUTS: { hotkey: string; property: TPropertyKey }[] = [
   { hotkey: "S", property: "state" },
   { hotkey: "P", property: "priority" },
   { hotkey: "A", property: "assignee" },
@@ -73,12 +73,12 @@ export function IssueProperties({
   const team = useTeam(teamId);
   const { enabled: cyclesEnabled } = useCycles(teamId);
   const estimatesEnabled = Boolean(team && team.estimate_type !== "none");
-  useHotkeys(
+  useHotkeyScope(
     SHORTCUTS.map(({ hotkey, property }) => ({
       hotkey,
-      callback: () => setOpenProperty(property),
+      callback: () => setOpenProperty((current) => current ?? property),
     })),
-    { enabled: shortcutsEnabled && !disabled && openProperty === null, conflictBehavior: "allow" },
+    { enabled: shortcutsEnabled && !disabled },
   );
 
   const appearance: TPickerAppearance = layout === "column" ? "row" : "compact";

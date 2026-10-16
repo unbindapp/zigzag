@@ -17,6 +17,7 @@ const MAX_ROW_LABELS = 3;
 
 type TProps = {
   issue: TIssue;
+  depth?: number;
   properties: TDisplaySettings["properties"];
   isSelected: boolean;
   isSelecting: boolean;
@@ -29,6 +30,7 @@ type TProps = {
 
 export function IssueRow({
   issue,
+  depth = 0,
   properties,
   isSelected,
   isSelecting,
@@ -97,8 +99,13 @@ export function IssueRow({
           onChange={(state) => patch(issue, { state })}
         />
       )}
-      <span className="min-w-0 flex-1 truncate">{issue.title}</span>
-      <span className="flex min-w-0 shrink items-center justify-end gap-1.5">
+      <span
+        data-nested={depth > 0 || undefined}
+        className="min-w-0 flex-1 truncate data-nested:pl-4"
+      >
+        {issue.title}
+      </span>
+      <span className="hidden min-w-0 shrink items-center justify-end gap-1.5 overflow-hidden sm:flex">
         {show("labels") &&
           labels.map((label) => <LabelChip key={label.id} name={label.name} color={label.color} />)}
         {show("labels") && hiddenLabels > 0 && (

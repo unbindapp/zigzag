@@ -1,14 +1,9 @@
 import { ProjectDocuments } from "@/components/documents/project-documents";
 import { LifecycleBanner } from "@/components/documents/lifecycle-banner";
-import { Breadcrumb } from "@/components/layout/breadcrumb";
-import { AutosaveMarkdown } from "@/components/projects/autosave-markdown";
-import { InlineText } from "@/components/projects/inline-text";
+import { AutosaveMarkdown } from "@/components/shared/autosave-markdown";
+import { InlineText } from "@/components/shared/inline-text";
 import { MilestonesSection } from "@/components/projects/milestones-section";
-import {
-  ProjectActions,
-  projectBreadcrumb,
-  ProjectTabs,
-} from "@/components/projects/project-header";
+import { ProjectHeaderBar } from "@/components/projects/project-header";
 import { ProjectProperties } from "@/components/projects/project-properties";
 import { ProjectUpdatesSection } from "@/components/projects/project-updates-section";
 import { IconPicker } from "@/components/shared/icon-picker";
@@ -28,15 +23,7 @@ export function ProjectOverview({ project }: { project: TProject }) {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex w-full flex-col gap-2">
-        <div className="flex w-full min-w-0 items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <Breadcrumb items={projectBreadcrumb(workspace.slug, project)} />
-          </div>
-          <ProjectActions project={project} />
-        </div>
-        <ProjectTabs project={project} tab="overview" />
-      </div>
+      <ProjectHeaderBar project={project} tab="overview" />
       <div className="flex w-full flex-col gap-6 lg:flex-row">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <LifecycleBanner

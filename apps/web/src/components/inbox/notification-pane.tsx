@@ -91,7 +91,9 @@ export function NotificationPane({
 function NotificationTarget({ notification }: { notification: TNotification }) {
   const { workspace } = useWorkspace();
   if (notification.issue) {
-    return <IssueDetail identifier={notification.issue.identifier} variant="peek" />;
+    return (
+      <IssueDetail identifier={notification.issue.identifier} variant="peek" shortcuts={false} />
+    );
   }
   if (notification.project) {
     return (

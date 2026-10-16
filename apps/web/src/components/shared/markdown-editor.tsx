@@ -44,6 +44,7 @@ type TProps = {
   onSubmit?: () => void;
   autoFocus?: boolean;
   label?: string;
+  framed?: boolean;
 };
 
 export function MarkdownEditor({
@@ -57,6 +58,7 @@ export function MarkdownEditor({
   onSubmit,
   autoFocus,
   label = "Editor",
+  framed = false,
 }: TProps) {
   const usersRef = useRef(users ?? []);
   const uploadRef = useRef(onUploadImage);
@@ -64,6 +66,8 @@ export function MarkdownEditor({
   const changeRef = useRef(onChange);
   const editorRef = useRef<Editor | null>(null);
   const lastMarkdownRef = useRef(value);
+  const savedMarkdownRef = useRef<string | null>(null);
+  const isSavingRef = useRef(false);
   const [mention, setMention] = useState<TMentionState | null>(null);
   const mentionRef = useRef<TMentionState | null>(null);
   const [saveStatus, setSaveStatus] = useState<TSaveStatus>("idle");
@@ -81,10 +85,12 @@ export function MarkdownEditor({
   };
 
   const save = useDebouncedCallback(async (markdown: string) => {
-    if (!autosave) return;
+    if (!autosave || markdown === savedMarkdownRef.current) return;
     setSaveStatus("saving");
+    isSavingRef.current = true;
     try {
       await autosave.onSave(markdown);
+      savedMarkdownRef.current = markdown;
       setSaveStatus("saved");
     } catch (error) {
       setSaveStatus("error");
@@ -93,10 +99,22 @@ export function MarkdownEditor({
         title: "Could not save",
         description: error instanceof Error ? error.message : undefined,
       });
+    } finally {
+      isSavingRef.current = false;
     }
   }, autosave?.delayMs ?? AUTOSAVE_DELAY_MS);
 
-  useEffect(() => () => save.flush(), [save]);
+  const hasAutosave = Boolean(autosave);
+  useEffect(() => {
+    if (!hasAutosave) return;
+    const flushBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!save.isPending() && !isSavingRef.current) return;
+      save.flush();
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", flushBeforeUnload);
+    return () => window.removeEventListener("beforeunload", flushBeforeUnload);
+  }, [hasAutosave, save]);
 
   const extensions = useMemo(
     () => [
@@ -184,11 +202,21 @@ export function MarkdownEditor({
         return true;
       },
     },
-    onUpdate: ({ editor: updated }) => {
+    onCreate: ({ editor: created }) => {
+      savedMarkdownRef.current = created.getMarkdown();
+    },
+    onUpdate: ({ editor: updated, transaction, appendedTransactions }) => {
+      const docChanged = transaction.docChanged || appendedTransactions.some((tr) => tr.docChanged);
+      if (!docChanged) return;
       const markdown = updated.getMarkdown();
       lastMarkdownRef.current = markdown;
       changeRef.current?.(markdown);
-      if (autosave) save(markdown);
+      if (!autosave) return;
+      if (markdown === savedMarkdownRef.current) {
+        save.cancel();
+        return;
+      }
+      save.call(markdown);
     },
   });
 
@@ -198,7 +226,7 @@ export function MarkdownEditor({
 
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    editor.setEditable(!readOnly);
+    editor.setEditable(!readOnly, false);
   }, [editor, readOnly]);
 
   useEffect(() => {
@@ -206,11 +234,16 @@ export function MarkdownEditor({
     if (value === lastMarkdownRef.current) return;
     lastMarkdownRef.current = value;
     editor.commands.setContent(value, { contentType: "markdown", emitUpdate: false });
+    savedMarkdownRef.current = editor.getMarkdown();
   }, [editor, value]);
 
   return (
     <div data-slot="markdown-editor" className="flex w-full flex-col gap-1.5">
-      <EditorContent editor={editor} className="zz-prose w-full" />
+      <EditorContent
+        editor={editor}
+        data-framed={framed || undefined}
+        className="zz-prose data-framed:bg-input data-framed:has-hover:hover:ring-primary/6-10 data-framed:focus-within:ring-primary/8-10 w-full data-framed:rounded-md data-framed:border data-framed:px-3 data-framed:py-2 data-framed:focus-within:ring-1 data-framed:has-hover:hover:ring-1"
+      />
       {mention && (
         <SuggestionMenu
           items={mention.items}
@@ -221,6 +254,18 @@ export function MarkdownEditor({
         />
       )}
       {autosave && <SaveIndicator status={saveStatus} />}
+    </div>
+  );
+}
+
+export function MarkdownField({
+  label,
+  ...props
+}: Omit<TProps, "framed" | "autosave"> & { label: string }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-sm font-medium">{label}</span>
+      <MarkdownEditor {...props} label={label} framed />
     </div>
   );
 }

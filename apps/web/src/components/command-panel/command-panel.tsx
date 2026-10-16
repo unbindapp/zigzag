@@ -1,4 +1,3 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { useQuery } from "@tanstack/react-query";
 import { type LinkProps, useNavigate } from "@tanstack/react-router";
 import {
@@ -37,15 +36,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTeams } from "@/components/workspace/teams-provider";
 import { WorkspaceIcon } from "@/components/workspace/workspace-icon";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 import { meQuery, meWorkspaces } from "@/lib/queries/me";
 
 export function CommandPanel() {
   const isOpen = useCommandPanelStore((state) => state.isOpen);
   const setOpen = useCommandPanelStore((state) => state.setOpen);
 
-  useHotkey("Mod+K", () => setOpen(!useCommandPanelStore.getState().isOpen), {
-    conflictBehavior: "allow",
-    ignoreInputs: false,
+  useHotkeyScope([{ hotkey: "Mod+K", callback: () => setOpen(true), ignoreInputs: false }]);
+  useHotkeyScope([{ hotkey: "Mod+K", callback: () => setOpen(false), ignoreInputs: false }], {
+    enabled: isOpen,
+    modal: true,
   });
 
   return (

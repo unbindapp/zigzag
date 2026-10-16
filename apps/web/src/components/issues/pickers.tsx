@@ -57,15 +57,15 @@ type TPickerControl = {
   disabled?: boolean;
 };
 
-function PickerTrigger({
-  appearance,
+export function PickerTrigger({
+  appearance = "row",
   label,
   icon,
   text,
   muted,
   ...props
 }: {
-  appearance: TPickerAppearance;
+  appearance?: TPickerAppearance;
   label: string;
   icon: ReactNode;
   text: ReactNode;
@@ -654,18 +654,41 @@ export function formatDueDate(value: string) {
 export function DueDatePicker({
   dueDate,
   onChange,
+  ...control
+}: TPickerControl & { dueDate: string | null; onChange: (dueDate: string | null) => void }) {
+  return (
+    <DatePicker
+      name="Due date"
+      date={dueDate}
+      format={formatDueDate}
+      onChange={onChange}
+      {...control}
+    />
+  );
+}
+
+export function DatePicker({
+  name,
+  date,
+  format,
+  onChange,
   appearance = "row",
   open,
   onOpenChange,
   disabled,
-}: TPickerControl & { dueDate: string | null; onChange: (dueDate: string | null) => void }) {
+}: TPickerControl & {
+  name: string;
+  date: string | null;
+  format: (date: string) => string;
+  onChange: (date: string | null) => void;
+}) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open ?? internalOpen;
   const setOpen = (next: boolean) => {
     setInternalOpen(next);
     onOpenChange?.(next);
   };
-  const text = dueDate ? formatDueDate(dueDate) : "Due date";
+  const text = date ? format(date) : name;
   return (
     <span className="contents" onClick={(event) => event.stopPropagation()}>
       <Popover open={isOpen} onOpenChange={setOpen}>
@@ -674,19 +697,19 @@ export function DueDatePicker({
           render={
             <PickerTrigger
               appearance={appearance}
-              label={dueDate ? `Due date: ${text}` : "Set due date"}
+              label={date ? `${name}: ${text}` : `Set ${name.toLowerCase()}`}
               icon={<MutedIcon icon={CalendarIcon} />}
               text={text}
-              muted={!dueDate}
+              muted={!date}
             />
           }
         />
         <PopoverContent align="start" className="flex w-64 flex-col gap-2 p-3">
           <Input
             type="date"
-            aria-label="Due date"
+            aria-label={name}
             autoFocus
-            defaultValue={dueDate ?? ""}
+            defaultValue={date ?? ""}
             onChange={(event) => {
               if (!event.target.value) return;
               onChange(event.target.value);
@@ -695,7 +718,7 @@ export function DueDatePicker({
               if (event.key === "Enter") setOpen(false);
             }}
           />
-          {dueDate && (
+          {date && (
             <Button
               variant="ghost"
               size="sm"
@@ -706,7 +729,7 @@ export function DueDatePicker({
               }}
             >
               <XIcon className="size-4" />
-              Remove due date
+              Remove {name.toLowerCase()}
             </Button>
           )}
         </PopoverContent>

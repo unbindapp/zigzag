@@ -54,7 +54,7 @@ export function StatusUpdateComposer({
   };
 
   return (
-    <Card className="flex flex-col gap-3 p-4">
+    <Card className="flex flex-col gap-2 p-4">
       <MarkdownEditor
         key={editorKey}
         value={body}

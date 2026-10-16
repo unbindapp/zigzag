@@ -76,7 +76,7 @@ function TeamWorkflowSettingsPage() {
       {isPending && <ListSkeleton />}
       {!isPending && error && <ErrorCard message={error.message} onRetry={() => void refetch()} />}
       {!isPending && !error && states.length === 0 && (
-        <EmptyState icon={WorkflowIcon} title="No workflow states" />
+        <EmptyState icon={WorkflowIcon} title="No workflow states yet" />
       )}
       {!isPending &&
         !error &&

@@ -1,6 +1,5 @@
 import { parseISO } from "date-fns";
-import { CalendarIcon, CircleUserIcon, XIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { CircleUserIcon } from "lucide-react";
 
 import {
   INITIATIVE_STATUSES,
@@ -8,40 +7,14 @@ import {
   initiativeStatusLabels,
 } from "@/components/initiatives/initiative-status";
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
+import { DatePicker, PickerTrigger } from "@/components/issues/pickers";
 import { PropertyPicker, type TPickerOption } from "@/components/issues/property-picker";
 import { Avatar } from "@/components/shared/avatar";
 import { type TUserSummary } from "@/components/shared/user-chip";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDate } from "@/lib/helpers/dates";
 import type { TInitiativeStatus } from "@/lib/queries/initiatives";
 
 const NONE = "__none__";
-
-type TTriggerProps = {
-  label: string;
-  icon: ReactNode;
-  text: ReactNode;
-  muted?: boolean;
-};
-
-function PickerTrigger({ label, icon, text, muted, ...props }: TTriggerProps) {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      forceMinSize={false}
-      aria-label={label}
-      data-muted={muted || undefined}
-      className="data-muted:text-muted-foreground w-full min-w-0 justify-start font-normal"
-      {...props}
-    >
-      {icon}
-      <span className="min-w-0 truncate">{text}</span>
-    </Button>
-  );
-}
 
 export function userName(user: TUserSummary) {
   return user.name || user.display_name || "Unknown";
@@ -148,50 +121,13 @@ export function TargetDatePicker({
   onChange: (date: string | null) => void;
   disabled?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const text = date ? formatTargetDate(date) : "Target date";
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        disabled={disabled}
-        render={
-          <PickerTrigger
-            label={date ? `Target date: ${text}` : "Set target date"}
-            icon={<CalendarIcon className="size-4" />}
-            text={text}
-            muted={!date}
-          />
-        }
-      />
-      <PopoverContent align="start" className="flex w-64 flex-col gap-2 p-3">
-        <Input
-          type="date"
-          aria-label="Target date"
-          autoFocus
-          defaultValue={date ?? ""}
-          onChange={(event) => {
-            if (!event.target.value) return;
-            onChange(event.target.value);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") setIsOpen(false);
-          }}
-        />
-        {date && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => {
-              onChange(null);
-              setIsOpen(false);
-            }}
-          >
-            <XIcon className="size-4" />
-            Remove target date
-          </Button>
-        )}
-      </PopoverContent>
-    </Popover>
+    <DatePicker
+      name="Target date"
+      date={date}
+      format={formatTargetDate}
+      onChange={onChange}
+      disabled={disabled}
+    />
   );
 }

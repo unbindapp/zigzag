@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MegaphoneIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
 import { ListStates } from "@/components/layout/list-states";
@@ -45,11 +45,7 @@ export function InitiativeUpdates({ initiative }: { initiative: TInitiative }) {
           onRetry={() => void refetch()}
           isEmpty={updates.length === 0}
           skeletonRows={2}
-          empty={{
-            icon: MegaphoneIcon,
-            title: "No updates yet",
-            description: "Post an update to share how the initiative is going.",
-          }}
+          empty={null}
         >
           {updates.map((update) => (
             <InitiativeUpdateCard key={update.id} update={update} />
@@ -83,7 +79,7 @@ function InitiativeUpdateCard({ update }: { update: TInitiativeUpdate }) {
             }
             title="Delete update"
             description="The update is deleted for everyone."
-            confirmLabel="Delete"
+            confirmLabel="Delete update"
             onConfirm={() => deleteUpdate({ updateId: update.id })}
           />
         )

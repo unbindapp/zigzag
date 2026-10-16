@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { infiniteQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { invalidateIssues, toggleReaction } from "@/lib/queries/issues";
 import { getGoClient } from "@/lib/server/client";
@@ -7,7 +7,7 @@ function commentsApi() {
   return getGoClient().issues.comments;
 }
 
-const COMMENTS_LIMIT = 250;
+const COMMENTS_PAGE_SIZE = 100;
 
 export const queryKeyComments = {
   all: () => ["comments"] as const,
@@ -15,12 +15,18 @@ export const queryKeyComments = {
 };
 
 export const commentsQuery = (issueId: string) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: queryKeyComments.list(issueId),
-    queryFn: async () => {
-      const res = await commentsApi().list({ issue_id: issueId, limit: COMMENTS_LIMIT });
-      return { comments: res.data ?? [] };
+    queryFn: async ({ pageParam }) => {
+      const res = await commentsApi().list({
+        issue_id: issueId,
+        limit: COMMENTS_PAGE_SIZE,
+        cursor: pageParam,
+      });
+      return { data: res.data ?? [], next_cursor: res.next_cursor ?? null };
     },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
   });
 
 export async function createComment(input: { issueId: string; body: string; parentId?: string }) {

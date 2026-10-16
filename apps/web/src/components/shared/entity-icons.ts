@@ -70,3 +70,15 @@ export const ENTITY_ICONS: Record<string, LucideIcon> = {
 };
 
 export const ENTITY_ICON_NAMES = Object.keys(ENTITY_ICONS);
+
+export type TResolvedIcon =
+  { kind: "lucide"; Icon: LucideIcon } | { kind: "emoji"; emoji: string } | { kind: "none" };
+
+const ICON_NAME = /^[A-Za-z][\w-]*$/;
+
+export function resolveEntityIcon(icon: string | null | undefined): TResolvedIcon {
+  if (!icon) return { kind: "none" };
+  if (Object.hasOwn(ENTITY_ICONS, icon)) return { kind: "lucide", Icon: ENTITY_ICONS[icon] };
+  if (ICON_NAME.test(icon)) return { kind: "none" };
+  return { kind: "emoji", emoji: icon };
+}

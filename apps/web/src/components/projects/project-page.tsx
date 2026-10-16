@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { BoxIcon } from "lucide-react";
 import { type ReactNode } from "react";
 
-import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { PageContainer } from "@/components/layout/page-container";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { isApiError } from "@/lib/server/errors";
 import { type TProject, projectBySlugQuery } from "@/lib/queries/projects";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export function ProjectLoader({
   slug,
@@ -29,10 +29,9 @@ export function ProjectLoader({
   if (error && isApiError(error, 404)) {
     return (
       <PageContainer>
-        <EmptyState
-          icon={BoxIcon}
-          title="Project not found"
-          description="It may have been deleted or moved."
+        <EntityNotFound
+          Icon={BoxIcon}
+          description="Project not found. It was deleted, or you cannot see it."
         />
       </PageContainer>
     );

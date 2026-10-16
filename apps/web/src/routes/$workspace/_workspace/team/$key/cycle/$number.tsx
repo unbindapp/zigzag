@@ -7,16 +7,17 @@ import { CycleMenu } from "@/components/cycles/cycle-menu";
 import { cycleStatus } from "@/components/cycles/cycle-status";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { IssuePeekHost } from "@/components/issues/issue-peek";
-import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { CycleIcon } from "@/components/shared/cycle-icon";
+import { teamCrumb } from "@/components/workspace/team-crumb";
 import { useRequiredTeamFromRoute } from "@/components/workspace/use-team-from-route";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { cycleByNumberQuery, cycleName } from "@/lib/queries/cycles";
 import { isApiError } from "@/lib/server/errors";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export const Route = createFileRoute("/$workspace/_workspace/team/$key/cycle/$number")({
   component: TeamCyclePage,
@@ -38,10 +39,9 @@ function TeamCyclePage() {
   const body = () => {
     if (!isValidNumber || isApiError(error, 404)) {
       return (
-        <EmptyState
-          icon={RefreshCwIcon}
-          title="Cycle not found"
-          description={`${team.name} has no cycle ${number}.`}
+        <EntityNotFound
+          Icon={RefreshCwIcon}
+          description={`Cycle not found. ${team.name} has no cycle ${number}.`}
         />
       );
     }
@@ -67,7 +67,7 @@ function TeamCyclePage() {
             )
           }
           breadcrumb={[
-            { label: team.name },
+            teamCrumb(team, workspaceSlug),
             {
               label: "Cycles",
               link: {

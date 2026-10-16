@@ -1,20 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { ArchiveIcon, CircleDotIcon, Trash2Icon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect } from "react";
 
-import { useCommandPanelStore } from "@/components/command-panel/command-panel-store";
-import { useUploadImage } from "@/components/issues/comment-thread";
 import { IssueActivity } from "@/components/issues/issue-activity";
 import { IssueAttachments } from "@/components/issues/issue-attachments";
 import { IssueDetailHeader } from "@/components/issues/issue-detail-header";
 import { draftFromIssue } from "@/components/issues/issue-draft";
 import { IssueProperties } from "@/components/issues/issue-properties";
 import { IssueRelations } from "@/components/issues/issue-relations";
-import { IssueTitle } from "@/components/issues/issue-title";
-import { useNewIssueStore } from "@/components/issues/new-issue-store";
-import { useWorkspaceUsers } from "@/components/issues/picker-sources";
 import { SubIssues } from "@/components/issues/sub-issues";
 import {
+  ISSUE_TITLE_MAX_LENGTH,
   type TIssueDetail,
   issueQuery,
   useIssueSubscriptionMutation,
@@ -24,20 +21,33 @@ import { useIssueLifecycle, useIssuePatch } from "@/components/issues/use-issue-
 import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
-import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { AutosaveMarkdown } from "@/components/shared/autosave-markdown";
+import { InlineText } from "@/components/shared/inline-text";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { isApiError } from "@/lib/server/errors";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 type TProps = {
   identifier: string;
   variant?: "page" | "peek";
   onClose?: () => void;
+  shortcuts?: boolean;
 };
 
-export function IssueDetail({ identifier, variant = "page", onClose }: TProps) {
+export function IssueDetail({ identifier, variant = "page", onClose, shortcuts = true }: TProps) {
   const { workspace } = useWorkspace();
   const { data, isPending, error, refetch } = useQuery(issueQuery(workspace.id, identifier));
+  const navigate = useNavigate();
+  const canonical = data?.issue.identifier;
+  useEffect(() => {
+    if (variant !== "page" || !canonical || canonical === identifier) return;
+    void navigate({
+      to: "/$workspace/issue/$identifier",
+      params: { workspace: workspace.slug, identifier: canonical },
+      replace: true,
+    });
+  }, [variant, canonical, identifier, navigate, workspace.slug]);
   if (isPending) {
     return (
       <div className="flex w-full flex-col gap-6 p-4">
@@ -46,6 +56,14 @@ export function IssueDetail({ identifier, variant = "page", onClose }: TProps) {
     );
   }
   if (error) {
+    if (isApiError(error, 404) && variant === "page") {
+      return (
+        <EntityNotFound
+          Icon={CircleDotIcon}
+          description={`There is no issue ${identifier.toUpperCase()}, or you cannot see it.`}
+        />
+      );
+    }
     if (isApiError(error, 404)) {
       return (
         <EmptyState
@@ -61,24 +79,31 @@ export function IssueDetail({ identifier, variant = "page", onClose }: TProps) {
       </div>
     );
   }
-  return <IssueDetailContent issue={data.issue} variant={variant} onClose={onClose} />;
+  return (
+    <IssueDetailContent
+      issue={data.issue}
+      variant={variant}
+      onClose={onClose}
+      shortcuts={shortcuts}
+    />
+  );
 }
 
 function IssueDetailContent({
   issue,
   variant,
   onClose,
+  shortcuts,
 }: {
   issue: TIssueDetail;
   variant: "page" | "peek";
   onClose?: () => void;
+  shortcuts: boolean;
 }) {
   const { canEdit } = useWorkspace();
   const patch = useIssuePatch();
   const { mutateAsync: updateIssue } = useUpdateIssueMutation();
   const { mutate: setSubscribed } = useIssueSubscriptionMutation();
-  const isDialogOpen = useNewIssueStore((state) => state.isOpen);
-  const isCommandPanelOpen = useCommandPanelStore((state) => state.isOpen);
 
   const properties = (
     <IssueProperties
@@ -87,7 +112,7 @@ function IssueDetailContent({
       value={draftFromIssue(issue)}
       onChange={(next) => patch(issue, next)}
       disabled={!canEdit}
-      shortcutsEnabled={!isDialogOpen && !isCommandPanelOpen}
+      shortcutsEnabled={shortcuts}
       subscribers={{
         users: issue.subscribers ?? [],
         onChange: (added, removed) => {
@@ -106,8 +131,10 @@ function IssueDetailContent({
     <div className="flex min-w-0 flex-1 flex-col gap-6">
       <LifecycleBanner issue={issue} />
       <div className="flex flex-col gap-2">
-        <IssueTitle
-          title={issue.title}
+        <InlineText
+          label="Issue title"
+          value={issue.title}
+          maxLength={ISSUE_TITLE_MAX_LENGTH}
           readOnly={!canEdit}
           onSave={(title) =>
             void updateIssue({ input: { issue_id: issue.id, title }, optimistic: { title } }).catch(
@@ -115,8 +142,10 @@ function IssueDetailContent({
             )
           }
         />
-        <DescriptionEditor
+        <AutosaveMarkdown
           key={issue.id}
+          label="Description"
+          placeholder="Add a description…"
           initialValue={issue.description}
           readOnly={!canEdit}
           onSave={(description) => updateIssue({ input: { issue_id: issue.id, description } })}
@@ -149,38 +178,6 @@ function IssueDetailContent({
         </aside>
       </div>
     </div>
-  );
-}
-
-function DescriptionEditor({
-  initialValue,
-  readOnly,
-  onSave,
-}: {
-  initialValue: string;
-  readOnly: boolean;
-  onSave: (description: string) => Promise<unknown>;
-}) {
-  const [value] = useState(initialValue);
-  const lastSaved = useRef(initialValue);
-  const { users } = useWorkspaceUsers();
-  const uploadImage = useUploadImage();
-  return (
-    <MarkdownEditor
-      label="Description"
-      value={value}
-      placeholder="Add a description…"
-      readOnly={readOnly}
-      users={users}
-      onUploadImage={uploadImage}
-      autosave={{
-        onSave: async (description) => {
-          if (description === lastSaved.current) return;
-          await onSave(description);
-          lastSaved.current = description;
-        },
-      }}
-    />
   );
 }
 

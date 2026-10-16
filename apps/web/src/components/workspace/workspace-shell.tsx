@@ -1,4 +1,3 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { MenuIcon, SearchIcon } from "lucide-react";
 import { ReactNode, useState } from "react";
 
@@ -11,16 +10,13 @@ import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Sidebar } from "@/components/workspace/sidebar";
 import { WorkspaceIcon } from "@/components/workspace/workspace-icon";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const { canEdit } = useWorkspace();
   const openNewIssue = useNewIssueStore((state) => state.open);
-  const isCommandPanelOpen = useCommandPanelStore((state) => state.isOpen);
-  const isNewIssueOpen = useNewIssueStore((state) => state.isOpen);
 
-  useHotkey("C", () => openNewIssue(), {
-    enabled: canEdit && !isCommandPanelOpen && !isNewIssueOpen,
-  });
+  useHotkeyScope([{ hotkey: "C", callback: () => openNewIssue(), enabled: canEdit }]);
 
   return (
     <div className="flex h-svh w-full overflow-hidden">

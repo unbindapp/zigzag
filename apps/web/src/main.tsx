@@ -7,7 +7,7 @@ import "@/globals.css";
 import PendingScreen from "@/components/navigation/pending-screen";
 import { toast } from "@/components/ui/toast";
 import { loadConfig } from "@/lib/config";
-import { errorText } from "@/lib/server/errors";
+import { errorText, isApiError } from "@/lib/server/errors";
 import { routeTree } from "./routeTree.gen";
 
 const DEFAULT_STALE_TIME_MS = 5 * 1000;
@@ -24,8 +24,16 @@ declare module "@tanstack/react-query" {
   }
 }
 
+const MAX_QUERY_RETRIES = 3;
+
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: DEFAULT_STALE_TIME_MS } },
+  defaultOptions: {
+    queries: {
+      staleTime: DEFAULT_STALE_TIME_MS,
+      retry: (failureCount, error) =>
+        !(isApiError(error) && error.status < 500) && failureCount < MAX_QUERY_RETRIES,
+    },
+  },
   mutationCache: new MutationCache({
     onError: (error, _variables, _onMutateResult, mutation) => {
       if (mutation.meta?.silent) return;

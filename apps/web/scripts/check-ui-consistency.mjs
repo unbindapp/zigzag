@@ -13,8 +13,8 @@ const rules = [
     allowedIn: ["src/components/ui/", "src/components/layout/"],
   },
   {
-    name: "raw <button> or <input> element",
-    pattern: /<(?:button|input)(?=[\s>/])/g,
+    name: "raw <button>, <input>, <select> or <textarea> element",
+    pattern: /<(?:button|input|select|textarea)(?=[\s>/])/g,
     allowedIn: ["src/components/ui/"],
   },
   {
@@ -25,6 +25,46 @@ const rules = [
   {
     name: "alert()",
     pattern: /\balert\(/g,
+    allowedIn: [],
+  },
+  {
+    name: "spacing outside the ui.md scale",
+    pattern: /\b(?:gap|gap-x|gap-y|space-x|space-y)-(?:5|7)\b/g,
+    allowedIn: ["src/components/ui/"],
+  },
+  {
+    name: "radius larger than rounded-lg",
+    pattern: /\brounded-(?:xl|2xl|3xl)\b/g,
+    allowedIn: ["src/components/ui/"],
+  },
+  {
+    name: "hardcoded color outside the palette",
+    pattern: /["'`]#[0-9a-fA-F]{3,8}["'`]/g,
+    allowedIn: [
+      "src/lib/helpers/colors.ts",
+      "src/components/providers/themes.ts",
+      "src/components/shared/color-picker.tsx",
+    ],
+    skipTests: true,
+  },
+  {
+    name: "hotkey registered outside the scoped registry",
+    pattern: /\buseHotkeys?\(/g,
+    allowedIn: ["src/lib/hotkeys/"],
+  },
+  {
+    name: "editor.setEditable without emitUpdate=false (emits an update that autosaves)",
+    pattern: /\.setEditable\([^,()]*\)/g,
+    allowedIn: [],
+  },
+  {
+    name: "confirm label without a noun (use Delete project, Remove member)",
+    pattern: /confirmLabel="(?:Delete|Remove|Revoke|Archive|Trash)"/g,
+    allowedIn: [],
+  },
+  {
+    name: 'empty state title "No ..." without "yet"',
+    pattern: /title(?:=|: )"No (?![^"]*\b(?:yet|matching|selected)\b)[^"]*"/g,
     allowedIn: [],
   },
 ];
@@ -48,6 +88,7 @@ for (const file of walk(srcDir)) {
   const text = readFileSync(file, "utf8");
   for (const rule of rules) {
     if (rule.allowedIn.some((prefix) => rel.startsWith(prefix))) continue;
+    if (rule.skipTests && rel.endsWith(".node-test.ts")) continue;
     for (const match of text.matchAll(rule.pattern)) {
       violations.push(`${rel}:${lineOf(text, match.index)}  ${rule.name}: ${match[0]}`);
     }

@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { BotIcon } from "lucide-react";
 
+import { mergeFeed } from "@/components/issues/activity-feed";
 import { describeChange } from "@/components/issues/activity-text";
 import { CommentComposer, CommentThread } from "@/components/issues/comment-thread";
 import { UserAvatar } from "@/components/issues/pickers";
@@ -9,6 +10,7 @@ import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { SectionTitle } from "@/components/layout/section-title";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { commentsQuery } from "@/lib/queries/comments";
 
@@ -18,23 +20,39 @@ type TFeedItem =
 
 export function IssueActivity({ issueId }: { issueId: string }) {
   const { canEdit } = useWorkspace();
-  const history = useQuery(issueHistoryQuery(issueId));
-  const comments = useQuery(commentsQuery(issueId));
+  const history = useInfiniteQuery(issueHistoryQuery(issueId));
+  const comments = useInfiniteQuery(commentsQuery(issueId));
 
-  const items: TFeedItem[] = [
-    ...(history.data?.history ?? []).map((entry): TFeedItem => ({
-      kind: "history",
-      id: entry.id,
-      at: entry.created_at,
-      entry,
-    })),
-    ...(comments.data?.comments ?? []).map((comment): TFeedItem => ({
-      kind: "comment",
-      id: comment.id,
-      at: comment.created_at,
-      comment,
-    })),
-  ].sort((a, b) => a.at.localeCompare(b.at));
+  const items = mergeFeed<TFeedItem>([
+    {
+      items: (history.data?.pages ?? []).flatMap((page) =>
+        page.data.map((entry): TFeedItem => ({
+          kind: "history",
+          id: entry.id,
+          at: entry.created_at,
+          entry,
+        })),
+      ),
+      hasMore: history.hasNextPage,
+    },
+    {
+      items: (comments.data?.pages ?? []).flatMap((page) =>
+        page.data.map((comment): TFeedItem => ({
+          kind: "comment",
+          id: comment.id,
+          at: comment.created_at,
+          comment,
+        })),
+      ),
+      hasMore: comments.hasNextPage,
+    },
+  ]);
+  const hasMore = history.hasNextPage || comments.hasNextPage;
+  const isFetchingMore = history.isFetchingNextPage || comments.isFetchingNextPage;
+  const loadMore = () => {
+    if (history.hasNextPage) void history.fetchNextPage();
+    if (comments.hasNextPage) void comments.fetchNextPage();
+  };
 
   const error = history.error ?? comments.error;
   return (
@@ -62,6 +80,13 @@ export function IssueActivity({ issueId }: { issueId: string }) {
             </li>
           ))}
         </ol>
+      )}
+      {hasMore && (
+        <div className="flex">
+          <Button variant="outline" size="sm" isPending={isFetchingMore} onClick={loadMore}>
+            Load more
+          </Button>
+        </div>
       )}
       {canEdit && <CommentComposer issueId={issueId} />}
     </section>

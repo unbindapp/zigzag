@@ -139,11 +139,23 @@ function SortableLabels({
     <SortableList items={items}>
       {(ordered) => (
         <List>
-          {ordered.map((label) =>
+          {ordered.map((label, index) =>
             label.is_group ? (
-              <GroupBlock key={label.id} group={label} groups={groups} canEdit={canEdit} />
+              <GroupBlock
+                key={label.id}
+                group={label}
+                groups={groups}
+                canEdit={canEdit}
+                isLast={index === ordered.length - 1}
+              />
             ) : (
-              <SortableLabelRow key={label.id} label={label} groups={groups} canEdit={canEdit} />
+              <SortableLabelRow
+                key={label.id}
+                label={label}
+                groups={groups}
+                canEdit={canEdit}
+                divided={index < ordered.length - 1}
+              />
             ),
           )}
         </List>
@@ -194,12 +206,15 @@ function GroupBlock({
   group,
   groups,
   canEdit,
+  isLast,
 }: {
   group: TLabelTree;
   groups: TLabelTree[];
   canEdit: boolean;
+  isLast: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(true);
+  const isExpanded = isOpen && group.children.length > 0;
   const sortable = useSortable({ id: group.id, disabled: !canEdit });
   return (
     <div
@@ -207,10 +222,11 @@ function GroupBlock({
       role="listitem"
       data-dragging={sortable.isDragging || undefined}
       style={sortableStyle(sortable.transform, sortable.transition)}
-      className="bg-card data-dragging:bg-accent relative flex w-full flex-col border-b last:border-b-0 data-dragging:z-10"
+      className="bg-card data-dragging:bg-accent relative flex w-full flex-col data-dragging:z-10"
     >
       <LabelRowBody
         label={group}
+        divided={isExpanded || !isLast}
         groups={groups}
         canEdit={canEdit}
         handle={sortable}
@@ -237,16 +253,17 @@ function GroupBlock({
           </>
         }
       />
-      {isOpen && group.children.length > 0 && (
+      {isExpanded && (
         <SortableList items={group.children}>
           {(ordered) => (
-            <div role="list" className="flex flex-col border-t">
-              {ordered.map((child) => (
+            <div role="list" className="flex flex-col">
+              {ordered.map((child, index) => (
                 <SortableLabelRow
                   key={child.id}
                   label={child}
                   groups={groups}
                   canEdit={canEdit}
+                  divided={!isLast || index < ordered.length - 1}
                   nested
                 />
               ))}
@@ -262,11 +279,13 @@ function SortableLabelRow({
   label,
   groups,
   canEdit,
+  divided,
   nested,
 }: {
   label: TLabel;
   groups: TLabelTree[];
   canEdit: boolean;
+  divided: boolean;
   nested?: boolean;
 }) {
   const sortable = useSortable({ id: label.id, disabled: !canEdit });
@@ -276,10 +295,11 @@ function SortableLabelRow({
       role="listitem"
       data-dragging={sortable.isDragging || undefined}
       style={sortableStyle(sortable.transform, sortable.transition)}
-      className="bg-card data-dragging:bg-accent relative flex w-full border-b last:border-b-0 data-dragging:z-10"
+      className="bg-card data-dragging:bg-accent relative flex w-full data-dragging:z-10"
     >
       <LabelRowBody
         label={label}
+        divided={divided}
         groups={groups}
         canEdit={canEdit}
         handle={sortable}
@@ -296,6 +316,7 @@ function LabelRowBody({
   handle,
   leading,
   meta,
+  divided,
 }: {
   label: TLabel;
   groups: TLabelTree[];
@@ -303,11 +324,13 @@ function LabelRowBody({
   handle: ReturnType<typeof useSortable>;
   leading?: ReactNode;
   meta?: ReactNode;
+  divided: boolean;
 }) {
   return (
     <div
       data-archived={label.archived_at ? true : undefined}
-      className="data-archived:text-muted-foreground flex h-9 w-full items-center gap-2 px-2 text-sm"
+      data-divided={divided || undefined}
+      className="data-archived:text-muted-foreground flex h-9 w-full items-center gap-2 px-2 text-sm data-divided:border-b"
     >
       {canEdit && (
         <Button

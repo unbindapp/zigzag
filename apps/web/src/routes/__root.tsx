@@ -29,22 +29,26 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   },
   component: RootComponent,
   notFoundComponent: () => (
-    <NotFoundTemplate
-      code={404}
-      description="Not found."
-      buttonText="Go home"
-      buttonTo="/"
-      Icon={TriangleAlertIcon}
-    />
+    <main className="flex min-h-svh flex-col">
+      <NotFoundTemplate
+        code={404}
+        description="Not found."
+        buttonText="Go home"
+        buttonTo="/"
+        Icon={TriangleAlertIcon}
+      />
+    </main>
   ),
   errorComponent: ({ error }) => (
-    <NotFoundTemplate
-      code={500}
-      description={error instanceof Error ? error.message : "Something went wrong."}
-      buttonText="Go home"
-      buttonTo="/"
-      Icon={TriangleAlertIcon}
-    />
+    <main className="flex min-h-svh flex-col">
+      <NotFoundTemplate
+        code={500}
+        description={error instanceof Error ? error.message : "Something went wrong."}
+        buttonText="Go home"
+        buttonTo="/"
+        Icon={TriangleAlertIcon}
+      />
+    </main>
   ),
 });
 

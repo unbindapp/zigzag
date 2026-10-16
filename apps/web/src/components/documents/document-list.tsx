@@ -12,7 +12,7 @@ type TProps = {
   workspaceId: string;
   projectId?: string;
   initiativeId?: string;
-  emptyDescription: string;
+  emptyDescription?: string;
   emptyAction?: ReactNode;
   skeletonRows?: number;
 };
@@ -41,12 +41,16 @@ export function DocumentList({
       onRetry={() => void refetch()}
       isEmpty={documents.length === 0}
       skeletonRows={skeletonRows}
-      empty={{
-        icon: FileTextIcon,
-        title: "No documents yet",
-        description: emptyDescription,
-        action: emptyAction,
-      }}
+      empty={
+        emptyDescription
+          ? {
+              icon: FileTextIcon,
+              title: "No documents yet",
+              description: emptyDescription,
+              action: emptyAction,
+            }
+          : null
+      }
     >
       <List>
         {documents.map((document) => (

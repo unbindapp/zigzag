@@ -27,9 +27,9 @@ export function useCopyIssue() {
     toast.add({ type: "success", title, description: text });
   };
   return {
-    copyLink: (issue: Pick<TIssue, "url">) => copy(issue.url, "Copied issue link"),
+    copyLink: (issue: Pick<TIssue, "url">) => copy(issue.url, "Link copied"),
     copyBranch: (issue: Pick<TIssue, "git_branch_name">) =>
-      copy(issue.git_branch_name, "Copied branch name"),
+      copy(issue.git_branch_name, "Branch name copied"),
   };
 }
 

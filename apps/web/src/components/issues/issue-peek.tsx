@@ -1,10 +1,10 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 import { IssueDetail } from "@/components/issues/issue-detail";
 import { SplitView } from "@/components/layout/split-view";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 
 type TIssuePeekContext = {
   peek: string | undefined;
@@ -61,9 +61,8 @@ export function IssuePeekHost({ children }: { children: ReactNode }) {
 
 function IssuePeek({ identifier }: { identifier: string }) {
   const peek = useIssuePeek();
-  useHotkey("Escape", () => peek?.closePeek(), {
+  useHotkeyScope([{ hotkey: "Escape", callback: () => peek?.closePeek() }], {
     enabled: Boolean(peek),
-    conflictBehavior: "allow",
   });
   return (
     <section

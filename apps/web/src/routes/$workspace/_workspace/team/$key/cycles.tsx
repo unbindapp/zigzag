@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, LinkButton } from "@/components/ui/button";
+import { teamCrumb } from "@/components/workspace/team-crumb";
 import { useRequiredTeamFromRoute } from "@/components/workspace/use-team-from-route";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { cyclesListQuery } from "@/lib/queries/cycles";
@@ -27,7 +28,7 @@ function TeamKeyCyclesPage() {
       <PageHeader
         title="Cycles"
         icon={<RefreshCwIcon />}
-        breadcrumb={[{ label: team.name }, { label: "Cycles" }]}
+        breadcrumb={[teamCrumb(team, workspace.slug), { label: "Cycles" }]}
         actions={
           isAdmin &&
           team.cycles_enabled && (
@@ -58,6 +59,7 @@ function TeamKeyCyclesPage() {
                 to="/$workspace/settings/team/$key/cycles"
                 params={{ workspace: workspace.slug, key: team.key }}
                 variant="outline"
+                size="sm"
               >
                 Turn on cycles
               </LinkButton>

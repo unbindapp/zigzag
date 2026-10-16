@@ -223,7 +223,7 @@ export const BulkUpdateIssuesInputSchema = z
     assignee_id: z.string().optional(), // Assignee; the nil uuid unassigns
     cycle_id: z.string().optional(), // Cycle of every issue's team; the nil uuid removes it
     due_date: z.string().optional(), // Due date YYYY-MM-DD; empty clears it
-    issue_ids: z.array(z.string()).nullable(), // Issues to change together in one transaction
+    issue_ids: z.array(z.string()), // Issues to change together in one transaction
     parent_id: z.string().optional(), // Parent issue; the nil uuid makes them top level
     priority: z.number().optional(), // 0 none, 1 urgent, 2 high, 3 medium, 4 low
     project_id: z.string().optional(), // Project; the nil uuid removes it
@@ -303,15 +303,15 @@ export const CommentResponseBodySchema = z
 
 export const ConnectedAppApproveInputSchema = z
   .object({
-    client_id: z.string(),
-    code_challenge: z.string(),
+    client_id: z.string(), // OAuth client_id from the authorize request
+    code_challenge: z.string(), // PKCE S256 code_challenge from the authorize request
     full_access: z.boolean(), // Reach every workspace you can, capped at role. workspace_ids must be empty.
     privileges: z.array(KeyPrivilegeSchema).optional(), // What the app may see beyond its role. None exist yet.
-    redirect_uri: z.string(),
-    resource: z.string().optional(),
+    redirect_uri: z.string(), // redirect_uri from the authorize request
+    resource: z.string().optional(), // resource from the authorize request
     role: WorkspaceRoleSchema, // Strongest role the app acts with. It never exceeds your own role in a workspace.
-    scope: z.string().optional(),
-    state: z.string().optional(),
+    scope: z.string().optional(), // scope from the authorize request
+    state: z.string().optional(), // state from the authorize request, echoed back to the app
     workspace_ids: z.array(z.string()), // Workspaces the app is limited to. Required unless full_access.
   })
   .strip();
@@ -331,9 +331,9 @@ export const ConnectedAppClientResponseSchema = z
 
 export const ConnectedAppDenyInputSchema = z
   .object({
-    client_id: z.string(),
-    redirect_uri: z.string(),
-    state: z.string().optional(),
+    client_id: z.string(), // OAuth client_id from the authorize request
+    redirect_uri: z.string(), // redirect_uri from the authorize request
+    state: z.string().optional(), // state from the authorize request, echoed back to the app
   })
   .strip();
 
@@ -530,7 +530,7 @@ export const CreateProjectInputSchema = z
     summary: z.string().optional(), // One line summary
     target_date: z.string().optional(), // Target completion, YYYY-MM-DD
     target_date_resolution: DateResolutionSchema.optional(), // Precision of target_date: day (default), month, quarter, half_year or year
-    team_ids: z.array(z.string()).nullable(), // Teams working on the project, at least one, all from this workspace
+    team_ids: z.array(z.string()), // Teams working on the project, at least one, all from this workspace
     workspace_id: z.string(), // The workspace
   })
   .strip();
@@ -725,7 +725,7 @@ export const CycleProgressSchema = z
     completed: z.number(), // Scope in completed states
     completed_issue_count: z.number(),
     issue_count: z.number(), // Issues in the cycle, canceled ones left out
-    percent: z.number(), // Completed share of scope, 0 to 100
+    percent: z.number(), // Completed scope as a percentage of the scope, 0 to 100
     scope: z.number(), // Sum of estimates when the team estimates, else the issue count; canceled issues are left out
     started: z.number(), // Scope in started states
   })
@@ -1393,12 +1393,6 @@ export const InitiativeResponseBodySchema = z
   })
   .strip();
 
-export const InitiativeUpdateRefInputSchema = z
-  .object({
-    update_id: z.string(), // The initiative update to delete
-  })
-  .strip();
-
 export const InitiativeUpdateResponseSchema = z
   .object({
     author: UserSummarySchema.optional(),
@@ -1409,6 +1403,24 @@ export const InitiativeUpdateResponseSchema = z
     id: z.string(),
     initiative_id: z.string(),
     updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const InitiativeUpdateListResponseBodySchema = z
+  .object({
+    data: z.array(InitiativeUpdateResponseSchema),
+  })
+  .strip();
+
+export const InitiativeUpdateRefInputSchema = z
+  .object({
+    update_id: z.string(), // The initiative update to delete
+  })
+  .strip();
+
+export const InitiativeUpdateResponseBodySchema = z
+  .object({
+    data: InitiativeUpdateResponseSchema,
   })
   .strip();
 
@@ -1734,38 +1746,6 @@ export const MarkAllReadInputSchema = z
   })
   .strip();
 
-export const MemberListResponseBodySchema = z
-  .object({
-    data: z.array(WorkspaceMemberResponseSchema),
-  })
-  .strip();
-
-export const TeamMemberResponseSchema = z
-  .object({
-    joined_at: z.string().datetime({ offset: true }),
-    owner: z.boolean(),
-    user: UserSummarySchema,
-  })
-  .strip();
-
-export const MemberListResponseBody1Schema = z
-  .object({
-    data: z.array(TeamMemberResponseSchema),
-  })
-  .strip();
-
-export const MemberResponseBodySchema = z
-  .object({
-    data: WorkspaceMemberResponseSchema,
-  })
-  .strip();
-
-export const MemberResponseBody1Schema = z
-  .object({
-    data: TeamMemberResponseSchema,
-  })
-  .strip();
-
 export const MilestoneResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
@@ -1986,9 +1966,21 @@ export const ProjectResponseBodySchema = z
   })
   .strip();
 
+export const ProjectUpdateListResponseBodySchema = z
+  .object({
+    data: z.array(ProjectUpdateResponseSchema),
+  })
+  .strip();
+
 export const ProjectUpdateRefInputSchema = z
   .object({
     update_id: z.string(), // The project update to delete
+  })
+  .strip();
+
+export const ProjectUpdateResponseBodySchema = z
+  .object({
+    data: ProjectUpdateResponseSchema,
   })
   .strip();
 
@@ -2041,7 +2033,7 @@ export const RemoveTeamMemberInputSchema = z
 
 export const ReorderFavoritesInputSchema = z
   .object({
-    favorite_ids: z.array(z.string()).nullable(), // Favorite ids (not entity ids) in the new order, first on top
+    favorite_ids: z.array(z.string()), // Favorite ids (not entity ids) in the new order, first on top
     workspace_id: z.string(), // The workspace
   })
   .strip();
@@ -2222,6 +2214,26 @@ export const TeamListResponseBodySchema = z
   })
   .strip();
 
+export const TeamMemberResponseSchema = z
+  .object({
+    joined_at: z.string().datetime({ offset: true }),
+    owner: z.boolean(),
+    user: UserSummarySchema,
+  })
+  .strip();
+
+export const TeamMemberListResponseBodySchema = z
+  .object({
+    data: z.array(TeamMemberResponseSchema),
+  })
+  .strip();
+
+export const TeamMemberResponseBodySchema = z
+  .object({
+    data: TeamMemberResponseSchema,
+  })
+  .strip();
+
 export const TeamResponseBodySchema = z
   .object({
     data: TeamResponseSchema,
@@ -2344,18 +2356,6 @@ export const UpdateLabelInputSchema = z
   })
   .strip();
 
-export const UpdateListResponseBodySchema = z
-  .object({
-    data: z.array(ProjectUpdateResponseSchema),
-  })
-  .strip();
-
-export const UpdateListResponseBody1Schema = z
-  .object({
-    data: z.array(InitiativeUpdateResponseSchema),
-  })
-  .strip();
-
 export const UpdateMeInputSchema = z
   .object({
     avatar_upload_id: z.string().optional(), // An image you uploaded. Send 00000000-0000-0000-0000-000000000000 to remove the avatar.
@@ -2434,18 +2434,6 @@ export const UpdateProjectStatusInputSchema = z
     name: z.string().optional(), // New name
     position: z.number().optional(), // Order within its type
     status_id: z.string(), // The project status to change
-  })
-  .strip();
-
-export const UpdateResponseBodySchema = z
-  .object({
-    data: ProjectUpdateResponseSchema,
-  })
-  .strip();
-
-export const UpdateResponseBody1Schema = z
-  .object({
-    data: InitiativeUpdateResponseSchema,
   })
   .strip();
 
@@ -2618,7 +2606,16 @@ export const WebhookCreatedResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     enabled: z.boolean(),
-    events: z.array(z.string()),
+    events: z.array(
+      z.enum([
+        'issue.created',
+        'issue.updated',
+        'issue.deleted',
+        'comment.created',
+        'project.updated',
+        'cycle.updated',
+      ]),
+    ),
     id: z.string(),
     label: z.string(),
     secret: z.string(), // Signing secret for X-Zigzag-Signature. Returned only here, store it now
@@ -2639,7 +2636,16 @@ export const WebhookResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     enabled: z.boolean(),
-    events: z.array(z.string()),
+    events: z.array(
+      z.enum([
+        'issue.created',
+        'issue.updated',
+        'issue.deleted',
+        'comment.created',
+        'project.updated',
+        'cycle.updated',
+      ]),
+    ),
     id: z.string(),
     label: z.string(),
     team_id: z.string().nullable(), // Only events of this team are sent; null for the whole workspace
@@ -2719,6 +2725,18 @@ export const WhoamiResponseBodySchema = z
 export const WorkspaceListResponseBodySchema = z
   .object({
     data: z.array(WorkspaceResponseSchema),
+  })
+  .strip();
+
+export const WorkspaceMemberListResponseBodySchema = z
+  .object({
+    data: z.array(WorkspaceMemberResponseSchema),
+  })
+  .strip();
+
+export const WorkspaceMemberResponseBodySchema = z
+  .object({
+    data: WorkspaceMemberResponseSchema,
   })
   .strip();
 
@@ -2873,8 +2891,12 @@ export type InitiativeListResponseBody = z.infer<typeof InitiativeListResponseBo
 export type InitiativeProjectInput = z.infer<typeof InitiativeProjectInputSchema>;
 export type InitiativeRefInput = z.infer<typeof InitiativeRefInputSchema>;
 export type InitiativeResponseBody = z.infer<typeof InitiativeResponseBodySchema>;
-export type InitiativeUpdateRefInput = z.infer<typeof InitiativeUpdateRefInputSchema>;
 export type InitiativeUpdateResponse = z.infer<typeof InitiativeUpdateResponseSchema>;
+export type InitiativeUpdateListResponseBody = z.infer<
+  typeof InitiativeUpdateListResponseBodySchema
+>;
+export type InitiativeUpdateRefInput = z.infer<typeof InitiativeUpdateRefInputSchema>;
+export type InitiativeUpdateResponseBody = z.infer<typeof InitiativeUpdateResponseBodySchema>;
 export type InvitationListResponseBody = z.infer<typeof InvitationListResponseBodySchema>;
 export type InvitationRefInput = z.infer<typeof InvitationRefInputSchema>;
 export type InvitationResponseBody = z.infer<typeof InvitationResponseBodySchema>;
@@ -2906,11 +2928,6 @@ export type ListResponseBody = z.infer<typeof ListResponseBodySchema>;
 export type ListUsersResponseBody = z.infer<typeof ListUsersResponseBodySchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type MarkAllReadInput = z.infer<typeof MarkAllReadInputSchema>;
-export type MemberListResponseBody = z.infer<typeof MemberListResponseBodySchema>;
-export type TeamMemberResponse = z.infer<typeof TeamMemberResponseSchema>;
-export type MemberListResponseBody1 = z.infer<typeof MemberListResponseBody1Schema>;
-export type MemberResponseBody = z.infer<typeof MemberResponseBodySchema>;
-export type MemberResponseBody1 = z.infer<typeof MemberResponseBody1Schema>;
 export type MilestoneResponse = z.infer<typeof MilestoneResponseSchema>;
 export type MilestoneListResponseBody = z.infer<typeof MilestoneListResponseBodySchema>;
 export type MilestoneRefInput = z.infer<typeof MilestoneRefInputSchema>;
@@ -2935,7 +2952,9 @@ export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type ProjectListResponseBody = z.infer<typeof ProjectListResponseBodySchema>;
 export type ProjectRefInput = z.infer<typeof ProjectRefInputSchema>;
 export type ProjectResponseBody = z.infer<typeof ProjectResponseBodySchema>;
+export type ProjectUpdateListResponseBody = z.infer<typeof ProjectUpdateListResponseBodySchema>;
 export type ProjectUpdateRefInput = z.infer<typeof ProjectUpdateRefInputSchema>;
+export type ProjectUpdateResponseBody = z.infer<typeof ProjectUpdateResponseBodySchema>;
 export type ReactionInput = z.infer<typeof ReactionInputSchema>;
 export type ReactionsResponseBody = z.infer<typeof ReactionsResponseBodySchema>;
 export type RedirectResponseBody = z.infer<typeof RedirectResponseBodySchema>;
@@ -2965,6 +2984,9 @@ export type SubscriptionInput = z.infer<typeof SubscriptionInputSchema>;
 export type SuccessResponseBody = z.infer<typeof SuccessResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type TeamListResponseBody = z.infer<typeof TeamListResponseBodySchema>;
+export type TeamMemberResponse = z.infer<typeof TeamMemberResponseSchema>;
+export type TeamMemberListResponseBody = z.infer<typeof TeamMemberListResponseBodySchema>;
+export type TeamMemberResponseBody = z.infer<typeof TeamMemberResponseBodySchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type TemplateResponse = z.infer<typeof TemplateResponseSchema>;
 export type TemplateListResponseBody = z.infer<typeof TemplateListResponseBodySchema>;
@@ -2976,8 +2998,6 @@ export type UpdateDocumentInput = z.infer<typeof UpdateDocumentInputSchema>;
 export type UpdateInitiativeInput = z.infer<typeof UpdateInitiativeInputSchema>;
 export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
 export type UpdateLabelInput = z.infer<typeof UpdateLabelInputSchema>;
-export type UpdateListResponseBody = z.infer<typeof UpdateListResponseBodySchema>;
-export type UpdateListResponseBody1 = z.infer<typeof UpdateListResponseBody1Schema>;
 export type UpdateMeInput = z.infer<typeof UpdateMeInputSchema>;
 export type UpdateMemberInput = z.infer<typeof UpdateMemberInputSchema>;
 export type UpdateMilestoneInput = z.infer<typeof UpdateMilestoneInputSchema>;
@@ -2985,8 +3005,6 @@ export type UpdateNotificationSettingsInput = z.infer<typeof UpdateNotificationS
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectLinkInput = z.infer<typeof UpdateProjectLinkInputSchema>;
 export type UpdateProjectStatusInput = z.infer<typeof UpdateProjectStatusInputSchema>;
-export type UpdateResponseBody = z.infer<typeof UpdateResponseBodySchema>;
-export type UpdateResponseBody1 = z.infer<typeof UpdateResponseBody1Schema>;
 export type UpdateSettingsInput = z.infer<typeof UpdateSettingsInputSchema>;
 export type UpdateStateInput = z.infer<typeof UpdateStateInputSchema>;
 export type UpdateTeamInput = z.infer<typeof UpdateTeamInputSchema>;
@@ -3014,6 +3032,8 @@ export type WorkspaceMembership = z.infer<typeof WorkspaceMembershipSchema>;
 export type WhoamiResponse = z.infer<typeof WhoamiResponseSchema>;
 export type WhoamiResponseBody = z.infer<typeof WhoamiResponseBodySchema>;
 export type WorkspaceListResponseBody = z.infer<typeof WorkspaceListResponseBodySchema>;
+export type WorkspaceMemberListResponseBody = z.infer<typeof WorkspaceMemberListResponseBodySchema>;
+export type WorkspaceMemberResponseBody = z.infer<typeof WorkspaceMemberResponseBodySchema>;
 export type WorkspaceResponseBody = z.infer<typeof WorkspaceResponseBodySchema>;
 
 export const list_api_keysQuerySchema = z
@@ -5330,7 +5350,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         create: async (
           params: CreateInitiativeUpdateInput,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateResponseBody1> => {
+        ): Promise<InitiativeUpdateResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -5355,7 +5375,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = UpdateResponseBody1Schema.safeParse(data);
+            const { data: parsedData, error } = InitiativeUpdateResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -5414,7 +5434,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         list: async (
           params: z.infer<typeof list_initiative_updatesQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateListResponseBody1> => {
+        ): Promise<InitiativeUpdateListResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -5445,7 +5465,8 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = UpdateListResponseBody1Schema.safeParse(data);
+            const { data: parsedData, error } =
+              InitiativeUpdateListResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -8255,7 +8276,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         create: async (
           params: CreateProjectUpdateInput,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateResponseBody> => {
+        ): Promise<ProjectUpdateResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -8280,7 +8301,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = UpdateResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } = ProjectUpdateResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -8339,7 +8360,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         list: async (
           params: z.infer<typeof list_project_updatesQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateListResponseBody> => {
+        ): Promise<ProjectUpdateListResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -8370,7 +8391,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = UpdateListResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } = ProjectUpdateListResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -8387,7 +8408,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         update: async (
           params: EditProjectUpdateInput,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateResponseBody> => {
+        ): Promise<ProjectUpdateResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -8412,7 +8433,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = UpdateResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } = ProjectUpdateResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -9000,7 +9021,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         add: async (
           params: AddTeamMemberInput,
           fetchOptions?: RequestInit,
-        ): Promise<MemberResponseBody1> => {
+        ): Promise<TeamMemberResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -9025,7 +9046,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = MemberResponseBody1Schema.safeParse(data);
+            const { data: parsedData, error } = TeamMemberResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -9042,7 +9063,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         list: async (
           params: z.infer<typeof list_team_membersQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<MemberListResponseBody1> => {
+        ): Promise<TeamMemberListResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -9073,7 +9094,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = MemberListResponseBody1Schema.safeParse(data);
+            const { data: parsedData, error } = TeamMemberListResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -10873,7 +10894,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         list: async (
           params: z.infer<typeof list_workspace_membersQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<MemberListResponseBody> => {
+        ): Promise<WorkspaceMemberListResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -10904,7 +10925,8 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = MemberListResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } =
+              WorkspaceMemberListResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -10963,7 +10985,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         update: async (
           params: UpdateMemberInput,
           fetchOptions?: RequestInit,
-        ): Promise<MemberResponseBody> => {
+        ): Promise<WorkspaceMemberResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -10988,7 +11010,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = MemberResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } = WorkspaceMemberResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

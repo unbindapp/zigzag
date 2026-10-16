@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { TargetIcon } from "lucide-react";
 
-import { AutosaveMarkdown } from "@/components/projects/autosave-markdown";
-import { InlineText } from "@/components/projects/inline-text";
+import { AutosaveMarkdown } from "@/components/shared/autosave-markdown";
+import { InlineText } from "@/components/shared/inline-text";
 import { LifecycleBanner } from "@/components/documents/lifecycle-banner";
 import { ProjectDocuments } from "@/components/documents/project-documents";
 import {
@@ -13,7 +13,6 @@ import { InitiativeProjects } from "@/components/initiatives/initiative-projects
 import { InitiativeProperties } from "@/components/initiatives/initiative-properties";
 import { InitiativeUpdates } from "@/components/initiatives/initiative-updates";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
-import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { IconPicker } from "@/components/shared/icon-picker";
@@ -25,6 +24,7 @@ import {
   type TInitiative,
   useUpdateInitiativeMutation,
 } from "@/lib/queries/initiatives";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export function InitiativeDetail({ slug }: { slug: string }) {
   const { workspace } = useWorkspace();
@@ -33,10 +33,9 @@ export function InitiativeDetail({ slug }: { slug: string }) {
   if (error) {
     if (isApiError(error, 404)) {
       return (
-        <EmptyState
-          icon={TargetIcon}
-          title="Initiative not found"
-          description="It was deleted, or you cannot see it."
+        <EntityNotFound
+          Icon={TargetIcon}
+          description="Initiative not found. It was deleted, or you cannot see it."
         />
       );
     }
@@ -98,7 +97,7 @@ function InitiativeDetailContent({ initiative }: { initiative: TInitiative }) {
             <AutosaveMarkdown
               key={initiative.id}
               label="Description"
-              placeholder="Describe the initiative…"
+              placeholder="Add a description…"
               initialValue={initiative.description}
               readOnly={!canEdit}
               onSave={(description) => updateAsync({ initiative_id: initiative.id, description })}

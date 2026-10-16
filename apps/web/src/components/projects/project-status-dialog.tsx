@@ -19,15 +19,10 @@ import {
   useCreateProjectStatusMutation,
   useUpdateProjectStatusMutation,
 } from "@/lib/queries/projects";
+import { DEFAULT_PROJECT_STATUS_COLORS } from "@/lib/helpers/colors";
 
-export const defaultProjectStatusColors: Record<TProjectStatusType, string> = {
-  backlog: "#95a2b3",
-  planned: "#e2e2e2",
-  started: "#f2c94c",
-  paused: "#f2994a",
-  completed: "#5e6ad2",
-  canceled: "#95a2b3",
-};
+export const defaultProjectStatusColors: Record<TProjectStatusType, string> =
+  DEFAULT_PROJECT_STATUS_COLORS;
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(64, "Keep the name under 64 characters."),

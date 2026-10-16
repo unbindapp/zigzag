@@ -67,7 +67,7 @@ function SystemUsersSettingsPage() {
           error={error}
           onRetry={refetch}
           isEmpty={users.length === 0}
-          empty={{ icon: UsersIcon, title: query ? "No matching users" : "No users" }}
+          empty={{ icon: UsersIcon, title: query ? "No matching users" : "No users yet" }}
         >
           <List>
             {users.map((user) => (

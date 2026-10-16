@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { BoxIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
 import { PropertyPicker, type TPickerOption } from "@/components/issues/property-picker";
-import { EmptyState } from "@/components/layout/empty-state";
 import { SectionTitle } from "@/components/layout/section-title";
 import { ProjectList } from "@/components/projects/project-list";
 import { ProjectIcon } from "@/components/shared/project-icon";
@@ -26,13 +25,7 @@ export function InitiativeProjects({ initiative }: { initiative: TInitiative }) 
       <ProjectList
         workspaceId={workspace.id}
         filters={{ initiative_id: initiative.id }}
-        emptyState={
-          <EmptyState
-            icon={BoxIcon}
-            title="No projects yet"
-            description="Add the projects that move this initiative forward."
-          />
-        }
+        emptyState={null}
       />
     </section>
   );

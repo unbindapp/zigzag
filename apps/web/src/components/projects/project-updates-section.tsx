@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MegaphoneIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
@@ -31,7 +31,7 @@ export function ProjectUpdatesSection({ project }: { project: TProject }) {
 
   return (
     <section aria-label="Updates" className="flex w-full flex-col gap-4">
-      <SectionTitle title="Updates" description="Status updates with the project's health." />
+      <SectionTitle title="Updates" />
       {canEdit && (
         <StatusUpdateComposer
           users={users}
@@ -43,11 +43,7 @@ export function ProjectUpdatesSection({ project }: { project: TProject }) {
         error={error}
         isEmpty={updates.length === 0}
         onRetry={() => void refetch()}
-        empty={{
-          icon: MegaphoneIcon,
-          title: "No updates yet",
-          description: "Post an update to share progress and set the project's health.",
-        }}
+        empty={null}
       >
         <div className="flex flex-col gap-3">
           {updates.map((update) => (

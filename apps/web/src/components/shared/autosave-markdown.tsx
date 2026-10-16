@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { useUploadImage } from "@/components/issues/comment-thread";
 import { useWorkspaceUsers } from "@/components/issues/picker-sources";
@@ -14,7 +14,6 @@ type TProps = {
 
 export function AutosaveMarkdown({ initialValue, label, placeholder, readOnly, onSave }: TProps) {
   const [value] = useState(initialValue);
-  const savedRef = useRef(initialValue);
   const { users } = useWorkspaceUsers();
   const uploadImage = useUploadImage();
   return (
@@ -25,13 +24,7 @@ export function AutosaveMarkdown({ initialValue, label, placeholder, readOnly, o
       readOnly={readOnly}
       users={users}
       onUploadImage={uploadImage}
-      autosave={{
-        onSave: async (markdown) => {
-          if (markdown === savedRef.current) return;
-          await onSave(markdown);
-          savedRef.current = markdown;
-        },
-      }}
+      autosave={{ onSave }}
     />
   );
 }

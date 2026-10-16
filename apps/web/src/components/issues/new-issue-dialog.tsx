@@ -1,4 +1,3 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
@@ -20,6 +19,7 @@ import {
 } from "@/components/issues/picker-sources";
 import { PropertyPicker } from "@/components/issues/property-picker";
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 import { TeamIcon } from "@/components/shared/team-icon";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
@@ -29,9 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast";
 import { useTeams } from "@/components/workspace/teams-provider";
 import { useTeamFromRoute } from "@/components/workspace/use-team-from-route";
-import { useCreateIssueMutation } from "@/lib/queries/issues";
-
-const TITLE_MAX_LENGTH = 255;
+import { ISSUE_TITLE_MAX_LENGTH, useCreateIssueMutation } from "@/lib/queries/issues";
 
 export function NewIssueDialog() {
   const isOpen = useNewIssueStore((state) => state.isOpen);
@@ -152,7 +150,9 @@ function NewIssueForm({ defaults, onClose }: { defaults: TNewIssueDefaults; onCl
     setFormKey((key) => key + 1);
   };
 
-  useHotkey("Mod+Enter", () => void submit(), { ignoreInputs: false, conflictBehavior: "allow" });
+  useHotkeyScope([{ hotkey: "Mod+Enter", callback: () => void submit(), ignoreInputs: false }], {
+    modal: true,
+  });
 
   const changeTeam = (nextTeamId: string) => {
     if (nextTeamId === teamId) return;
@@ -203,7 +203,7 @@ function NewIssueForm({ defaults, onClose }: { defaults: TNewIssueDefaults; onCl
         framed
         aria-label="Issue title"
         placeholder="Issue title"
-        maxLength={TITLE_MAX_LENGTH}
+        maxLength={ISSUE_TITLE_MAX_LENGTH}
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         className="px-0 text-base font-medium"
@@ -213,7 +213,7 @@ function NewIssueForm({ defaults, onClose }: { defaults: TNewIssueDefaults; onCl
         label="Description"
         value={description}
         onChange={setDescription}
-        placeholder="Add description…"
+        placeholder="Add a description…"
         users={users}
         onUploadImage={uploadImage}
       />

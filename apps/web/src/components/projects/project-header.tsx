@@ -1,22 +1,19 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ArchiveIcon,
-  ArchiveRestoreIcon,
-  LinkIcon,
-  Trash2Icon,
-  UndoIcon,
-  XIcon,
-} from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { Button } from "@/components/ui/button";
+import {
+  ArchiveAction,
+  CopyLinkAction,
+  DeleteMenuAction,
+  HeaderActions,
+  TrashAction,
+} from "@/components/shared/detail-actions";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toast";
-import { SimpleTooltip } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
-import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import {
   type TProject,
   type TProjectLifecycleAction,
@@ -24,32 +21,6 @@ import {
 } from "@/lib/queries/projects";
 
 export type TProjectTab = "overview" | "issues";
-
-function HeaderAction({
-  label,
-  onClick,
-  isPending,
-  children,
-}: {
-  label: string;
-  onClick?: () => void;
-  isPending?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <SimpleTooltip content={label}>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={label}
-        isPending={isPending}
-        onClick={onClick}
-      >
-        {children}
-      </Button>
-    </SimpleTooltip>
-  );
-}
 
 const lifecycleToasts: Record<Exclude<TProjectLifecycleAction, "delete">, string> = {
   archive: "Project archived",
@@ -61,7 +32,6 @@ const lifecycleToasts: Record<Exclude<TProjectLifecycleAction, "delete">, string
 export function ProjectActions({ project }: { project: TProject }) {
   const { workspace, canEdit, isAdmin } = useWorkspace();
   const navigate = useNavigate();
-  const { copyToClipboard } = useCopyToClipboard();
   const { mutateAsync: change, isPending } = useProjectLifecycleMutation();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -71,53 +41,34 @@ export function ProjectActions({ project }: { project: TProject }) {
   };
 
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <HeaderActions>
       <FavoriteButton kind="project" entityId={project.id} />
-      <HeaderAction
-        label="Copy link"
-        onClick={() => {
-          copyToClipboard(window.location.href.replace(/\/issues$/, ""));
-          toast.add({ type: "success", title: "Link copied" });
-        }}
-      >
-        <LinkIcon className="size-4" />
-      </HeaderAction>
+      <CopyLinkAction url={window.location.href.replace(/\/issues$/, "")} />
       {canEdit && (
-        <HeaderAction
-          label={project.archived_at ? "Unarchive" : "Archive"}
+        <ArchiveAction
+          isOn={Boolean(project.archived_at)}
           isPending={isPending}
-          onClick={() =>
+          onToggle={() =>
             void run(project.archived_at ? "unarchive" : "archive").catch(() => undefined)
           }
-        >
-          {project.archived_at ? (
-            <ArchiveRestoreIcon className="size-4" />
-          ) : (
-            <ArchiveIcon className="size-4" />
-          )}
-        </HeaderAction>
+        />
       )}
       {canEdit && (
-        <HeaderAction
-          label={project.trashed_at ? "Restore from trash" : "Move to trash"}
+        <TrashAction
+          isOn={Boolean(project.trashed_at)}
           isPending={isPending}
-          onClick={() => void run(project.trashed_at ? "restore" : "trash").catch(() => undefined)}
-        >
-          {project.trashed_at ? <UndoIcon className="size-4" /> : <Trash2Icon className="size-4" />}
-        </HeaderAction>
+          onToggle={() => void run(project.trashed_at ? "restore" : "trash").catch(() => undefined)}
+        />
       )}
       {isAdmin && (
         <>
-          <HeaderAction label="Delete project" onClick={() => setIsDeleteOpen(true)}>
-            <XIcon className="size-4" />
-          </HeaderAction>
+          <DeleteMenuAction label="Delete project" onSelect={() => setIsDeleteOpen(true)} />
           <ConfirmDialog
             open={isDeleteOpen}
             onOpenChange={setIsDeleteOpen}
             title={`Delete ${project.name}`}
             description="Milestones, updates, links and documents of this project are deleted. Its issues stay and lose the project."
             confirmLabel="Delete project"
-            confirmText={project.name}
             onConfirm={async () => {
               await change({ projectId: project.id, action: "delete" });
               toast.add({ type: "success", title: "Project deleted" });
@@ -126,7 +77,7 @@ export function ProjectActions({ project }: { project: TProject }) {
           />
         </>
       )}
-    </div>
+    </HeaderActions>
   );
 }
 
@@ -155,6 +106,21 @@ export function ProjectTabs({ project, tab }: { project: TProject; tab: TProject
         </TabsTab>
       </TabsList>
     </Tabs>
+  );
+}
+
+export function ProjectHeaderBar({ project, tab }: { project: TProject; tab: TProjectTab }) {
+  const { workspace } = useWorkspace();
+  return (
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex w-full min-w-0 items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <Breadcrumb items={projectBreadcrumb(workspace.slug, project)} />
+        </div>
+        <ProjectActions project={project} />
+      </div>
+      <ProjectTabs project={project} tab={tab} />
+    </div>
   );
 }
 

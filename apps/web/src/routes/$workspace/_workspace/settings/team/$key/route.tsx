@@ -20,6 +20,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { SettingsLayout, type TSettingsTab } from "@/components/layout/settings-layout";
 import { useTeams } from "@/components/workspace/teams-provider";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export const Route = createFileRoute("/$workspace/_workspace/settings/team/$key")({
   component: TeamSettingsLayout,
@@ -59,7 +60,10 @@ function TeamSettingsLayout() {
   if (!team) {
     return (
       <PageContainer width="narrow">
-        <EmptyState icon={UsersIcon} title="Team not found" />
+        <EntityNotFound
+          Icon={UsersIcon}
+          description="There is no team with this key in this workspace."
+        />
       </PageContainer>
     );
   }

@@ -15,8 +15,13 @@ export const Route = createFileRoute("/$workspace/_workspace/documents")({
 function DocumentsPage() {
   const { workspace, canEdit } = useWorkspace();
   const { create, isPending } = useCreateDocument();
-  const newDocumentButton = (size: "sm" | "default") => (
-    <Button size={size} isPending={isPending} onClick={() => create()}>
+  const newDocumentButton = (placement: "header" | "empty") => (
+    <Button
+      size={placement === "header" ? "default" : "sm"}
+      variant={placement === "header" ? "default" : "outline"}
+      isPending={isPending}
+      onClick={() => create()}
+    >
       <PlusIcon className="size-4" />
       New document
     </Button>
@@ -26,12 +31,12 @@ function DocumentsPage() {
       <PageHeader
         title="Documents"
         icon={<FileTextIcon />}
-        actions={canEdit && newDocumentButton("default")}
+        actions={canEdit && newDocumentButton("header")}
       />
       <DocumentList
         workspaceId={workspace.id}
         emptyDescription="Write specs, notes and decisions next to the work they describe."
-        emptyAction={canEdit && newDocumentButton("sm")}
+        emptyAction={canEdit && newDocumentButton("empty")}
       />
     </PageContainer>
   );

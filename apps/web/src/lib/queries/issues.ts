@@ -33,13 +33,14 @@ export type TLabelSummary = TIssue["labels"][number];
 export type TOrderBy = NonNullable<TListIssuesInput["order_by"]>;
 export type TGroupBy = NonNullable<TListIssuesInput["group_by"]>;
 
+export const ISSUE_TITLE_MAX_LENGTH = 255;
 export const CLEAR_UUID = "00000000-0000-0000-0000-000000000000";
 export const CLEAR_DATE = "";
 export const CLEAR_ESTIMATE = -1;
 
 const LIST_PAGE_SIZE = 100;
 const SEARCH_LIMIT = 8;
-const HISTORY_LIMIT = 250;
+const HISTORY_PAGE_SIZE = 100;
 export const LIST_REFETCH_INTERVAL_MS = 15 * 1000;
 
 function issuesApi() {
@@ -51,12 +52,15 @@ export const queryKeyIssues = {
   lists: () => ["issues", "list"] as const,
   list: (input: TListIssuesInput) => ["issues", "list", input] as const,
   details: () => ["issues", "detail"] as const,
-  detail: (identifier: string) => ["issues", "detail", identifier.toUpperCase()] as const,
+  detail: (workspaceId: string, identifier: string) =>
+    ["issues", "detail", workspaceId, identifier.toUpperCase()] as const,
   history: (issueId: string) => ["issues", "history", issueId] as const,
   search: (workspaceId: string, query: string) => ["issues", "search", workspaceId, query] as const,
 };
 
 const queryKeyNotificationCounts = () => ["notifications", "counts"] as const;
+const queryKeyProjects = () => ["projects"] as const;
+const queryKeyCycles = () => ["cycles"] as const;
 
 export const issuesListQuery = (input: TListIssuesInput) =>
   infiniteQueryOptions({
@@ -72,7 +76,7 @@ export const issuesListQuery = (input: TListIssuesInput) =>
 
 export const issueQuery = (workspaceId: string, identifier: string) =>
   queryOptions({
-    queryKey: queryKeyIssues.detail(identifier),
+    queryKey: queryKeyIssues.detail(workspaceId, identifier),
     queryFn: async () => {
       const res = await issuesApi().get({
         workspace_id: workspaceId,
@@ -83,12 +87,18 @@ export const issueQuery = (workspaceId: string, identifier: string) =>
   });
 
 export const issueHistoryQuery = (issueId: string) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: queryKeyIssues.history(issueId),
-    queryFn: async () => {
-      const res = await issuesApi().history.list({ issue_id: issueId, limit: HISTORY_LIMIT });
-      return { history: res.data ?? [] };
+    queryFn: async ({ pageParam }) => {
+      const res = await issuesApi().history.list({
+        issue_id: issueId,
+        limit: HISTORY_PAGE_SIZE,
+        cursor: pageParam,
+      });
+      return { data: res.data ?? [], next_cursor: res.next_cursor ?? null };
     },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
   });
 
 export const searchIssuesQuery = (workspaceId: string, query: string) =>
@@ -208,6 +218,8 @@ export function invalidateIssues(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: queryKeyIssues.all() }),
     queryClient.invalidateQueries({ queryKey: queryKeyNotificationCounts() }),
+    queryClient.invalidateQueries({ queryKey: queryKeyProjects() }),
+    queryClient.invalidateQueries({ queryKey: queryKeyCycles() }),
   ]);
 }
 
@@ -239,10 +251,24 @@ function patchIssueCaches(queryClient: QueryClient, patches: TIssuePatch[]) {
   );
 }
 
-async function optimisticallyPatch(queryClient: QueryClient, patches: TIssuePatch[]) {
-  if (patches.length === 0) return;
+type TIssueCacheSnapshot = [readonly unknown[], unknown][];
+
+async function optimisticallyPatch(
+  queryClient: QueryClient,
+  patches: TIssuePatch[],
+): Promise<TIssueCacheSnapshot> {
+  if (patches.length === 0) return [];
   await queryClient.cancelQueries({ queryKey: queryKeyIssues.all() });
+  const snapshot: TIssueCacheSnapshot = [
+    ...queryClient.getQueriesData({ queryKey: queryKeyIssues.lists() }),
+    ...queryClient.getQueriesData({ queryKey: queryKeyIssues.details() }),
+  ];
   patchIssueCaches(queryClient, patches);
+  return snapshot;
+}
+
+function restoreIssueCaches(queryClient: QueryClient, snapshot: TIssueCacheSnapshot | undefined) {
+  snapshot?.forEach(([queryKey, data]) => queryClient.setQueryData(queryKey, data));
 }
 
 export type TUpdateIssueVariables = { input: TUpdateIssueInput; optimistic?: Partial<TIssue> };
@@ -266,6 +292,7 @@ export function useUpdateIssueMutation() {
         queryClient,
         variables.optimistic ? [{ id: variables.input.issue_id, patch: variables.optimistic }] : [],
       ),
+    onError: (_error, _variables, snapshot) => restoreIssueCaches(queryClient, snapshot),
     onSettled: () => invalidateIssues(queryClient),
   });
 }
@@ -287,6 +314,7 @@ export function useBulkUpdateIssuesMutation() {
         patch ? (variables.input.issue_ids ?? []).map((id) => ({ id, patch })) : [],
       );
     },
+    onError: (_error, _variables, snapshot) => restoreIssueCaches(queryClient, snapshot),
     onSettled: () => invalidateIssues(queryClient),
   });
 }

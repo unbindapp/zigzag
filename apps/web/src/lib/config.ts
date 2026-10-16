@@ -13,18 +13,15 @@ export async function loadConfig(): Promise<AppConfig> {
     config = { apiUrl: "/api/go" };
     return config;
   }
-  try {
-    const res = await fetch("/config.json", { cache: "no-cache" });
-    if (res.ok) {
-      const json = (await res.json()) as Partial<AppConfig>;
-      config = { ...fallbackConfig, ...json };
-      return config;
-    }
-  } catch {
-    // fall through to the build-time fallback
-  }
-  config = fallbackConfig;
+  const served = await fetchServedConfig().catch(() => null);
+  config = { ...fallbackConfig, ...served };
   return config;
+}
+
+async function fetchServedConfig(): Promise<Partial<AppConfig> | null> {
+  const res = await fetch("/config.json", { cache: "no-cache" });
+  if (!res.ok) return null;
+  return (await res.json()) as Partial<AppConfig>;
 }
 
 export function getConfig(): AppConfig {

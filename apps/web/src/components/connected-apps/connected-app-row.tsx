@@ -38,7 +38,7 @@ export function ConnectedAppRow({ app }: { app: TConnectedApp }) {
             }
             title="Revoke access"
             description={`${app.client_name} loses access immediately and has to be authorized again.`}
-            confirmLabel="Revoke"
+            confirmLabel="Revoke access"
             onConfirm={() => revoke({ id: app.id })}
           />
         </>

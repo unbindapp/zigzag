@@ -1,19 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { zodValidator } from "@tanstack/zod-adapter";
 
-import type { ListIssuesFilters } from "@/components/issues/filters";
+import { filtersFromSearch, filtersToSearch, issueSearchSchema } from "@/components/issues/filters";
 import { IssuesView } from "@/components/issues/issues-view";
-import {
-  ProjectActions,
-  projectBreadcrumb,
-  ProjectTabs,
-} from "@/components/projects/project-header";
+import { ProjectHeaderBar } from "@/components/projects/project-header";
 import { ProjectLoader } from "@/components/projects/project-page";
 import { ProjectIcon } from "@/components/shared/project-icon";
-import { useWorkspace } from "@/components/workspace/workspace-provider";
 import type { TProject } from "@/lib/queries/projects";
 
 export const Route = createFileRoute("/$workspace/_workspace/project/$slug/issues")({
+  validateSearch: zodValidator(issueSearchSchema),
   component: ProjectSlugIssuesPage,
 });
 
@@ -25,26 +21,20 @@ function ProjectSlugIssuesPage() {
 }
 
 function ProjectIssues({ project }: { project: TProject }) {
-  const { workspace } = useWorkspace();
-  const [filters, setFilters] = useState<ListIssuesFilters>({});
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   return (
     <IssuesView
       title={project.name}
       icon={<ProjectIcon icon={project.icon} color={project.color} size="lg" />}
-      breadcrumb={projectBreadcrumb(workspace.slug, project)}
+      header={<ProjectHeaderBar project={project} tab="issues" />}
       storageKey={`project:${project.id}`}
-      filters={filters}
-      onFiltersChange={setFilters}
+      filters={filtersFromSearch(search)}
+      onFiltersChange={(filters) =>
+        void navigate({ search: (prev) => ({ ...prev, ...filtersToSearch(filters) }) })
+      }
       fixedFilters={{ project_ids: [project.id] }}
       hiddenFilterFields={["project"]}
-      tabs={
-        <div className="flex w-full items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <ProjectTabs project={project} tab="issues" />
-          </div>
-          <ProjectActions project={project} />
-        </div>
-      }
     />
   );
 }

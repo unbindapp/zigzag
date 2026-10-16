@@ -40,7 +40,6 @@ function Drawer({
   }, [props.open]);
 
   const handleOpenChange: DrawerPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
-    // A press on a toast or the staged changes bar is not dismissing the drawer
     if (!open && eventDetails.reason === "outside-press") {
       if (pressStartedInExemptElement(eventDetails.event)) {
         eventDetails.cancel();

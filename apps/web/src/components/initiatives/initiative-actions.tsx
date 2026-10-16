@@ -1,11 +1,15 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArchiveIcon, ArchiveRestoreIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { Button } from "@/components/ui/button";
+import {
+  ArchiveAction,
+  CopyLinkAction,
+  DeleteMenuAction,
+  HeaderActions,
+} from "@/components/shared/detail-actions";
 import { toast } from "@/components/ui/toast";
-import { SimpleTooltip } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import {
   type TInitiative,
@@ -32,7 +36,7 @@ export function InitiativeActions({ initiative }: { initiative: TInitiative }) {
   const { workspace, canEdit, isAdmin } = useWorkspace();
   const navigate = useNavigate();
   const lifecycle = useInitiativeLifecycle();
-  const archiveLabel = initiative.archived_at ? "Unarchive" : "Archive";
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const deleteInitiative = async () => {
     await lifecycle.run(initiative.id, "delete");
@@ -40,42 +44,33 @@ export function InitiativeActions({ initiative }: { initiative: TInitiative }) {
   };
 
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <HeaderActions>
       <FavoriteButton kind="initiative" entityId={initiative.id} />
+      <CopyLinkAction url={window.location.href} />
       {canEdit && (
-        <SimpleTooltip content={archiveLabel}>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={archiveLabel}
-            isPending={lifecycle.isPending}
-            onClick={() =>
-              void lifecycle
-                .run(initiative.id, initiative.archived_at ? "unarchive" : "archive")
-                .catch(() => undefined)
-            }
-          >
-            {initiative.archived_at ? (
-              <ArchiveRestoreIcon className="size-4" />
-            ) : (
-              <ArchiveIcon className="size-4" />
-            )}
-          </Button>
-        </SimpleTooltip>
-      )}
-      {isAdmin && (
-        <ConfirmDialog
-          trigger={
-            <Button variant="ghost" size="icon" aria-label="Delete initiative">
-              <Trash2Icon className="size-4" />
-            </Button>
+        <ArchiveAction
+          isOn={Boolean(initiative.archived_at)}
+          isPending={lifecycle.isPending}
+          onToggle={() =>
+            void lifecycle
+              .run(initiative.id, initiative.archived_at ? "unarchive" : "archive")
+              .catch(() => undefined)
           }
-          title="Delete initiative"
-          description={`"${initiative.name}" is deleted for everyone. Its projects stay, without this initiative.`}
-          confirmLabel="Delete"
-          onConfirm={deleteInitiative}
         />
       )}
-    </div>
+      {isAdmin && (
+        <>
+          <DeleteMenuAction label="Delete initiative" onSelect={() => setIsDeleting(true)} />
+          <ConfirmDialog
+            open={isDeleting}
+            onOpenChange={setIsDeleting}
+            title={`Delete ${initiative.name}`}
+            description="The initiative is deleted for everyone. Its projects stay, without this initiative."
+            confirmLabel="Delete initiative"
+            onConfirm={deleteInitiative}
+          />
+        </>
+      )}
+    </HeaderActions>
   );
 }

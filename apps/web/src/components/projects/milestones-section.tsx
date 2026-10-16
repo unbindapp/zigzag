@@ -1,6 +1,5 @@
 import { DiamondIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
-import { EmptyState } from "@/components/layout/empty-state";
 import { List } from "@/components/layout/list";
 import { SectionTitle } from "@/components/layout/section-title";
 import { MilestoneDialog } from "@/components/projects/milestone-dialog";
@@ -32,13 +31,7 @@ export function MilestonesSection({ project }: { project: TProject }) {
           )
         }
       />
-      {project.milestones.length === 0 ? (
-        <EmptyState
-          icon={DiamondIcon}
-          title="No milestones"
-          description="Split the project into stages and track each one's progress."
-        />
-      ) : (
+      {project.milestones.length > 0 && (
         <List>
           {project.milestones.map((milestone) => (
             <MilestoneRow key={milestone.id} milestone={milestone} canEdit={canEdit} />

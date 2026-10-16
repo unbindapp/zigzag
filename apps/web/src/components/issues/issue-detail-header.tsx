@@ -1,17 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import {
-  ArchiveIcon,
-  ArchiveRestoreIcon,
-  BellIcon,
-  BellOffIcon,
-  GitBranchIcon,
-  LinkIcon,
-  Maximize2Icon,
-  Trash2Icon,
-  UndoIcon,
-  XIcon,
-} from "lucide-react";
+import { BellIcon, BellOffIcon, GitBranchIcon, LinkIcon, Maximize2Icon, XIcon } from "lucide-react";
 
 import { type TIssueDetail, useIssueSubscriptionMutation } from "@/lib/queries/issues";
 import {
@@ -20,9 +8,14 @@ import {
   useOpenIssuePage,
 } from "@/components/issues/use-issue-actions";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
+import {
+  ArchiveAction,
+  HeaderAction,
+  HeaderActions,
+  TrashAction,
+} from "@/components/shared/detail-actions";
 import { TeamIcon } from "@/components/shared/team-icon";
-import { Button } from "@/components/ui/button";
-import { SimpleTooltip } from "@/components/ui/tooltip";
 import { useTeams } from "@/components/workspace/teams-provider";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { meQuery } from "@/lib/queries/me";
@@ -32,32 +25,6 @@ type TProps = {
   variant: "page" | "peek";
   onClose?: () => void;
 };
-
-function HeaderAction({
-  label,
-  onClick,
-  isPending,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  isPending?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <SimpleTooltip content={label}>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={label}
-        isPending={isPending}
-        onClick={onClick}
-      >
-        {children}
-      </Button>
-    </SimpleTooltip>
-  );
-}
 
 export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
   const { workspace, canEdit } = useWorkspace();
@@ -89,7 +56,8 @@ export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
           ]}
         />
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <HeaderActions>
+        <FavoriteButton kind="issue" entityId={issue.id} />
         <HeaderAction label="Copy link" onClick={() => copyLink(issue)}>
           <LinkIcon className="size-4" />
         </HeaderAction>
@@ -106,34 +74,26 @@ export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
           </HeaderAction>
         )}
         {canEdit && (
-          <HeaderAction
-            label={issue.archived_at ? "Unarchive" : "Archive"}
+          <ArchiveAction
+            isOn={Boolean(issue.archived_at)}
             isPending={lifecycle.isPending}
-            onClick={() =>
+            onToggle={() =>
               void lifecycle
                 .run([issue.id], issue.archived_at ? "unarchive" : "archive")
                 .catch(() => undefined)
             }
-          >
-            {issue.archived_at ? (
-              <ArchiveRestoreIcon className="size-4" />
-            ) : (
-              <ArchiveIcon className="size-4" />
-            )}
-          </HeaderAction>
+          />
         )}
         {canEdit && (
-          <HeaderAction
-            label={issue.trashed_at ? "Restore from trash" : "Move to trash"}
+          <TrashAction
+            isOn={Boolean(issue.trashed_at)}
             isPending={lifecycle.isPending}
-            onClick={() =>
+            onToggle={() =>
               void lifecycle
                 .run([issue.id], issue.trashed_at ? "restore" : "trash")
                 .catch(() => undefined)
             }
-          >
-            {issue.trashed_at ? <UndoIcon className="size-4" /> : <Trash2Icon className="size-4" />}
-          </HeaderAction>
+          />
         )}
         {variant === "peek" && (
           <HeaderAction label="Open full page" onClick={() => void openPage(issue.identifier)}>
@@ -145,7 +105,7 @@ export function IssueDetailHeader({ issue, variant, onClose }: TProps) {
             <XIcon className="size-4" />
           </HeaderAction>
         )}
-      </div>
+      </HeaderActions>
     </div>
   );
 }

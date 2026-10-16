@@ -234,7 +234,7 @@ function EmailActions() {
             }
             title="Remove email settings"
             description="Zigzag stops sending email. Invitation links can still be copied and shared by hand."
-            confirmLabel="Remove"
+            confirmLabel="Remove settings"
             onConfirm={() => clear()}
           />
           <Button

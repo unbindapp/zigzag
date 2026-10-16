@@ -1,38 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ArchiveIcon,
-  ArchiveRestoreIcon,
-  EllipsisIcon,
-  FileTextIcon,
-  TargetIcon,
-  Trash2Icon,
-  UndoIcon,
-  XIcon,
-} from "lucide-react";
+import { FileTextIcon, TargetIcon } from "lucide-react";
 import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorites/favorite-button";
-import { AutosaveMarkdown } from "@/components/projects/autosave-markdown";
-import { InlineText } from "@/components/projects/inline-text";
+import { AutosaveMarkdown } from "@/components/shared/autosave-markdown";
+import { InlineText } from "@/components/shared/inline-text";
 import { LifecycleBanner } from "@/components/documents/lifecycle-banner";
 import { useDocumentLifecycle } from "@/components/documents/use-document-lifecycle";
 import { Breadcrumb, type TBreadcrumbItem } from "@/components/layout/breadcrumb";
-import { EmptyState } from "@/components/layout/empty-state";
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  ArchiveAction,
+  CopyLinkAction,
+  DeleteMenuAction,
+  HeaderActions,
+  TrashAction,
+} from "@/components/shared/detail-actions";
 import { EntityIcon } from "@/components/shared/entity-icon";
 import { IconPicker } from "@/components/shared/icon-picker";
 import { ProjectIcon } from "@/components/shared/project-icon";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { isApiError } from "@/lib/server/errors";
 import {
@@ -41,6 +30,7 @@ import {
   type TDocument,
   useUpdateDocumentMutation,
 } from "@/lib/queries/documents";
+import { EntityNotFound } from "@/components/navigation/not-found-template";
 
 export function DocumentDetail({ slug }: { slug: string }) {
   const { workspace } = useWorkspace();
@@ -49,10 +39,9 @@ export function DocumentDetail({ slug }: { slug: string }) {
   if (error) {
     if (isApiError(error, 404)) {
       return (
-        <EmptyState
-          icon={FileTextIcon}
-          title="Document not found"
-          description="It was deleted, or you cannot see it."
+        <EntityNotFound
+          Icon={FileTextIcon}
+          description="Document not found. It was deleted, or you cannot see it."
         />
       );
     }
@@ -119,8 +108,7 @@ function DocumentDetailContent({ document }: { document: TDocument }) {
         <div className="min-w-0 flex-1">
           <Breadcrumb items={breadcrumb} />
         </div>
-        <FavoriteButton kind="document" entityId={document.id} />
-        {canEdit && <DocumentActions document={document} />}
+        <DocumentActions document={document} />
       </div>
       <LifecycleBanner
         entity="document"
@@ -163,7 +151,7 @@ function DocumentDetailContent({ document }: { document: TDocument }) {
 }
 
 function DocumentActions({ document }: { document: TDocument }) {
-  const { workspace, isAdmin } = useWorkspace();
+  const { workspace, canEdit, isAdmin } = useWorkspace();
   const navigate = useNavigate();
   const lifecycle = useDocumentLifecycle();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -176,52 +164,37 @@ function DocumentActions({ document }: { document: TDocument }) {
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon" aria-label="Document actions">
-              <EllipsisIcon className="size-4" />
-            </Button>
-          }
+    <HeaderActions>
+      <FavoriteButton kind="document" entityId={document.id} />
+      <CopyLinkAction url={window.location.href} />
+      {canEdit && (
+        <ArchiveAction
+          isOn={Boolean(document.archived_at)}
+          isPending={lifecycle.isPending}
+          onToggle={() => run(document.archived_at ? "unarchive" : "archive")}
         />
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => run(document.archived_at ? "unarchive" : "archive")}>
-            {document.archived_at ? (
-              <ArchiveRestoreIcon className="size-4" />
-            ) : (
-              <ArchiveIcon className="size-4" />
-            )}
-            {document.archived_at ? "Unarchive" : "Archive"}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => run(document.trashed_at ? "restore" : "trash")}>
-            {document.trashed_at ? (
-              <UndoIcon className="size-4" />
-            ) : (
-              <Trash2Icon className="size-4" />
-            )}
-            {document.trashed_at ? "Restore from trash" : "Move to trash"}
-          </DropdownMenuItem>
-          {isAdmin && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={() => setIsDeleting(true)}>
-                <XIcon className="size-4" />
-                Delete permanently
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <ConfirmDialog
-        open={isDeleting}
-        onOpenChange={setIsDeleting}
-        title="Delete document"
-        description={`"${document.title}" is deleted for everyone. This cannot be undone.`}
-        confirmLabel="Delete"
-        onConfirm={deleteDocument}
-      />
-    </>
+      )}
+      {canEdit && (
+        <TrashAction
+          isOn={Boolean(document.trashed_at)}
+          isPending={lifecycle.isPending}
+          onToggle={() => run(document.trashed_at ? "restore" : "trash")}
+        />
+      )}
+      {isAdmin && (
+        <>
+          <DeleteMenuAction label="Delete document" onSelect={() => setIsDeleting(true)} />
+          <ConfirmDialog
+            open={isDeleting}
+            onOpenChange={setIsDeleting}
+            title={`Delete ${document.title}`}
+            description="The document is deleted for everyone. This cannot be undone."
+            confirmLabel="Delete document"
+            onConfirm={deleteDocument}
+          />
+        </>
+      )}
+    </HeaderActions>
   );
 }
 

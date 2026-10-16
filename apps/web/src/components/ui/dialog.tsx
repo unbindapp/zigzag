@@ -6,13 +6,13 @@ import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { returnFocusTarget } from "@/components/ui/focus-origin";
 
 const createDialogHandle = DialogPrimitive.createHandle;
 export type TDialogHandle = DialogPrimitive.Handle<unknown>;
 
 function Dialog({ onOpenChange, ...props }: DialogPrimitive.Root.Props) {
   const handleOpenChange: DialogPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
-    // A press on a toast or the staged changes bar is not dismissing the dialog
     if (!open && eventDetails.reason === "outside-press") {
       if (pressStartedInExemptElement(eventDetails.event)) {
         eventDetails.cancel();
@@ -36,11 +36,8 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-// The staged changes bar sits at z-900. A dialog that edits what the bar deploys
-// stays below it so the bar remains usable, like it is above drawers.
 const dialogLayerVariants = {
   default: "z-[1000]",
-  "below-changes-bar": "z-[899]",
 };
 
 const dialogOverlayVariants = cva("bg-barrier/barrier fixed inset-0", {
@@ -144,6 +141,7 @@ function DialogContent({
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(dialogContentVariants({ variant, animate, className }))}
+          finalFocus={returnFocusTarget}
           {...props}
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>

@@ -1,4 +1,3 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArchiveIcon, CheckCheckIcon, InboxIcon } from "lucide-react";
@@ -29,6 +28,7 @@ import {
   useUnarchiveNotificationsMutation,
 } from "@/lib/queries/notifications";
 import { formatDateTime } from "@/lib/helpers/dates";
+import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 
 export const INBOX_TABS = ["inbox", "read", "archived", "snoozed"] as const;
 export type TInboxTab = (typeof INBOX_TABS)[number];
@@ -42,12 +42,15 @@ const tabLabels: Record<TInboxTab, string> = {
 
 const emptyStates: Record<TInboxTab, { title: string; description: string }> = {
   inbox: {
-    title: "You are all caught up",
+    title: "No notifications yet",
     description: "Assignments, mentions and comments on issues you follow show up here.",
   },
-  read: { title: "Nothing read yet", description: "Notifications you opened stay here." },
-  archived: { title: "Nothing archived", description: "Archive a notification with E." },
-  snoozed: { title: "Nothing snoozed", description: "Snooze a notification with H." },
+  read: { title: "No read notifications yet", description: "Notifications you opened stay here." },
+  archived: {
+    title: "No archived notifications yet",
+    description: "Archive a notification with E.",
+  },
+  snoozed: { title: "No snoozed notifications yet", description: "Snooze a notification with H." },
 };
 
 type TProps = {
@@ -168,15 +171,24 @@ export function InboxView({ tab, selectedId, onTabChange, onSelect }: TProps) {
   };
 
   const shortcutsEnabled = !isSnoozeOpen;
-  useHotkey("J", () => move(1), { enabled: shortcutsEnabled });
-  useHotkey("K", () => move(-1), { enabled: shortcutsEnabled });
-  useHotkey("E", () => selected && toggleArchive(selected), {
-    enabled: shortcutsEnabled && Boolean(selected),
-  });
-  useHotkey("U", () => selected && markUnread({ notificationIds: [selected.id] }), {
-    enabled: shortcutsEnabled && Boolean(selected?.read_at),
-  });
-  useHotkey("H", () => setIsSnoozeOpen(true), { enabled: shortcutsEnabled && Boolean(selected) });
+  useHotkeyScope(
+    [
+      { hotkey: "J", callback: () => move(1) },
+      { hotkey: "K", callback: () => move(-1) },
+      {
+        hotkey: "E",
+        callback: () => selected && toggleArchive(selected),
+        enabled: Boolean(selected),
+      },
+      {
+        hotkey: "U",
+        callback: () => selected && markUnread({ notificationIds: [selected.id] }),
+        enabled: Boolean(selected?.read_at),
+      },
+      { hotkey: "H", callback: () => setIsSnoozeOpen(true), enabled: Boolean(selected) },
+    ],
+    { enabled: shortcutsEnabled },
+  );
 
   const main = (
     <PageContainer>

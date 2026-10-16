@@ -16,11 +16,14 @@ export const Route = createFileRoute("/$workspace/_workspace/initiatives")({
   component: InitiativesPage,
 });
 
-function NewInitiativeButton({ size }: { size: "sm" | "default" }) {
+function NewInitiativeButton({ placement }: { placement: "header" | "empty" }) {
   return (
     <NewInitiativeDialog
       trigger={
-        <Button size={size}>
+        <Button
+          size={placement === "header" ? "default" : "sm"}
+          variant={placement === "header" ? "default" : "outline"}
+        >
           <PlusIcon className="size-4" />
           New initiative
         </Button>
@@ -40,7 +43,7 @@ function InitiativesPage() {
       <PageHeader
         title="Initiatives"
         icon={<TargetIcon />}
-        actions={canEdit && <NewInitiativeButton size="default" />}
+        actions={canEdit && <NewInitiativeButton placement="header" />}
       />
       <ListStates
         isPending={isPending}
@@ -51,7 +54,7 @@ function InitiativesPage() {
           icon: TargetIcon,
           title: "No initiatives yet",
           description: "Initiatives group projects toward a larger goal and track their progress.",
-          action: canEdit && <NewInitiativeButton size="sm" />,
+          action: canEdit && <NewInitiativeButton placement="empty" />,
         }}
       >
         <List>

@@ -81,7 +81,7 @@ export function WebhookRow({ webhook }: { webhook: TWebhook }) {
             }
             title={`Delete ${name}`}
             description="No more events are sent to this URL."
-            confirmLabel="Delete"
+            confirmLabel="Delete webhook"
             onConfirm={() => remove({ webhookId: webhook.id })}
           />
         </>

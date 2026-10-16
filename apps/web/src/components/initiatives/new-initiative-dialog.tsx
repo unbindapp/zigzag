@@ -28,6 +28,7 @@ import {
   type TInitiativeStatus,
   useCreateInitiativeMutation,
 } from "@/lib/queries/initiatives";
+import { MarkdownField } from "@/components/shared/markdown-editor";
 
 const NO_OWNER = "__none__";
 
@@ -112,13 +113,14 @@ function NewInitiativeForm({ onDone }: { onDone: () => void }) {
         <form.AppField name="color" children={(field) => <field.ColorField label="Color" />} />
       </div>
       <form.AppField name="name" children={(field) => <field.TextField label="Name" autoFocus />} />
-      <form.AppField
+      <form.Field
         name="description"
         children={(field) => (
-          <field.TextareaField
+          <MarkdownField
             label="Description"
-            rows={3}
-            placeholder="What is this initiative about?"
+            value={field.state.value}
+            onChange={field.handleChange}
+            placeholder="Add a description…"
           />
         )}
       />

@@ -5,7 +5,7 @@ import { ListTodoIcon } from "lucide-react";
 import { filtersFromSearch, filtersToSearch, issueSearchSchema } from "@/components/issues/filters";
 import { IssuesView } from "@/components/issues/issues-view";
 import type { TStateType } from "@/components/shared/state-icon";
-import { TeamIcon } from "@/components/shared/team-icon";
+import { teamCrumb } from "@/components/workspace/team-crumb";
 import { useRequiredTeamFromRoute } from "@/components/workspace/use-team-from-route";
 
 const STATE_TYPES: TStateType[] = ["backlog"];
@@ -25,14 +25,7 @@ function TeamKeyBacklogPage() {
       key={team.id}
       title="Backlog"
       icon={<ListTodoIcon />}
-      breadcrumb={[
-        {
-          label: team.name,
-          icon: <TeamIcon teamKey={team.key} icon={team.icon} color={team.color} size="sm" />,
-          link: { to: "/$workspace/team/$key/issues", params: { workspace, key: team.key } },
-        },
-        { label: "Backlog" },
-      ]}
+      breadcrumb={[teamCrumb(team, workspace), { label: "Backlog" }]}
       storageKey={`team:${team.id}:backlog`}
       teamId={team.id}
       fixedFilters={{ team_ids: [team.id], state_types: STATE_TYPES }}

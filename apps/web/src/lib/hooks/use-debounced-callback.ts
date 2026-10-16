@@ -1,11 +1,18 @@
-import { useDebounceCallback, useEventCallback } from "usehooks-ts";
+import { useEffect, useRef, useState } from "react";
 
-// usehooks-ts rebuilds the timer when the callback identity changes, orphaning
-// pending calls, so the callback is pinned to a stable identity first.
+import { createDebounce } from "@/lib/helpers/debounce";
+
 export default function useDebouncedCallback<Args extends unknown[]>(
   fn: (...args: Args) => void,
   delayMs: number,
 ) {
-  const stableFn = useEventCallback(fn);
-  return useDebounceCallback(stableFn, delayMs);
+  const fnRef = useRef(fn);
+  useEffect(() => {
+    fnRef.current = fn;
+  });
+  const [debounced] = useState(() =>
+    createDebounce((...args: Args) => fnRef.current(...args), delayMs),
+  );
+  useEffect(() => () => debounced.flush(), [debounced]);
+  return debounced;
 }

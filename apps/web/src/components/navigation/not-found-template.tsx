@@ -18,7 +18,7 @@ export default function NotFoundTemplate({
   Icon,
 }: TProps) {
   return (
-    <main className="flex w-full flex-1 flex-col items-center justify-center gap-4 px-4 py-12 text-center">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 px-4 py-12 text-center">
       <div className="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-full">
         <Icon className="size-5" />
       </div>
@@ -29,6 +29,18 @@ export default function NotFoundTemplate({
       <LinkButton to={buttonTo} variant="outline">
         {buttonText}
       </LinkButton>
-    </main>
+    </div>
+  );
+}
+
+export function EntityNotFound({ Icon, description }: { Icon: LucideIcon; description: string }) {
+  return (
+    <NotFoundTemplate
+      code={404}
+      description={description}
+      buttonText="Go home"
+      buttonTo="/"
+      Icon={Icon}
+    />
   );
 }

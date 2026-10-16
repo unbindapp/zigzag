@@ -62,7 +62,7 @@ export function ProjectBoard({ workspaceId, filters, emptyState }: TProps) {
       emptyState ?? (
         <EmptyState
           icon={BoxIcon}
-          title="No projects"
+          title="No projects yet"
           description="Projects group issues toward a goal."
         />
       )
