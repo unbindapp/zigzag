@@ -2,7 +2,7 @@
 
 Zigzag is an open-source, self-hosted issue tracker modeled on Linear. This is the monorepo for it. It ships as one binary: a Go API that embeds and serves a React SPA, backed by PostgreSQL, with an MCP server so agents can work issues through the same API.
 
-The architecture, conventions and toolkits are copied from Unbind (https://github.com/unbindapp/unbind). Where this repo and Unbind differ, this repo's `docs/design/*.md` wins. Where this repo is silent, do what Unbind does.
+The architecture, conventions and toolkits are copied from Unbind (https://github.com/unbindapp/unbind). Where this repo and Unbind differ, this file wins. Where this repo is silent, do what Unbind does.
 
 ## Repo Structure:
 
@@ -16,9 +16,12 @@ The UI. A React app using Vite. Tanstack Router, Tanstack Query, Tanstack Forms,
 
 The server built with Go. Huma on chi, ent for the database, goose for migrations. The UI interacts with this server to manage workspaces, teams, issues, projects, cycles, labels, notifications and everything else. It also serves the static UI and the MCP server. Module `github.com/unbindapp/zigzag-api`.
 
-### Design documents
+### Conventions that are not in the code
 
-`docs/design` holds the binding design: `architecture.md` (request flow, auth, roles, MCP, mail, config, dev environment), `data-model.md` (every ent entity and field), `api.md` (every operation with its permission and MCP decision), `ui.md` (routes, layout primitives, spacing and type scale, component inventory) and `linear-import.md` (the Linear export format and mapping). Read them before touching code. If a decision has to change, change the document in the same change.
+- API: operations are `oapi.Register(grp, action, huma.Operation{...}, handler, opts...)` with paths `<group>/<verb>` (`/list`, `/get`, `/create`, `/update`, `/delete`, named actions). Reads are `GET` with query parameters, mutations are `POST`/`PUT`/`DELETE` with a JSON body, never both. Responses wrap in `{ "data": ... }`, paginated lists add `next_cursor`. Pointer scalars in responses carry `nullable:"true"`. Update inputs are never nullable: the nil uuid clears an id field, an empty string clears a date, `estimate: -1` clears the estimate. Response structs are never recursive. Permissions are checked only in services via `repo.Permissions().Check`; forbidden reads are masked as not found.
+- Roles: `viewer` reads, `member` creates and edits, `admin` also deletes and manages people and settings. `system_admin` users hold admin everywhere. API keys and OAuth grants narrow a user to a role and a list of workspaces.
+- Web: page structure comes only from `components/layout` (`PageContainer`, `PageHeader`, `PageToolbar`, `SettingsPage`, `SettingsSection`, `EmptyState`, `ErrorCard`, `ListSkeleton`, `SplitView`). Spacing: `gap-1.5` icon to label, `gap-2` controls in a row, `gap-3` cards, `gap-4` form fields, `gap-6` sections, `p-4` cards, rows `h-9`. Type: page title `text-xl font-semibold` via `PageHeader`, section title `text-base font-semibold`, body `text-sm`, secondary `text-sm text-muted-foreground`, captions and identifiers `text-xs`, identifiers `font-mono`. Buttons only from `components/ui/button`, sizes `sm|default|icon`. Icons lucide `size-4` (`size-3.5` in `text-xs`, `size-5` in headers). No arbitrary Tailwind values, no raw `<button>`/`<input>`. Every list has skeleton, error and empty states; every mutation failure toasts; icon-only buttons have `aria-label`. `npm run lint` enforces the mechanical parts.
+- Linear import: `POST /imports/linear` takes the export format in `apps/api/internal/importers/linear` (see its types and `testdata`), runs as a dry run by default, is idempotent on `import_external_id`, keeps issue numbers and can restore archived issues.
 
 ## MCP Server
 
@@ -38,7 +41,7 @@ In the dev environment the server is at `http://localhost:8091/mcp`. Test it wit
 ## General Rules:
 
 - Keep it simple. Do not overcomplicate things.
-- Follow each app's own conventions. `apps/web` has a design system and a certain way of doing things, follow it as much as possible. The spacing and type scale in `docs/design/ui.md` is not a suggestion: if two screens show the same kind of thing, they use the same component with the same props.
+- Follow each app's own conventions. `apps/web` has a design system and a certain way of doing things, follow it as much as possible. The spacing and type scale below is not a suggestion: if two screens show the same kind of thing, they use the same component with the same props.
 - Security and reliability are extremely important. Multiple workspaces with different members share one instance, do not treat it like a hobby project. Every operation checks permissions in the service layer through the permissions repository, never in handlers.
 - `apps/web` and `apps/api` are tightly coupled. When you are changing one, be mindful of the consequences for the other. After changing the API, regenerate the web client.
 - Do not start editing code in response to a question. We'll tell you when to edit code.
@@ -52,7 +55,7 @@ In the dev environment the server is at `http://localhost:8091/mcp`. Test it wit
 - Never make a PR unless explicitly asked to do so.
 - Do not insert yourself into our code, commits or PRs in any way. Our codebase is not your ad space.
 - After you make code changes, run the pre-commit hooks (`prek run --all-files`, or `pre-commit run --all-files`) and `make check`, and fix anything they report. CI runs the same checks.
-- Always keep the docs in `docs/design` in sync with the code.
+- Keep this file and the README in sync with the code.
 
 ## Commit Messages
 
