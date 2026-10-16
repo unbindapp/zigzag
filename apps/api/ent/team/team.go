@@ -63,6 +63,10 @@ const (
 	FieldDefaultStateID = "default_state_id"
 	// FieldTriageStateID holds the string denoting the triage_state_id field in the database.
 	FieldTriageStateID = "triage_state_id"
+	// FieldGithubPrOpenedStateID holds the string denoting the github_pr_opened_state_id field in the database.
+	FieldGithubPrOpenedStateID = "github_pr_opened_state_id"
+	// FieldGithubPrMergedStateID holds the string denoting the github_pr_merged_state_id field in the database.
+	FieldGithubPrMergedStateID = "github_pr_merged_state_id"
 	// FieldAutoCloseMonths holds the string denoting the auto_close_months field in the database.
 	FieldAutoCloseMonths = "auto_close_months"
 	// FieldAutoArchiveMonths holds the string denoting the auto_archive_months field in the database.
@@ -75,6 +79,10 @@ const (
 	EdgeDefaultState = "default_state"
 	// EdgeTriageState holds the string denoting the triage_state edge name in mutations.
 	EdgeTriageState = "triage_state"
+	// EdgeGithubPrOpenedState holds the string denoting the github_pr_opened_state edge name in mutations.
+	EdgeGithubPrOpenedState = "github_pr_opened_state"
+	// EdgeGithubPrMergedState holds the string denoting the github_pr_merged_state edge name in mutations.
+	EdgeGithubPrMergedState = "github_pr_merged_state"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
 	// EdgeStates holds the string denoting the states edge name in mutations.
@@ -118,6 +126,20 @@ const (
 	TriageStateInverseTable = "workflow_states"
 	// TriageStateColumn is the table column denoting the triage_state relation/edge.
 	TriageStateColumn = "triage_state_id"
+	// GithubPrOpenedStateTable is the table that holds the github_pr_opened_state relation/edge.
+	GithubPrOpenedStateTable = "teams"
+	// GithubPrOpenedStateInverseTable is the table name for the WorkflowState entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowstate" package.
+	GithubPrOpenedStateInverseTable = "workflow_states"
+	// GithubPrOpenedStateColumn is the table column denoting the github_pr_opened_state relation/edge.
+	GithubPrOpenedStateColumn = "github_pr_opened_state_id"
+	// GithubPrMergedStateTable is the table that holds the github_pr_merged_state relation/edge.
+	GithubPrMergedStateTable = "teams"
+	// GithubPrMergedStateInverseTable is the table name for the WorkflowState entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowstate" package.
+	GithubPrMergedStateInverseTable = "workflow_states"
+	// GithubPrMergedStateColumn is the table column denoting the github_pr_merged_state relation/edge.
+	GithubPrMergedStateColumn = "github_pr_merged_state_id"
 	// MembersTable is the table that holds the members relation/edge.
 	MembersTable = "team_members"
 	// MembersInverseTable is the table name for the TeamMember entity.
@@ -214,6 +236,8 @@ var Columns = []string{
 	FieldTriageEnabled,
 	FieldDefaultStateID,
 	FieldTriageStateID,
+	FieldGithubPrOpenedStateID,
+	FieldGithubPrMergedStateID,
 	FieldAutoCloseMonths,
 	FieldAutoArchiveMonths,
 	FieldArchivedAt,
@@ -411,6 +435,16 @@ func ByTriageStateID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTriageStateID, opts...).ToFunc()
 }
 
+// ByGithubPrOpenedStateID orders the results by the github_pr_opened_state_id field.
+func ByGithubPrOpenedStateID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGithubPrOpenedStateID, opts...).ToFunc()
+}
+
+// ByGithubPrMergedStateID orders the results by the github_pr_merged_state_id field.
+func ByGithubPrMergedStateID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGithubPrMergedStateID, opts...).ToFunc()
+}
+
 // ByAutoCloseMonths orders the results by the auto_close_months field.
 func ByAutoCloseMonths(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAutoCloseMonths, opts...).ToFunc()
@@ -444,6 +478,20 @@ func ByDefaultStateField(field string, opts ...sql.OrderTermOption) OrderOption 
 func ByTriageStateField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTriageStateStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByGithubPrOpenedStateField orders the results by github_pr_opened_state field.
+func ByGithubPrOpenedStateField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubPrOpenedStateStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByGithubPrMergedStateField orders the results by github_pr_merged_state field.
+func ByGithubPrMergedStateField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubPrMergedStateStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -605,6 +653,20 @@ func newTriageStateStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TriageStateInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, TriageStateTable, TriageStateColumn),
+	)
+}
+func newGithubPrOpenedStateStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubPrOpenedStateInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, GithubPrOpenedStateTable, GithubPrOpenedStateColumn),
+	)
+}
+func newGithubPrMergedStateStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubPrMergedStateInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, GithubPrMergedStateTable, GithubPrMergedStateColumn),
 	)
 }
 func newMembersStep() *sqlgraph.Step {

@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import {
   ArchiveIcon,
+  GitPullRequestIcon,
   FileStackIcon,
   LockIcon,
   RefreshCwIcon,
@@ -95,6 +96,11 @@ function TeamSettingsLayout() {
       label: "Triage",
       icon: TriangleIcon,
       link: { to: "/$workspace/settings/team/$key/triage", params },
+    },
+    {
+      label: "GitHub",
+      icon: GitPullRequestIcon,
+      link: { to: "/$workspace/settings/team/$key/github", params },
     },
     {
       label: "Members",

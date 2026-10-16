@@ -132,6 +132,7 @@ type CreateAttachmentInput struct {
 	URL        string
 	SourceType string
 	UploadID   *uuid.UUID
+	Metadata   map[string]any
 }
 
 func (self *IssueRepository) CreateAttachment(ctx context.Context, tx repository.TxInterface, input *CreateAttachmentInput) (*ent.Attachment, error) {
@@ -147,6 +148,7 @@ func (self *IssueRepository) CreateAttachment(ctx context.Context, tx repository
 		SetURL(input.URL).
 		SetSourceType(input.SourceType).
 		SetNillableUploadID(input.UploadID).
+		SetMetadata(input.Metadata).
 		SetSortOrder(float64(count)).
 		Save(ctx)
 	if err != nil {
@@ -172,6 +174,33 @@ func (self *IssueRepository) UpdateAttachment(ctx context.Context, id uuid.UUID,
 		return nil, err
 	}
 	return self.GetAttachment(ctx, id)
+}
+
+func (self *IssueRepository) AttachmentsByURL(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, urls []string) ([]*ent.Attachment, error) {
+	return self.base.Client(tx).Attachment.Query().
+		Where(attachment.IssueID(issueID), attachment.URLIn(urls...)).
+		Order(attachment.ByCreatedAt()).
+		All(ctx)
+}
+
+type LinkedAttachmentInput struct {
+	Title      string
+	URL        string
+	SourceType string
+	Metadata   map[string]any
+}
+
+func (self *IssueRepository) UpdateLinkedAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *LinkedAttachmentInput) (*ent.Attachment, error) {
+	err := self.base.Client(tx).Attachment.UpdateOneID(id).
+		SetTitle(input.Title).
+		SetURL(input.URL).
+		SetSourceType(input.SourceType).
+		SetMetadata(input.Metadata).
+		Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return self.getAttachment(ctx, tx, id)
 }
 
 func (self *IssueRepository) DeleteAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error {

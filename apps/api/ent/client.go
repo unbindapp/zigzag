@@ -23,6 +23,8 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubrepository"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -81,6 +83,10 @@ type Client struct {
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
 	Favorite *FavoriteClient
+	// GithubIntegration is the client for interacting with the GithubIntegration builders.
+	GithubIntegration *GithubIntegrationClient
+	// GithubRepository is the client for interacting with the GithubRepository builders.
+	GithubRepository *GithubRepositoryClient
 	// ImportJob is the client for interacting with the ImportJob builders.
 	ImportJob *ImportJobClient
 	// Initiative is the client for interacting with the Initiative builders.
@@ -169,6 +175,8 @@ func (c *Client) init() {
 	c.CycleScopeHistory = NewCycleScopeHistoryClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.Favorite = NewFavoriteClient(c.config)
+	c.GithubIntegration = NewGithubIntegrationClient(c.config)
+	c.GithubRepository = NewGithubRepositoryClient(c.config)
 	c.ImportJob = NewImportJobClient(c.config)
 	c.Initiative = NewInitiativeClient(c.config)
 	c.InitiativePost = NewInitiativePostClient(c.config)
@@ -303,6 +311,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
+		GithubIntegration:      NewGithubIntegrationClient(cfg),
+		GithubRepository:       NewGithubRepositoryClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
 		Initiative:             NewInitiativeClient(cfg),
 		InitiativePost:         NewInitiativePostClient(cfg),
@@ -364,6 +374,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
+		GithubIntegration:      NewGithubIntegrationClient(cfg),
+		GithubRepository:       NewGithubRepositoryClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
 		Initiative:             NewInitiativeClient(cfg),
 		InitiativePost:         NewInitiativePostClient(cfg),
@@ -429,13 +441,14 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
-		c.Favorite, c.ImportJob, c.Initiative, c.InitiativePost, c.Invitation, c.Issue,
-		c.IssueHistory, c.IssueMove, c.IssueRelation, c.JWTKey, c.Label,
-		c.Notification, c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient,
-		c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken,
-		c.Project, c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus,
-		c.Reaction, c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload,
-		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.Favorite, c.GithubIntegration, c.GithubRepository, c.ImportJob, c.Initiative,
+		c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory, c.IssueMove,
+		c.IssueRelation, c.JWTKey, c.Label, c.Notification, c.NotificationSetting,
+		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
+		c.Oauth2Token, c.PasswordResetToken, c.Project, c.ProjectLink,
+		c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
+		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
+		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -446,13 +459,14 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
-		c.Favorite, c.ImportJob, c.Initiative, c.InitiativePost, c.Invitation, c.Issue,
-		c.IssueHistory, c.IssueMove, c.IssueRelation, c.JWTKey, c.Label,
-		c.Notification, c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient,
-		c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken,
-		c.Project, c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus,
-		c.Reaction, c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload,
-		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.Favorite, c.GithubIntegration, c.GithubRepository, c.ImportJob, c.Initiative,
+		c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory, c.IssueMove,
+		c.IssueRelation, c.JWTKey, c.Label, c.Notification, c.NotificationSetting,
+		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
+		c.Oauth2Token, c.PasswordResetToken, c.Project, c.ProjectLink,
+		c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
+		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
+		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -475,6 +489,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Document.mutate(ctx, m)
 	case *FavoriteMutation:
 		return c.Favorite.mutate(ctx, m)
+	case *GithubIntegrationMutation:
+		return c.GithubIntegration.mutate(ctx, m)
+	case *GithubRepositoryMutation:
+		return c.GithubRepository.mutate(ctx, m)
 	case *ImportJobMutation:
 		return c.ImportJob.mutate(ctx, m)
 	case *InitiativeMutation:
@@ -1846,6 +1864,336 @@ func (c *FavoriteClient) mutate(ctx context.Context, m *FavoriteMutation) (Value
 		return (&FavoriteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Favorite mutation op: %q", m.Op())
+	}
+}
+
+// GithubIntegrationClient is a client for the GithubIntegration schema.
+type GithubIntegrationClient struct {
+	config
+}
+
+// NewGithubIntegrationClient returns a client for the GithubIntegration from the given config.
+func NewGithubIntegrationClient(c config) *GithubIntegrationClient {
+	return &GithubIntegrationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubintegration.Hooks(f(g(h())))`.
+func (c *GithubIntegrationClient) Use(hooks ...Hook) {
+	c.hooks.GithubIntegration = append(c.hooks.GithubIntegration, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `githubintegration.Intercept(f(g(h())))`.
+func (c *GithubIntegrationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GithubIntegration = append(c.inters.GithubIntegration, interceptors...)
+}
+
+// Create returns a builder for creating a GithubIntegration entity.
+func (c *GithubIntegrationClient) Create() *GithubIntegrationCreate {
+	mutation := newGithubIntegrationMutation(c.config, OpCreate)
+	return &GithubIntegrationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubIntegration entities.
+func (c *GithubIntegrationClient) CreateBulk(builders ...*GithubIntegrationCreate) *GithubIntegrationCreateBulk {
+	return &GithubIntegrationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GithubIntegrationClient) MapCreateBulk(slice any, setFunc func(*GithubIntegrationCreate, int)) *GithubIntegrationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GithubIntegrationCreateBulk{err: fmt.Errorf("calling to GithubIntegrationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GithubIntegrationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GithubIntegrationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubIntegration.
+func (c *GithubIntegrationClient) Update() *GithubIntegrationUpdate {
+	mutation := newGithubIntegrationMutation(c.config, OpUpdate)
+	return &GithubIntegrationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubIntegrationClient) UpdateOne(_m *GithubIntegration) *GithubIntegrationUpdateOne {
+	mutation := newGithubIntegrationMutation(c.config, OpUpdateOne, withGithubIntegration(_m))
+	return &GithubIntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubIntegrationClient) UpdateOneID(id uuid.UUID) *GithubIntegrationUpdateOne {
+	mutation := newGithubIntegrationMutation(c.config, OpUpdateOne, withGithubIntegrationID(id))
+	return &GithubIntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubIntegration.
+func (c *GithubIntegrationClient) Delete() *GithubIntegrationDelete {
+	mutation := newGithubIntegrationMutation(c.config, OpDelete)
+	return &GithubIntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GithubIntegrationClient) DeleteOne(_m *GithubIntegration) *GithubIntegrationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GithubIntegrationClient) DeleteOneID(id uuid.UUID) *GithubIntegrationDeleteOne {
+	builder := c.Delete().Where(githubintegration.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubIntegrationDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubIntegration.
+func (c *GithubIntegrationClient) Query() *GithubIntegrationQuery {
+	return &GithubIntegrationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGithubIntegration},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GithubIntegration entity by its id.
+func (c *GithubIntegrationClient) Get(ctx context.Context, id uuid.UUID) (*GithubIntegration, error) {
+	return c.Query().Where(githubintegration.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubIntegrationClient) GetX(ctx context.Context, id uuid.UUID) *GithubIntegration {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a GithubIntegration.
+func (c *GithubIntegrationClient) QueryWorkspace(_m *GithubIntegration) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, githubintegration.WorkspaceTable, githubintegration.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedBy queries the created_by edge of a GithubIntegration.
+func (c *GithubIntegrationClient) QueryCreatedBy(_m *GithubIntegration) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubintegration.CreatedByTable, githubintegration.CreatedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepositories queries the repositories edge of a GithubIntegration.
+func (c *GithubIntegrationClient) QueryRepositories(_m *GithubIntegration) *GithubRepositoryQuery {
+	query := (&GithubRepositoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubintegration.Table, githubintegration.FieldID, id),
+			sqlgraph.To(githubrepository.Table, githubrepository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubintegration.RepositoriesTable, githubintegration.RepositoriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubIntegrationClient) Hooks() []Hook {
+	return c.hooks.GithubIntegration
+}
+
+// Interceptors returns the client interceptors.
+func (c *GithubIntegrationClient) Interceptors() []Interceptor {
+	return c.inters.GithubIntegration
+}
+
+func (c *GithubIntegrationClient) mutate(ctx context.Context, m *GithubIntegrationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GithubIntegrationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GithubIntegrationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GithubIntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GithubIntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GithubIntegration mutation op: %q", m.Op())
+	}
+}
+
+// GithubRepositoryClient is a client for the GithubRepository schema.
+type GithubRepositoryClient struct {
+	config
+}
+
+// NewGithubRepositoryClient returns a client for the GithubRepository from the given config.
+func NewGithubRepositoryClient(c config) *GithubRepositoryClient {
+	return &GithubRepositoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubrepository.Hooks(f(g(h())))`.
+func (c *GithubRepositoryClient) Use(hooks ...Hook) {
+	c.hooks.GithubRepository = append(c.hooks.GithubRepository, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `githubrepository.Intercept(f(g(h())))`.
+func (c *GithubRepositoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GithubRepository = append(c.inters.GithubRepository, interceptors...)
+}
+
+// Create returns a builder for creating a GithubRepository entity.
+func (c *GithubRepositoryClient) Create() *GithubRepositoryCreate {
+	mutation := newGithubRepositoryMutation(c.config, OpCreate)
+	return &GithubRepositoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubRepository entities.
+func (c *GithubRepositoryClient) CreateBulk(builders ...*GithubRepositoryCreate) *GithubRepositoryCreateBulk {
+	return &GithubRepositoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GithubRepositoryClient) MapCreateBulk(slice any, setFunc func(*GithubRepositoryCreate, int)) *GithubRepositoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GithubRepositoryCreateBulk{err: fmt.Errorf("calling to GithubRepositoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GithubRepositoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GithubRepositoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubRepository.
+func (c *GithubRepositoryClient) Update() *GithubRepositoryUpdate {
+	mutation := newGithubRepositoryMutation(c.config, OpUpdate)
+	return &GithubRepositoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubRepositoryClient) UpdateOne(_m *GithubRepository) *GithubRepositoryUpdateOne {
+	mutation := newGithubRepositoryMutation(c.config, OpUpdateOne, withGithubRepository(_m))
+	return &GithubRepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubRepositoryClient) UpdateOneID(id uuid.UUID) *GithubRepositoryUpdateOne {
+	mutation := newGithubRepositoryMutation(c.config, OpUpdateOne, withGithubRepositoryID(id))
+	return &GithubRepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubRepository.
+func (c *GithubRepositoryClient) Delete() *GithubRepositoryDelete {
+	mutation := newGithubRepositoryMutation(c.config, OpDelete)
+	return &GithubRepositoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GithubRepositoryClient) DeleteOne(_m *GithubRepository) *GithubRepositoryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GithubRepositoryClient) DeleteOneID(id uuid.UUID) *GithubRepositoryDeleteOne {
+	builder := c.Delete().Where(githubrepository.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubRepositoryDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubRepository.
+func (c *GithubRepositoryClient) Query() *GithubRepositoryQuery {
+	return &GithubRepositoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGithubRepository},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GithubRepository entity by its id.
+func (c *GithubRepositoryClient) Get(ctx context.Context, id uuid.UUID) (*GithubRepository, error) {
+	return c.Query().Where(githubrepository.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubRepositoryClient) GetX(ctx context.Context, id uuid.UUID) *GithubRepository {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIntegration queries the integration edge of a GithubRepository.
+func (c *GithubRepositoryClient) QueryIntegration(_m *GithubRepository) *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubrepository.Table, githubrepository.FieldID, id),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubrepository.IntegrationTable, githubrepository.IntegrationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubRepositoryClient) Hooks() []Hook {
+	return c.hooks.GithubRepository
+}
+
+// Interceptors returns the client interceptors.
+func (c *GithubRepositoryClient) Interceptors() []Interceptor {
+	return c.inters.GithubRepository
+}
+
+func (c *GithubRepositoryClient) mutate(ctx context.Context, m *GithubRepositoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GithubRepositoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GithubRepositoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GithubRepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GithubRepositoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GithubRepository mutation op: %q", m.Op())
 	}
 }
 
@@ -6706,6 +7054,38 @@ func (c *TeamClient) QueryTriageState(_m *Team) *WorkflowStateQuery {
 	return query
 }
 
+// QueryGithubPrOpenedState queries the github_pr_opened_state edge of a Team.
+func (c *TeamClient) QueryGithubPrOpenedState(_m *Team) *WorkflowStateQuery {
+	query := (&WorkflowStateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(workflowstate.Table, workflowstate.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, team.GithubPrOpenedStateTable, team.GithubPrOpenedStateColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubPrMergedState queries the github_pr_merged_state edge of a Team.
+func (c *TeamClient) QueryGithubPrMergedState(_m *Team) *WorkflowStateQuery {
+	query := (&WorkflowStateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(workflowstate.Table, workflowstate.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, team.GithubPrMergedStateTable, team.GithubPrMergedStateColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryMembers queries the members edge of a Team.
 func (c *TeamClient) QueryMembers(_m *Team) *TeamMemberQuery {
 	query := (&TeamMemberClient{config: c.config}).Query()
@@ -8102,6 +8482,22 @@ func (c *UserClient) QueryImports(_m *User) *ImportJobQuery {
 	return query
 }
 
+// QueryGithubIntegrations queries the github_integrations edge of a User.
+func (c *UserClient) QueryGithubIntegrations(_m *User) *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.GithubIntegrationsTable, user.GithubIntegrationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -8645,6 +9041,38 @@ func (c *WorkflowStateClient) QueryTriageForTeams(_m *WorkflowState) *TeamQuery 
 	return query
 }
 
+// QueryGithubPrOpenedForTeams queries the github_pr_opened_for_teams edge of a WorkflowState.
+func (c *WorkflowStateClient) QueryGithubPrOpenedForTeams(_m *WorkflowState) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowstate.Table, workflowstate.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowstate.GithubPrOpenedForTeamsTable, workflowstate.GithubPrOpenedForTeamsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubPrMergedForTeams queries the github_pr_merged_for_teams edge of a WorkflowState.
+func (c *WorkflowStateClient) QueryGithubPrMergedForTeams(_m *WorkflowState) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowstate.Table, workflowstate.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowstate.GithubPrMergedForTeamsTable, workflowstate.GithubPrMergedForTeamsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *WorkflowStateClient) Hooks() []Hook {
 	return c.hooks.WorkflowState
@@ -9034,6 +9462,22 @@ func (c *WorkspaceClient) QueryFavorites(_m *Workspace) *FavoriteQuery {
 	return query
 }
 
+// QueryGithubIntegration queries the github_integration edge of a Workspace.
+func (c *WorkspaceClient) QueryGithubIntegration(_m *Workspace) *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, id),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, workspace.GithubIntegrationTable, workspace.GithubIntegrationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIconUpload queries the icon_upload edge of a Workspace.
 func (c *WorkspaceClient) QueryIconUpload(_m *Workspace) *UploadQuery {
 	query := (&UploadClient{config: c.config}).Query()
@@ -9244,22 +9688,23 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 type (
 	hooks struct {
 		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
-		ImportJob, Initiative, InitiativePost, Invitation, Issue, IssueHistory,
-		IssueMove, IssueRelation, JWTKey, Label, Notification, NotificationSetting,
-		OAuthAuthorizationCode, OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token,
-		PasswordResetToken, Project, ProjectLink, ProjectMilestone, ProjectPost,
-		ProjectStatus, Reaction, SystemSetting, Team, TeamMember, Template, Upload,
-		User, View, Webhook, WorkflowState, Workspace, WorkspaceMember []ent.Hook
+		GithubIntegration, GithubRepository, ImportJob, Initiative, InitiativePost,
+		Invitation, Issue, IssueHistory, IssueMove, IssueRelation, JWTKey, Label,
+		Notification, NotificationSetting, OAuthAuthorizationCode, OAuthClient,
+		OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken, Project,
+		ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
+		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
+		WorkflowState, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
-		ImportJob, Initiative, InitiativePost, Invitation, Issue, IssueHistory,
-		IssueMove, IssueRelation, JWTKey, Label, Notification, NotificationSetting,
-		OAuthAuthorizationCode, OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token,
-		PasswordResetToken, Project, ProjectLink, ProjectMilestone, ProjectPost,
-		ProjectStatus, Reaction, SystemSetting, Team, TeamMember, Template, Upload,
-		User, View, Webhook, WorkflowState, Workspace,
-		WorkspaceMember []ent.Interceptor
+		GithubIntegration, GithubRepository, ImportJob, Initiative, InitiativePost,
+		Invitation, Issue, IssueHistory, IssueMove, IssueRelation, JWTKey, Label,
+		Notification, NotificationSetting, OAuthAuthorizationCode, OAuthClient,
+		OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken, Project,
+		ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
+		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
+		WorkflowState, Workspace, WorkspaceMember []ent.Interceptor
 	}
 )
 

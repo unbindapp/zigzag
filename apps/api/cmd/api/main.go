@@ -40,6 +40,7 @@ import (
 	document_service "github.com/unbindapp/zigzag-api/internal/services/document"
 	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
 	favorite_service "github.com/unbindapp/zigzag-api/internal/services/favorite"
+	github_service "github.com/unbindapp/zigzag-api/internal/services/github"
 	import_service "github.com/unbindapp/zigzag-api/internal/services/import"
 	initiative_service "github.com/unbindapp/zigzag-api/internal/services/initiative"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
@@ -168,6 +169,7 @@ func startAPI(cfg *config.Config) {
 	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
 	srvImpl.DocumentService = document_service.NewDocumentService(cfg, repo, srvImpl.IssueService)
 	srvImpl.CommentService = comment_service.NewCommentService(cfg, repo, srvImpl.IssueService, notificationService, webhookService)
+	srvImpl.GithubService = github_service.NewGithubService(cfg, repo, encryptor, srvImpl.IssueService)
 
 	allowedOrigins := []string{cfg.ExternalUIUrl}
 	if cfg.InjectDevOrigins {

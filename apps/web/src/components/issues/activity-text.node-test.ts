@@ -37,3 +37,13 @@ test("other fields fall back to set and removed", () => {
   assert.equal(describeChange(change("due_date", "", "2026-03-01")), "set due date to 2026-03-01");
   assert.equal(describeChange(change("project", "p1", "", "Launch")), "removed the project");
 });
+
+test("GitHub events read with their label", () => {
+  assert.equal(
+    describeChange(
+      change("github", "", "https://github.com/a/b/pull/42", "", "Pull request #42 opened"),
+    ),
+    "on GitHub: Pull request #42 opened",
+  );
+  assert.equal(describeChange(change("github")), "updated from GitHub");
+});

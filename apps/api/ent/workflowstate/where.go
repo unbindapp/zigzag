@@ -614,6 +614,52 @@ func HasTriageForTeamsWith(preds ...predicate.Team) predicate.WorkflowState {
 	})
 }
 
+// HasGithubPrOpenedForTeams applies the HasEdge predicate on the "github_pr_opened_for_teams" edge.
+func HasGithubPrOpenedForTeams() predicate.WorkflowState {
+	return predicate.WorkflowState(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GithubPrOpenedForTeamsTable, GithubPrOpenedForTeamsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubPrOpenedForTeamsWith applies the HasEdge predicate on the "github_pr_opened_for_teams" edge with a given conditions (other predicates).
+func HasGithubPrOpenedForTeamsWith(preds ...predicate.Team) predicate.WorkflowState {
+	return predicate.WorkflowState(func(s *sql.Selector) {
+		step := newGithubPrOpenedForTeamsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGithubPrMergedForTeams applies the HasEdge predicate on the "github_pr_merged_for_teams" edge.
+func HasGithubPrMergedForTeams() predicate.WorkflowState {
+	return predicate.WorkflowState(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GithubPrMergedForTeamsTable, GithubPrMergedForTeamsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubPrMergedForTeamsWith applies the HasEdge predicate on the "github_pr_merged_for_teams" edge with a given conditions (other predicates).
+func HasGithubPrMergedForTeamsWith(preds ...predicate.Team) predicate.WorkflowState {
+	return predicate.WorkflowState(func(s *sql.Selector) {
+		step := newGithubPrMergedForTeamsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.WorkflowState) predicate.WorkflowState {
 	return predicate.WorkflowState(sql.AndPredicates(predicates...))

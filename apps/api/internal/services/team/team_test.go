@@ -227,10 +227,38 @@ func (suite *TeamServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
 			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, DefaultStateID: &missingState})
 			return err
 		},
+		"pull request opened state of another team": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, GithubPrOpenedStateID: &otherTeamsState.ID})
+			return err
+		},
+		"pull request merged state that does not exist": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, GithubPrMergedStateID: &missingState})
+			return err
+		},
 	}
 	for name, run := range cases {
 		suite.Run(name, func() {
 			suite.ErrorIs(run(), errdefs.ErrInvalidInput)
 		})
 	}
+}
+
+func (suite *TeamServiceSuite) TestGithubStatesAreSetAndCleared() {
+	suite.role(schema.WorkspaceRoleViewer, nil)
+	suite.role(schema.WorkspaceRoleAdmin, nil)
+	suite.expectRespond()
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.team.ID).Return(suite.team, nil)
+	suite.MockTeamRepo.EXPECT().KeyOrNameTaken(suite.Ctx, mock.Anything, suite.workspaceID, "", "", &suite.team.ID).Return(false, false, nil)
+	review := &ent.WorkflowState{ID: uuid.New(), TeamID: suite.team.ID, Name: "In Review", Type: schema.StateTypeStarted}
+	suite.MockTeamRepo.EXPECT().GetState(suite.Ctx, review.ID).Return(review, nil)
+	updated := *suite.team
+	updated.GithubPrOpenedStateID = &review.ID
+	suite.MockTeamRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.team.ID, &team_repo.UpdateTeamInput{
+		GithubPrOpenedStateID: &review.ID, ClearGithubPrMergedState: true,
+	}).Return(&updated, nil).Once()
+
+	response, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, GithubPrOpenedStateID: &review.ID, GithubPrMergedStateID: &uuid.Nil})
+	suite.Require().NoError(err)
+	suite.Equal(&review.ID, response.GithubPrOpenedStateID)
+	suite.Nil(response.GithubPrMergedStateID)
 }

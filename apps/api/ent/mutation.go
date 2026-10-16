@@ -19,6 +19,8 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubrepository"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -74,6 +76,8 @@ const (
 	TypeCycleScopeHistory      = "CycleScopeHistory"
 	TypeDocument               = "Document"
 	TypeFavorite               = "Favorite"
+	TypeGithubIntegration      = "GithubIntegration"
+	TypeGithubRepository       = "GithubRepository"
 	TypeImportJob              = "ImportJob"
 	TypeInitiative             = "Initiative"
 	TypeInitiativePost         = "InitiativePost"
@@ -7997,6 +8001,1544 @@ func (m *FavoriteMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Favorite edge %s", name)
+}
+
+// GithubIntegrationMutation represents an operation that mutates the GithubIntegration nodes in the graph.
+type GithubIntegrationMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	created_at          *time.Time
+	updated_at          *time.Time
+	secret_encrypted    *[]byte
+	secret_prefix       *string
+	last_delivery_at    *time.Time
+	clearedFields       map[string]struct{}
+	workspace           *uuid.UUID
+	clearedworkspace    bool
+	created_by          *uuid.UUID
+	clearedcreated_by   bool
+	repositories        map[uuid.UUID]struct{}
+	removedrepositories map[uuid.UUID]struct{}
+	clearedrepositories bool
+	done                bool
+	oldValue            func(context.Context) (*GithubIntegration, error)
+	predicates          []predicate.GithubIntegration
+}
+
+var _ ent.Mutation = (*GithubIntegrationMutation)(nil)
+
+// githubintegrationOption allows management of the mutation configuration using functional options.
+type githubintegrationOption func(*GithubIntegrationMutation)
+
+// newGithubIntegrationMutation creates new mutation for the GithubIntegration entity.
+func newGithubIntegrationMutation(c config, op Op, opts ...githubintegrationOption) *GithubIntegrationMutation {
+	m := &GithubIntegrationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubIntegration,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubIntegrationID sets the ID field of the mutation.
+func withGithubIntegrationID(id uuid.UUID) githubintegrationOption {
+	return func(m *GithubIntegrationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubIntegration
+		)
+		m.oldValue = func(ctx context.Context) (*GithubIntegration, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubIntegration.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubIntegration sets the old GithubIntegration of the mutation.
+func withGithubIntegration(node *GithubIntegration) githubintegrationOption {
+	return func(m *GithubIntegrationMutation) {
+		m.oldValue = func(context.Context) (*GithubIntegration, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubIntegrationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubIntegrationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GithubIntegration entities.
+func (m *GithubIntegrationMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GithubIntegrationMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GithubIntegrationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GithubIntegration.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GithubIntegrationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GithubIntegrationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GithubIntegrationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GithubIntegrationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GithubIntegrationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GithubIntegrationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (m *GithubIntegrationMutation) SetWorkspaceID(u uuid.UUID) {
+	m.workspace = &u
+}
+
+// WorkspaceID returns the value of the "workspace_id" field in the mutation.
+func (m *GithubIntegrationMutation) WorkspaceID() (r uuid.UUID, exists bool) {
+	v := m.workspace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkspaceID returns the old "workspace_id" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+	}
+	return oldValue.WorkspaceID, nil
+}
+
+// ResetWorkspaceID resets all changes to the "workspace_id" field.
+func (m *GithubIntegrationMutation) ResetWorkspaceID() {
+	m.workspace = nil
+}
+
+// SetSecretEncrypted sets the "secret_encrypted" field.
+func (m *GithubIntegrationMutation) SetSecretEncrypted(b []byte) {
+	m.secret_encrypted = &b
+}
+
+// SecretEncrypted returns the value of the "secret_encrypted" field in the mutation.
+func (m *GithubIntegrationMutation) SecretEncrypted() (r []byte, exists bool) {
+	v := m.secret_encrypted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSecretEncrypted returns the old "secret_encrypted" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldSecretEncrypted(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSecretEncrypted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSecretEncrypted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSecretEncrypted: %w", err)
+	}
+	return oldValue.SecretEncrypted, nil
+}
+
+// ResetSecretEncrypted resets all changes to the "secret_encrypted" field.
+func (m *GithubIntegrationMutation) ResetSecretEncrypted() {
+	m.secret_encrypted = nil
+}
+
+// SetSecretPrefix sets the "secret_prefix" field.
+func (m *GithubIntegrationMutation) SetSecretPrefix(s string) {
+	m.secret_prefix = &s
+}
+
+// SecretPrefix returns the value of the "secret_prefix" field in the mutation.
+func (m *GithubIntegrationMutation) SecretPrefix() (r string, exists bool) {
+	v := m.secret_prefix
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSecretPrefix returns the old "secret_prefix" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldSecretPrefix(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSecretPrefix is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSecretPrefix requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSecretPrefix: %w", err)
+	}
+	return oldValue.SecretPrefix, nil
+}
+
+// ResetSecretPrefix resets all changes to the "secret_prefix" field.
+func (m *GithubIntegrationMutation) ResetSecretPrefix() {
+	m.secret_prefix = nil
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (m *GithubIntegrationMutation) SetCreatedByID(u uuid.UUID) {
+	m.created_by = &u
+}
+
+// CreatedByID returns the value of the "created_by_id" field in the mutation.
+func (m *GithubIntegrationMutation) CreatedByID() (r uuid.UUID, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedByID returns the old "created_by_id" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldCreatedByID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedByID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedByID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedByID: %w", err)
+	}
+	return oldValue.CreatedByID, nil
+}
+
+// ClearCreatedByID clears the value of the "created_by_id" field.
+func (m *GithubIntegrationMutation) ClearCreatedByID() {
+	m.created_by = nil
+	m.clearedFields[githubintegration.FieldCreatedByID] = struct{}{}
+}
+
+// CreatedByIDCleared returns if the "created_by_id" field was cleared in this mutation.
+func (m *GithubIntegrationMutation) CreatedByIDCleared() bool {
+	_, ok := m.clearedFields[githubintegration.FieldCreatedByID]
+	return ok
+}
+
+// ResetCreatedByID resets all changes to the "created_by_id" field.
+func (m *GithubIntegrationMutation) ResetCreatedByID() {
+	m.created_by = nil
+	delete(m.clearedFields, githubintegration.FieldCreatedByID)
+}
+
+// SetLastDeliveryAt sets the "last_delivery_at" field.
+func (m *GithubIntegrationMutation) SetLastDeliveryAt(t time.Time) {
+	m.last_delivery_at = &t
+}
+
+// LastDeliveryAt returns the value of the "last_delivery_at" field in the mutation.
+func (m *GithubIntegrationMutation) LastDeliveryAt() (r time.Time, exists bool) {
+	v := m.last_delivery_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastDeliveryAt returns the old "last_delivery_at" field's value of the GithubIntegration entity.
+// If the GithubIntegration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubIntegrationMutation) OldLastDeliveryAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastDeliveryAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastDeliveryAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastDeliveryAt: %w", err)
+	}
+	return oldValue.LastDeliveryAt, nil
+}
+
+// ClearLastDeliveryAt clears the value of the "last_delivery_at" field.
+func (m *GithubIntegrationMutation) ClearLastDeliveryAt() {
+	m.last_delivery_at = nil
+	m.clearedFields[githubintegration.FieldLastDeliveryAt] = struct{}{}
+}
+
+// LastDeliveryAtCleared returns if the "last_delivery_at" field was cleared in this mutation.
+func (m *GithubIntegrationMutation) LastDeliveryAtCleared() bool {
+	_, ok := m.clearedFields[githubintegration.FieldLastDeliveryAt]
+	return ok
+}
+
+// ResetLastDeliveryAt resets all changes to the "last_delivery_at" field.
+func (m *GithubIntegrationMutation) ResetLastDeliveryAt() {
+	m.last_delivery_at = nil
+	delete(m.clearedFields, githubintegration.FieldLastDeliveryAt)
+}
+
+// ClearWorkspace clears the "workspace" edge to the Workspace entity.
+func (m *GithubIntegrationMutation) ClearWorkspace() {
+	m.clearedworkspace = true
+	m.clearedFields[githubintegration.FieldWorkspaceID] = struct{}{}
+}
+
+// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
+func (m *GithubIntegrationMutation) WorkspaceCleared() bool {
+	return m.clearedworkspace
+}
+
+// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WorkspaceID instead. It exists only for internal usage by the builders.
+func (m *GithubIntegrationMutation) WorkspaceIDs() (ids []uuid.UUID) {
+	if id := m.workspace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWorkspace resets all changes to the "workspace" edge.
+func (m *GithubIntegrationMutation) ResetWorkspace() {
+	m.workspace = nil
+	m.clearedworkspace = false
+}
+
+// ClearCreatedBy clears the "created_by" edge to the User entity.
+func (m *GithubIntegrationMutation) ClearCreatedBy() {
+	m.clearedcreated_by = true
+	m.clearedFields[githubintegration.FieldCreatedByID] = struct{}{}
+}
+
+// CreatedByCleared reports if the "created_by" edge to the User entity was cleared.
+func (m *GithubIntegrationMutation) CreatedByCleared() bool {
+	return m.CreatedByIDCleared() || m.clearedcreated_by
+}
+
+// CreatedByIDs returns the "created_by" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CreatedByID instead. It exists only for internal usage by the builders.
+func (m *GithubIntegrationMutation) CreatedByIDs() (ids []uuid.UUID) {
+	if id := m.created_by; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCreatedBy resets all changes to the "created_by" edge.
+func (m *GithubIntegrationMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.clearedcreated_by = false
+}
+
+// AddRepositoryIDs adds the "repositories" edge to the GithubRepository entity by ids.
+func (m *GithubIntegrationMutation) AddRepositoryIDs(ids ...uuid.UUID) {
+	if m.repositories == nil {
+		m.repositories = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.repositories[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositories clears the "repositories" edge to the GithubRepository entity.
+func (m *GithubIntegrationMutation) ClearRepositories() {
+	m.clearedrepositories = true
+}
+
+// RepositoriesCleared reports if the "repositories" edge to the GithubRepository entity was cleared.
+func (m *GithubIntegrationMutation) RepositoriesCleared() bool {
+	return m.clearedrepositories
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to the GithubRepository entity by IDs.
+func (m *GithubIntegrationMutation) RemoveRepositoryIDs(ids ...uuid.UUID) {
+	if m.removedrepositories == nil {
+		m.removedrepositories = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.repositories, ids[i])
+		m.removedrepositories[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositories returns the removed IDs of the "repositories" edge to the GithubRepository entity.
+func (m *GithubIntegrationMutation) RemovedRepositoriesIDs() (ids []uuid.UUID) {
+	for id := range m.removedrepositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoriesIDs returns the "repositories" edge IDs in the mutation.
+func (m *GithubIntegrationMutation) RepositoriesIDs() (ids []uuid.UUID) {
+	for id := range m.repositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositories resets all changes to the "repositories" edge.
+func (m *GithubIntegrationMutation) ResetRepositories() {
+	m.repositories = nil
+	m.clearedrepositories = false
+	m.removedrepositories = nil
+}
+
+// Where appends a list predicates to the GithubIntegrationMutation builder.
+func (m *GithubIntegrationMutation) Where(ps ...predicate.GithubIntegration) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GithubIntegrationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GithubIntegrationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GithubIntegration, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GithubIntegrationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GithubIntegrationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GithubIntegration).
+func (m *GithubIntegrationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubIntegrationMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.created_at != nil {
+		fields = append(fields, githubintegration.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, githubintegration.FieldUpdatedAt)
+	}
+	if m.workspace != nil {
+		fields = append(fields, githubintegration.FieldWorkspaceID)
+	}
+	if m.secret_encrypted != nil {
+		fields = append(fields, githubintegration.FieldSecretEncrypted)
+	}
+	if m.secret_prefix != nil {
+		fields = append(fields, githubintegration.FieldSecretPrefix)
+	}
+	if m.created_by != nil {
+		fields = append(fields, githubintegration.FieldCreatedByID)
+	}
+	if m.last_delivery_at != nil {
+		fields = append(fields, githubintegration.FieldLastDeliveryAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubIntegrationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubintegration.FieldCreatedAt:
+		return m.CreatedAt()
+	case githubintegration.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case githubintegration.FieldWorkspaceID:
+		return m.WorkspaceID()
+	case githubintegration.FieldSecretEncrypted:
+		return m.SecretEncrypted()
+	case githubintegration.FieldSecretPrefix:
+		return m.SecretPrefix()
+	case githubintegration.FieldCreatedByID:
+		return m.CreatedByID()
+	case githubintegration.FieldLastDeliveryAt:
+		return m.LastDeliveryAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubIntegrationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubintegration.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case githubintegration.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case githubintegration.FieldWorkspaceID:
+		return m.OldWorkspaceID(ctx)
+	case githubintegration.FieldSecretEncrypted:
+		return m.OldSecretEncrypted(ctx)
+	case githubintegration.FieldSecretPrefix:
+		return m.OldSecretPrefix(ctx)
+	case githubintegration.FieldCreatedByID:
+		return m.OldCreatedByID(ctx)
+	case githubintegration.FieldLastDeliveryAt:
+		return m.OldLastDeliveryAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubIntegration field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubIntegrationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubintegration.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case githubintegration.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case githubintegration.FieldWorkspaceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkspaceID(v)
+		return nil
+	case githubintegration.FieldSecretEncrypted:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSecretEncrypted(v)
+		return nil
+	case githubintegration.FieldSecretPrefix:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSecretPrefix(v)
+		return nil
+	case githubintegration.FieldCreatedByID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedByID(v)
+		return nil
+	case githubintegration.FieldLastDeliveryAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastDeliveryAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIntegration field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubIntegrationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubIntegrationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubIntegrationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubIntegration numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubIntegrationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(githubintegration.FieldCreatedByID) {
+		fields = append(fields, githubintegration.FieldCreatedByID)
+	}
+	if m.FieldCleared(githubintegration.FieldLastDeliveryAt) {
+		fields = append(fields, githubintegration.FieldLastDeliveryAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubIntegrationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubIntegrationMutation) ClearField(name string) error {
+	switch name {
+	case githubintegration.FieldCreatedByID:
+		m.ClearCreatedByID()
+		return nil
+	case githubintegration.FieldLastDeliveryAt:
+		m.ClearLastDeliveryAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIntegration nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubIntegrationMutation) ResetField(name string) error {
+	switch name {
+	case githubintegration.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case githubintegration.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case githubintegration.FieldWorkspaceID:
+		m.ResetWorkspaceID()
+		return nil
+	case githubintegration.FieldSecretEncrypted:
+		m.ResetSecretEncrypted()
+		return nil
+	case githubintegration.FieldSecretPrefix:
+		m.ResetSecretPrefix()
+		return nil
+	case githubintegration.FieldCreatedByID:
+		m.ResetCreatedByID()
+		return nil
+	case githubintegration.FieldLastDeliveryAt:
+		m.ResetLastDeliveryAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIntegration field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubIntegrationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.workspace != nil {
+		edges = append(edges, githubintegration.EdgeWorkspace)
+	}
+	if m.created_by != nil {
+		edges = append(edges, githubintegration.EdgeCreatedBy)
+	}
+	if m.repositories != nil {
+		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubIntegrationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubintegration.EdgeWorkspace:
+		if id := m.workspace; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubintegration.EdgeCreatedBy:
+		if id := m.created_by; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubintegration.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.repositories))
+		for id := range m.repositories {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubIntegrationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedrepositories != nil {
+		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubIntegrationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case githubintegration.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.removedrepositories))
+		for id := range m.removedrepositories {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubIntegrationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedworkspace {
+		edges = append(edges, githubintegration.EdgeWorkspace)
+	}
+	if m.clearedcreated_by {
+		edges = append(edges, githubintegration.EdgeCreatedBy)
+	}
+	if m.clearedrepositories {
+		edges = append(edges, githubintegration.EdgeRepositories)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubIntegrationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubintegration.EdgeWorkspace:
+		return m.clearedworkspace
+	case githubintegration.EdgeCreatedBy:
+		return m.clearedcreated_by
+	case githubintegration.EdgeRepositories:
+		return m.clearedrepositories
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubIntegrationMutation) ClearEdge(name string) error {
+	switch name {
+	case githubintegration.EdgeWorkspace:
+		m.ClearWorkspace()
+		return nil
+	case githubintegration.EdgeCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIntegration unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubIntegrationMutation) ResetEdge(name string) error {
+	switch name {
+	case githubintegration.EdgeWorkspace:
+		m.ResetWorkspace()
+		return nil
+	case githubintegration.EdgeCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case githubintegration.EdgeRepositories:
+		m.ResetRepositories()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubIntegration edge %s", name)
+}
+
+// GithubRepositoryMutation represents an operation that mutates the GithubRepository nodes in the graph.
+type GithubRepositoryMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	created_at         *time.Time
+	updated_at         *time.Time
+	full_name          *string
+	last_event_at      *time.Time
+	last_event         *string
+	clearedFields      map[string]struct{}
+	integration        *uuid.UUID
+	clearedintegration bool
+	done               bool
+	oldValue           func(context.Context) (*GithubRepository, error)
+	predicates         []predicate.GithubRepository
+}
+
+var _ ent.Mutation = (*GithubRepositoryMutation)(nil)
+
+// githubrepositoryOption allows management of the mutation configuration using functional options.
+type githubrepositoryOption func(*GithubRepositoryMutation)
+
+// newGithubRepositoryMutation creates new mutation for the GithubRepository entity.
+func newGithubRepositoryMutation(c config, op Op, opts ...githubrepositoryOption) *GithubRepositoryMutation {
+	m := &GithubRepositoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubRepository,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubRepositoryID sets the ID field of the mutation.
+func withGithubRepositoryID(id uuid.UUID) githubrepositoryOption {
+	return func(m *GithubRepositoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubRepository
+		)
+		m.oldValue = func(ctx context.Context) (*GithubRepository, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubRepository.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubRepository sets the old GithubRepository of the mutation.
+func withGithubRepository(node *GithubRepository) githubrepositoryOption {
+	return func(m *GithubRepositoryMutation) {
+		m.oldValue = func(context.Context) (*GithubRepository, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubRepositoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubRepositoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GithubRepository entities.
+func (m *GithubRepositoryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GithubRepositoryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GithubRepositoryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GithubRepository.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GithubRepositoryMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GithubRepositoryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GithubRepositoryMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GithubRepositoryMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GithubRepositoryMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GithubRepositoryMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (m *GithubRepositoryMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *GithubRepositoryMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldIntegrationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *GithubRepositoryMutation) ResetIntegrationID() {
+	m.integration = nil
+}
+
+// SetFullName sets the "full_name" field.
+func (m *GithubRepositoryMutation) SetFullName(s string) {
+	m.full_name = &s
+}
+
+// FullName returns the value of the "full_name" field in the mutation.
+func (m *GithubRepositoryMutation) FullName() (r string, exists bool) {
+	v := m.full_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFullName returns the old "full_name" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldFullName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFullName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFullName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFullName: %w", err)
+	}
+	return oldValue.FullName, nil
+}
+
+// ResetFullName resets all changes to the "full_name" field.
+func (m *GithubRepositoryMutation) ResetFullName() {
+	m.full_name = nil
+}
+
+// SetLastEventAt sets the "last_event_at" field.
+func (m *GithubRepositoryMutation) SetLastEventAt(t time.Time) {
+	m.last_event_at = &t
+}
+
+// LastEventAt returns the value of the "last_event_at" field in the mutation.
+func (m *GithubRepositoryMutation) LastEventAt() (r time.Time, exists bool) {
+	v := m.last_event_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastEventAt returns the old "last_event_at" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldLastEventAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastEventAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastEventAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastEventAt: %w", err)
+	}
+	return oldValue.LastEventAt, nil
+}
+
+// ResetLastEventAt resets all changes to the "last_event_at" field.
+func (m *GithubRepositoryMutation) ResetLastEventAt() {
+	m.last_event_at = nil
+}
+
+// SetLastEvent sets the "last_event" field.
+func (m *GithubRepositoryMutation) SetLastEvent(s string) {
+	m.last_event = &s
+}
+
+// LastEvent returns the value of the "last_event" field in the mutation.
+func (m *GithubRepositoryMutation) LastEvent() (r string, exists bool) {
+	v := m.last_event
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastEvent returns the old "last_event" field's value of the GithubRepository entity.
+// If the GithubRepository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubRepositoryMutation) OldLastEvent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastEvent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastEvent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastEvent: %w", err)
+	}
+	return oldValue.LastEvent, nil
+}
+
+// ResetLastEvent resets all changes to the "last_event" field.
+func (m *GithubRepositoryMutation) ResetLastEvent() {
+	m.last_event = nil
+}
+
+// ClearIntegration clears the "integration" edge to the GithubIntegration entity.
+func (m *GithubRepositoryMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[githubrepository.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the GithubIntegration entity was cleared.
+func (m *GithubRepositoryMutation) IntegrationCleared() bool {
+	return m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *GithubRepositoryMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *GithubRepositoryMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
+// Where appends a list predicates to the GithubRepositoryMutation builder.
+func (m *GithubRepositoryMutation) Where(ps ...predicate.GithubRepository) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GithubRepositoryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GithubRepositoryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GithubRepository, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GithubRepositoryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GithubRepositoryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GithubRepository).
+func (m *GithubRepositoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubRepositoryMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.created_at != nil {
+		fields = append(fields, githubrepository.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, githubrepository.FieldUpdatedAt)
+	}
+	if m.integration != nil {
+		fields = append(fields, githubrepository.FieldIntegrationID)
+	}
+	if m.full_name != nil {
+		fields = append(fields, githubrepository.FieldFullName)
+	}
+	if m.last_event_at != nil {
+		fields = append(fields, githubrepository.FieldLastEventAt)
+	}
+	if m.last_event != nil {
+		fields = append(fields, githubrepository.FieldLastEvent)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubRepositoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubrepository.FieldCreatedAt:
+		return m.CreatedAt()
+	case githubrepository.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case githubrepository.FieldIntegrationID:
+		return m.IntegrationID()
+	case githubrepository.FieldFullName:
+		return m.FullName()
+	case githubrepository.FieldLastEventAt:
+		return m.LastEventAt()
+	case githubrepository.FieldLastEvent:
+		return m.LastEvent()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubRepositoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubrepository.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case githubrepository.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case githubrepository.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
+	case githubrepository.FieldFullName:
+		return m.OldFullName(ctx)
+	case githubrepository.FieldLastEventAt:
+		return m.OldLastEventAt(ctx)
+	case githubrepository.FieldLastEvent:
+		return m.OldLastEvent(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubRepository field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubRepositoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubrepository.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case githubrepository.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case githubrepository.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
+	case githubrepository.FieldFullName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFullName(v)
+		return nil
+	case githubrepository.FieldLastEventAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastEventAt(v)
+		return nil
+	case githubrepository.FieldLastEvent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastEvent(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepository field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubRepositoryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubRepositoryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubRepositoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubRepository numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubRepositoryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubRepositoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubRepositoryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GithubRepository nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubRepositoryMutation) ResetField(name string) error {
+	switch name {
+	case githubrepository.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case githubrepository.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case githubrepository.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
+	case githubrepository.FieldFullName:
+		m.ResetFullName()
+		return nil
+	case githubrepository.FieldLastEventAt:
+		m.ResetLastEventAt()
+		return nil
+	case githubrepository.FieldLastEvent:
+		m.ResetLastEvent()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepository field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubRepositoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.integration != nil {
+		edges = append(edges, githubrepository.EdgeIntegration)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubRepositoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubrepository.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubRepositoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubRepositoryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubRepositoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedintegration {
+		edges = append(edges, githubrepository.EdgeIntegration)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubRepositoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubrepository.EdgeIntegration:
+		return m.clearedintegration
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubRepositoryMutation) ClearEdge(name string) error {
+	switch name {
+	case githubrepository.EdgeIntegration:
+		m.ClearIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepository unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubRepositoryMutation) ResetEdge(name string) error {
+	switch name {
+	case githubrepository.EdgeIntegration:
+		m.ResetIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubRepository edge %s", name)
 }
 
 // ImportJobMutation represents an operation that mutates the ImportJob nodes in the graph.
@@ -36758,78 +38300,82 @@ func (m *SystemSettingMutation) ResetEdge(name string) error {
 // TeamMutation represents an operation that mutates the Team nodes in the graph.
 type TeamMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	created_at              *time.Time
-	updated_at              *time.Time
-	name                    *string
-	key                     *string
-	description             *string
-	icon                    *string
-	color                   *string
-	issue_counter           *int
-	addissue_counter        *int
-	timezone                *string
-	private                 *bool
-	cycles_enabled          *bool
-	cycle_duration_weeks    *int
-	addcycle_duration_weeks *int
-	cycle_cooldown_weeks    *int
-	addcycle_cooldown_weeks *int
-	cycle_start_day         *int
-	addcycle_start_day      *int
-	cycle_auto_move         *bool
-	cycle_auto_add_started  *bool
-	estimate_type           *schema.EstimateType
-	estimate_allow_zero     *bool
-	estimate_extended       *bool
-	triage_enabled          *bool
-	auto_close_months       *int
-	addauto_close_months    *int
-	auto_archive_months     *int
-	addauto_archive_months  *int
-	archived_at             *time.Time
-	clearedFields           map[string]struct{}
-	workspace               *uuid.UUID
-	clearedworkspace        bool
-	default_state           *uuid.UUID
-	cleareddefault_state    bool
-	triage_state            *uuid.UUID
-	clearedtriage_state     bool
-	members                 map[uuid.UUID]struct{}
-	removedmembers          map[uuid.UUID]struct{}
-	clearedmembers          bool
-	states                  map[uuid.UUID]struct{}
-	removedstates           map[uuid.UUID]struct{}
-	clearedstates           bool
-	issues                  map[uuid.UUID]struct{}
-	removedissues           map[uuid.UUID]struct{}
-	clearedissues           bool
-	cycles                  map[uuid.UUID]struct{}
-	removedcycles           map[uuid.UUID]struct{}
-	clearedcycles           bool
-	labels                  map[uuid.UUID]struct{}
-	removedlabels           map[uuid.UUID]struct{}
-	clearedlabels           bool
-	projects                map[uuid.UUID]struct{}
-	removedprojects         map[uuid.UUID]struct{}
-	clearedprojects         bool
-	templates               map[uuid.UUID]struct{}
-	removedtemplates        map[uuid.UUID]struct{}
-	clearedtemplates        bool
-	views                   map[uuid.UUID]struct{}
-	removedviews            map[uuid.UUID]struct{}
-	clearedviews            bool
-	webhooks                map[uuid.UUID]struct{}
-	removedwebhooks         map[uuid.UUID]struct{}
-	clearedwebhooks         bool
-	issue_moves             map[uuid.UUID]struct{}
-	removedissue_moves      map[uuid.UUID]struct{}
-	clearedissue_moves      bool
-	done                    bool
-	oldValue                func(context.Context) (*Team, error)
-	predicates              []predicate.Team
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	name                          *string
+	key                           *string
+	description                   *string
+	icon                          *string
+	color                         *string
+	issue_counter                 *int
+	addissue_counter              *int
+	timezone                      *string
+	private                       *bool
+	cycles_enabled                *bool
+	cycle_duration_weeks          *int
+	addcycle_duration_weeks       *int
+	cycle_cooldown_weeks          *int
+	addcycle_cooldown_weeks       *int
+	cycle_start_day               *int
+	addcycle_start_day            *int
+	cycle_auto_move               *bool
+	cycle_auto_add_started        *bool
+	estimate_type                 *schema.EstimateType
+	estimate_allow_zero           *bool
+	estimate_extended             *bool
+	triage_enabled                *bool
+	auto_close_months             *int
+	addauto_close_months          *int
+	auto_archive_months           *int
+	addauto_archive_months        *int
+	archived_at                   *time.Time
+	clearedFields                 map[string]struct{}
+	workspace                     *uuid.UUID
+	clearedworkspace              bool
+	default_state                 *uuid.UUID
+	cleareddefault_state          bool
+	triage_state                  *uuid.UUID
+	clearedtriage_state           bool
+	github_pr_opened_state        *uuid.UUID
+	clearedgithub_pr_opened_state bool
+	github_pr_merged_state        *uuid.UUID
+	clearedgithub_pr_merged_state bool
+	members                       map[uuid.UUID]struct{}
+	removedmembers                map[uuid.UUID]struct{}
+	clearedmembers                bool
+	states                        map[uuid.UUID]struct{}
+	removedstates                 map[uuid.UUID]struct{}
+	clearedstates                 bool
+	issues                        map[uuid.UUID]struct{}
+	removedissues                 map[uuid.UUID]struct{}
+	clearedissues                 bool
+	cycles                        map[uuid.UUID]struct{}
+	removedcycles                 map[uuid.UUID]struct{}
+	clearedcycles                 bool
+	labels                        map[uuid.UUID]struct{}
+	removedlabels                 map[uuid.UUID]struct{}
+	clearedlabels                 bool
+	projects                      map[uuid.UUID]struct{}
+	removedprojects               map[uuid.UUID]struct{}
+	clearedprojects               bool
+	templates                     map[uuid.UUID]struct{}
+	removedtemplates              map[uuid.UUID]struct{}
+	clearedtemplates              bool
+	views                         map[uuid.UUID]struct{}
+	removedviews                  map[uuid.UUID]struct{}
+	clearedviews                  bool
+	webhooks                      map[uuid.UUID]struct{}
+	removedwebhooks               map[uuid.UUID]struct{}
+	clearedwebhooks               bool
+	issue_moves                   map[uuid.UUID]struct{}
+	removedissue_moves            map[uuid.UUID]struct{}
+	clearedissue_moves            bool
+	done                          bool
+	oldValue                      func(context.Context) (*Team, error)
+	predicates                    []predicate.Team
 }
 
 var _ ent.Mutation = (*TeamMutation)(nil)
@@ -37909,6 +39455,104 @@ func (m *TeamMutation) ResetTriageStateID() {
 	delete(m.clearedFields, team.FieldTriageStateID)
 }
 
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (m *TeamMutation) SetGithubPrOpenedStateID(u uuid.UUID) {
+	m.github_pr_opened_state = &u
+}
+
+// GithubPrOpenedStateID returns the value of the "github_pr_opened_state_id" field in the mutation.
+func (m *TeamMutation) GithubPrOpenedStateID() (r uuid.UUID, exists bool) {
+	v := m.github_pr_opened_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubPrOpenedStateID returns the old "github_pr_opened_state_id" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldGithubPrOpenedStateID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubPrOpenedStateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubPrOpenedStateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubPrOpenedStateID: %w", err)
+	}
+	return oldValue.GithubPrOpenedStateID, nil
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (m *TeamMutation) ClearGithubPrOpenedStateID() {
+	m.github_pr_opened_state = nil
+	m.clearedFields[team.FieldGithubPrOpenedStateID] = struct{}{}
+}
+
+// GithubPrOpenedStateIDCleared returns if the "github_pr_opened_state_id" field was cleared in this mutation.
+func (m *TeamMutation) GithubPrOpenedStateIDCleared() bool {
+	_, ok := m.clearedFields[team.FieldGithubPrOpenedStateID]
+	return ok
+}
+
+// ResetGithubPrOpenedStateID resets all changes to the "github_pr_opened_state_id" field.
+func (m *TeamMutation) ResetGithubPrOpenedStateID() {
+	m.github_pr_opened_state = nil
+	delete(m.clearedFields, team.FieldGithubPrOpenedStateID)
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (m *TeamMutation) SetGithubPrMergedStateID(u uuid.UUID) {
+	m.github_pr_merged_state = &u
+}
+
+// GithubPrMergedStateID returns the value of the "github_pr_merged_state_id" field in the mutation.
+func (m *TeamMutation) GithubPrMergedStateID() (r uuid.UUID, exists bool) {
+	v := m.github_pr_merged_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubPrMergedStateID returns the old "github_pr_merged_state_id" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldGithubPrMergedStateID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubPrMergedStateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubPrMergedStateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubPrMergedStateID: %w", err)
+	}
+	return oldValue.GithubPrMergedStateID, nil
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (m *TeamMutation) ClearGithubPrMergedStateID() {
+	m.github_pr_merged_state = nil
+	m.clearedFields[team.FieldGithubPrMergedStateID] = struct{}{}
+}
+
+// GithubPrMergedStateIDCleared returns if the "github_pr_merged_state_id" field was cleared in this mutation.
+func (m *TeamMutation) GithubPrMergedStateIDCleared() bool {
+	_, ok := m.clearedFields[team.FieldGithubPrMergedStateID]
+	return ok
+}
+
+// ResetGithubPrMergedStateID resets all changes to the "github_pr_merged_state_id" field.
+func (m *TeamMutation) ResetGithubPrMergedStateID() {
+	m.github_pr_merged_state = nil
+	delete(m.clearedFields, team.FieldGithubPrMergedStateID)
+}
+
 // SetAutoCloseMonths sets the "auto_close_months" field.
 func (m *TeamMutation) SetAutoCloseMonths(i int) {
 	m.auto_close_months = &i
@@ -38163,6 +39807,60 @@ func (m *TeamMutation) TriageStateIDs() (ids []uuid.UUID) {
 func (m *TeamMutation) ResetTriageState() {
 	m.triage_state = nil
 	m.clearedtriage_state = false
+}
+
+// ClearGithubPrOpenedState clears the "github_pr_opened_state" edge to the WorkflowState entity.
+func (m *TeamMutation) ClearGithubPrOpenedState() {
+	m.clearedgithub_pr_opened_state = true
+	m.clearedFields[team.FieldGithubPrOpenedStateID] = struct{}{}
+}
+
+// GithubPrOpenedStateCleared reports if the "github_pr_opened_state" edge to the WorkflowState entity was cleared.
+func (m *TeamMutation) GithubPrOpenedStateCleared() bool {
+	return m.GithubPrOpenedStateIDCleared() || m.clearedgithub_pr_opened_state
+}
+
+// GithubPrOpenedStateIDs returns the "github_pr_opened_state" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubPrOpenedStateID instead. It exists only for internal usage by the builders.
+func (m *TeamMutation) GithubPrOpenedStateIDs() (ids []uuid.UUID) {
+	if id := m.github_pr_opened_state; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubPrOpenedState resets all changes to the "github_pr_opened_state" edge.
+func (m *TeamMutation) ResetGithubPrOpenedState() {
+	m.github_pr_opened_state = nil
+	m.clearedgithub_pr_opened_state = false
+}
+
+// ClearGithubPrMergedState clears the "github_pr_merged_state" edge to the WorkflowState entity.
+func (m *TeamMutation) ClearGithubPrMergedState() {
+	m.clearedgithub_pr_merged_state = true
+	m.clearedFields[team.FieldGithubPrMergedStateID] = struct{}{}
+}
+
+// GithubPrMergedStateCleared reports if the "github_pr_merged_state" edge to the WorkflowState entity was cleared.
+func (m *TeamMutation) GithubPrMergedStateCleared() bool {
+	return m.GithubPrMergedStateIDCleared() || m.clearedgithub_pr_merged_state
+}
+
+// GithubPrMergedStateIDs returns the "github_pr_merged_state" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubPrMergedStateID instead. It exists only for internal usage by the builders.
+func (m *TeamMutation) GithubPrMergedStateIDs() (ids []uuid.UUID) {
+	if id := m.github_pr_merged_state; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubPrMergedState resets all changes to the "github_pr_merged_state" edge.
+func (m *TeamMutation) ResetGithubPrMergedState() {
+	m.github_pr_merged_state = nil
+	m.clearedgithub_pr_merged_state = false
 }
 
 // AddMemberIDs adds the "members" edge to the TeamMember entity by ids.
@@ -38739,7 +40437,7 @@ func (m *TeamMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMutation) Fields() []string {
-	fields := make([]string, 0, 26)
+	fields := make([]string, 0, 28)
 	if m.created_at != nil {
 		fields = append(fields, team.FieldCreatedAt)
 	}
@@ -38809,6 +40507,12 @@ func (m *TeamMutation) Fields() []string {
 	if m.triage_state != nil {
 		fields = append(fields, team.FieldTriageStateID)
 	}
+	if m.github_pr_opened_state != nil {
+		fields = append(fields, team.FieldGithubPrOpenedStateID)
+	}
+	if m.github_pr_merged_state != nil {
+		fields = append(fields, team.FieldGithubPrMergedStateID)
+	}
 	if m.auto_close_months != nil {
 		fields = append(fields, team.FieldAutoCloseMonths)
 	}
@@ -38872,6 +40576,10 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 		return m.DefaultStateID()
 	case team.FieldTriageStateID:
 		return m.TriageStateID()
+	case team.FieldGithubPrOpenedStateID:
+		return m.GithubPrOpenedStateID()
+	case team.FieldGithubPrMergedStateID:
+		return m.GithubPrMergedStateID()
 	case team.FieldAutoCloseMonths:
 		return m.AutoCloseMonths()
 	case team.FieldAutoArchiveMonths:
@@ -38933,6 +40641,10 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDefaultStateID(ctx)
 	case team.FieldTriageStateID:
 		return m.OldTriageStateID(ctx)
+	case team.FieldGithubPrOpenedStateID:
+		return m.OldGithubPrOpenedStateID(ctx)
+	case team.FieldGithubPrMergedStateID:
+		return m.OldGithubPrMergedStateID(ctx)
 	case team.FieldAutoCloseMonths:
 		return m.OldAutoCloseMonths(ctx)
 	case team.FieldAutoArchiveMonths:
@@ -39109,6 +40821,20 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTriageStateID(v)
 		return nil
+	case team.FieldGithubPrOpenedStateID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubPrOpenedStateID(v)
+		return nil
+	case team.FieldGithubPrMergedStateID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubPrMergedStateID(v)
+		return nil
 	case team.FieldAutoCloseMonths:
 		v, ok := value.(int)
 		if !ok {
@@ -39250,6 +40976,12 @@ func (m *TeamMutation) ClearedFields() []string {
 	if m.FieldCleared(team.FieldTriageStateID) {
 		fields = append(fields, team.FieldTriageStateID)
 	}
+	if m.FieldCleared(team.FieldGithubPrOpenedStateID) {
+		fields = append(fields, team.FieldGithubPrOpenedStateID)
+	}
+	if m.FieldCleared(team.FieldGithubPrMergedStateID) {
+		fields = append(fields, team.FieldGithubPrMergedStateID)
+	}
 	if m.FieldCleared(team.FieldAutoCloseMonths) {
 		fields = append(fields, team.FieldAutoCloseMonths)
 	}
@@ -39284,6 +41016,12 @@ func (m *TeamMutation) ClearField(name string) error {
 		return nil
 	case team.FieldTriageStateID:
 		m.ClearTriageStateID()
+		return nil
+	case team.FieldGithubPrOpenedStateID:
+		m.ClearGithubPrOpenedStateID()
+		return nil
+	case team.FieldGithubPrMergedStateID:
+		m.ClearGithubPrMergedStateID()
 		return nil
 	case team.FieldAutoCloseMonths:
 		m.ClearAutoCloseMonths()
@@ -39368,6 +41106,12 @@ func (m *TeamMutation) ResetField(name string) error {
 	case team.FieldTriageStateID:
 		m.ResetTriageStateID()
 		return nil
+	case team.FieldGithubPrOpenedStateID:
+		m.ResetGithubPrOpenedStateID()
+		return nil
+	case team.FieldGithubPrMergedStateID:
+		m.ResetGithubPrMergedStateID()
+		return nil
 	case team.FieldAutoCloseMonths:
 		m.ResetAutoCloseMonths()
 		return nil
@@ -39383,7 +41127,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 15)
 	if m.workspace != nil {
 		edges = append(edges, team.EdgeWorkspace)
 	}
@@ -39392,6 +41136,12 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.triage_state != nil {
 		edges = append(edges, team.EdgeTriageState)
+	}
+	if m.github_pr_opened_state != nil {
+		edges = append(edges, team.EdgeGithubPrOpenedState)
+	}
+	if m.github_pr_merged_state != nil {
+		edges = append(edges, team.EdgeGithubPrMergedState)
 	}
 	if m.members != nil {
 		edges = append(edges, team.EdgeMembers)
@@ -39440,6 +41190,14 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 		}
 	case team.EdgeTriageState:
 		if id := m.triage_state; id != nil {
+			return []ent.Value{*id}
+		}
+	case team.EdgeGithubPrOpenedState:
+		if id := m.github_pr_opened_state; id != nil {
+			return []ent.Value{*id}
+		}
+	case team.EdgeGithubPrMergedState:
+		if id := m.github_pr_merged_state; id != nil {
 			return []ent.Value{*id}
 		}
 	case team.EdgeMembers:
@@ -39508,7 +41266,7 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 15)
 	if m.removedmembers != nil {
 		edges = append(edges, team.EdgeMembers)
 	}
@@ -39612,7 +41370,7 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 15)
 	if m.clearedworkspace {
 		edges = append(edges, team.EdgeWorkspace)
 	}
@@ -39621,6 +41379,12 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.clearedtriage_state {
 		edges = append(edges, team.EdgeTriageState)
+	}
+	if m.clearedgithub_pr_opened_state {
+		edges = append(edges, team.EdgeGithubPrOpenedState)
+	}
+	if m.clearedgithub_pr_merged_state {
+		edges = append(edges, team.EdgeGithubPrMergedState)
 	}
 	if m.clearedmembers {
 		edges = append(edges, team.EdgeMembers)
@@ -39665,6 +41429,10 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.cleareddefault_state
 	case team.EdgeTriageState:
 		return m.clearedtriage_state
+	case team.EdgeGithubPrOpenedState:
+		return m.clearedgithub_pr_opened_state
+	case team.EdgeGithubPrMergedState:
+		return m.clearedgithub_pr_merged_state
 	case team.EdgeMembers:
 		return m.clearedmembers
 	case team.EdgeStates:
@@ -39702,6 +41470,12 @@ func (m *TeamMutation) ClearEdge(name string) error {
 	case team.EdgeTriageState:
 		m.ClearTriageState()
 		return nil
+	case team.EdgeGithubPrOpenedState:
+		m.ClearGithubPrOpenedState()
+		return nil
+	case team.EdgeGithubPrMergedState:
+		m.ClearGithubPrMergedState()
+		return nil
 	}
 	return fmt.Errorf("unknown Team unique edge %s", name)
 }
@@ -39718,6 +41492,12 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	case team.EdgeTriageState:
 		m.ResetTriageState()
+		return nil
+	case team.EdgeGithubPrOpenedState:
+		m.ResetGithubPrOpenedState()
+		return nil
+	case team.EdgeGithubPrMergedState:
+		m.ResetGithubPrMergedState()
 		return nil
 	case team.EdgeMembers:
 		m.ResetMembers()
@@ -42911,6 +44691,9 @@ type UserMutation struct {
 	imports                          map[uuid.UUID]struct{}
 	removedimports                   map[uuid.UUID]struct{}
 	clearedimports                   bool
+	github_integrations              map[uuid.UUID]struct{}
+	removedgithub_integrations       map[uuid.UUID]struct{}
+	clearedgithub_integrations       bool
 	done                             bool
 	oldValue                         func(context.Context) (*User, error)
 	predicates                       []predicate.User
@@ -45236,6 +47019,60 @@ func (m *UserMutation) ResetImports() {
 	m.removedimports = nil
 }
 
+// AddGithubIntegrationIDs adds the "github_integrations" edge to the GithubIntegration entity by ids.
+func (m *UserMutation) AddGithubIntegrationIDs(ids ...uuid.UUID) {
+	if m.github_integrations == nil {
+		m.github_integrations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.github_integrations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubIntegrations clears the "github_integrations" edge to the GithubIntegration entity.
+func (m *UserMutation) ClearGithubIntegrations() {
+	m.clearedgithub_integrations = true
+}
+
+// GithubIntegrationsCleared reports if the "github_integrations" edge to the GithubIntegration entity was cleared.
+func (m *UserMutation) GithubIntegrationsCleared() bool {
+	return m.clearedgithub_integrations
+}
+
+// RemoveGithubIntegrationIDs removes the "github_integrations" edge to the GithubIntegration entity by IDs.
+func (m *UserMutation) RemoveGithubIntegrationIDs(ids ...uuid.UUID) {
+	if m.removedgithub_integrations == nil {
+		m.removedgithub_integrations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.github_integrations, ids[i])
+		m.removedgithub_integrations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubIntegrations returns the removed IDs of the "github_integrations" edge to the GithubIntegration entity.
+func (m *UserMutation) RemovedGithubIntegrationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgithub_integrations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubIntegrationsIDs returns the "github_integrations" edge IDs in the mutation.
+func (m *UserMutation) GithubIntegrationsIDs() (ids []uuid.UUID) {
+	for id := range m.github_integrations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubIntegrations resets all changes to the "github_integrations" edge.
+func (m *UserMutation) ResetGithubIntegrations() {
+	m.github_integrations = nil
+	m.clearedgithub_integrations = false
+	m.removedgithub_integrations = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -45554,7 +47391,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 34)
+	edges := make([]string, 0, 35)
 	if m.avatar_upload != nil {
 		edges = append(edges, user.EdgeAvatarUpload)
 	}
@@ -45656,6 +47493,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.imports != nil {
 		edges = append(edges, user.EdgeImports)
+	}
+	if m.github_integrations != nil {
+		edges = append(edges, user.EdgeGithubIntegrations)
 	}
 	return edges
 }
@@ -45864,13 +47704,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGithubIntegrations:
+		ids := make([]ent.Value, 0, len(m.github_integrations))
+		for id := range m.github_integrations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 34)
+	edges := make([]string, 0, 35)
 	if m.removedworkspace_memberships != nil {
 		edges = append(edges, user.EdgeWorkspaceMemberships)
 	}
@@ -45966,6 +47812,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedimports != nil {
 		edges = append(edges, user.EdgeImports)
+	}
+	if m.removedgithub_integrations != nil {
+		edges = append(edges, user.EdgeGithubIntegrations)
 	}
 	return edges
 }
@@ -46166,13 +48015,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGithubIntegrations:
+		ids := make([]ent.Value, 0, len(m.removedgithub_integrations))
+		for id := range m.removedgithub_integrations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 34)
+	edges := make([]string, 0, 35)
 	if m.clearedavatar_upload {
 		edges = append(edges, user.EdgeAvatarUpload)
 	}
@@ -46275,6 +48130,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedimports {
 		edges = append(edges, user.EdgeImports)
 	}
+	if m.clearedgithub_integrations {
+		edges = append(edges, user.EdgeGithubIntegrations)
+	}
 	return edges
 }
 
@@ -46350,6 +48208,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedtemplates
 	case user.EdgeImports:
 		return m.clearedimports
+	case user.EdgeGithubIntegrations:
+		return m.clearedgithub_integrations
 	}
 	return false
 }
@@ -46473,6 +48333,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeImports:
 		m.ResetImports()
+		return nil
+	case user.EdgeGithubIntegrations:
+		m.ResetGithubIntegrations()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
@@ -48588,33 +50451,39 @@ func (m *WebhookMutation) ResetEdge(name string) error {
 // WorkflowStateMutation represents an operation that mutates the WorkflowState nodes in the graph.
 type WorkflowStateMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *uuid.UUID
-	created_at               *time.Time
-	updated_at               *time.Time
-	name                     *string
-	_type                    *schema.StateType
-	color                    *string
-	description              *string
-	position                 *float64
-	addposition              *float64
-	archived_at              *time.Time
-	clearedFields            map[string]struct{}
-	team                     *uuid.UUID
-	clearedteam              bool
-	issues                   map[uuid.UUID]struct{}
-	removedissues            map[uuid.UUID]struct{}
-	clearedissues            bool
-	default_for_teams        map[uuid.UUID]struct{}
-	removeddefault_for_teams map[uuid.UUID]struct{}
-	cleareddefault_for_teams bool
-	triage_for_teams         map[uuid.UUID]struct{}
-	removedtriage_for_teams  map[uuid.UUID]struct{}
-	clearedtriage_for_teams  bool
-	done                     bool
-	oldValue                 func(context.Context) (*WorkflowState, error)
-	predicates               []predicate.WorkflowState
+	op                                Op
+	typ                               string
+	id                                *uuid.UUID
+	created_at                        *time.Time
+	updated_at                        *time.Time
+	name                              *string
+	_type                             *schema.StateType
+	color                             *string
+	description                       *string
+	position                          *float64
+	addposition                       *float64
+	archived_at                       *time.Time
+	clearedFields                     map[string]struct{}
+	team                              *uuid.UUID
+	clearedteam                       bool
+	issues                            map[uuid.UUID]struct{}
+	removedissues                     map[uuid.UUID]struct{}
+	clearedissues                     bool
+	default_for_teams                 map[uuid.UUID]struct{}
+	removeddefault_for_teams          map[uuid.UUID]struct{}
+	cleareddefault_for_teams          bool
+	triage_for_teams                  map[uuid.UUID]struct{}
+	removedtriage_for_teams           map[uuid.UUID]struct{}
+	clearedtriage_for_teams           bool
+	github_pr_opened_for_teams        map[uuid.UUID]struct{}
+	removedgithub_pr_opened_for_teams map[uuid.UUID]struct{}
+	clearedgithub_pr_opened_for_teams bool
+	github_pr_merged_for_teams        map[uuid.UUID]struct{}
+	removedgithub_pr_merged_for_teams map[uuid.UUID]struct{}
+	clearedgithub_pr_merged_for_teams bool
+	done                              bool
+	oldValue                          func(context.Context) (*WorkflowState, error)
+	predicates                        []predicate.WorkflowState
 }
 
 var _ ent.Mutation = (*WorkflowStateMutation)(nil)
@@ -49280,6 +51149,114 @@ func (m *WorkflowStateMutation) ResetTriageForTeams() {
 	m.removedtriage_for_teams = nil
 }
 
+// AddGithubPrOpenedForTeamIDs adds the "github_pr_opened_for_teams" edge to the Team entity by ids.
+func (m *WorkflowStateMutation) AddGithubPrOpenedForTeamIDs(ids ...uuid.UUID) {
+	if m.github_pr_opened_for_teams == nil {
+		m.github_pr_opened_for_teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.github_pr_opened_for_teams[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubPrOpenedForTeams clears the "github_pr_opened_for_teams" edge to the Team entity.
+func (m *WorkflowStateMutation) ClearGithubPrOpenedForTeams() {
+	m.clearedgithub_pr_opened_for_teams = true
+}
+
+// GithubPrOpenedForTeamsCleared reports if the "github_pr_opened_for_teams" edge to the Team entity was cleared.
+func (m *WorkflowStateMutation) GithubPrOpenedForTeamsCleared() bool {
+	return m.clearedgithub_pr_opened_for_teams
+}
+
+// RemoveGithubPrOpenedForTeamIDs removes the "github_pr_opened_for_teams" edge to the Team entity by IDs.
+func (m *WorkflowStateMutation) RemoveGithubPrOpenedForTeamIDs(ids ...uuid.UUID) {
+	if m.removedgithub_pr_opened_for_teams == nil {
+		m.removedgithub_pr_opened_for_teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.github_pr_opened_for_teams, ids[i])
+		m.removedgithub_pr_opened_for_teams[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubPrOpenedForTeams returns the removed IDs of the "github_pr_opened_for_teams" edge to the Team entity.
+func (m *WorkflowStateMutation) RemovedGithubPrOpenedForTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgithub_pr_opened_for_teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubPrOpenedForTeamsIDs returns the "github_pr_opened_for_teams" edge IDs in the mutation.
+func (m *WorkflowStateMutation) GithubPrOpenedForTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.github_pr_opened_for_teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubPrOpenedForTeams resets all changes to the "github_pr_opened_for_teams" edge.
+func (m *WorkflowStateMutation) ResetGithubPrOpenedForTeams() {
+	m.github_pr_opened_for_teams = nil
+	m.clearedgithub_pr_opened_for_teams = false
+	m.removedgithub_pr_opened_for_teams = nil
+}
+
+// AddGithubPrMergedForTeamIDs adds the "github_pr_merged_for_teams" edge to the Team entity by ids.
+func (m *WorkflowStateMutation) AddGithubPrMergedForTeamIDs(ids ...uuid.UUID) {
+	if m.github_pr_merged_for_teams == nil {
+		m.github_pr_merged_for_teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.github_pr_merged_for_teams[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubPrMergedForTeams clears the "github_pr_merged_for_teams" edge to the Team entity.
+func (m *WorkflowStateMutation) ClearGithubPrMergedForTeams() {
+	m.clearedgithub_pr_merged_for_teams = true
+}
+
+// GithubPrMergedForTeamsCleared reports if the "github_pr_merged_for_teams" edge to the Team entity was cleared.
+func (m *WorkflowStateMutation) GithubPrMergedForTeamsCleared() bool {
+	return m.clearedgithub_pr_merged_for_teams
+}
+
+// RemoveGithubPrMergedForTeamIDs removes the "github_pr_merged_for_teams" edge to the Team entity by IDs.
+func (m *WorkflowStateMutation) RemoveGithubPrMergedForTeamIDs(ids ...uuid.UUID) {
+	if m.removedgithub_pr_merged_for_teams == nil {
+		m.removedgithub_pr_merged_for_teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.github_pr_merged_for_teams, ids[i])
+		m.removedgithub_pr_merged_for_teams[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubPrMergedForTeams returns the removed IDs of the "github_pr_merged_for_teams" edge to the Team entity.
+func (m *WorkflowStateMutation) RemovedGithubPrMergedForTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgithub_pr_merged_for_teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubPrMergedForTeamsIDs returns the "github_pr_merged_for_teams" edge IDs in the mutation.
+func (m *WorkflowStateMutation) GithubPrMergedForTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.github_pr_merged_for_teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubPrMergedForTeams resets all changes to the "github_pr_merged_for_teams" edge.
+func (m *WorkflowStateMutation) ResetGithubPrMergedForTeams() {
+	m.github_pr_merged_for_teams = nil
+	m.clearedgithub_pr_merged_for_teams = false
+	m.removedgithub_pr_merged_for_teams = nil
+}
+
 // Where appends a list predicates to the WorkflowStateMutation builder.
 func (m *WorkflowStateMutation) Where(ps ...predicate.WorkflowState) {
 	m.predicates = append(m.predicates, ps...)
@@ -49579,7 +51556,7 @@ func (m *WorkflowStateMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkflowStateMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.team != nil {
 		edges = append(edges, workflowstate.EdgeTeam)
 	}
@@ -49591,6 +51568,12 @@ func (m *WorkflowStateMutation) AddedEdges() []string {
 	}
 	if m.triage_for_teams != nil {
 		edges = append(edges, workflowstate.EdgeTriageForTeams)
+	}
+	if m.github_pr_opened_for_teams != nil {
+		edges = append(edges, workflowstate.EdgeGithubPrOpenedForTeams)
+	}
+	if m.github_pr_merged_for_teams != nil {
+		edges = append(edges, workflowstate.EdgeGithubPrMergedForTeams)
 	}
 	return edges
 }
@@ -49621,13 +51604,25 @@ func (m *WorkflowStateMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case workflowstate.EdgeGithubPrOpenedForTeams:
+		ids := make([]ent.Value, 0, len(m.github_pr_opened_for_teams))
+		for id := range m.github_pr_opened_for_teams {
+			ids = append(ids, id)
+		}
+		return ids
+	case workflowstate.EdgeGithubPrMergedForTeams:
+		ids := make([]ent.Value, 0, len(m.github_pr_merged_for_teams))
+		for id := range m.github_pr_merged_for_teams {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkflowStateMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.removedissues != nil {
 		edges = append(edges, workflowstate.EdgeIssues)
 	}
@@ -49636,6 +51631,12 @@ func (m *WorkflowStateMutation) RemovedEdges() []string {
 	}
 	if m.removedtriage_for_teams != nil {
 		edges = append(edges, workflowstate.EdgeTriageForTeams)
+	}
+	if m.removedgithub_pr_opened_for_teams != nil {
+		edges = append(edges, workflowstate.EdgeGithubPrOpenedForTeams)
+	}
+	if m.removedgithub_pr_merged_for_teams != nil {
+		edges = append(edges, workflowstate.EdgeGithubPrMergedForTeams)
 	}
 	return edges
 }
@@ -49662,13 +51663,25 @@ func (m *WorkflowStateMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case workflowstate.EdgeGithubPrOpenedForTeams:
+		ids := make([]ent.Value, 0, len(m.removedgithub_pr_opened_for_teams))
+		for id := range m.removedgithub_pr_opened_for_teams {
+			ids = append(ids, id)
+		}
+		return ids
+	case workflowstate.EdgeGithubPrMergedForTeams:
+		ids := make([]ent.Value, 0, len(m.removedgithub_pr_merged_for_teams))
+		for id := range m.removedgithub_pr_merged_for_teams {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkflowStateMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedteam {
 		edges = append(edges, workflowstate.EdgeTeam)
 	}
@@ -49680,6 +51693,12 @@ func (m *WorkflowStateMutation) ClearedEdges() []string {
 	}
 	if m.clearedtriage_for_teams {
 		edges = append(edges, workflowstate.EdgeTriageForTeams)
+	}
+	if m.clearedgithub_pr_opened_for_teams {
+		edges = append(edges, workflowstate.EdgeGithubPrOpenedForTeams)
+	}
+	if m.clearedgithub_pr_merged_for_teams {
+		edges = append(edges, workflowstate.EdgeGithubPrMergedForTeams)
 	}
 	return edges
 }
@@ -49696,6 +51715,10 @@ func (m *WorkflowStateMutation) EdgeCleared(name string) bool {
 		return m.cleareddefault_for_teams
 	case workflowstate.EdgeTriageForTeams:
 		return m.clearedtriage_for_teams
+	case workflowstate.EdgeGithubPrOpenedForTeams:
+		return m.clearedgithub_pr_opened_for_teams
+	case workflowstate.EdgeGithubPrMergedForTeams:
+		return m.clearedgithub_pr_merged_for_teams
 	}
 	return false
 }
@@ -49727,6 +51750,12 @@ func (m *WorkflowStateMutation) ResetEdge(name string) error {
 	case workflowstate.EdgeTriageForTeams:
 		m.ResetTriageForTeams()
 		return nil
+	case workflowstate.EdgeGithubPrOpenedForTeams:
+		m.ResetGithubPrOpenedForTeams()
+		return nil
+	case workflowstate.EdgeGithubPrMergedForTeams:
+		m.ResetGithubPrMergedForTeams()
+		return nil
 	}
 	return fmt.Errorf("unknown WorkflowState edge %s", name)
 }
@@ -49734,70 +51763,72 @@ func (m *WorkflowStateMutation) ResetEdge(name string) error {
 // WorkspaceMutation represents an operation that mutates the Workspace nodes in the graph.
 type WorkspaceMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	created_at              *time.Time
-	updated_at              *time.Time
-	name                    *string
-	slug                    *string
-	icon                    *string
-	color                   *string
-	archived_at             *time.Time
-	clearedFields           map[string]struct{}
-	members                 map[uuid.UUID]struct{}
-	removedmembers          map[uuid.UUID]struct{}
-	clearedmembers          bool
-	teams                   map[uuid.UUID]struct{}
-	removedteams            map[uuid.UUID]struct{}
-	clearedteams            bool
-	projects                map[uuid.UUID]struct{}
-	removedprojects         map[uuid.UUID]struct{}
-	clearedprojects         bool
-	project_statuses        map[uuid.UUID]struct{}
-	removedproject_statuses map[uuid.UUID]struct{}
-	clearedproject_statuses bool
-	labels                  map[uuid.UUID]struct{}
-	removedlabels           map[uuid.UUID]struct{}
-	clearedlabels           bool
-	initiatives             map[uuid.UUID]struct{}
-	removedinitiatives      map[uuid.UUID]struct{}
-	clearedinitiatives      bool
-	documents               map[uuid.UUID]struct{}
-	removeddocuments        map[uuid.UUID]struct{}
-	cleareddocuments        bool
-	views                   map[uuid.UUID]struct{}
-	removedviews            map[uuid.UUID]struct{}
-	clearedviews            bool
-	invitations             map[uuid.UUID]struct{}
-	removedinvitations      map[uuid.UUID]struct{}
-	clearedinvitations      bool
-	webhooks                map[uuid.UUID]struct{}
-	removedwebhooks         map[uuid.UUID]struct{}
-	clearedwebhooks         bool
-	uploads                 map[uuid.UUID]struct{}
-	removeduploads          map[uuid.UUID]struct{}
-	cleareduploads          bool
-	templates               map[uuid.UUID]struct{}
-	removedtemplates        map[uuid.UUID]struct{}
-	clearedtemplates        bool
-	imports                 map[uuid.UUID]struct{}
-	removedimports          map[uuid.UUID]struct{}
-	clearedimports          bool
-	issues                  map[uuid.UUID]struct{}
-	removedissues           map[uuid.UUID]struct{}
-	clearedissues           bool
-	notifications           map[uuid.UUID]struct{}
-	removednotifications    map[uuid.UUID]struct{}
-	clearednotifications    bool
-	favorites               map[uuid.UUID]struct{}
-	removedfavorites        map[uuid.UUID]struct{}
-	clearedfavorites        bool
-	icon_upload             *uuid.UUID
-	clearedicon_upload      bool
-	done                    bool
-	oldValue                func(context.Context) (*Workspace, error)
-	predicates              []predicate.Workspace
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	created_at                *time.Time
+	updated_at                *time.Time
+	name                      *string
+	slug                      *string
+	icon                      *string
+	color                     *string
+	archived_at               *time.Time
+	clearedFields             map[string]struct{}
+	members                   map[uuid.UUID]struct{}
+	removedmembers            map[uuid.UUID]struct{}
+	clearedmembers            bool
+	teams                     map[uuid.UUID]struct{}
+	removedteams              map[uuid.UUID]struct{}
+	clearedteams              bool
+	projects                  map[uuid.UUID]struct{}
+	removedprojects           map[uuid.UUID]struct{}
+	clearedprojects           bool
+	project_statuses          map[uuid.UUID]struct{}
+	removedproject_statuses   map[uuid.UUID]struct{}
+	clearedproject_statuses   bool
+	labels                    map[uuid.UUID]struct{}
+	removedlabels             map[uuid.UUID]struct{}
+	clearedlabels             bool
+	initiatives               map[uuid.UUID]struct{}
+	removedinitiatives        map[uuid.UUID]struct{}
+	clearedinitiatives        bool
+	documents                 map[uuid.UUID]struct{}
+	removeddocuments          map[uuid.UUID]struct{}
+	cleareddocuments          bool
+	views                     map[uuid.UUID]struct{}
+	removedviews              map[uuid.UUID]struct{}
+	clearedviews              bool
+	invitations               map[uuid.UUID]struct{}
+	removedinvitations        map[uuid.UUID]struct{}
+	clearedinvitations        bool
+	webhooks                  map[uuid.UUID]struct{}
+	removedwebhooks           map[uuid.UUID]struct{}
+	clearedwebhooks           bool
+	uploads                   map[uuid.UUID]struct{}
+	removeduploads            map[uuid.UUID]struct{}
+	cleareduploads            bool
+	templates                 map[uuid.UUID]struct{}
+	removedtemplates          map[uuid.UUID]struct{}
+	clearedtemplates          bool
+	imports                   map[uuid.UUID]struct{}
+	removedimports            map[uuid.UUID]struct{}
+	clearedimports            bool
+	issues                    map[uuid.UUID]struct{}
+	removedissues             map[uuid.UUID]struct{}
+	clearedissues             bool
+	notifications             map[uuid.UUID]struct{}
+	removednotifications      map[uuid.UUID]struct{}
+	clearednotifications      bool
+	favorites                 map[uuid.UUID]struct{}
+	removedfavorites          map[uuid.UUID]struct{}
+	clearedfavorites          bool
+	github_integration        *uuid.UUID
+	clearedgithub_integration bool
+	icon_upload               *uuid.UUID
+	clearedicon_upload        bool
+	done                      bool
+	oldValue                  func(context.Context) (*Workspace, error)
+	predicates                []predicate.Workspace
 }
 
 var _ ent.Mutation = (*WorkspaceMutation)(nil)
@@ -51108,6 +53139,45 @@ func (m *WorkspaceMutation) ResetFavorites() {
 	m.removedfavorites = nil
 }
 
+// SetGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by id.
+func (m *WorkspaceMutation) SetGithubIntegrationID(id uuid.UUID) {
+	m.github_integration = &id
+}
+
+// ClearGithubIntegration clears the "github_integration" edge to the GithubIntegration entity.
+func (m *WorkspaceMutation) ClearGithubIntegration() {
+	m.clearedgithub_integration = true
+}
+
+// GithubIntegrationCleared reports if the "github_integration" edge to the GithubIntegration entity was cleared.
+func (m *WorkspaceMutation) GithubIntegrationCleared() bool {
+	return m.clearedgithub_integration
+}
+
+// GithubIntegrationID returns the "github_integration" edge ID in the mutation.
+func (m *WorkspaceMutation) GithubIntegrationID() (id uuid.UUID, exists bool) {
+	if m.github_integration != nil {
+		return *m.github_integration, true
+	}
+	return
+}
+
+// GithubIntegrationIDs returns the "github_integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubIntegrationID instead. It exists only for internal usage by the builders.
+func (m *WorkspaceMutation) GithubIntegrationIDs() (ids []uuid.UUID) {
+	if id := m.github_integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubIntegration resets all changes to the "github_integration" edge.
+func (m *WorkspaceMutation) ResetGithubIntegration() {
+	m.github_integration = nil
+	m.clearedgithub_integration = false
+}
+
 // ClearIconUpload clears the "icon_upload" edge to the Upload entity.
 func (m *WorkspaceMutation) ClearIconUpload() {
 	m.clearedicon_upload = true
@@ -51414,7 +53484,7 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkspaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.members != nil {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51462,6 +53532,9 @@ func (m *WorkspaceMutation) AddedEdges() []string {
 	}
 	if m.favorites != nil {
 		edges = append(edges, workspace.EdgeFavorites)
+	}
+	if m.github_integration != nil {
+		edges = append(edges, workspace.EdgeGithubIntegration)
 	}
 	if m.icon_upload != nil {
 		edges = append(edges, workspace.EdgeIconUpload)
@@ -51569,6 +53642,10 @@ func (m *WorkspaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case workspace.EdgeGithubIntegration:
+		if id := m.github_integration; id != nil {
+			return []ent.Value{*id}
+		}
 	case workspace.EdgeIconUpload:
 		if id := m.icon_upload; id != nil {
 			return []ent.Value{*id}
@@ -51579,7 +53656,7 @@ func (m *WorkspaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkspaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.removedmembers != nil {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51737,7 +53814,7 @@ func (m *WorkspaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkspaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.clearedmembers {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51786,6 +53863,9 @@ func (m *WorkspaceMutation) ClearedEdges() []string {
 	if m.clearedfavorites {
 		edges = append(edges, workspace.EdgeFavorites)
 	}
+	if m.clearedgithub_integration {
+		edges = append(edges, workspace.EdgeGithubIntegration)
+	}
 	if m.clearedicon_upload {
 		edges = append(edges, workspace.EdgeIconUpload)
 	}
@@ -51828,6 +53908,8 @@ func (m *WorkspaceMutation) EdgeCleared(name string) bool {
 		return m.clearednotifications
 	case workspace.EdgeFavorites:
 		return m.clearedfavorites
+	case workspace.EdgeGithubIntegration:
+		return m.clearedgithub_integration
 	case workspace.EdgeIconUpload:
 		return m.clearedicon_upload
 	}
@@ -51838,6 +53920,9 @@ func (m *WorkspaceMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *WorkspaceMutation) ClearEdge(name string) error {
 	switch name {
+	case workspace.EdgeGithubIntegration:
+		m.ClearGithubIntegration()
+		return nil
 	case workspace.EdgeIconUpload:
 		m.ClearIconUpload()
 		return nil
@@ -51896,6 +53981,9 @@ func (m *WorkspaceMutation) ResetEdge(name string) error {
 		return nil
 	case workspace.EdgeFavorites:
 		m.ResetFavorites()
+		return nil
+	case workspace.EdgeGithubIntegration:
+		m.ResetGithubIntegration()
 		return nil
 	case workspace.EdgeIconUpload:
 		m.ResetIconUpload()

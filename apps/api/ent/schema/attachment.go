@@ -25,7 +25,7 @@ func (Attachment) Fields() []ent.Field {
 		field.String("title"),
 		field.String("subtitle").Optional(),
 		field.String("url"),
-		field.String("source_type").Optional().Comment("upload, link, github or import"),
+		field.String("source_type").Optional().Comment("upload, link, github, github_branch or import"),
 		field.UUID("upload_id", uuid.UUID{}).Optional().Nillable(),
 		field.JSON("metadata", map[string]any{}).Optional(),
 		field.Float("sort_order").Default(0),

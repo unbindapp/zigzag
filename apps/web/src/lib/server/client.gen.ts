@@ -193,7 +193,7 @@ export const AttachmentResponseSchema = z
     issue_id: z.string(),
     metadata: z.record(z.any()),
     sort_order: z.number(),
-    source_type: z.string(), // upload, link, github or import
+    source_type: z.string(), // upload, link, github (a pull request), github_branch or import
     subtitle: z.string(),
     title: z.string(),
     updated_at: z.string().datetime({ offset: true }),
@@ -793,6 +793,12 @@ export const DeleteAPIKeyResponseBodySchema = z
   })
   .strip();
 
+export const DeleteGithubResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const DeleteProjectStatusInputSchema = z
   .object({
     move_to_status_id: z.string(), // Another status of the same workspace that receives the deleted status's projects
@@ -996,7 +1002,7 @@ export const FavoriteTargetInputSchema = z
 
 export const FieldChangeSchema = z
   .object({
-    field: z.string(), // Changed field: title, description, state, priority, estimate, assignee, project, milestone, cycle, parent, due_date, labels_added, labels_removed, relation_added, relation_removed, attachment_added, attachment_removed, archived, unarchived, trashed, restored, team, created, imported
+    field: z.string(), // Changed field: title, description, state, priority, estimate, assignee, project, milestone, cycle, parent, due_date, labels_added, labels_removed, relation_added, relation_removed, attachment_added, attachment_removed, github, archived, unarchived, trashed, restored, team, created, imported
     from: z.any().optional(), // Previous value, usually an id or a scalar
     from_label: z.string().optional(), // Human readable previous value
     to: z.any().optional(), // New value, usually an id or a scalar
@@ -1007,6 +1013,42 @@ export const FieldChangeSchema = z
 export const GetClientResponseBodySchema = z
   .object({
     data: ConnectedAppClientResponseSchema,
+  })
+  .strip();
+
+export const GithubRepositoryResponseSchema = z
+  .object({
+    full_name: z.string(), // owner/name on GitHub
+    id: z.string(),
+    last_event: z.string(), // Last event GitHub delivered for it, like pull_request.opened or push
+    last_event_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const GithubIntegrationResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    created_by: UserSummarySchema.optional(),
+    id: z.string(),
+    last_delivery_at: z.string().datetime({ offset: true }).nullable(), // When GitHub last delivered an event with a valid signature
+    repositories: z.array(GithubRepositoryResponseSchema), // Repositories that delivered events, most recent first
+    secret_prefix: z.string(), // First characters of the webhook secret, to tell secrets apart
+    webhook_url: z.string(), // Payload URL for the GitHub webhook
+    workspace_id: z.string(),
+  })
+  .strip();
+
+export const GithubIntegrationStatusResponseSchema = z
+  .object({
+    connected: z.boolean(), // Whether the workspace has a GitHub webhook secret
+    integration: GithubIntegrationResponseSchema.optional(), // Present when connected
+    webhook_url: z.string(), // Payload URL for the GitHub webhook
+  })
+  .strip();
+
+export const GetGithubResponseBodySchema = z
+  .object({
+    data: GithubIntegrationStatusResponseSchema,
   })
   .strip();
 
@@ -1023,6 +1065,45 @@ export const InvitationPreviewResponseSchema = z
 export const GetInvitationResponseBodySchema = z
   .object({
     data: InvitationPreviewResponseSchema,
+  })
+  .strip();
+
+export const GithubDeliveryResponseSchema = z
+  .object({
+    event: z.string(), // The X-GitHub-Event header
+    handled: z.boolean(), // False when Zigzag ignores this event or action
+  })
+  .strip();
+
+export const GithubIntegrationRefInputSchema = z
+  .object({
+    workspace_id: z.string(), // Workspace whose GitHub connection to change
+  })
+  .strip();
+
+export const GithubIntegrationSecretResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    created_by: UserSummarySchema.optional(),
+    id: z.string(),
+    last_delivery_at: z.string().datetime({ offset: true }).nullable(), // When GitHub last delivered an event with a valid signature
+    repositories: z.array(GithubRepositoryResponseSchema), // Repositories that delivered events, most recent first
+    secret: z.string(), // Webhook secret to paste into GitHub. Returned only here, store it now
+    secret_prefix: z.string(), // First characters of the webhook secret, to tell secrets apart
+    webhook_url: z.string(), // Payload URL for the GitHub webhook
+    workspace_id: z.string(),
+  })
+  .strip();
+
+export const GithubSecretResponseBodySchema = z
+  .object({
+    data: GithubIntegrationSecretResponseSchema,
+  })
+  .strip();
+
+export const GithubWebhookResponseBodySchema = z
+  .object({
+    data: GithubDeliveryResponseSchema,
   })
   .strip();
 
@@ -2194,6 +2275,8 @@ export const TeamResponseSchema = z
     estimate_allow_zero: z.boolean(),
     estimate_extended: z.boolean(),
     estimate_type: EstimateTypeSchema,
+    github_pr_merged_state_id: z.string().nullable(), // State a merged pull request moves the issues it fixes to; null means the first completed state
+    github_pr_opened_state_id: z.string().nullable(), // State a linked pull request opening moves issues to; null means the first started state
     icon: z.string(),
     id: z.string(),
     is_member: z.boolean(), // Whether the caller is on this team
@@ -2472,6 +2555,8 @@ export const UpdateTeamInputSchema = z
     estimate_allow_zero: z.boolean().optional(), // Allow a zero estimate
     estimate_extended: z.boolean().optional(), // Offer the extended estimate scale
     estimate_type: EstimateTypeSchema.optional(), // none, exponential, fibonacci, linear or tshirt
+    github_pr_merged_state_id: z.string().optional(), // State an issue moves to when a pull request that fixes, closes or resolves it merges; one of this team's states, the nil uuid restores the default, the first completed state
+    github_pr_opened_state_id: z.string().optional(), // State an issue moves to from triage, backlog or unstarted when a linked pull request opens or its branch is pushed; one of this team's states, the nil uuid restores the default, the first started state
     icon: z.string().optional(), // Emoji or icon name, empty to clear
     key: z.string().optional(), // New issue prefix; existing identifiers change with it
     name: z.string().optional(), // New name
@@ -2832,6 +2917,7 @@ export type CycleRefInput = z.infer<typeof CycleRefInputSchema>;
 export type CycleResponseBody = z.infer<typeof CycleResponseBodySchema>;
 export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
 export type DeleteAPIKeyResponseBody = z.infer<typeof DeleteAPIKeyResponseBodySchema>;
+export type DeleteGithubResponseBody = z.infer<typeof DeleteGithubResponseBodySchema>;
 export type DeleteProjectStatusInput = z.infer<typeof DeleteProjectStatusInputSchema>;
 export type DeleteStateInput = z.infer<typeof DeleteStateInputSchema>;
 export type DeleteTeamInput = z.infer<typeof DeleteTeamInputSchema>;
@@ -2859,8 +2945,17 @@ export type FavoriteResponseBody = z.infer<typeof FavoriteResponseBodySchema>;
 export type FavoriteTargetInput = z.infer<typeof FavoriteTargetInputSchema>;
 export type FieldChange = z.infer<typeof FieldChangeSchema>;
 export type GetClientResponseBody = z.infer<typeof GetClientResponseBodySchema>;
+export type GithubRepositoryResponse = z.infer<typeof GithubRepositoryResponseSchema>;
+export type GithubIntegrationResponse = z.infer<typeof GithubIntegrationResponseSchema>;
+export type GithubIntegrationStatusResponse = z.infer<typeof GithubIntegrationStatusResponseSchema>;
+export type GetGithubResponseBody = z.infer<typeof GetGithubResponseBodySchema>;
 export type InvitationPreviewResponse = z.infer<typeof InvitationPreviewResponseSchema>;
 export type GetInvitationResponseBody = z.infer<typeof GetInvitationResponseBodySchema>;
+export type GithubDeliveryResponse = z.infer<typeof GithubDeliveryResponseSchema>;
+export type GithubIntegrationRefInput = z.infer<typeof GithubIntegrationRefInputSchema>;
+export type GithubIntegrationSecretResponse = z.infer<typeof GithubIntegrationSecretResponseSchema>;
+export type GithubSecretResponseBody = z.infer<typeof GithubSecretResponseBodySchema>;
+export type GithubWebhookResponseBody = z.infer<typeof GithubWebhookResponseBodySchema>;
 export type HistorySource = z.infer<typeof HistorySourceSchema>;
 export type HistoryResponse = z.infer<typeof HistoryResponseSchema>;
 export type HistoryListResponseBody = z.infer<typeof HistoryListResponseBodySchema>;
@@ -3121,6 +3216,18 @@ export const list_initiativesQuerySchema = z
 export const list_initiative_updatesQuerySchema = z
   .object({
     initiative_id: z.string(), // The initiative
+  })
+  .passthrough();
+
+export const get_github_integrationQuerySchema = z
+  .object({
+    workspace_id: z.string(), // Workspace whose GitHub connection to read
+  })
+  .passthrough();
+
+export const github_webhookQuerySchema = z
+  .object({
+    workspace_id: z.string(), // Workspace the delivery is for, part of the webhook URL shown in Zigzag
   })
   .passthrough();
 
@@ -5471,6 +5578,232 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             const data = await response.json();
             const { data: parsedData, error } =
               InitiativeUpdateListResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+      },
+    },
+    integrations: {
+      github: {
+        create: async (
+          params: GithubIntegrationRefInput,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubSecretResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/create`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubIntegrationRefInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubSecretResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        delete: async (
+          params: GithubIntegrationRefInput,
+          fetchOptions?: RequestInit,
+        ): Promise<DeleteGithubResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubIntegrationRefInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = DeleteGithubResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof get_github_integrationQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GetGithubResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = get_github_integrationQuerySchema.parse(params);
+            const queryKeys = ['workspace_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GetGithubResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        regenerateSecret: async (
+          params: GithubIntegrationRefInput,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubSecretResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/regenerate-secret`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubIntegrationRefInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubSecretResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        webhook: async (
+          params: z.infer<typeof github_webhookQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubWebhookResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/integrations/github/webhook`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = github_webhookQuerySchema.parse(params);
+            const queryKeys = ['workspace_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubWebhookResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

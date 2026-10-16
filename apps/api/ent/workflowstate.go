@@ -55,9 +55,13 @@ type WorkflowStateEdges struct {
 	DefaultForTeams []*Team `json:"default_for_teams,omitempty"`
 	// TriageForTeams holds the value of the triage_for_teams edge.
 	TriageForTeams []*Team `json:"triage_for_teams,omitempty"`
+	// GithubPrOpenedForTeams holds the value of the github_pr_opened_for_teams edge.
+	GithubPrOpenedForTeams []*Team `json:"github_pr_opened_for_teams,omitempty"`
+	// GithubPrMergedForTeams holds the value of the github_pr_merged_for_teams edge.
+	GithubPrMergedForTeams []*Team `json:"github_pr_merged_for_teams,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // TeamOrErr returns the Team value or an error if the edge
@@ -96,6 +100,24 @@ func (e WorkflowStateEdges) TriageForTeamsOrErr() ([]*Team, error) {
 		return e.TriageForTeams, nil
 	}
 	return nil, &NotLoadedError{edge: "triage_for_teams"}
+}
+
+// GithubPrOpenedForTeamsOrErr returns the GithubPrOpenedForTeams value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowStateEdges) GithubPrOpenedForTeamsOrErr() ([]*Team, error) {
+	if e.loadedTypes[4] {
+		return e.GithubPrOpenedForTeams, nil
+	}
+	return nil, &NotLoadedError{edge: "github_pr_opened_for_teams"}
+}
+
+// GithubPrMergedForTeamsOrErr returns the GithubPrMergedForTeams value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowStateEdges) GithubPrMergedForTeamsOrErr() ([]*Team, error) {
+	if e.loadedTypes[5] {
+		return e.GithubPrMergedForTeams, nil
+	}
+	return nil, &NotLoadedError{edge: "github_pr_merged_for_teams"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -218,6 +240,16 @@ func (_m *WorkflowState) QueryDefaultForTeams() *TeamQuery {
 // QueryTriageForTeams queries the "triage_for_teams" edge of the WorkflowState entity.
 func (_m *WorkflowState) QueryTriageForTeams() *TeamQuery {
 	return NewWorkflowStateClient(_m.config).QueryTriageForTeams(_m)
+}
+
+// QueryGithubPrOpenedForTeams queries the "github_pr_opened_for_teams" edge of the WorkflowState entity.
+func (_m *WorkflowState) QueryGithubPrOpenedForTeams() *TeamQuery {
+	return NewWorkflowStateClient(_m.config).QueryGithubPrOpenedForTeams(_m)
+}
+
+// QueryGithubPrMergedForTeams queries the "github_pr_merged_for_teams" edge of the WorkflowState entity.
+func (_m *WorkflowState) QueryGithubPrMergedForTeams() *TeamQuery {
+	return NewWorkflowStateClient(_m.config).QueryGithubPrMergedForTeams(_m)
 }
 
 // Update returns a builder for updating this WorkflowState.

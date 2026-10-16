@@ -88,12 +88,16 @@ func hostOf(remoteAddr string) string {
 	return host
 }
 
-const credentialAttemptsPerMinute = 10
+const (
+	credentialAttemptsPerMinute = 10
+	webhookDeliveriesPerMinute  = 600
+)
 
 var limitedOperations = map[string]int{
 	"login":                  credentialAttemptsPerMinute,
 	"request-password-reset": credentialAttemptsPerMinute,
 	"accept-invitation":      credentialAttemptsPerMinute,
+	"github-webhook":         webhookDeliveriesPerMinute,
 }
 
 func (self *Middleware) RateLimitOperations(ctx huma.Context, next func(huma.Context)) {

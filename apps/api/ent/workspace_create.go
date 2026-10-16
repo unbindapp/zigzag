@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/invitation"
@@ -388,6 +389,25 @@ func (_c *WorkspaceCreate) AddFavorites(v ...*Favorite) *WorkspaceCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddFavoriteIDs(ids...)
+}
+
+// SetGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID.
+func (_c *WorkspaceCreate) SetGithubIntegrationID(id uuid.UUID) *WorkspaceCreate {
+	_c.mutation.SetGithubIntegrationID(id)
+	return _c
+}
+
+// SetNillableGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableGithubIntegrationID(id *uuid.UUID) *WorkspaceCreate {
+	if id != nil {
+		_c = _c.SetGithubIntegrationID(*id)
+	}
+	return _c
+}
+
+// SetGithubIntegration sets the "github_integration" edge to the GithubIntegration entity.
+func (_c *WorkspaceCreate) SetGithubIntegration(v *GithubIntegration) *WorkspaceCreate {
+	return _c.SetGithubIntegrationID(v.ID)
 }
 
 // SetIconUpload sets the "icon_upload" edge to the Upload entity.
@@ -776,6 +796,22 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(favorite.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubIntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   workspace.GithubIntegrationTable,
+			Columns: []string{workspace.GithubIntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

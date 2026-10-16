@@ -206,6 +206,36 @@ func (_u *WorkflowStateUpdate) AddTriageForTeams(v ...*Team) *WorkflowStateUpdat
 	return _u.AddTriageForTeamIDs(ids...)
 }
 
+// AddGithubPrOpenedForTeamIDs adds the "github_pr_opened_for_teams" edge to the Team entity by IDs.
+func (_u *WorkflowStateUpdate) AddGithubPrOpenedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdate {
+	_u.mutation.AddGithubPrOpenedForTeamIDs(ids...)
+	return _u
+}
+
+// AddGithubPrOpenedForTeams adds the "github_pr_opened_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdate) AddGithubPrOpenedForTeams(v ...*Team) *WorkflowStateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubPrOpenedForTeamIDs(ids...)
+}
+
+// AddGithubPrMergedForTeamIDs adds the "github_pr_merged_for_teams" edge to the Team entity by IDs.
+func (_u *WorkflowStateUpdate) AddGithubPrMergedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdate {
+	_u.mutation.AddGithubPrMergedForTeamIDs(ids...)
+	return _u
+}
+
+// AddGithubPrMergedForTeams adds the "github_pr_merged_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdate) AddGithubPrMergedForTeams(v ...*Team) *WorkflowStateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubPrMergedForTeamIDs(ids...)
+}
+
 // Mutation returns the WorkflowStateMutation object of the builder.
 func (_u *WorkflowStateUpdate) Mutation() *WorkflowStateMutation {
 	return _u.mutation
@@ -278,6 +308,48 @@ func (_u *WorkflowStateUpdate) RemoveTriageForTeams(v ...*Team) *WorkflowStateUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTriageForTeamIDs(ids...)
+}
+
+// ClearGithubPrOpenedForTeams clears all "github_pr_opened_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdate) ClearGithubPrOpenedForTeams() *WorkflowStateUpdate {
+	_u.mutation.ClearGithubPrOpenedForTeams()
+	return _u
+}
+
+// RemoveGithubPrOpenedForTeamIDs removes the "github_pr_opened_for_teams" edge to Team entities by IDs.
+func (_u *WorkflowStateUpdate) RemoveGithubPrOpenedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdate {
+	_u.mutation.RemoveGithubPrOpenedForTeamIDs(ids...)
+	return _u
+}
+
+// RemoveGithubPrOpenedForTeams removes "github_pr_opened_for_teams" edges to Team entities.
+func (_u *WorkflowStateUpdate) RemoveGithubPrOpenedForTeams(v ...*Team) *WorkflowStateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubPrOpenedForTeamIDs(ids...)
+}
+
+// ClearGithubPrMergedForTeams clears all "github_pr_merged_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdate) ClearGithubPrMergedForTeams() *WorkflowStateUpdate {
+	_u.mutation.ClearGithubPrMergedForTeams()
+	return _u
+}
+
+// RemoveGithubPrMergedForTeamIDs removes the "github_pr_merged_for_teams" edge to Team entities by IDs.
+func (_u *WorkflowStateUpdate) RemoveGithubPrMergedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdate {
+	_u.mutation.RemoveGithubPrMergedForTeamIDs(ids...)
+	return _u
+}
+
+// RemoveGithubPrMergedForTeams removes "github_pr_merged_for_teams" edges to Team entities.
+func (_u *WorkflowStateUpdate) RemoveGithubPrMergedForTeams(v ...*Team) *WorkflowStateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubPrMergedForTeamIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -546,6 +618,96 @@ func (_u *WorkflowStateUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubPrOpenedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubPrOpenedForTeamsIDs(); len(nodes) > 0 && !_u.mutation.GithubPrOpenedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrOpenedForTeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrMergedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubPrMergedForTeamsIDs(); len(nodes) > 0 && !_u.mutation.GithubPrMergedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrMergedForTeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -741,6 +903,36 @@ func (_u *WorkflowStateUpdateOne) AddTriageForTeams(v ...*Team) *WorkflowStateUp
 	return _u.AddTriageForTeamIDs(ids...)
 }
 
+// AddGithubPrOpenedForTeamIDs adds the "github_pr_opened_for_teams" edge to the Team entity by IDs.
+func (_u *WorkflowStateUpdateOne) AddGithubPrOpenedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdateOne {
+	_u.mutation.AddGithubPrOpenedForTeamIDs(ids...)
+	return _u
+}
+
+// AddGithubPrOpenedForTeams adds the "github_pr_opened_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdateOne) AddGithubPrOpenedForTeams(v ...*Team) *WorkflowStateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubPrOpenedForTeamIDs(ids...)
+}
+
+// AddGithubPrMergedForTeamIDs adds the "github_pr_merged_for_teams" edge to the Team entity by IDs.
+func (_u *WorkflowStateUpdateOne) AddGithubPrMergedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdateOne {
+	_u.mutation.AddGithubPrMergedForTeamIDs(ids...)
+	return _u
+}
+
+// AddGithubPrMergedForTeams adds the "github_pr_merged_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdateOne) AddGithubPrMergedForTeams(v ...*Team) *WorkflowStateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubPrMergedForTeamIDs(ids...)
+}
+
 // Mutation returns the WorkflowStateMutation object of the builder.
 func (_u *WorkflowStateUpdateOne) Mutation() *WorkflowStateMutation {
 	return _u.mutation
@@ -813,6 +1005,48 @@ func (_u *WorkflowStateUpdateOne) RemoveTriageForTeams(v ...*Team) *WorkflowStat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTriageForTeamIDs(ids...)
+}
+
+// ClearGithubPrOpenedForTeams clears all "github_pr_opened_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdateOne) ClearGithubPrOpenedForTeams() *WorkflowStateUpdateOne {
+	_u.mutation.ClearGithubPrOpenedForTeams()
+	return _u
+}
+
+// RemoveGithubPrOpenedForTeamIDs removes the "github_pr_opened_for_teams" edge to Team entities by IDs.
+func (_u *WorkflowStateUpdateOne) RemoveGithubPrOpenedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdateOne {
+	_u.mutation.RemoveGithubPrOpenedForTeamIDs(ids...)
+	return _u
+}
+
+// RemoveGithubPrOpenedForTeams removes "github_pr_opened_for_teams" edges to Team entities.
+func (_u *WorkflowStateUpdateOne) RemoveGithubPrOpenedForTeams(v ...*Team) *WorkflowStateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubPrOpenedForTeamIDs(ids...)
+}
+
+// ClearGithubPrMergedForTeams clears all "github_pr_merged_for_teams" edges to the Team entity.
+func (_u *WorkflowStateUpdateOne) ClearGithubPrMergedForTeams() *WorkflowStateUpdateOne {
+	_u.mutation.ClearGithubPrMergedForTeams()
+	return _u
+}
+
+// RemoveGithubPrMergedForTeamIDs removes the "github_pr_merged_for_teams" edge to Team entities by IDs.
+func (_u *WorkflowStateUpdateOne) RemoveGithubPrMergedForTeamIDs(ids ...uuid.UUID) *WorkflowStateUpdateOne {
+	_u.mutation.RemoveGithubPrMergedForTeamIDs(ids...)
+	return _u
+}
+
+// RemoveGithubPrMergedForTeams removes "github_pr_merged_for_teams" edges to Team entities.
+func (_u *WorkflowStateUpdateOne) RemoveGithubPrMergedForTeams(v ...*Team) *WorkflowStateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubPrMergedForTeamIDs(ids...)
 }
 
 // Where appends a list predicates to the WorkflowStateUpdate builder.
@@ -1101,6 +1335,96 @@ func (_u *WorkflowStateUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowS
 			Inverse: false,
 			Table:   workflowstate.TriageForTeamsTable,
 			Columns: []string{workflowstate.TriageForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrOpenedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubPrOpenedForTeamsIDs(); len(nodes) > 0 && !_u.mutation.GithubPrOpenedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrOpenedForTeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrOpenedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrOpenedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrMergedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubPrMergedForTeamsIDs(); len(nodes) > 0 && !_u.mutation.GithubPrMergedForTeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrMergedForTeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowstate.GithubPrMergedForTeamsTable,
+			Columns: []string{workflowstate.GithubPrMergedForTeamsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),

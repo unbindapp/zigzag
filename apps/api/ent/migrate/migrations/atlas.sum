@@ -1,7 +1,8 @@
-h1:6aqWbgEzijCz5E7NXFAWCGQU7gwF8rb/BSKkKFy4FSE=
+h1:4NXxA/TYtOX6Gdny9LYstBsBOVgX/rNKOS8+kJxI9SQ=
 20261016000000_extensions.sql h1:7oVTnxExLi5LfS9sjjvOGwzBNyblzzrS4zZCbZGCyi0=
 20261016033249_initial.sql h1:3UpPAI7Xkx5eGjvLdM2am5BzAFa1YMj+N3UBB0Z0tl4=
 20261016042943_labels_cycles_views_scope_history.sql h1:kTAnYHeEjBVoyyfj8O3mGpxkoJCosmYPVD9BmcsFzpM=
 20261016050947_import_external_ids.sql h1:emWjb4m24+Rh5VAdYbeRPbVpLWLxjomWAKPJLUtiFA4=
 20261016064806_audit_issue_sort_order_index.sql h1:5QMAdJ45NkFw7HshF+B8fjt1G5NrgLMkhefd/BFyPcA=
 20261016141350_workspace_icon_upload.sql h1:pJdcANEkBIhktL6YWuGZloExIGq9aX/o19LekWVWmHY=
+20261016145443_github_integration.sql h1:5UStR+aIYUz3qyZY9mqqsdeuSSXE+wid9XI+dFEegK4=

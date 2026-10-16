@@ -273,6 +273,86 @@ func (_c *IssueRepositoryMock_Attachments_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// AttachmentsByURL provides a mock function for the type IssueRepositoryMock
+func (_mock *IssueRepositoryMock) AttachmentsByURL(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, urls []string) ([]*ent.Attachment, error) {
+	ret := _mock.Called(ctx, tx, issueID, urls)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AttachmentsByURL")
+	}
+
+	var r0 []*ent.Attachment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []string) ([]*ent.Attachment, error)); ok {
+		return returnFunc(ctx, tx, issueID, urls)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []string) []*ent.Attachment); ok {
+		r0 = returnFunc(ctx, tx, issueID, urls)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Attachment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, []string) error); ok {
+		r1 = returnFunc(ctx, tx, issueID, urls)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// IssueRepositoryMock_AttachmentsByURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AttachmentsByURL'
+type IssueRepositoryMock_AttachmentsByURL_Call struct {
+	*mock.Call
+}
+
+// AttachmentsByURL is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - issueID uuid.UUID
+//   - urls []string
+func (_e *IssueRepositoryMock_Expecter) AttachmentsByURL(ctx any, tx any, issueID any, urls any) *IssueRepositoryMock_AttachmentsByURL_Call {
+	return &IssueRepositoryMock_AttachmentsByURL_Call{Call: _e.mock.On("AttachmentsByURL", ctx, tx, issueID, urls)}
+}
+
+func (_c *IssueRepositoryMock_AttachmentsByURL_Call) Run(run func(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, urls []string)) *IssueRepositoryMock_AttachmentsByURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []string
+		if args[3] != nil {
+			arg3 = args[3].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *IssueRepositoryMock_AttachmentsByURL_Call) Return(attachments []*ent.Attachment, err error) *IssueRepositoryMock_AttachmentsByURL_Call {
+	_c.Call.Return(attachments, err)
+	return _c
+}
+
+func (_c *IssueRepositoryMock_AttachmentsByURL_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, urls []string) ([]*ent.Attachment, error)) *IssueRepositoryMock_AttachmentsByURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ChildIDs provides a mock function for the type IssueRepositoryMock
 func (_mock *IssueRepositoryMock) ChildIDs(ctx context.Context, tx repository.TxInterface, parentID uuid.UUID) ([]uuid.UUID, error) {
 	ret := _mock.Called(ctx, tx, parentID)
@@ -4188,6 +4268,86 @@ func (_c *IssueRepositoryMock_UpdateAttachment_Call) Return(attachment *ent.Atta
 }
 
 func (_c *IssueRepositoryMock_UpdateAttachment_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, title *string, subtitle *string) (*ent.Attachment, error)) *IssueRepositoryMock_UpdateAttachment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateLinkedAttachment provides a mock function for the type IssueRepositoryMock
+func (_mock *IssueRepositoryMock) UpdateLinkedAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *issue_repo.LinkedAttachmentInput) (*ent.Attachment, error) {
+	ret := _mock.Called(ctx, tx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateLinkedAttachment")
+	}
+
+	var r0 *ent.Attachment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *issue_repo.LinkedAttachmentInput) (*ent.Attachment, error)); ok {
+		return returnFunc(ctx, tx, id, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *issue_repo.LinkedAttachmentInput) *ent.Attachment); ok {
+		r0 = returnFunc(ctx, tx, id, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Attachment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *issue_repo.LinkedAttachmentInput) error); ok {
+		r1 = returnFunc(ctx, tx, id, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// IssueRepositoryMock_UpdateLinkedAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateLinkedAttachment'
+type IssueRepositoryMock_UpdateLinkedAttachment_Call struct {
+	*mock.Call
+}
+
+// UpdateLinkedAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - id uuid.UUID
+//   - input *issue_repo.LinkedAttachmentInput
+func (_e *IssueRepositoryMock_Expecter) UpdateLinkedAttachment(ctx any, tx any, id any, input any) *IssueRepositoryMock_UpdateLinkedAttachment_Call {
+	return &IssueRepositoryMock_UpdateLinkedAttachment_Call{Call: _e.mock.On("UpdateLinkedAttachment", ctx, tx, id, input)}
+}
+
+func (_c *IssueRepositoryMock_UpdateLinkedAttachment_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *issue_repo.LinkedAttachmentInput)) *IssueRepositoryMock_UpdateLinkedAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *issue_repo.LinkedAttachmentInput
+		if args[3] != nil {
+			arg3 = args[3].(*issue_repo.LinkedAttachmentInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *IssueRepositoryMock_UpdateLinkedAttachment_Call) Return(attachment *ent.Attachment, err error) *IssueRepositoryMock_UpdateLinkedAttachment_Call {
+	_c.Call.Return(attachment, err)
+	return _c
+}
+
+func (_c *IssueRepositoryMock_UpdateLinkedAttachment_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *issue_repo.LinkedAttachmentInput) (*ent.Attachment, error)) *IssueRepositoryMock_UpdateLinkedAttachment_Call {
 	_c.Call.Return(run)
 	return _c
 }

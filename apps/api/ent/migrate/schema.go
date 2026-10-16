@@ -340,6 +340,68 @@ var (
 			},
 		},
 	}
+	// GithubIntegrationsColumns holds the columns for the "github_integrations" table.
+	GithubIntegrationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "secret_encrypted", Type: field.TypeBytes},
+		{Name: "secret_prefix", Type: field.TypeString},
+		{Name: "last_delivery_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_by_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "workspace_id", Type: field.TypeUUID, Unique: true},
+	}
+	// GithubIntegrationsTable holds the schema information for the "github_integrations" table.
+	GithubIntegrationsTable = &schema.Table{
+		Name:       "github_integrations",
+		Columns:    GithubIntegrationsColumns,
+		PrimaryKey: []*schema.Column{GithubIntegrationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_integrations_users_github_integrations",
+				Columns:    []*schema.Column{GithubIntegrationsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "github_integrations_workspaces_github_integration",
+				Columns:    []*schema.Column{GithubIntegrationsColumns[7]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// GithubRepositoriesColumns holds the columns for the "github_repositories" table.
+	GithubRepositoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "full_name", Type: field.TypeString},
+		{Name: "last_event_at", Type: field.TypeTime},
+		{Name: "last_event", Type: field.TypeString},
+		{Name: "integration_id", Type: field.TypeUUID},
+	}
+	// GithubRepositoriesTable holds the schema information for the "github_repositories" table.
+	GithubRepositoriesTable = &schema.Table{
+		Name:       "github_repositories",
+		Columns:    GithubRepositoriesColumns,
+		PrimaryKey: []*schema.Column{GithubRepositoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_repositories_github_integrations_repositories",
+				Columns:    []*schema.Column{GithubRepositoriesColumns[6]},
+				RefColumns: []*schema.Column{GithubIntegrationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "githubrepository_integration_id_full_name",
+				Unique:  true,
+				Columns: []*schema.Column{GithubRepositoriesColumns[6], GithubRepositoriesColumns[3]},
+			},
+		},
+	}
 	// ImportsColumns holds the columns for the "imports" table.
 	ImportsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -1473,6 +1535,8 @@ var (
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "default_state_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "triage_state_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "github_pr_opened_state_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "github_pr_merged_state_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "workspace_id", Type: field.TypeUUID},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
@@ -1494,8 +1558,20 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "teams_workspaces_teams",
+				Symbol:     "teams_workflow_states_github_pr_opened_for_teams",
 				Columns:    []*schema.Column{TeamsColumns[26]},
+				RefColumns: []*schema.Column{WorkflowStatesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "teams_workflow_states_github_pr_merged_for_teams",
+				Columns:    []*schema.Column{TeamsColumns[27]},
+				RefColumns: []*schema.Column{WorkflowStatesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "teams_workspaces_teams",
+				Columns:    []*schema.Column{TeamsColumns[28]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1504,12 +1580,12 @@ var (
 			{
 				Name:    "team_workspace_id_key",
 				Unique:  true,
-				Columns: []*schema.Column{TeamsColumns[26], TeamsColumns[4]},
+				Columns: []*schema.Column{TeamsColumns[28], TeamsColumns[4]},
 			},
 			{
 				Name:    "team_workspace_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{TeamsColumns[26], TeamsColumns[3]},
+				Columns: []*schema.Column{TeamsColumns[28], TeamsColumns[3]},
 			},
 		},
 	}
@@ -2022,6 +2098,8 @@ var (
 		CycleScopeHistoryTable,
 		DocumentsTable,
 		FavoritesTable,
+		GithubIntegrationsTable,
+		GithubRepositoriesTable,
 		ImportsTable,
 		InitiativesTable,
 		InitiativeUpdatesTable,
@@ -2105,6 +2183,15 @@ func init() {
 	FavoritesTable.ForeignKeys[1].RefTable = WorkspacesTable
 	FavoritesTable.Annotation = &entsql.Annotation{
 		Table: "favorites",
+	}
+	GithubIntegrationsTable.ForeignKeys[0].RefTable = UsersTable
+	GithubIntegrationsTable.ForeignKeys[1].RefTable = WorkspacesTable
+	GithubIntegrationsTable.Annotation = &entsql.Annotation{
+		Table: "github_integrations",
+	}
+	GithubRepositoriesTable.ForeignKeys[0].RefTable = GithubIntegrationsTable
+	GithubRepositoriesTable.Annotation = &entsql.Annotation{
+		Table: "github_repositories",
 	}
 	ImportsTable.ForeignKeys[0].RefTable = UsersTable
 	ImportsTable.ForeignKeys[1].RefTable = WorkspacesTable
@@ -2236,7 +2323,9 @@ func init() {
 	}
 	TeamsTable.ForeignKeys[0].RefTable = WorkflowStatesTable
 	TeamsTable.ForeignKeys[1].RefTable = WorkflowStatesTable
-	TeamsTable.ForeignKeys[2].RefTable = WorkspacesTable
+	TeamsTable.ForeignKeys[2].RefTable = WorkflowStatesTable
+	TeamsTable.ForeignKeys[3].RefTable = WorkflowStatesTable
+	TeamsTable.ForeignKeys[4].RefTable = WorkspacesTable
 	TeamsTable.Annotation = &entsql.Annotation{
 		Table: "teams",
 	}

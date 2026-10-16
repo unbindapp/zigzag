@@ -12,6 +12,7 @@ import (
 	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 	document_repo "github.com/unbindapp/zigzag-api/internal/repositories/document"
 	favorite_repo "github.com/unbindapp/zigzag-api/internal/repositories/favorite"
+	github_repo "github.com/unbindapp/zigzag-api/internal/repositories/github"
 	importjob_repo "github.com/unbindapp/zigzag-api/internal/repositories/importjob"
 	initiative_repo "github.com/unbindapp/zigzag-api/internal/repositories/initiative"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
@@ -56,5 +57,6 @@ type RepositoriesInterface interface {
 	Webhook() webhook_repo.WebhookRepositoryInterface
 	Upload() upload_repo.UploadRepositoryInterface
 	ImportJob() importjob_repo.ImportJobRepositoryInterface
+	Github() github_repo.GithubRepositoryInterface
 	Permissions() permissions_repo.PermissionsRepositoryInterface
 }

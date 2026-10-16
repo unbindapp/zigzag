@@ -105,6 +105,8 @@ const (
 	EdgeTemplates = "templates"
 	// EdgeImports holds the string denoting the imports edge name in mutations.
 	EdgeImports = "imports"
+	// EdgeGithubIntegrations holds the string denoting the github_integrations edge name in mutations.
+	EdgeGithubIntegrations = "github_integrations"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// AvatarUploadTable is the table that holds the avatar_upload relation/edge.
@@ -341,6 +343,13 @@ const (
 	ImportsInverseTable = "imports"
 	// ImportsColumn is the table column denoting the imports relation/edge.
 	ImportsColumn = "started_by_id"
+	// GithubIntegrationsTable is the table that holds the github_integrations relation/edge.
+	GithubIntegrationsTable = "github_integrations"
+	// GithubIntegrationsInverseTable is the table name for the GithubIntegration entity.
+	// It exists in this package in order to avoid circular dependency with the "githubintegration" package.
+	GithubIntegrationsInverseTable = "github_integrations"
+	// GithubIntegrationsColumn is the table column denoting the github_integrations relation/edge.
+	GithubIntegrationsColumn = "created_by_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -923,6 +932,20 @@ func ByImports(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newImportsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByGithubIntegrationsCount orders the results by github_integrations count.
+func ByGithubIntegrationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubIntegrationsStep(), opts...)
+	}
+}
+
+// ByGithubIntegrations orders the results by github_integrations terms.
+func ByGithubIntegrations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubIntegrationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAvatarUploadStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1159,5 +1182,12 @@ func newImportsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImportsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ImportsTable, ImportsColumn),
+	)
+}
+func newGithubIntegrationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubIntegrationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubIntegrationsTable, GithubIntegrationsColumn),
 	)
 }

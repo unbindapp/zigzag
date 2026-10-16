@@ -46,6 +46,7 @@ func (Workspace) Edges() []ent.Edge {
 		edge.To("issues", Issue.Type).Annotations(cascade()),
 		edge.To("notifications", Notification.Type).Annotations(cascade()),
 		edge.To("favorites", Favorite.Type).Annotations(cascade()),
+		edge.To("github_integration", GithubIntegration.Type).Unique().Annotations(cascade()),
 		edge.From("icon_upload", Upload.Type).Ref("icon_workspaces").Field("icon_upload_id").Unique(),
 	}
 }

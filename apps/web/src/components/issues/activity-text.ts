@@ -54,6 +54,8 @@ export function describeChange(change: TFieldChange): string {
       return `added attachment ${to}`;
     case "attachment_removed":
       return `removed attachment ${from || to}`;
+    case "github":
+      return change.to_label ? `on GitHub: ${change.to_label}` : "updated from GitHub";
     case "archived":
       return "archived the issue";
     case "unarchived":

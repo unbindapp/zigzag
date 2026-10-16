@@ -67,6 +67,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("views", View.Type).Annotations(cascade()),
 		edge.To("templates", Template.Type).Annotations(setNull()),
 		edge.To("imports", ImportJob.Type).Annotations(setNull()),
+		edge.To("github_integrations", GithubIntegration.Type).Annotations(setNull()),
 	}
 }
 

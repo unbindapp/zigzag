@@ -13,6 +13,8 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
+	"github.com/unbindapp/zigzag-api/ent/githubrepository"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -229,6 +231,52 @@ func init() {
 	favoriteDescID := favoriteMixinFields0[0].Descriptor()
 	// favorite.DefaultID holds the default value on creation for the id field.
 	favorite.DefaultID = favoriteDescID.Default.(func() uuid.UUID)
+	githubintegrationMixin := schema.GithubIntegration{}.Mixin()
+	githubintegrationMixinFields0 := githubintegrationMixin[0].Fields()
+	_ = githubintegrationMixinFields0
+	githubintegrationMixinFields1 := githubintegrationMixin[1].Fields()
+	_ = githubintegrationMixinFields1
+	githubintegrationFields := schema.GithubIntegration{}.Fields()
+	_ = githubintegrationFields
+	// githubintegrationDescCreatedAt is the schema descriptor for created_at field.
+	githubintegrationDescCreatedAt := githubintegrationMixinFields1[0].Descriptor()
+	// githubintegration.DefaultCreatedAt holds the default value on creation for the created_at field.
+	githubintegration.DefaultCreatedAt = githubintegrationDescCreatedAt.Default.(func() time.Time)
+	// githubintegrationDescUpdatedAt is the schema descriptor for updated_at field.
+	githubintegrationDescUpdatedAt := githubintegrationMixinFields1[1].Descriptor()
+	// githubintegration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	githubintegration.DefaultUpdatedAt = githubintegrationDescUpdatedAt.Default.(func() time.Time)
+	// githubintegration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	githubintegration.UpdateDefaultUpdatedAt = githubintegrationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubintegrationDescID is the schema descriptor for id field.
+	githubintegrationDescID := githubintegrationMixinFields0[0].Descriptor()
+	// githubintegration.DefaultID holds the default value on creation for the id field.
+	githubintegration.DefaultID = githubintegrationDescID.Default.(func() uuid.UUID)
+	githubrepositoryMixin := schema.GithubRepository{}.Mixin()
+	githubrepositoryMixinFields0 := githubrepositoryMixin[0].Fields()
+	_ = githubrepositoryMixinFields0
+	githubrepositoryMixinFields1 := githubrepositoryMixin[1].Fields()
+	_ = githubrepositoryMixinFields1
+	githubrepositoryFields := schema.GithubRepository{}.Fields()
+	_ = githubrepositoryFields
+	// githubrepositoryDescCreatedAt is the schema descriptor for created_at field.
+	githubrepositoryDescCreatedAt := githubrepositoryMixinFields1[0].Descriptor()
+	// githubrepository.DefaultCreatedAt holds the default value on creation for the created_at field.
+	githubrepository.DefaultCreatedAt = githubrepositoryDescCreatedAt.Default.(func() time.Time)
+	// githubrepositoryDescUpdatedAt is the schema descriptor for updated_at field.
+	githubrepositoryDescUpdatedAt := githubrepositoryMixinFields1[1].Descriptor()
+	// githubrepository.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	githubrepository.DefaultUpdatedAt = githubrepositoryDescUpdatedAt.Default.(func() time.Time)
+	// githubrepository.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	githubrepository.UpdateDefaultUpdatedAt = githubrepositoryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubrepositoryDescFullName is the schema descriptor for full_name field.
+	githubrepositoryDescFullName := githubrepositoryFields[1].Descriptor()
+	// githubrepository.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
+	githubrepository.FullNameValidator = githubrepositoryDescFullName.Validators[0].(func(string) error)
+	// githubrepositoryDescID is the schema descriptor for id field.
+	githubrepositoryDescID := githubrepositoryMixinFields0[0].Descriptor()
+	// githubrepository.DefaultID holds the default value on creation for the id field.
+	githubrepository.DefaultID = githubrepositoryDescID.Default.(func() uuid.UUID)
 	importjobMixin := schema.ImportJob{}.Mixin()
 	importjobMixinFields0 := importjobMixin[0].Fields()
 	_ = importjobMixinFields0
@@ -969,7 +1017,7 @@ func init() {
 	// team.DefaultTriageEnabled holds the default value on creation for the triage_enabled field.
 	team.DefaultTriageEnabled = teamDescTriageEnabled.Default.(bool)
 	// teamDescAutoArchiveMonths is the schema descriptor for auto_archive_months field.
-	teamDescAutoArchiveMonths := teamFields[22].Descriptor()
+	teamDescAutoArchiveMonths := teamFields[24].Descriptor()
 	// team.DefaultAutoArchiveMonths holds the default value on creation for the auto_archive_months field.
 	team.DefaultAutoArchiveMonths = teamDescAutoArchiveMonths.Default.(int)
 	// teamDescID is the schema descriptor for id field.

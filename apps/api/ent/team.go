@@ -68,6 +68,10 @@ type Team struct {
 	DefaultStateID *uuid.UUID `json:"default_state_id,omitempty"`
 	// TriageStateID holds the value of the "triage_state_id" field.
 	TriageStateID *uuid.UUID `json:"triage_state_id,omitempty"`
+	// Nil means the first started state
+	GithubPrOpenedStateID *uuid.UUID `json:"github_pr_opened_state_id,omitempty"`
+	// Nil means the first completed state
+	GithubPrMergedStateID *uuid.UUID `json:"github_pr_merged_state_id,omitempty"`
 	// AutoCloseMonths holds the value of the "auto_close_months" field.
 	AutoCloseMonths *int `json:"auto_close_months,omitempty"`
 	// AutoArchiveMonths holds the value of the "auto_archive_months" field.
@@ -88,6 +92,10 @@ type TeamEdges struct {
 	DefaultState *WorkflowState `json:"default_state,omitempty"`
 	// TriageState holds the value of the triage_state edge.
 	TriageState *WorkflowState `json:"triage_state,omitempty"`
+	// GithubPrOpenedState holds the value of the github_pr_opened_state edge.
+	GithubPrOpenedState *WorkflowState `json:"github_pr_opened_state,omitempty"`
+	// GithubPrMergedState holds the value of the github_pr_merged_state edge.
+	GithubPrMergedState *WorkflowState `json:"github_pr_merged_state,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*TeamMember `json:"members,omitempty"`
 	// States holds the value of the states edge.
@@ -110,7 +118,7 @@ type TeamEdges struct {
 	IssueMoves []*IssueMove `json:"issue_moves,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [15]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -146,10 +154,32 @@ func (e TeamEdges) TriageStateOrErr() (*WorkflowState, error) {
 	return nil, &NotLoadedError{edge: "triage_state"}
 }
 
+// GithubPrOpenedStateOrErr returns the GithubPrOpenedState value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) GithubPrOpenedStateOrErr() (*WorkflowState, error) {
+	if e.GithubPrOpenedState != nil {
+		return e.GithubPrOpenedState, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: workflowstate.Label}
+	}
+	return nil, &NotLoadedError{edge: "github_pr_opened_state"}
+}
+
+// GithubPrMergedStateOrErr returns the GithubPrMergedState value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) GithubPrMergedStateOrErr() (*WorkflowState, error) {
+	if e.GithubPrMergedState != nil {
+		return e.GithubPrMergedState, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: workflowstate.Label}
+	}
+	return nil, &NotLoadedError{edge: "github_pr_merged_state"}
+}
+
 // MembersOrErr returns the Members value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) MembersOrErr() ([]*TeamMember, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.Members, nil
 	}
 	return nil, &NotLoadedError{edge: "members"}
@@ -158,7 +188,7 @@ func (e TeamEdges) MembersOrErr() ([]*TeamMember, error) {
 // StatesOrErr returns the States value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) StatesOrErr() ([]*WorkflowState, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.States, nil
 	}
 	return nil, &NotLoadedError{edge: "states"}
@@ -167,7 +197,7 @@ func (e TeamEdges) StatesOrErr() ([]*WorkflowState, error) {
 // IssuesOrErr returns the Issues value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) IssuesOrErr() ([]*Issue, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[7] {
 		return e.Issues, nil
 	}
 	return nil, &NotLoadedError{edge: "issues"}
@@ -176,7 +206,7 @@ func (e TeamEdges) IssuesOrErr() ([]*Issue, error) {
 // CyclesOrErr returns the Cycles value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) CyclesOrErr() ([]*Cycle, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[8] {
 		return e.Cycles, nil
 	}
 	return nil, &NotLoadedError{edge: "cycles"}
@@ -185,7 +215,7 @@ func (e TeamEdges) CyclesOrErr() ([]*Cycle, error) {
 // LabelsOrErr returns the Labels value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) LabelsOrErr() ([]*Label, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[9] {
 		return e.Labels, nil
 	}
 	return nil, &NotLoadedError{edge: "labels"}
@@ -194,7 +224,7 @@ func (e TeamEdges) LabelsOrErr() ([]*Label, error) {
 // ProjectsOrErr returns the Projects value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) ProjectsOrErr() ([]*Project, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[10] {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
@@ -203,7 +233,7 @@ func (e TeamEdges) ProjectsOrErr() ([]*Project, error) {
 // TemplatesOrErr returns the Templates value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) TemplatesOrErr() ([]*Template, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[11] {
 		return e.Templates, nil
 	}
 	return nil, &NotLoadedError{edge: "templates"}
@@ -212,7 +242,7 @@ func (e TeamEdges) TemplatesOrErr() ([]*Template, error) {
 // ViewsOrErr returns the Views value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) ViewsOrErr() ([]*View, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[12] {
 		return e.Views, nil
 	}
 	return nil, &NotLoadedError{edge: "views"}
@@ -221,7 +251,7 @@ func (e TeamEdges) ViewsOrErr() ([]*View, error) {
 // WebhooksOrErr returns the Webhooks value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) WebhooksOrErr() ([]*Webhook, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[13] {
 		return e.Webhooks, nil
 	}
 	return nil, &NotLoadedError{edge: "webhooks"}
@@ -230,7 +260,7 @@ func (e TeamEdges) WebhooksOrErr() ([]*Webhook, error) {
 // IssueMovesOrErr returns the IssueMoves value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) IssueMovesOrErr() ([]*IssueMove, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[14] {
 		return e.IssueMoves, nil
 	}
 	return nil, &NotLoadedError{edge: "issue_moves"}
@@ -241,7 +271,7 @@ func (*Team) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case team.FieldDefaultStateID, team.FieldTriageStateID:
+		case team.FieldDefaultStateID, team.FieldTriageStateID, team.FieldGithubPrOpenedStateID, team.FieldGithubPrMergedStateID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case team.FieldPrivate, team.FieldCyclesEnabled, team.FieldCycleAutoMove, team.FieldCycleAutoAddStarted, team.FieldEstimateAllowZero, team.FieldEstimateExtended, team.FieldTriageEnabled:
 			values[i] = new(sql.NullBool)
@@ -414,6 +444,20 @@ func (_m *Team) assignValues(columns []string, values []any) error {
 				_m.TriageStateID = new(uuid.UUID)
 				*_m.TriageStateID = *value.S.(*uuid.UUID)
 			}
+		case team.FieldGithubPrOpenedStateID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field github_pr_opened_state_id", values[i])
+			} else if value.Valid {
+				_m.GithubPrOpenedStateID = new(uuid.UUID)
+				*_m.GithubPrOpenedStateID = *value.S.(*uuid.UUID)
+			}
+		case team.FieldGithubPrMergedStateID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field github_pr_merged_state_id", values[i])
+			} else if value.Valid {
+				_m.GithubPrMergedStateID = new(uuid.UUID)
+				*_m.GithubPrMergedStateID = *value.S.(*uuid.UUID)
+			}
 		case team.FieldAutoCloseMonths:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field auto_close_months", values[i])
@@ -460,6 +504,16 @@ func (_m *Team) QueryDefaultState() *WorkflowStateQuery {
 // QueryTriageState queries the "triage_state" edge of the Team entity.
 func (_m *Team) QueryTriageState() *WorkflowStateQuery {
 	return NewTeamClient(_m.config).QueryTriageState(_m)
+}
+
+// QueryGithubPrOpenedState queries the "github_pr_opened_state" edge of the Team entity.
+func (_m *Team) QueryGithubPrOpenedState() *WorkflowStateQuery {
+	return NewTeamClient(_m.config).QueryGithubPrOpenedState(_m)
+}
+
+// QueryGithubPrMergedState queries the "github_pr_merged_state" edge of the Team entity.
+func (_m *Team) QueryGithubPrMergedState() *WorkflowStateQuery {
+	return NewTeamClient(_m.config).QueryGithubPrMergedState(_m)
 }
 
 // QueryMembers queries the "members" edge of the Team entity.
@@ -605,6 +659,16 @@ func (_m *Team) String() string {
 	builder.WriteString(", ")
 	if v := _m.TriageStateID; v != nil {
 		builder.WriteString("triage_state_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.GithubPrOpenedStateID; v != nil {
+		builder.WriteString("github_pr_opened_state_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.GithubPrMergedStateID; v != nil {
+		builder.WriteString("github_pr_merged_state_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

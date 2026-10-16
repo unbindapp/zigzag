@@ -17,6 +17,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -702,6 +703,21 @@ func (_u *UserUpdate) AddImports(v ...*ImportJob) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddImportIDs(ids...)
+}
+
+// AddGithubIntegrationIDs adds the "github_integrations" edge to the GithubIntegration entity by IDs.
+func (_u *UserUpdate) AddGithubIntegrationIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddGithubIntegrationIDs(ids...)
+	return _u
+}
+
+// AddGithubIntegrations adds the "github_integrations" edges to the GithubIntegration entity.
+func (_u *UserUpdate) AddGithubIntegrations(v ...*GithubIntegration) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubIntegrationIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1391,6 +1407,27 @@ func (_u *UserUpdate) RemoveImports(v ...*ImportJob) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImportIDs(ids...)
+}
+
+// ClearGithubIntegrations clears all "github_integrations" edges to the GithubIntegration entity.
+func (_u *UserUpdate) ClearGithubIntegrations() *UserUpdate {
+	_u.mutation.ClearGithubIntegrations()
+	return _u
+}
+
+// RemoveGithubIntegrationIDs removes the "github_integrations" edge to GithubIntegration entities by IDs.
+func (_u *UserUpdate) RemoveGithubIntegrationIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveGithubIntegrationIDs(ids...)
+	return _u
+}
+
+// RemoveGithubIntegrations removes "github_integrations" edges to GithubIntegration entities.
+func (_u *UserUpdate) RemoveGithubIntegrations(v ...*GithubIntegration) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubIntegrationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2972,6 +3009,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubIntegrationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubIntegrationsIDs(); len(nodes) > 0 && !_u.mutation.GithubIntegrationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubIntegrationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -3640,6 +3722,21 @@ func (_u *UserUpdateOne) AddImports(v ...*ImportJob) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddImportIDs(ids...)
+}
+
+// AddGithubIntegrationIDs adds the "github_integrations" edge to the GithubIntegration entity by IDs.
+func (_u *UserUpdateOne) AddGithubIntegrationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddGithubIntegrationIDs(ids...)
+	return _u
+}
+
+// AddGithubIntegrations adds the "github_integrations" edges to the GithubIntegration entity.
+func (_u *UserUpdateOne) AddGithubIntegrations(v ...*GithubIntegration) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubIntegrationIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -4329,6 +4426,27 @@ func (_u *UserUpdateOne) RemoveImports(v ...*ImportJob) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImportIDs(ids...)
+}
+
+// ClearGithubIntegrations clears all "github_integrations" edges to the GithubIntegration entity.
+func (_u *UserUpdateOne) ClearGithubIntegrations() *UserUpdateOne {
+	_u.mutation.ClearGithubIntegrations()
+	return _u
+}
+
+// RemoveGithubIntegrationIDs removes the "github_integrations" edge to GithubIntegration entities by IDs.
+func (_u *UserUpdateOne) RemoveGithubIntegrationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveGithubIntegrationIDs(ids...)
+	return _u
+}
+
+// RemoveGithubIntegrations removes "github_integrations" edges to GithubIntegration entities.
+func (_u *UserUpdateOne) RemoveGithubIntegrations(v ...*GithubIntegration) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubIntegrationIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -5933,6 +6051,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(importjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubIntegrationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubIntegrationsIDs(); len(nodes) > 0 && !_u.mutation.GithubIntegrationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubIntegrationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

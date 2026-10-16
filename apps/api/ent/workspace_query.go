@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/invitation"
@@ -36,28 +37,29 @@ import (
 // WorkspaceQuery is the builder for querying Workspace entities.
 type WorkspaceQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []workspace.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.Workspace
-	withMembers         *WorkspaceMemberQuery
-	withTeams           *TeamQuery
-	withProjects        *ProjectQuery
-	withProjectStatuses *ProjectStatusQuery
-	withLabels          *LabelQuery
-	withInitiatives     *InitiativeQuery
-	withDocuments       *DocumentQuery
-	withViews           *ViewQuery
-	withInvitations     *InvitationQuery
-	withWebhooks        *WebhookQuery
-	withUploads         *UploadQuery
-	withTemplates       *TemplateQuery
-	withImports         *ImportJobQuery
-	withIssues          *IssueQuery
-	withNotifications   *NotificationQuery
-	withFavorites       *FavoriteQuery
-	withIconUpload      *UploadQuery
-	modifiers           []func(*sql.Selector)
+	ctx                   *QueryContext
+	order                 []workspace.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.Workspace
+	withMembers           *WorkspaceMemberQuery
+	withTeams             *TeamQuery
+	withProjects          *ProjectQuery
+	withProjectStatuses   *ProjectStatusQuery
+	withLabels            *LabelQuery
+	withInitiatives       *InitiativeQuery
+	withDocuments         *DocumentQuery
+	withViews             *ViewQuery
+	withInvitations       *InvitationQuery
+	withWebhooks          *WebhookQuery
+	withUploads           *UploadQuery
+	withTemplates         *TemplateQuery
+	withImports           *ImportJobQuery
+	withIssues            *IssueQuery
+	withNotifications     *NotificationQuery
+	withFavorites         *FavoriteQuery
+	withGithubIntegration *GithubIntegrationQuery
+	withIconUpload        *UploadQuery
+	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -446,6 +448,28 @@ func (_q *WorkspaceQuery) QueryFavorites() *FavoriteQuery {
 	return query
 }
 
+// QueryGithubIntegration chains the current query on the "github_integration" edge.
+func (_q *WorkspaceQuery) QueryGithubIntegration() *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, workspace.GithubIntegrationTable, workspace.GithubIntegrationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryIconUpload chains the current query on the "icon_upload" edge.
 func (_q *WorkspaceQuery) QueryIconUpload() *UploadQuery {
 	query := (&UploadClient{config: _q.config}).Query()
@@ -655,28 +679,29 @@ func (_q *WorkspaceQuery) Clone() *WorkspaceQuery {
 		return nil
 	}
 	return &WorkspaceQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]workspace.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.Workspace{}, _q.predicates...),
-		withMembers:         _q.withMembers.Clone(),
-		withTeams:           _q.withTeams.Clone(),
-		withProjects:        _q.withProjects.Clone(),
-		withProjectStatuses: _q.withProjectStatuses.Clone(),
-		withLabels:          _q.withLabels.Clone(),
-		withInitiatives:     _q.withInitiatives.Clone(),
-		withDocuments:       _q.withDocuments.Clone(),
-		withViews:           _q.withViews.Clone(),
-		withInvitations:     _q.withInvitations.Clone(),
-		withWebhooks:        _q.withWebhooks.Clone(),
-		withUploads:         _q.withUploads.Clone(),
-		withTemplates:       _q.withTemplates.Clone(),
-		withImports:         _q.withImports.Clone(),
-		withIssues:          _q.withIssues.Clone(),
-		withNotifications:   _q.withNotifications.Clone(),
-		withFavorites:       _q.withFavorites.Clone(),
-		withIconUpload:      _q.withIconUpload.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]workspace.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.Workspace{}, _q.predicates...),
+		withMembers:           _q.withMembers.Clone(),
+		withTeams:             _q.withTeams.Clone(),
+		withProjects:          _q.withProjects.Clone(),
+		withProjectStatuses:   _q.withProjectStatuses.Clone(),
+		withLabels:            _q.withLabels.Clone(),
+		withInitiatives:       _q.withInitiatives.Clone(),
+		withDocuments:         _q.withDocuments.Clone(),
+		withViews:             _q.withViews.Clone(),
+		withInvitations:       _q.withInvitations.Clone(),
+		withWebhooks:          _q.withWebhooks.Clone(),
+		withUploads:           _q.withUploads.Clone(),
+		withTemplates:         _q.withTemplates.Clone(),
+		withImports:           _q.withImports.Clone(),
+		withIssues:            _q.withIssues.Clone(),
+		withNotifications:     _q.withNotifications.Clone(),
+		withFavorites:         _q.withFavorites.Clone(),
+		withGithubIntegration: _q.withGithubIntegration.Clone(),
+		withIconUpload:        _q.withIconUpload.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -860,6 +885,17 @@ func (_q *WorkspaceQuery) WithFavorites(opts ...func(*FavoriteQuery)) *Workspace
 	return _q
 }
 
+// WithGithubIntegration tells the query-builder to eager-load the nodes that are connected to
+// the "github_integration" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkspaceQuery) WithGithubIntegration(opts ...func(*GithubIntegrationQuery)) *WorkspaceQuery {
+	query := (&GithubIntegrationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubIntegration = query
+	return _q
+}
+
 // WithIconUpload tells the query-builder to eager-load the nodes that are connected to
 // the "icon_upload" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *WorkspaceQuery) WithIconUpload(opts ...func(*UploadQuery)) *WorkspaceQuery {
@@ -949,7 +985,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 	var (
 		nodes       = []*Workspace{}
 		_spec       = _q.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [18]bool{
 			_q.withMembers != nil,
 			_q.withTeams != nil,
 			_q.withProjects != nil,
@@ -966,6 +1002,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 			_q.withIssues != nil,
 			_q.withNotifications != nil,
 			_q.withFavorites != nil,
+			_q.withGithubIntegration != nil,
 			_q.withIconUpload != nil,
 		}
 	)
@@ -1099,6 +1136,12 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 		if err := _q.loadFavorites(ctx, query, nodes,
 			func(n *Workspace) { n.Edges.Favorites = []*Favorite{} },
 			func(n *Workspace, e *Favorite) { n.Edges.Favorites = append(n.Edges.Favorites, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubIntegration; query != nil {
+		if err := _q.loadGithubIntegration(ctx, query, nodes, nil,
+			func(n *Workspace, e *GithubIntegration) { n.Edges.GithubIntegration = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1576,6 +1619,33 @@ func (_q *WorkspaceQuery) loadFavorites(ctx context.Context, query *FavoriteQuer
 	}
 	query.Where(predicate.Favorite(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.FavoritesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkspaceQuery) loadGithubIntegration(ctx context.Context, query *GithubIntegrationQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *GithubIntegration)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workspace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubintegration.FieldWorkspaceID)
+	}
+	query.Where(predicate.GithubIntegration(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workspace.GithubIntegrationColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

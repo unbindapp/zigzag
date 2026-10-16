@@ -93,6 +93,30 @@ func (f FavoriteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FavoriteMutation", m)
 }
 
+// The GithubIntegrationFunc type is an adapter to allow the use of ordinary
+// function as GithubIntegration mutator.
+type GithubIntegrationFunc func(context.Context, *ent.GithubIntegrationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubIntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GithubIntegrationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubIntegrationMutation", m)
+}
+
+// The GithubRepositoryFunc type is an adapter to allow the use of ordinary
+// function as GithubRepository mutator.
+type GithubRepositoryFunc func(context.Context, *ent.GithubRepositoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubRepositoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GithubRepositoryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubRepositoryMutation", m)
+}
+
 // The ImportJobFunc type is an adapter to allow the use of ordinary
 // function as ImportJob mutator.
 type ImportJobFunc func(context.Context, *ent.ImportJobMutation) (ent.Value, error)

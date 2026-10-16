@@ -207,6 +207,15 @@ packages:
           filename: importjob_repository_mock.go
           structname: ImportJobRepositoryMock
           pkgname: mocks_repository_importjob
+  github.com/unbindapp/zigzag-api/internal/repositories/github:
+    config:
+      dir: ./mocks/repository/github
+    interfaces:
+      GithubRepositoryInterface:
+        config:
+          filename: github_repository_mock.go
+          structname: GithubRepositoryMock
+          pkgname: mocks_repository_github
   github.com/unbindapp/zigzag-api/internal/repositories/permissions:
     config:
       dir: ./mocks/repository/permissions

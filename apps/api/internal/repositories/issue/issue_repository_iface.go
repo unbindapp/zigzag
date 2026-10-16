@@ -63,6 +63,8 @@ type IssueRepositoryInterface interface {
 	CreateAttachment(ctx context.Context, tx repository.TxInterface, input *CreateAttachmentInput) (*ent.Attachment, error)
 	GetAttachment(ctx context.Context, id uuid.UUID) (*ent.Attachment, error)
 	UpdateAttachment(ctx context.Context, id uuid.UUID, title, subtitle *string) (*ent.Attachment, error)
+	AttachmentsByURL(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, urls []string) ([]*ent.Attachment, error)
+	UpdateLinkedAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *LinkedAttachmentInput) (*ent.Attachment, error)
 	DeleteAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
 	Attachments(ctx context.Context, issueID uuid.UUID) ([]*ent.Attachment, error)
 	Subscribe(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, userIDs ...uuid.UUID) error

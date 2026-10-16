@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/invitation"
@@ -400,6 +401,25 @@ func (_u *WorkspaceUpdate) AddFavorites(v ...*Favorite) *WorkspaceUpdate {
 	return _u.AddFavoriteIDs(ids...)
 }
 
+// SetGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID.
+func (_u *WorkspaceUpdate) SetGithubIntegrationID(id uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.SetGithubIntegrationID(id)
+	return _u
+}
+
+// SetNillableGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableGithubIntegrationID(id *uuid.UUID) *WorkspaceUpdate {
+	if id != nil {
+		_u = _u.SetGithubIntegrationID(*id)
+	}
+	return _u
+}
+
+// SetGithubIntegration sets the "github_integration" edge to the GithubIntegration entity.
+func (_u *WorkspaceUpdate) SetGithubIntegration(v *GithubIntegration) *WorkspaceUpdate {
+	return _u.SetGithubIntegrationID(v.ID)
+}
+
 // SetIconUpload sets the "icon_upload" edge to the Upload entity.
 func (_u *WorkspaceUpdate) SetIconUpload(v *Upload) *WorkspaceUpdate {
 	return _u.SetIconUploadID(v.ID)
@@ -744,6 +764,12 @@ func (_u *WorkspaceUpdate) RemoveFavorites(v ...*Favorite) *WorkspaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveFavoriteIDs(ids...)
+}
+
+// ClearGithubIntegration clears the "github_integration" edge to the GithubIntegration entity.
+func (_u *WorkspaceUpdate) ClearGithubIntegration() *WorkspaceUpdate {
+	_u.mutation.ClearGithubIntegration()
+	return _u
 }
 
 // ClearIconUpload clears the "icon_upload" edge to the Upload entity.
@@ -1563,6 +1589,35 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubIntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   workspace.GithubIntegrationTable,
+			Columns: []string{workspace.GithubIntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubIntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   workspace.GithubIntegrationTable,
+			Columns: []string{workspace.GithubIntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.IconUploadCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1968,6 +2023,25 @@ func (_u *WorkspaceUpdateOne) AddFavorites(v ...*Favorite) *WorkspaceUpdateOne {
 	return _u.AddFavoriteIDs(ids...)
 }
 
+// SetGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID.
+func (_u *WorkspaceUpdateOne) SetGithubIntegrationID(id uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.SetGithubIntegrationID(id)
+	return _u
+}
+
+// SetNillableGithubIntegrationID sets the "github_integration" edge to the GithubIntegration entity by ID if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableGithubIntegrationID(id *uuid.UUID) *WorkspaceUpdateOne {
+	if id != nil {
+		_u = _u.SetGithubIntegrationID(*id)
+	}
+	return _u
+}
+
+// SetGithubIntegration sets the "github_integration" edge to the GithubIntegration entity.
+func (_u *WorkspaceUpdateOne) SetGithubIntegration(v *GithubIntegration) *WorkspaceUpdateOne {
+	return _u.SetGithubIntegrationID(v.ID)
+}
+
 // SetIconUpload sets the "icon_upload" edge to the Upload entity.
 func (_u *WorkspaceUpdateOne) SetIconUpload(v *Upload) *WorkspaceUpdateOne {
 	return _u.SetIconUploadID(v.ID)
@@ -2312,6 +2386,12 @@ func (_u *WorkspaceUpdateOne) RemoveFavorites(v ...*Favorite) *WorkspaceUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveFavoriteIDs(ids...)
+}
+
+// ClearGithubIntegration clears the "github_integration" edge to the GithubIntegration entity.
+func (_u *WorkspaceUpdateOne) ClearGithubIntegration() *WorkspaceUpdateOne {
+	_u.mutation.ClearGithubIntegration()
+	return _u
 }
 
 // ClearIconUpload clears the "icon_upload" edge to the Upload entity.
@@ -3154,6 +3234,35 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(favorite.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubIntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   workspace.GithubIntegrationTable,
+			Columns: []string{workspace.GithubIntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubIntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   workspace.GithubIntegrationTable,
+			Columns: []string{workspace.GithubIntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -167,6 +167,16 @@ func TriageStateID(v uuid.UUID) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldTriageStateID, v))
 }
 
+// GithubPrOpenedStateID applies equality check predicate on the "github_pr_opened_state_id" field. It's identical to GithubPrOpenedStateIDEQ.
+func GithubPrOpenedStateID(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldGithubPrOpenedStateID, v))
+}
+
+// GithubPrMergedStateID applies equality check predicate on the "github_pr_merged_state_id" field. It's identical to GithubPrMergedStateIDEQ.
+func GithubPrMergedStateID(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldGithubPrMergedStateID, v))
+}
+
 // AutoCloseMonths applies equality check predicate on the "auto_close_months" field. It's identical to AutoCloseMonthsEQ.
 func AutoCloseMonths(v int) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldAutoCloseMonths, v))
@@ -1022,6 +1032,66 @@ func TriageStateIDNotNil() predicate.Team {
 	return predicate.Team(sql.FieldNotNull(FieldTriageStateID))
 }
 
+// GithubPrOpenedStateIDEQ applies the EQ predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldGithubPrOpenedStateID, v))
+}
+
+// GithubPrOpenedStateIDNEQ applies the NEQ predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDNEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldGithubPrOpenedStateID, v))
+}
+
+// GithubPrOpenedStateIDIn applies the In predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldGithubPrOpenedStateID, vs...))
+}
+
+// GithubPrOpenedStateIDNotIn applies the NotIn predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDNotIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldGithubPrOpenedStateID, vs...))
+}
+
+// GithubPrOpenedStateIDIsNil applies the IsNil predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDIsNil() predicate.Team {
+	return predicate.Team(sql.FieldIsNull(FieldGithubPrOpenedStateID))
+}
+
+// GithubPrOpenedStateIDNotNil applies the NotNil predicate on the "github_pr_opened_state_id" field.
+func GithubPrOpenedStateIDNotNil() predicate.Team {
+	return predicate.Team(sql.FieldNotNull(FieldGithubPrOpenedStateID))
+}
+
+// GithubPrMergedStateIDEQ applies the EQ predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldGithubPrMergedStateID, v))
+}
+
+// GithubPrMergedStateIDNEQ applies the NEQ predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDNEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldGithubPrMergedStateID, v))
+}
+
+// GithubPrMergedStateIDIn applies the In predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldGithubPrMergedStateID, vs...))
+}
+
+// GithubPrMergedStateIDNotIn applies the NotIn predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDNotIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldGithubPrMergedStateID, vs...))
+}
+
+// GithubPrMergedStateIDIsNil applies the IsNil predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDIsNil() predicate.Team {
+	return predicate.Team(sql.FieldIsNull(FieldGithubPrMergedStateID))
+}
+
+// GithubPrMergedStateIDNotNil applies the NotNil predicate on the "github_pr_merged_state_id" field.
+func GithubPrMergedStateIDNotNil() predicate.Team {
+	return predicate.Team(sql.FieldNotNull(FieldGithubPrMergedStateID))
+}
+
 // AutoCloseMonthsEQ applies the EQ predicate on the "auto_close_months" field.
 func AutoCloseMonthsEQ(v int) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldAutoCloseMonths, v))
@@ -1223,6 +1293,52 @@ func HasTriageState() predicate.Team {
 func HasTriageStateWith(preds ...predicate.WorkflowState) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newTriageStateStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGithubPrOpenedState applies the HasEdge predicate on the "github_pr_opened_state" edge.
+func HasGithubPrOpenedState() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GithubPrOpenedStateTable, GithubPrOpenedStateColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubPrOpenedStateWith applies the HasEdge predicate on the "github_pr_opened_state" edge with a given conditions (other predicates).
+func HasGithubPrOpenedStateWith(preds ...predicate.WorkflowState) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newGithubPrOpenedStateStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGithubPrMergedState applies the HasEdge predicate on the "github_pr_merged_state" edge.
+func HasGithubPrMergedState() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GithubPrMergedStateTable, GithubPrMergedStateColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubPrMergedStateWith applies the HasEdge predicate on the "github_pr_merged_state" edge with a given conditions (other predicates).
+func HasGithubPrMergedStateWith(preds ...predicate.WorkflowState) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newGithubPrMergedStateStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

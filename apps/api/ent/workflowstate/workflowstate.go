@@ -43,6 +43,10 @@ const (
 	EdgeDefaultForTeams = "default_for_teams"
 	// EdgeTriageForTeams holds the string denoting the triage_for_teams edge name in mutations.
 	EdgeTriageForTeams = "triage_for_teams"
+	// EdgeGithubPrOpenedForTeams holds the string denoting the github_pr_opened_for_teams edge name in mutations.
+	EdgeGithubPrOpenedForTeams = "github_pr_opened_for_teams"
+	// EdgeGithubPrMergedForTeams holds the string denoting the github_pr_merged_for_teams edge name in mutations.
+	EdgeGithubPrMergedForTeams = "github_pr_merged_for_teams"
 	// Table holds the table name of the workflowstate in the database.
 	Table = "workflow_states"
 	// TeamTable is the table that holds the team relation/edge.
@@ -73,6 +77,20 @@ const (
 	TriageForTeamsInverseTable = "teams"
 	// TriageForTeamsColumn is the table column denoting the triage_for_teams relation/edge.
 	TriageForTeamsColumn = "triage_state_id"
+	// GithubPrOpenedForTeamsTable is the table that holds the github_pr_opened_for_teams relation/edge.
+	GithubPrOpenedForTeamsTable = "teams"
+	// GithubPrOpenedForTeamsInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	GithubPrOpenedForTeamsInverseTable = "teams"
+	// GithubPrOpenedForTeamsColumn is the table column denoting the github_pr_opened_for_teams relation/edge.
+	GithubPrOpenedForTeamsColumn = "github_pr_opened_state_id"
+	// GithubPrMergedForTeamsTable is the table that holds the github_pr_merged_for_teams relation/edge.
+	GithubPrMergedForTeamsTable = "teams"
+	// GithubPrMergedForTeamsInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	GithubPrMergedForTeamsInverseTable = "teams"
+	// GithubPrMergedForTeamsColumn is the table column denoting the github_pr_merged_for_teams relation/edge.
+	GithubPrMergedForTeamsColumn = "github_pr_merged_state_id"
 )
 
 // Columns holds all SQL columns for workflowstate fields.
@@ -225,6 +243,34 @@ func ByTriageForTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTriageForTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByGithubPrOpenedForTeamsCount orders the results by github_pr_opened_for_teams count.
+func ByGithubPrOpenedForTeamsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubPrOpenedForTeamsStep(), opts...)
+	}
+}
+
+// ByGithubPrOpenedForTeams orders the results by github_pr_opened_for_teams terms.
+func ByGithubPrOpenedForTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubPrOpenedForTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByGithubPrMergedForTeamsCount orders the results by github_pr_merged_for_teams count.
+func ByGithubPrMergedForTeamsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubPrMergedForTeamsStep(), opts...)
+	}
+}
+
+// ByGithubPrMergedForTeams orders the results by github_pr_merged_for_teams terms.
+func ByGithubPrMergedForTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubPrMergedForTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTeamStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -251,5 +297,19 @@ func newTriageForTeamsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TriageForTeamsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TriageForTeamsTable, TriageForTeamsColumn),
+	)
+}
+func newGithubPrOpenedForTeamsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubPrOpenedForTeamsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubPrOpenedForTeamsTable, GithubPrOpenedForTeamsColumn),
+	)
+}
+func newGithubPrMergedForTeamsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubPrMergedForTeamsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubPrMergedForTeamsTable, GithubPrMergedForTeamsColumn),
 	)
 }

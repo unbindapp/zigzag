@@ -63,6 +63,8 @@ const (
 	EdgeNotifications = "notifications"
 	// EdgeFavorites holds the string denoting the favorites edge name in mutations.
 	EdgeFavorites = "favorites"
+	// EdgeGithubIntegration holds the string denoting the github_integration edge name in mutations.
+	EdgeGithubIntegration = "github_integration"
 	// EdgeIconUpload holds the string denoting the icon_upload edge name in mutations.
 	EdgeIconUpload = "icon_upload"
 	// Table holds the table name of the workspace in the database.
@@ -179,6 +181,13 @@ const (
 	FavoritesInverseTable = "favorites"
 	// FavoritesColumn is the table column denoting the favorites relation/edge.
 	FavoritesColumn = "workspace_id"
+	// GithubIntegrationTable is the table that holds the github_integration relation/edge.
+	GithubIntegrationTable = "github_integrations"
+	// GithubIntegrationInverseTable is the table name for the GithubIntegration entity.
+	// It exists in this package in order to avoid circular dependency with the "githubintegration" package.
+	GithubIntegrationInverseTable = "github_integrations"
+	// GithubIntegrationColumn is the table column denoting the github_integration relation/edge.
+	GithubIntegrationColumn = "workspace_id"
 	// IconUploadTable is the table that holds the icon_upload relation/edge.
 	IconUploadTable = "workspaces"
 	// IconUploadInverseTable is the table name for the Upload entity.
@@ -496,6 +505,13 @@ func ByFavorites(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByGithubIntegrationField orders the results by github_integration field.
+func ByGithubIntegrationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubIntegrationStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByIconUploadField orders the results by icon_upload field.
 func ByIconUploadField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -612,6 +628,13 @@ func newFavoritesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FavoritesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, FavoritesTable, FavoritesColumn),
+	)
+}
+func newGithubIntegrationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubIntegrationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, GithubIntegrationTable, GithubIntegrationColumn),
 	)
 }
 func newIconUploadStep() *sqlgraph.Step {

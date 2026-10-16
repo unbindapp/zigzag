@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import {
+  BlocksIcon,
   BoxesIcon,
   DownloadIcon,
   FileStackIcon,
@@ -54,6 +55,11 @@ function WorkspaceSettingsLayout() {
       label: "Templates",
       icon: FileStackIcon,
       link: { to: "/$workspace/settings/templates", params },
+    },
+    {
+      label: "Integrations",
+      icon: BlocksIcon,
+      link: { to: "/$workspace/settings/integrations", params },
     },
     { label: "Webhooks", icon: WebhookIcon, link: { to: "/$workspace/settings/webhooks", params } },
     { label: "Import", icon: DownloadIcon, link: { to: "/$workspace/settings/import", params } },

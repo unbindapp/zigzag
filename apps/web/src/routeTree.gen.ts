@@ -39,6 +39,7 @@ import { Route as WorkspaceWorkspaceProjectSlugIssuesRouteImport } from './route
 import { Route as WorkspaceWorkspaceSettingsAdminIndexRouteImport } from './routes/$workspace/_workspace/settings/_admin/index'
 import { Route as WorkspaceWorkspaceSettingsAdminDangerRouteImport } from './routes/$workspace/_workspace/settings/_admin/danger'
 import { Route as WorkspaceWorkspaceSettingsAdminImportRouteImport } from './routes/$workspace/_workspace/settings/_admin/import'
+import { Route as WorkspaceWorkspaceSettingsAdminIntegrationsRouteImport } from './routes/$workspace/_workspace/settings/_admin/integrations'
 import { Route as WorkspaceWorkspaceSettingsAdminLabelsRouteImport } from './routes/$workspace/_workspace/settings/_admin/labels'
 import { Route as WorkspaceWorkspaceSettingsAdminMembersRouteImport } from './routes/$workspace/_workspace/settings/_admin/members'
 import { Route as WorkspaceWorkspaceSettingsAdminProjectStatusesRouteImport } from './routes/$workspace/_workspace/settings/_admin/project-statuses'
@@ -66,6 +67,7 @@ import { Route as WorkspaceWorkspaceSettingsTeamKeyAutoArchiveRouteImport } from
 import { Route as WorkspaceWorkspaceSettingsTeamKeyCyclesRouteImport } from './routes/$workspace/_workspace/settings/team/$key/cycles'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyDangerRouteImport } from './routes/$workspace/_workspace/settings/team/$key/danger'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyEstimatesRouteImport } from './routes/$workspace/_workspace/settings/team/$key/estimates'
+import { Route as WorkspaceWorkspaceSettingsTeamKeyGithubRouteImport } from './routes/$workspace/_workspace/settings/team/$key/github'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyLabelsRouteImport } from './routes/$workspace/_workspace/settings/team/$key/labels'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyMembersRouteImport } from './routes/$workspace/_workspace/settings/team/$key/members'
 import { Route as WorkspaceWorkspaceSettingsTeamKeyTemplatesRouteImport } from './routes/$workspace/_workspace/settings/team/$key/templates'
@@ -241,6 +243,12 @@ const WorkspaceWorkspaceSettingsAdminImportRoute =
     path: '/import',
     getParentRoute: () => WorkspaceWorkspaceSettingsAdminRouteRoute,
   } as any)
+const WorkspaceWorkspaceSettingsAdminIntegrationsRoute =
+  WorkspaceWorkspaceSettingsAdminIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => WorkspaceWorkspaceSettingsAdminRouteRoute,
+  } as any)
 const WorkspaceWorkspaceSettingsAdminLabelsRoute =
   WorkspaceWorkspaceSettingsAdminLabelsRouteImport.update({
     id: '/labels',
@@ -403,6 +411,12 @@ const WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute =
     path: '/estimates',
     getParentRoute: () => WorkspaceWorkspaceSettingsTeamKeyRouteRoute,
   } as any)
+const WorkspaceWorkspaceSettingsTeamKeyGithubRoute =
+  WorkspaceWorkspaceSettingsTeamKeyGithubRouteImport.update({
+    id: '/github',
+    path: '/github',
+    getParentRoute: () => WorkspaceWorkspaceSettingsTeamKeyRouteRoute,
+  } as any)
 const WorkspaceWorkspaceSettingsTeamKeyLabelsRoute =
   WorkspaceWorkspaceSettingsTeamKeyLabelsRouteImport.update({
     id: '/labels',
@@ -470,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/project/$slug/issues': typeof WorkspaceWorkspaceProjectSlugIssuesRoute
   '/$workspace/settings/danger': typeof WorkspaceWorkspaceSettingsAdminDangerRoute
   '/$workspace/settings/import': typeof WorkspaceWorkspaceSettingsAdminImportRoute
+  '/$workspace/settings/integrations': typeof WorkspaceWorkspaceSettingsAdminIntegrationsRoute
   '/$workspace/settings/labels': typeof WorkspaceWorkspaceSettingsAdminLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceWorkspaceSettingsAdminMembersRoute
   '/$workspace/settings/project-statuses': typeof WorkspaceWorkspaceSettingsAdminProjectStatusesRoute
@@ -497,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/team/$key/cycles': typeof WorkspaceWorkspaceSettingsTeamKeyCyclesRoute
   '/$workspace/settings/team/$key/danger': typeof WorkspaceWorkspaceSettingsTeamKeyDangerRoute
   '/$workspace/settings/team/$key/estimates': typeof WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute
+  '/$workspace/settings/team/$key/github': typeof WorkspaceWorkspaceSettingsTeamKeyGithubRoute
   '/$workspace/settings/team/$key/labels': typeof WorkspaceWorkspaceSettingsTeamKeyLabelsRoute
   '/$workspace/settings/team/$key/members': typeof WorkspaceWorkspaceSettingsTeamKeyMembersRoute
   '/$workspace/settings/team/$key/templates': typeof WorkspaceWorkspaceSettingsTeamKeyTemplatesRoute
@@ -529,6 +545,7 @@ export interface FileRoutesByTo {
   '/$workspace/project/$slug/issues': typeof WorkspaceWorkspaceProjectSlugIssuesRoute
   '/$workspace/settings/danger': typeof WorkspaceWorkspaceSettingsAdminDangerRoute
   '/$workspace/settings/import': typeof WorkspaceWorkspaceSettingsAdminImportRoute
+  '/$workspace/settings/integrations': typeof WorkspaceWorkspaceSettingsAdminIntegrationsRoute
   '/$workspace/settings/labels': typeof WorkspaceWorkspaceSettingsAdminLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceWorkspaceSettingsAdminMembersRoute
   '/$workspace/settings/project-statuses': typeof WorkspaceWorkspaceSettingsAdminProjectStatusesRoute
@@ -556,6 +573,7 @@ export interface FileRoutesByTo {
   '/$workspace/settings/team/$key/cycles': typeof WorkspaceWorkspaceSettingsTeamKeyCyclesRoute
   '/$workspace/settings/team/$key/danger': typeof WorkspaceWorkspaceSettingsTeamKeyDangerRoute
   '/$workspace/settings/team/$key/estimates': typeof WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute
+  '/$workspace/settings/team/$key/github': typeof WorkspaceWorkspaceSettingsTeamKeyGithubRoute
   '/$workspace/settings/team/$key/labels': typeof WorkspaceWorkspaceSettingsTeamKeyLabelsRoute
   '/$workspace/settings/team/$key/members': typeof WorkspaceWorkspaceSettingsTeamKeyMembersRoute
   '/$workspace/settings/team/$key/templates': typeof WorkspaceWorkspaceSettingsTeamKeyTemplatesRoute
@@ -595,6 +613,7 @@ export interface FileRoutesById {
   '/$workspace/_workspace/project/$slug/issues': typeof WorkspaceWorkspaceProjectSlugIssuesRoute
   '/$workspace/_workspace/settings/_admin/danger': typeof WorkspaceWorkspaceSettingsAdminDangerRoute
   '/$workspace/_workspace/settings/_admin/import': typeof WorkspaceWorkspaceSettingsAdminImportRoute
+  '/$workspace/_workspace/settings/_admin/integrations': typeof WorkspaceWorkspaceSettingsAdminIntegrationsRoute
   '/$workspace/_workspace/settings/_admin/labels': typeof WorkspaceWorkspaceSettingsAdminLabelsRoute
   '/$workspace/_workspace/settings/_admin/members': typeof WorkspaceWorkspaceSettingsAdminMembersRoute
   '/$workspace/_workspace/settings/_admin/project-statuses': typeof WorkspaceWorkspaceSettingsAdminProjectStatusesRoute
@@ -622,6 +641,7 @@ export interface FileRoutesById {
   '/$workspace/_workspace/settings/team/$key/cycles': typeof WorkspaceWorkspaceSettingsTeamKeyCyclesRoute
   '/$workspace/_workspace/settings/team/$key/danger': typeof WorkspaceWorkspaceSettingsTeamKeyDangerRoute
   '/$workspace/_workspace/settings/team/$key/estimates': typeof WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute
+  '/$workspace/_workspace/settings/team/$key/github': typeof WorkspaceWorkspaceSettingsTeamKeyGithubRoute
   '/$workspace/_workspace/settings/team/$key/labels': typeof WorkspaceWorkspaceSettingsTeamKeyLabelsRoute
   '/$workspace/_workspace/settings/team/$key/members': typeof WorkspaceWorkspaceSettingsTeamKeyMembersRoute
   '/$workspace/_workspace/settings/team/$key/templates': typeof WorkspaceWorkspaceSettingsTeamKeyTemplatesRoute
@@ -662,6 +682,7 @@ export interface FileRouteTypes {
     | '/$workspace/project/$slug/issues'
     | '/$workspace/settings/danger'
     | '/$workspace/settings/import'
+    | '/$workspace/settings/integrations'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/project-statuses'
@@ -689,6 +710,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/team/$key/cycles'
     | '/$workspace/settings/team/$key/danger'
     | '/$workspace/settings/team/$key/estimates'
+    | '/$workspace/settings/team/$key/github'
     | '/$workspace/settings/team/$key/labels'
     | '/$workspace/settings/team/$key/members'
     | '/$workspace/settings/team/$key/templates'
@@ -721,6 +743,7 @@ export interface FileRouteTypes {
     | '/$workspace/project/$slug/issues'
     | '/$workspace/settings/danger'
     | '/$workspace/settings/import'
+    | '/$workspace/settings/integrations'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/project-statuses'
@@ -748,6 +771,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/team/$key/cycles'
     | '/$workspace/settings/team/$key/danger'
     | '/$workspace/settings/team/$key/estimates'
+    | '/$workspace/settings/team/$key/github'
     | '/$workspace/settings/team/$key/labels'
     | '/$workspace/settings/team/$key/members'
     | '/$workspace/settings/team/$key/templates'
@@ -786,6 +810,7 @@ export interface FileRouteTypes {
     | '/$workspace/_workspace/project/$slug/issues'
     | '/$workspace/_workspace/settings/_admin/danger'
     | '/$workspace/_workspace/settings/_admin/import'
+    | '/$workspace/_workspace/settings/_admin/integrations'
     | '/$workspace/_workspace/settings/_admin/labels'
     | '/$workspace/_workspace/settings/_admin/members'
     | '/$workspace/_workspace/settings/_admin/project-statuses'
@@ -813,6 +838,7 @@ export interface FileRouteTypes {
     | '/$workspace/_workspace/settings/team/$key/cycles'
     | '/$workspace/_workspace/settings/team/$key/danger'
     | '/$workspace/_workspace/settings/team/$key/estimates'
+    | '/$workspace/_workspace/settings/team/$key/github'
     | '/$workspace/_workspace/settings/team/$key/labels'
     | '/$workspace/_workspace/settings/team/$key/members'
     | '/$workspace/_workspace/settings/team/$key/templates'
@@ -1046,6 +1072,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceWorkspaceSettingsAdminImportRouteImport
       parentRoute: typeof WorkspaceWorkspaceSettingsAdminRouteRoute
     }
+    '/$workspace/_workspace/settings/_admin/integrations': {
+      id: '/$workspace/_workspace/settings/_admin/integrations'
+      path: '/integrations'
+      fullPath: '/$workspace/settings/integrations'
+      preLoaderRoute: typeof WorkspaceWorkspaceSettingsAdminIntegrationsRouteImport
+      parentRoute: typeof WorkspaceWorkspaceSettingsAdminRouteRoute
+    }
     '/$workspace/_workspace/settings/_admin/labels': {
       id: '/$workspace/_workspace/settings/_admin/labels'
       path: '/labels'
@@ -1235,6 +1268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceWorkspaceSettingsTeamKeyEstimatesRouteImport
       parentRoute: typeof WorkspaceWorkspaceSettingsTeamKeyRouteRoute
     }
+    '/$workspace/_workspace/settings/team/$key/github': {
+      id: '/$workspace/_workspace/settings/team/$key/github'
+      path: '/github'
+      fullPath: '/$workspace/settings/team/$key/github'
+      preLoaderRoute: typeof WorkspaceWorkspaceSettingsTeamKeyGithubRouteImport
+      parentRoute: typeof WorkspaceWorkspaceSettingsTeamKeyRouteRoute
+    }
     '/$workspace/_workspace/settings/team/$key/labels': {
       id: '/$workspace/_workspace/settings/team/$key/labels'
       path: '/labels'
@@ -1283,6 +1323,7 @@ declare module '@tanstack/react-router' {
 interface WorkspaceWorkspaceSettingsAdminRouteRouteChildren {
   WorkspaceWorkspaceSettingsAdminDangerRoute: typeof WorkspaceWorkspaceSettingsAdminDangerRoute
   WorkspaceWorkspaceSettingsAdminImportRoute: typeof WorkspaceWorkspaceSettingsAdminImportRoute
+  WorkspaceWorkspaceSettingsAdminIntegrationsRoute: typeof WorkspaceWorkspaceSettingsAdminIntegrationsRoute
   WorkspaceWorkspaceSettingsAdminLabelsRoute: typeof WorkspaceWorkspaceSettingsAdminLabelsRoute
   WorkspaceWorkspaceSettingsAdminMembersRoute: typeof WorkspaceWorkspaceSettingsAdminMembersRoute
   WorkspaceWorkspaceSettingsAdminProjectStatusesRoute: typeof WorkspaceWorkspaceSettingsAdminProjectStatusesRoute
@@ -1298,6 +1339,8 @@ const WorkspaceWorkspaceSettingsAdminRouteRouteChildren: WorkspaceWorkspaceSetti
       WorkspaceWorkspaceSettingsAdminDangerRoute,
     WorkspaceWorkspaceSettingsAdminImportRoute:
       WorkspaceWorkspaceSettingsAdminImportRoute,
+    WorkspaceWorkspaceSettingsAdminIntegrationsRoute:
+      WorkspaceWorkspaceSettingsAdminIntegrationsRoute,
     WorkspaceWorkspaceSettingsAdminLabelsRoute:
       WorkspaceWorkspaceSettingsAdminLabelsRoute,
     WorkspaceWorkspaceSettingsAdminMembersRoute:
@@ -1403,6 +1446,7 @@ interface WorkspaceWorkspaceSettingsTeamKeyRouteRouteChildren {
   WorkspaceWorkspaceSettingsTeamKeyCyclesRoute: typeof WorkspaceWorkspaceSettingsTeamKeyCyclesRoute
   WorkspaceWorkspaceSettingsTeamKeyDangerRoute: typeof WorkspaceWorkspaceSettingsTeamKeyDangerRoute
   WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute: typeof WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute
+  WorkspaceWorkspaceSettingsTeamKeyGithubRoute: typeof WorkspaceWorkspaceSettingsTeamKeyGithubRoute
   WorkspaceWorkspaceSettingsTeamKeyLabelsRoute: typeof WorkspaceWorkspaceSettingsTeamKeyLabelsRoute
   WorkspaceWorkspaceSettingsTeamKeyMembersRoute: typeof WorkspaceWorkspaceSettingsTeamKeyMembersRoute
   WorkspaceWorkspaceSettingsTeamKeyTemplatesRoute: typeof WorkspaceWorkspaceSettingsTeamKeyTemplatesRoute
@@ -1421,6 +1465,8 @@ const WorkspaceWorkspaceSettingsTeamKeyRouteRouteChildren: WorkspaceWorkspaceSet
       WorkspaceWorkspaceSettingsTeamKeyDangerRoute,
     WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute:
       WorkspaceWorkspaceSettingsTeamKeyEstimatesRoute,
+    WorkspaceWorkspaceSettingsTeamKeyGithubRoute:
+      WorkspaceWorkspaceSettingsTeamKeyGithubRoute,
     WorkspaceWorkspaceSettingsTeamKeyLabelsRoute:
       WorkspaceWorkspaceSettingsTeamKeyLabelsRoute,
     WorkspaceWorkspaceSettingsTeamKeyMembersRoute:

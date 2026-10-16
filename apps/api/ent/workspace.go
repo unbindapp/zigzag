@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/upload"
 	"github.com/unbindapp/zigzag-api/ent/workspace"
 )
@@ -76,11 +77,13 @@ type WorkspaceEdges struct {
 	Notifications []*Notification `json:"notifications,omitempty"`
 	// Favorites holds the value of the favorites edge.
 	Favorites []*Favorite `json:"favorites,omitempty"`
+	// GithubIntegration holds the value of the github_integration edge.
+	GithubIntegration *GithubIntegration `json:"github_integration,omitempty"`
 	// IconUpload holds the value of the icon_upload edge.
 	IconUpload *Upload `json:"icon_upload,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [18]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -227,12 +230,23 @@ func (e WorkspaceEdges) FavoritesOrErr() ([]*Favorite, error) {
 	return nil, &NotLoadedError{edge: "favorites"}
 }
 
+// GithubIntegrationOrErr returns the GithubIntegration value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WorkspaceEdges) GithubIntegrationOrErr() (*GithubIntegration, error) {
+	if e.GithubIntegration != nil {
+		return e.GithubIntegration, nil
+	} else if e.loadedTypes[16] {
+		return nil, &NotFoundError{label: githubintegration.Label}
+	}
+	return nil, &NotLoadedError{edge: "github_integration"}
+}
+
 // IconUploadOrErr returns the IconUpload value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e WorkspaceEdges) IconUploadOrErr() (*Upload, error) {
 	if e.IconUpload != nil {
 		return e.IconUpload, nil
-	} else if e.loadedTypes[16] {
+	} else if e.loadedTypes[17] {
 		return nil, &NotFoundError{label: upload.Label}
 	}
 	return nil, &NotLoadedError{edge: "icon_upload"}
@@ -413,6 +427,11 @@ func (_m *Workspace) QueryNotifications() *NotificationQuery {
 // QueryFavorites queries the "favorites" edge of the Workspace entity.
 func (_m *Workspace) QueryFavorites() *FavoriteQuery {
 	return NewWorkspaceClient(_m.config).QueryFavorites(_m)
+}
+
+// QueryGithubIntegration queries the "github_integration" edge of the Workspace entity.
+func (_m *Workspace) QueryGithubIntegration() *GithubIntegrationQuery {
+	return NewWorkspaceClient(_m.config).QueryGithubIntegration(_m)
 }
 
 // QueryIconUpload queries the "icon_upload" edge of the Workspace entity.

@@ -506,10 +506,13 @@ func (self *IssueService) updateProject(ctx context.Context, current *ent.Issue,
 }
 
 func (self *IssueService) afterUpdate(ctx context.Context, userID uuid.UUID, outcome *issueOutcome, response *models.IssueResponse) {
+	self.announce(ctx, &userID, outcome, response)
+}
+
+func (self *IssueService) announce(ctx context.Context, actor *uuid.UUID, outcome *issueOutcome, response *models.IssueResponse) {
 	if outcome == nil || len(outcome.changes) == 0 {
 		return
 	}
-	actor := &userID
 	event := func(kind schema.NotificationType, recipients []uuid.UUID, body string) {
 		self.notify(ctx, models.NotificationEvent{
 			Type: kind, WorkspaceID: response.WorkspaceID, ActorID: actor, RecipientIDs: without(recipients, actor),

@@ -28,6 +28,10 @@ type Tx struct {
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
 	Favorite *FavoriteClient
+	// GithubIntegration is the client for interacting with the GithubIntegration builders.
+	GithubIntegration *GithubIntegrationClient
+	// GithubRepository is the client for interacting with the GithubRepository builders.
+	GithubRepository *GithubRepositoryClient
 	// ImportJob is the client for interacting with the ImportJob builders.
 	ImportJob *ImportJobClient
 	// Initiative is the client for interacting with the Initiative builders.
@@ -236,6 +240,8 @@ func (tx *Tx) init() {
 	tx.CycleScopeHistory = NewCycleScopeHistoryClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.Favorite = NewFavoriteClient(tx.config)
+	tx.GithubIntegration = NewGithubIntegrationClient(tx.config)
+	tx.GithubRepository = NewGithubRepositoryClient(tx.config)
 	tx.ImportJob = NewImportJobClient(tx.config)
 	tx.Initiative = NewInitiativeClient(tx.config)
 	tx.InitiativePost = NewInitiativePostClient(tx.config)

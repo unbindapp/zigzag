@@ -22,6 +22,7 @@ Workspaces, teams, issues, projects, cycles, labels, views, documents, inbox. On
 - Workspaces with admin, member and viewer roles, invitations, API keys, connected apps
 - An MCP server at `/mcp` where every API operation is a tool, scoped by the same roles
 - Import from Linear, archived issues included, idempotent and dry-runnable
+- GitHub webhooks: pull requests and branches that mention an issue link to it and move it from started to done
 
 ## Run it
 
@@ -37,13 +38,13 @@ docker run -d --name zigzag \
 
 Open the URL. The first visit creates the first user and workspace.
 
-| Variable          | Purpose                                              |
-| ----------------- | ---------------------------------------------------- |
-| `DATABASE_URL`    | Postgres connection string                           |
-| `EXTERNAL_UI_URL` | Public URL of the instance, used in links and emails |
-| `ENCRYPTION_KEY`  | 64 hex chars, encrypts the SMTP password at rest     |
-| `DATA_DIR`        | Uploads directory, `/data` in the image              |
-| `PORT`            | Listen port, default `8091`                          |
+| Variable          | Purpose                                                                     |
+| ----------------- | --------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Postgres connection string                                                  |
+| `EXTERNAL_UI_URL` | Public URL of the instance, used in links and emails                        |
+| `ENCRYPTION_KEY`  | 64 hex chars, encrypts the SMTP password and GitHub webhook secrets at rest |
+| `DATA_DIR`        | Uploads directory, `/data` in the image                                     |
+| `PORT`            | Listen port, default `8091`                                                 |
 
 ## Connect an agent
 

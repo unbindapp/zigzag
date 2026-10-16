@@ -119,9 +119,11 @@ type UserEdges struct {
 	Templates []*Template `json:"templates,omitempty"`
 	// Imports holds the value of the imports edge.
 	Imports []*ImportJob `json:"imports,omitempty"`
+	// GithubIntegrations holds the value of the github_integrations edge.
+	GithubIntegrations []*GithubIntegration `json:"github_integrations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [34]bool
+	loadedTypes [35]bool
 }
 
 // AvatarUploadOrErr returns the AvatarUpload value or an error if the edge
@@ -434,6 +436,15 @@ func (e UserEdges) ImportsOrErr() ([]*ImportJob, error) {
 	return nil, &NotLoadedError{edge: "imports"}
 }
 
+// GithubIntegrationsOrErr returns the GithubIntegrations value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) GithubIntegrationsOrErr() ([]*GithubIntegration, error) {
+	if e.loadedTypes[34] {
+		return e.GithubIntegrations, nil
+	}
+	return nil, &NotLoadedError{edge: "github_integrations"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -719,6 +730,11 @@ func (_m *User) QueryTemplates() *TemplateQuery {
 // QueryImports queries the "imports" edge of the User entity.
 func (_m *User) QueryImports() *ImportJobQuery {
 	return NewUserClient(_m.config).QueryImports(_m)
+}
+
+// QueryGithubIntegrations queries the "github_integrations" edge of the User entity.
+func (_m *User) QueryGithubIntegrations() *GithubIntegrationQuery {
+	return NewUserClient(_m.config).QueryGithubIntegrations(_m)
 }
 
 // Update returns a builder for updating this User.

@@ -1,0 +1,67 @@
+{
+  "action": "closed",
+  "number": 42,
+  "pull_request": {
+    "url": "https://api.github.com/repos/unbindapp/unbind/pulls/42",
+    "id": 2100000042,
+    "node_id": "PR_kwDOKbcdef5abcde",
+    "html_url": "https://github.com/unbindapp/unbind/pull/42",
+    "number": 42,
+    "state": "closed",
+    "locked": false,
+    "title": "Limit websocket message size",
+    "user": {
+      "login": "bbedward",
+      "id": 1234567,
+      "type": "User"
+    },
+    "body": "Calls SetReadLimit on the terminal websocket.\r\n\r\nfixes UNB-455",
+    "created_at": "2026-10-16T09:00:00Z",
+    "updated_at": "2026-10-16T09:00:00Z",
+    "closed_at": "2026-10-16T10:00:00Z",
+    "merged_at": "2026-10-16T10:00:00Z",
+    "merge_commit_sha": "e5bd3914e2e596debea16f433f57875b5b90bcd6",
+    "draft": false,
+    "head": {
+      "label": "unbindapp:bbedward/unb-455-websocket-limit",
+      "ref": "bbedward/unb-455-websocket-limit",
+      "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+      "repo": {
+        "full_name": "unbindapp/unbind"
+      }
+    },
+    "base": {
+      "label": "unbindapp:master",
+      "ref": "master",
+      "sha": "1a2b3c4d5e6f",
+      "repo": {
+        "full_name": "unbindapp/unbind"
+      }
+    },
+    "merged": true,
+    "mergeable": null,
+    "comments": 0,
+    "commits": 1,
+    "additions": 3,
+    "deletions": 0,
+    "changed_files": 1,
+    "merged_by": {
+      "login": "bbedward",
+      "id": 1234567,
+      "type": "User"
+    }
+  },
+  "repository": {
+    "id": 700000001,
+    "name": "unbind",
+    "full_name": "unbindapp/unbind",
+    "private": false,
+    "html_url": "https://github.com/unbindapp/unbind",
+    "default_branch": "master"
+  },
+  "sender": {
+    "login": "bbedward",
+    "id": 1234567,
+    "type": "User"
+  }
+}

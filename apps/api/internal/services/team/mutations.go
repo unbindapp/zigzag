@@ -75,27 +75,29 @@ func (self *TeamService) Create(ctx context.Context, userID uuid.UUID, input *Cr
 }
 
 type UpdateTeamInput struct {
-	TeamID              uuid.UUID            `json:"team_id" required:"true" format:"uuid" doc:"The team to change"`
-	Name                *string              `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Key                 *string              `json:"key,omitempty" required:"false" maxLength:"7" pattern:"^[A-Za-z][A-Za-z0-9]{0,6}$" doc:"New issue prefix; existing identifiers change with it"`
-	Description         *string              `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
-	Icon                *string              `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color               *string              `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
-	Private             *bool                `json:"private,omitempty" required:"false" doc:"Visible to members and workspace admins only"`
-	Timezone            *string              `json:"timezone,omitempty" required:"false" maxLength:"64" doc:"IANA time zone"`
-	CyclesEnabled       *bool                `json:"cycles_enabled,omitempty" required:"false" doc:"Turn cycles on or off"`
-	CycleDurationWeeks  *int                 `json:"cycle_duration_weeks,omitempty" required:"false" minimum:"1" maximum:"8" doc:"Weeks per cycle"`
-	CycleCooldownWeeks  *int                 `json:"cycle_cooldown_weeks,omitempty" required:"false" minimum:"0" maximum:"4" doc:"Weeks between cycles"`
-	CycleStartDay       *int                 `json:"cycle_start_day,omitempty" required:"false" minimum:"1" maximum:"7" doc:"1 Monday through 7 Sunday"`
-	CycleAutoMove       *bool                `json:"cycle_auto_move,omitempty" required:"false" doc:"Move unfinished issues to the next cycle"`
-	CycleAutoAddStarted *bool                `json:"cycle_auto_add_started,omitempty" required:"false" doc:"An issue that starts joins the active cycle"`
-	EstimateType        *schema.EstimateType `json:"estimate_type,omitempty" required:"false" doc:"none, exponential, fibonacci, linear or tshirt"`
-	EstimateAllowZero   *bool                `json:"estimate_allow_zero,omitempty" required:"false" doc:"Allow a zero estimate"`
-	EstimateExtended    *bool                `json:"estimate_extended,omitempty" required:"false" doc:"Offer the extended estimate scale"`
-	TriageEnabled       *bool                `json:"triage_enabled,omitempty" required:"false" doc:"New issues from outside the team land in triage"`
-	DefaultStateID      *uuid.UUID           `json:"default_state_id,omitempty" required:"false" format:"uuid" doc:"State new issues get, one of this team's states"`
-	AutoCloseMonths     *int                 `json:"auto_close_months,omitempty" required:"false" minimum:"0" maximum:"24" doc:"Close stale issues after this many months, 0 turns it off"`
-	AutoArchiveMonths   *int                 `json:"auto_archive_months,omitempty" required:"false" minimum:"1" maximum:"24" doc:"Archive completed and canceled issues after this many months"`
+	TeamID                uuid.UUID            `json:"team_id" required:"true" format:"uuid" doc:"The team to change"`
+	Name                  *string              `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
+	Key                   *string              `json:"key,omitempty" required:"false" maxLength:"7" pattern:"^[A-Za-z][A-Za-z0-9]{0,6}$" doc:"New issue prefix; existing identifiers change with it"`
+	Description           *string              `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
+	Icon                  *string              `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
+	Color                 *string              `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
+	Private               *bool                `json:"private,omitempty" required:"false" doc:"Visible to members and workspace admins only"`
+	Timezone              *string              `json:"timezone,omitempty" required:"false" maxLength:"64" doc:"IANA time zone"`
+	CyclesEnabled         *bool                `json:"cycles_enabled,omitempty" required:"false" doc:"Turn cycles on or off"`
+	CycleDurationWeeks    *int                 `json:"cycle_duration_weeks,omitempty" required:"false" minimum:"1" maximum:"8" doc:"Weeks per cycle"`
+	CycleCooldownWeeks    *int                 `json:"cycle_cooldown_weeks,omitempty" required:"false" minimum:"0" maximum:"4" doc:"Weeks between cycles"`
+	CycleStartDay         *int                 `json:"cycle_start_day,omitempty" required:"false" minimum:"1" maximum:"7" doc:"1 Monday through 7 Sunday"`
+	CycleAutoMove         *bool                `json:"cycle_auto_move,omitempty" required:"false" doc:"Move unfinished issues to the next cycle"`
+	CycleAutoAddStarted   *bool                `json:"cycle_auto_add_started,omitempty" required:"false" doc:"An issue that starts joins the active cycle"`
+	EstimateType          *schema.EstimateType `json:"estimate_type,omitempty" required:"false" doc:"none, exponential, fibonacci, linear or tshirt"`
+	EstimateAllowZero     *bool                `json:"estimate_allow_zero,omitempty" required:"false" doc:"Allow a zero estimate"`
+	EstimateExtended      *bool                `json:"estimate_extended,omitempty" required:"false" doc:"Offer the extended estimate scale"`
+	TriageEnabled         *bool                `json:"triage_enabled,omitempty" required:"false" doc:"New issues from outside the team land in triage"`
+	DefaultStateID        *uuid.UUID           `json:"default_state_id,omitempty" required:"false" format:"uuid" doc:"State new issues get, one of this team's states"`
+	GithubPrOpenedStateID *uuid.UUID           `json:"github_pr_opened_state_id,omitempty" required:"false" format:"uuid" doc:"State an issue moves to from triage, backlog or unstarted when a linked pull request opens or its branch is pushed; one of this team's states, the nil uuid restores the default, the first started state"`
+	GithubPrMergedStateID *uuid.UUID           `json:"github_pr_merged_state_id,omitempty" required:"false" format:"uuid" doc:"State an issue moves to when a pull request that fixes, closes or resolves it merges; one of this team's states, the nil uuid restores the default, the first completed state"`
+	AutoCloseMonths       *int                 `json:"auto_close_months,omitempty" required:"false" minimum:"0" maximum:"24" doc:"Close stale issues after this many months, 0 turns it off"`
+	AutoArchiveMonths     *int                 `json:"auto_archive_months,omitempty" required:"false" minimum:"1" maximum:"24" doc:"Archive completed and canceled issues after this many months"`
 }
 
 func (self *TeamService) Update(ctx context.Context, userID uuid.UUID, input *UpdateTeamInput) (*models.TeamResponse, error) {
@@ -151,6 +153,12 @@ func (self *TeamService) Update(ctx context.Context, userID uuid.UUID, input *Up
 			return nil, err
 		}
 		update.DefaultStateID = input.DefaultStateID
+	}
+	if update.GithubPrOpenedStateID, update.ClearGithubPrOpenedState, err = self.optionalTeamState(ctx, team.ID, input.GithubPrOpenedStateID); err != nil {
+		return nil, err
+	}
+	if update.GithubPrMergedStateID, update.ClearGithubPrMergedState, err = self.optionalTeamState(ctx, team.ID, input.GithubPrMergedStateID); err != nil {
+		return nil, err
 	}
 
 	var updated *ent.Team
@@ -211,6 +219,19 @@ func (self *TeamService) ensureTeamState(ctx context.Context, teamID, stateID uu
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The state must belong to this team")
 	}
 	return err
+}
+
+func (self *TeamService) optionalTeamState(ctx context.Context, teamID uuid.UUID, stateID *uuid.UUID) (*uuid.UUID, bool, error) {
+	if stateID == nil {
+		return nil, false, nil
+	}
+	if *stateID == uuid.Nil {
+		return nil, true, nil
+	}
+	if err := self.ensureTeamState(ctx, teamID, *stateID); err != nil {
+		return nil, false, err
+	}
+	return stateID, false, nil
 }
 
 func (self *TeamService) ensureTriageState(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (uuid.UUID, error) {

@@ -37,7 +37,7 @@ type Attachment struct {
 	Subtitle string `json:"subtitle,omitempty"`
 	// URL holds the value of the "url" field.
 	URL string `json:"url,omitempty"`
-	// upload, link, github or import
+	// upload, link, github, github_branch or import
 	SourceType string `json:"source_type,omitempty"`
 	// UploadID holds the value of the "upload_id" field.
 	UploadID *uuid.UUID `json:"upload_id,omitempty"`

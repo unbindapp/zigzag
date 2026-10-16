@@ -904,6 +904,29 @@ func HasFavoritesWith(preds ...predicate.Favorite) predicate.Workspace {
 	})
 }
 
+// HasGithubIntegration applies the HasEdge predicate on the "github_integration" edge.
+func HasGithubIntegration() predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, GithubIntegrationTable, GithubIntegrationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubIntegrationWith applies the HasEdge predicate on the "github_integration" edge with a given conditions (other predicates).
+func HasGithubIntegrationWith(preds ...predicate.GithubIntegration) predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := newGithubIntegrationStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasIconUpload applies the HasEdge predicate on the "icon_upload" edge.
 func HasIconUpload() predicate.Workspace {
 	return predicate.Workspace(func(s *sql.Selector) {

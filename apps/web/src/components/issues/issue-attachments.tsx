@@ -7,9 +7,16 @@ import {
   useCreateAttachmentMutation,
   useDeleteAttachmentMutation,
 } from "@/lib/queries/issues";
+import { GithubIcon } from "@/components/icons/github";
+import {
+  githubLinkOf,
+  type TGithubLink,
+  type TPullRequestState,
+} from "@/components/integrations/github-link";
 import { List, ListRow, ListRowText } from "@/components/layout/list";
 import { SectionTitle } from "@/components/layout/section-title";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileTrigger } from "@/components/ui/file-trigger";
 import { Input } from "@/components/ui/input";
@@ -64,13 +71,40 @@ export function IssueAttachments({ issue }: { issue: TIssueDetail }) {
   );
 }
 
+const pullRequestStates: Record<
+  TPullRequestState,
+  { label: string; variant: "process" | "muted" | "success" | "destructive" }
+> = {
+  open: { label: "Open", variant: "process" },
+  draft: { label: "Draft", variant: "muted" },
+  merged: { label: "Merged", variant: "success" },
+  closed: { label: "Closed", variant: "destructive" },
+};
+
+function AttachmentIcon({
+  attachment,
+  github,
+}: {
+  attachment: TAttachment;
+  github: TGithubLink | null;
+}) {
+  if (github) return <GithubIcon className="text-muted-foreground" />;
+  const Icon = attachment.upload_id ? FileIcon : LinkIcon;
+  return <Icon className="text-muted-foreground size-4 shrink-0" />;
+}
+
 function AttachmentRow({ attachment, canEdit }: { attachment: TAttachment; canEdit: boolean }) {
   const { mutate: remove, isPending } = useDeleteAttachmentMutation();
-  const Icon = attachment.upload_id ? FileIcon : LinkIcon;
+  const github = githubLinkOf(attachment);
+  const pullRequestState =
+    github?.kind === "pull_request" && github.state ? pullRequestStates[github.state] : null;
   return (
     <ListRow
       actions={
         <>
+          {pullRequestState && (
+            <Badge variant={pullRequestState.variant}>{pullRequestState.label}</Badge>
+          )}
           <span className="text-muted-foreground text-xs">
             <RelativeTime value={attachment.created_at} />
           </span>
@@ -88,14 +122,17 @@ function AttachmentRow({ attachment, canEdit }: { attachment: TAttachment; canEd
         </>
       }
     >
-      <Icon className="text-muted-foreground size-4 shrink-0" />
+      <AttachmentIcon attachment={attachment} github={github} />
       <a
         href={attachment.url}
         target="_blank"
         rel="noreferrer noopener"
         className="flex min-w-0 flex-1 outline-hidden focus-visible:underline has-hover:hover:underline"
       >
-        <ListRowText primary={attachment.title} secondary={attachment.subtitle || undefined} />
+        <ListRowText
+          primary={attachment.title}
+          secondary={github?.reference || attachment.subtitle || undefined}
+        />
       </a>
     </ListRow>
   );

@@ -12,6 +12,7 @@ import (
 	mocks_repository_cycle "github.com/unbindapp/zigzag-api/mocks/repository/cycle"
 	mocks_repository_document "github.com/unbindapp/zigzag-api/mocks/repository/document"
 	mocks_repository_favorite "github.com/unbindapp/zigzag-api/mocks/repository/favorite"
+	mocks_repository_github "github.com/unbindapp/zigzag-api/mocks/repository/github"
 	mocks_repository_importjob "github.com/unbindapp/zigzag-api/mocks/repository/importjob"
 	mocks_repository_initiative "github.com/unbindapp/zigzag-api/mocks/repository/initiative"
 	mocks_repository_issue "github.com/unbindapp/zigzag-api/mocks/repository/issue"
@@ -60,6 +61,7 @@ type ServiceTestSuite struct {
 	MockWebhookRepo      *mocks_repository_webhook.WebhookRepositoryMock
 	MockUploadRepo       *mocks_repository_upload.UploadRepositoryMock
 	MockImportJobRepo    *mocks_repository_importjob.ImportJobRepositoryMock
+	MockGithubRepo       *mocks_repository_github.GithubRepositoryMock
 	MockPermissionsRepo  *mocks_repository_permissions.PermissionsRepositoryMock
 }
 
@@ -88,6 +90,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockWebhookRepo = mocks_repository_webhook.NewWebhookRepositoryMock(suite.T())
 	suite.MockUploadRepo = mocks_repository_upload.NewUploadRepositoryMock(suite.T())
 	suite.MockImportJobRepo = mocks_repository_importjob.NewImportJobRepositoryMock(suite.T())
+	suite.MockGithubRepo = mocks_repository_github.NewGithubRepositoryMock(suite.T())
 	suite.MockPermissionsRepo = mocks_repository_permissions.NewPermissionsRepositoryMock(suite.T())
 
 	suite.MockRepo.EXPECT().User().Return(suite.MockUserRepo).Maybe()
@@ -111,6 +114,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockRepo.EXPECT().Webhook().Return(suite.MockWebhookRepo).Maybe()
 	suite.MockRepo.EXPECT().Upload().Return(suite.MockUploadRepo).Maybe()
 	suite.MockRepo.EXPECT().ImportJob().Return(suite.MockImportJobRepo).Maybe()
+	suite.MockRepo.EXPECT().Github().Return(suite.MockGithubRepo).Maybe()
 	suite.MockRepo.EXPECT().Permissions().Return(suite.MockPermissionsRepo).Maybe()
 }
 

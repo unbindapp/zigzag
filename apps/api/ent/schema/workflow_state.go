@@ -36,6 +36,8 @@ func (WorkflowState) Edges() []ent.Edge {
 		edge.To("issues", Issue.Type).Annotations(noAction()),
 		edge.To("default_for_teams", Team.Type).Annotations(setNull()),
 		edge.To("triage_for_teams", Team.Type).Annotations(setNull()),
+		edge.To("github_pr_opened_for_teams", Team.Type).Annotations(setNull()),
+		edge.To("github_pr_merged_for_teams", Team.Type).Annotations(setNull()),
 	}
 }
 

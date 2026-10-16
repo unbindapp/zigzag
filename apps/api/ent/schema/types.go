@@ -16,7 +16,7 @@ type EmailSettings struct {
 }
 
 type FieldChange struct {
-	Field     string `json:"field" doc:"Changed field: title, description, state, priority, estimate, assignee, project, milestone, cycle, parent, due_date, labels_added, labels_removed, relation_added, relation_removed, attachment_added, attachment_removed, archived, unarchived, trashed, restored, team, created, imported"`
+	Field     string `json:"field" doc:"Changed field: title, description, state, priority, estimate, assignee, project, milestone, cycle, parent, due_date, labels_added, labels_removed, relation_added, relation_removed, attachment_added, attachment_removed, github, archived, unarchived, trashed, restored, team, created, imported"`
 	From      any    `json:"from,omitempty" required:"false" doc:"Previous value, usually an id or a scalar"`
 	To        any    `json:"to,omitempty" required:"false" doc:"New value, usually an id or a scalar"`
 	FromLabel string `json:"from_label,omitempty" required:"false" doc:"Human readable previous value"`

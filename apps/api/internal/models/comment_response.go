@@ -14,7 +14,7 @@ type AttachmentResponse struct {
 	Title      string         `json:"title"`
 	Subtitle   string         `json:"subtitle"`
 	URL        string         `json:"url"`
-	SourceType string         `json:"source_type" doc:"upload, link, github or import"`
+	SourceType string         `json:"source_type" doc:"upload, link, github (a pull request), github_branch or import"`
 	UploadID   *uuid.UUID     `json:"upload_id" nullable:"true" format:"uuid"`
 	Metadata   map[string]any `json:"metadata" nullable:"false"`
 	SortOrder  float64        `json:"sort_order"`

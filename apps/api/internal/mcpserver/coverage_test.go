@@ -155,7 +155,7 @@ func TestEveryInputIsDocumentedAndComesOneWay(t *testing.T) {
 		if op.RequestBody == nil {
 			continue
 		}
-		if query > 0 {
+		if _, raw := op.RequestBody.Content["application/octet-stream"]; query > 0 && !raw {
 			t.Errorf("%s takes both query parameters and a body", op.OperationID)
 		}
 		if _, multipart := op.RequestBody.Content["multipart/form-data"]; !multipart && !op.RequestBody.Required {

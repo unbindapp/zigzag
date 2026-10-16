@@ -1,0 +1,22 @@
+{
+  "zen": "Keep it logically awesome.",
+  "hook_id": 512345678,
+  "hook": {
+    "type": "Repository",
+    "id": 512345678,
+    "name": "web",
+    "active": true,
+    "events": ["pull_request", "push"],
+    "config": {"content_type": "json", "insecure_ssl": "0", "url": "https://zigzag.example.com/api/go/integrations/github/webhook"}
+  },
+  "repository": {
+    "id": 700000001,
+    "node_id": "R_kgDOKbcdef",
+    "name": "unbind",
+    "full_name": "unbindapp/unbind",
+    "private": false,
+    "html_url": "https://github.com/unbindapp/unbind",
+    "default_branch": "master"
+  },
+  "sender": {"login": "bbedward", "id": 1234567, "type": "User"}
+}

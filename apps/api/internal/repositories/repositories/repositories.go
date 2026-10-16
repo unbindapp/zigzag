@@ -10,6 +10,7 @@ import (
 	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 	document_repo "github.com/unbindapp/zigzag-api/internal/repositories/document"
 	favorite_repo "github.com/unbindapp/zigzag-api/internal/repositories/favorite"
+	github_repo "github.com/unbindapp/zigzag-api/internal/repositories/github"
 	importjob_repo "github.com/unbindapp/zigzag-api/internal/repositories/importjob"
 	initiative_repo "github.com/unbindapp/zigzag-api/internal/repositories/initiative"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
@@ -54,6 +55,7 @@ type Repositories struct {
 	webhook      webhook_repo.WebhookRepositoryInterface
 	upload       upload_repo.UploadRepositoryInterface
 	importJob    importjob_repo.ImportJobRepositoryInterface
+	github       github_repo.GithubRepositoryInterface
 	permissions  permissions_repo.PermissionsRepositoryInterface
 }
 
@@ -82,6 +84,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 		webhook:      webhook_repo.NewWebhookRepository(db),
 		upload:       upload_repo.NewUploadRepository(db),
 		importJob:    importjob_repo.NewImportJobRepository(db),
+		github:       github_repo.NewGithubRepository(db),
 		permissions:  permissions_repo.NewPermissionsRepository(db),
 	}
 }
@@ -176,6 +179,10 @@ func (r *Repositories) Upload() upload_repo.UploadRepositoryInterface {
 
 func (r *Repositories) ImportJob() importjob_repo.ImportJobRepositoryInterface {
 	return r.importJob
+}
+
+func (r *Repositories) Github() github_repo.GithubRepositoryInterface {
+	return r.github
 }
 
 func (r *Repositories) Permissions() permissions_repo.PermissionsRepositoryInterface {

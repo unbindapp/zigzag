@@ -16,6 +16,7 @@ import (
 	favorites_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/favorites"
 	imports_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/imports"
 	initiatives_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/initiatives"
+	integrations_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/integrations"
 	invitations_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/invitations"
 	issues_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/issues"
 	labels_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/labels"
@@ -127,4 +128,6 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/webhooks", "Webhooks", true, webhooks_handler.RegisterHandlers)
 	register("/imports", "Imports", true, imports_handler.RegisterHandlers)
 	register("/search", "Search", true, search_handler.RegisterHandlers)
+	registerSessionOnly("/integrations", "Integrations", integrations_handler.RegisterHandlers)
+	register("/integrations", "Integrations", false, integrations_handler.RegisterPublicHandlers)
 }

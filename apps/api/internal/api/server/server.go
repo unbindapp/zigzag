@@ -19,6 +19,7 @@ import (
 	document_service "github.com/unbindapp/zigzag-api/internal/services/document"
 	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
 	favorite_service "github.com/unbindapp/zigzag-api/internal/services/favorite"
+	github_service "github.com/unbindapp/zigzag-api/internal/services/github"
 	import_service "github.com/unbindapp/zigzag-api/internal/services/import"
 	initiative_service "github.com/unbindapp/zigzag-api/internal/services/initiative"
 	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
@@ -69,6 +70,7 @@ type Server struct {
 	WebhookService      *webhook_service.WebhookService
 	ImportService       *import_service.ImportService
 	SearchService       *search_service.SearchService
+	GithubService       *github_service.GithubService
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {

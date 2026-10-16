@@ -400,6 +400,46 @@ func (_u *TeamUpdate) ClearTriageStateID() *TeamUpdate {
 	return _u
 }
 
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (_u *TeamUpdate) SetGithubPrOpenedStateID(v uuid.UUID) *TeamUpdate {
+	_u.mutation.SetGithubPrOpenedStateID(v)
+	return _u
+}
+
+// SetNillableGithubPrOpenedStateID sets the "github_pr_opened_state_id" field if the given value is not nil.
+func (_u *TeamUpdate) SetNillableGithubPrOpenedStateID(v *uuid.UUID) *TeamUpdate {
+	if v != nil {
+		_u.SetGithubPrOpenedStateID(*v)
+	}
+	return _u
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (_u *TeamUpdate) ClearGithubPrOpenedStateID() *TeamUpdate {
+	_u.mutation.ClearGithubPrOpenedStateID()
+	return _u
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (_u *TeamUpdate) SetGithubPrMergedStateID(v uuid.UUID) *TeamUpdate {
+	_u.mutation.SetGithubPrMergedStateID(v)
+	return _u
+}
+
+// SetNillableGithubPrMergedStateID sets the "github_pr_merged_state_id" field if the given value is not nil.
+func (_u *TeamUpdate) SetNillableGithubPrMergedStateID(v *uuid.UUID) *TeamUpdate {
+	if v != nil {
+		_u.SetGithubPrMergedStateID(*v)
+	}
+	return _u
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (_u *TeamUpdate) ClearGithubPrMergedStateID() *TeamUpdate {
+	_u.mutation.ClearGithubPrMergedStateID()
+	return _u
+}
+
 // SetAutoCloseMonths sets the "auto_close_months" field.
 func (_u *TeamUpdate) SetAutoCloseMonths(v int) *TeamUpdate {
 	_u.mutation.ResetAutoCloseMonths()
@@ -481,6 +521,16 @@ func (_u *TeamUpdate) SetDefaultState(v *WorkflowState) *TeamUpdate {
 // SetTriageState sets the "triage_state" edge to the WorkflowState entity.
 func (_u *TeamUpdate) SetTriageState(v *WorkflowState) *TeamUpdate {
 	return _u.SetTriageStateID(v.ID)
+}
+
+// SetGithubPrOpenedState sets the "github_pr_opened_state" edge to the WorkflowState entity.
+func (_u *TeamUpdate) SetGithubPrOpenedState(v *WorkflowState) *TeamUpdate {
+	return _u.SetGithubPrOpenedStateID(v.ID)
+}
+
+// SetGithubPrMergedState sets the "github_pr_merged_state" edge to the WorkflowState entity.
+func (_u *TeamUpdate) SetGithubPrMergedState(v *WorkflowState) *TeamUpdate {
+	return _u.SetGithubPrMergedStateID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the TeamMember entity by IDs.
@@ -653,6 +703,18 @@ func (_u *TeamUpdate) ClearDefaultState() *TeamUpdate {
 // ClearTriageState clears the "triage_state" edge to the WorkflowState entity.
 func (_u *TeamUpdate) ClearTriageState() *TeamUpdate {
 	_u.mutation.ClearTriageState()
+	return _u
+}
+
+// ClearGithubPrOpenedState clears the "github_pr_opened_state" edge to the WorkflowState entity.
+func (_u *TeamUpdate) ClearGithubPrOpenedState() *TeamUpdate {
+	_u.mutation.ClearGithubPrOpenedState()
+	return _u
+}
+
+// ClearGithubPrMergedState clears the "github_pr_merged_state" edge to the WorkflowState entity.
+func (_u *TeamUpdate) ClearGithubPrMergedState() *TeamUpdate {
+	_u.mutation.ClearGithubPrMergedState()
 	return _u
 }
 
@@ -1119,6 +1181,64 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Inverse: true,
 			Table:   team.TriageStateTable,
 			Columns: []string{team.TriageStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrOpenedStateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrOpenedStateTable,
+			Columns: []string{team.GithubPrOpenedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrOpenedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrOpenedStateTable,
+			Columns: []string{team.GithubPrOpenedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrMergedStateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrMergedStateTable,
+			Columns: []string{team.GithubPrMergedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrMergedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrMergedStateTable,
+			Columns: []string{team.GithubPrMergedStateColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
@@ -1959,6 +2079,46 @@ func (_u *TeamUpdateOne) ClearTriageStateID() *TeamUpdateOne {
 	return _u
 }
 
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (_u *TeamUpdateOne) SetGithubPrOpenedStateID(v uuid.UUID) *TeamUpdateOne {
+	_u.mutation.SetGithubPrOpenedStateID(v)
+	return _u
+}
+
+// SetNillableGithubPrOpenedStateID sets the "github_pr_opened_state_id" field if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableGithubPrOpenedStateID(v *uuid.UUID) *TeamUpdateOne {
+	if v != nil {
+		_u.SetGithubPrOpenedStateID(*v)
+	}
+	return _u
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (_u *TeamUpdateOne) ClearGithubPrOpenedStateID() *TeamUpdateOne {
+	_u.mutation.ClearGithubPrOpenedStateID()
+	return _u
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (_u *TeamUpdateOne) SetGithubPrMergedStateID(v uuid.UUID) *TeamUpdateOne {
+	_u.mutation.SetGithubPrMergedStateID(v)
+	return _u
+}
+
+// SetNillableGithubPrMergedStateID sets the "github_pr_merged_state_id" field if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableGithubPrMergedStateID(v *uuid.UUID) *TeamUpdateOne {
+	if v != nil {
+		_u.SetGithubPrMergedStateID(*v)
+	}
+	return _u
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (_u *TeamUpdateOne) ClearGithubPrMergedStateID() *TeamUpdateOne {
+	_u.mutation.ClearGithubPrMergedStateID()
+	return _u
+}
+
 // SetAutoCloseMonths sets the "auto_close_months" field.
 func (_u *TeamUpdateOne) SetAutoCloseMonths(v int) *TeamUpdateOne {
 	_u.mutation.ResetAutoCloseMonths()
@@ -2040,6 +2200,16 @@ func (_u *TeamUpdateOne) SetDefaultState(v *WorkflowState) *TeamUpdateOne {
 // SetTriageState sets the "triage_state" edge to the WorkflowState entity.
 func (_u *TeamUpdateOne) SetTriageState(v *WorkflowState) *TeamUpdateOne {
 	return _u.SetTriageStateID(v.ID)
+}
+
+// SetGithubPrOpenedState sets the "github_pr_opened_state" edge to the WorkflowState entity.
+func (_u *TeamUpdateOne) SetGithubPrOpenedState(v *WorkflowState) *TeamUpdateOne {
+	return _u.SetGithubPrOpenedStateID(v.ID)
+}
+
+// SetGithubPrMergedState sets the "github_pr_merged_state" edge to the WorkflowState entity.
+func (_u *TeamUpdateOne) SetGithubPrMergedState(v *WorkflowState) *TeamUpdateOne {
+	return _u.SetGithubPrMergedStateID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the TeamMember entity by IDs.
@@ -2212,6 +2382,18 @@ func (_u *TeamUpdateOne) ClearDefaultState() *TeamUpdateOne {
 // ClearTriageState clears the "triage_state" edge to the WorkflowState entity.
 func (_u *TeamUpdateOne) ClearTriageState() *TeamUpdateOne {
 	_u.mutation.ClearTriageState()
+	return _u
+}
+
+// ClearGithubPrOpenedState clears the "github_pr_opened_state" edge to the WorkflowState entity.
+func (_u *TeamUpdateOne) ClearGithubPrOpenedState() *TeamUpdateOne {
+	_u.mutation.ClearGithubPrOpenedState()
+	return _u
+}
+
+// ClearGithubPrMergedState clears the "github_pr_merged_state" edge to the WorkflowState entity.
+func (_u *TeamUpdateOne) ClearGithubPrMergedState() *TeamUpdateOne {
+	_u.mutation.ClearGithubPrMergedState()
 	return _u
 }
 
@@ -2708,6 +2890,64 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			Inverse: true,
 			Table:   team.TriageStateTable,
 			Columns: []string{team.TriageStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrOpenedStateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrOpenedStateTable,
+			Columns: []string{team.GithubPrOpenedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrOpenedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrOpenedStateTable,
+			Columns: []string{team.GithubPrOpenedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubPrMergedStateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrMergedStateTable,
+			Columns: []string{team.GithubPrMergedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubPrMergedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrMergedStateTable,
+			Columns: []string{team.GithubPrMergedStateColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),

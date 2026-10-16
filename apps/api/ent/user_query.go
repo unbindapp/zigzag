@@ -18,6 +18,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -84,6 +85,7 @@ type UserQuery struct {
 	withViews                   *ViewQuery
 	withTemplates               *TemplateQuery
 	withImports                 *ImportJobQuery
+	withGithubIntegrations      *GithubIntegrationQuery
 	modifiers                   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -869,6 +871,28 @@ func (_q *UserQuery) QueryImports() *ImportJobQuery {
 	return query
 }
 
+// QueryGithubIntegrations chains the current query on the "github_integrations" edge.
+func (_q *UserQuery) QueryGithubIntegrations() *GithubIntegrationQuery {
+	query := (&GithubIntegrationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(githubintegration.Table, githubintegration.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.GithubIntegrationsTable, user.GithubIntegrationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first User entity from the query.
 // Returns a *NotFoundError when no User was found.
 func (_q *UserQuery) First(ctx context.Context) (*User, error) {
@@ -1095,6 +1119,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withViews:                   _q.withViews.Clone(),
 		withTemplates:               _q.withTemplates.Clone(),
 		withImports:                 _q.withImports.Clone(),
+		withGithubIntegrations:      _q.withGithubIntegrations.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -1476,6 +1501,17 @@ func (_q *UserQuery) WithImports(opts ...func(*ImportJobQuery)) *UserQuery {
 	return _q
 }
 
+// WithGithubIntegrations tells the query-builder to eager-load the nodes that are connected to
+// the "github_integrations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithGithubIntegrations(opts ...func(*GithubIntegrationQuery)) *UserQuery {
+	query := (&GithubIntegrationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubIntegrations = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1554,7 +1590,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [34]bool{
+		loadedTypes = [35]bool{
 			_q.withAvatarUpload != nil,
 			_q.withWorkspaceMemberships != nil,
 			_q.withTeamMemberships != nil,
@@ -1589,6 +1625,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withViews != nil,
 			_q.withTemplates != nil,
 			_q.withImports != nil,
+			_q.withGithubIntegrations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1851,6 +1888,15 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadImports(ctx, query, nodes,
 			func(n *User) { n.Edges.Imports = []*ImportJob{} },
 			func(n *User, e *ImportJob) { n.Edges.Imports = append(n.Edges.Imports, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubIntegrations; query != nil {
+		if err := _q.loadGithubIntegrations(ctx, query, nodes,
+			func(n *User) { n.Edges.GithubIntegrations = []*GithubIntegration{} },
+			func(n *User, e *GithubIntegration) {
+				n.Edges.GithubIntegrations = append(n.Edges.GithubIntegrations, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -2991,6 +3037,39 @@ func (_q *UserQuery) loadImports(ctx context.Context, query *ImportJobQuery, nod
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "started_by_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadGithubIntegrations(ctx context.Context, query *GithubIntegrationQuery, nodes []*User, init func(*User), assign func(*User, *GithubIntegration)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(githubintegration.FieldCreatedByID)
+	}
+	query.Where(predicate.GithubIntegration(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.GithubIntegrationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatedByID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "created_by_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

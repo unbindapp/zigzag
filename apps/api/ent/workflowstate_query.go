@@ -22,15 +22,17 @@ import (
 // WorkflowStateQuery is the builder for querying WorkflowState entities.
 type WorkflowStateQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []workflowstate.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.WorkflowState
-	withTeam            *TeamQuery
-	withIssues          *IssueQuery
-	withDefaultForTeams *TeamQuery
-	withTriageForTeams  *TeamQuery
-	modifiers           []func(*sql.Selector)
+	ctx                        *QueryContext
+	order                      []workflowstate.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.WorkflowState
+	withTeam                   *TeamQuery
+	withIssues                 *IssueQuery
+	withDefaultForTeams        *TeamQuery
+	withTriageForTeams         *TeamQuery
+	withGithubPrOpenedForTeams *TeamQuery
+	withGithubPrMergedForTeams *TeamQuery
+	modifiers                  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -148,6 +150,50 @@ func (_q *WorkflowStateQuery) QueryTriageForTeams() *TeamQuery {
 			sqlgraph.From(workflowstate.Table, workflowstate.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workflowstate.TriageForTeamsTable, workflowstate.TriageForTeamsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGithubPrOpenedForTeams chains the current query on the "github_pr_opened_for_teams" edge.
+func (_q *WorkflowStateQuery) QueryGithubPrOpenedForTeams() *TeamQuery {
+	query := (&TeamClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowstate.Table, workflowstate.FieldID, selector),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowstate.GithubPrOpenedForTeamsTable, workflowstate.GithubPrOpenedForTeamsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGithubPrMergedForTeams chains the current query on the "github_pr_merged_for_teams" edge.
+func (_q *WorkflowStateQuery) QueryGithubPrMergedForTeams() *TeamQuery {
+	query := (&TeamClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowstate.Table, workflowstate.FieldID, selector),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowstate.GithubPrMergedForTeamsTable, workflowstate.GithubPrMergedForTeamsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -342,15 +388,17 @@ func (_q *WorkflowStateQuery) Clone() *WorkflowStateQuery {
 		return nil
 	}
 	return &WorkflowStateQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]workflowstate.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.WorkflowState{}, _q.predicates...),
-		withTeam:            _q.withTeam.Clone(),
-		withIssues:          _q.withIssues.Clone(),
-		withDefaultForTeams: _q.withDefaultForTeams.Clone(),
-		withTriageForTeams:  _q.withTriageForTeams.Clone(),
+		config:                     _q.config,
+		ctx:                        _q.ctx.Clone(),
+		order:                      append([]workflowstate.OrderOption{}, _q.order...),
+		inters:                     append([]Interceptor{}, _q.inters...),
+		predicates:                 append([]predicate.WorkflowState{}, _q.predicates...),
+		withTeam:                   _q.withTeam.Clone(),
+		withIssues:                 _q.withIssues.Clone(),
+		withDefaultForTeams:        _q.withDefaultForTeams.Clone(),
+		withTriageForTeams:         _q.withTriageForTeams.Clone(),
+		withGithubPrOpenedForTeams: _q.withGithubPrOpenedForTeams.Clone(),
+		withGithubPrMergedForTeams: _q.withGithubPrMergedForTeams.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -399,6 +447,28 @@ func (_q *WorkflowStateQuery) WithTriageForTeams(opts ...func(*TeamQuery)) *Work
 		opt(query)
 	}
 	_q.withTriageForTeams = query
+	return _q
+}
+
+// WithGithubPrOpenedForTeams tells the query-builder to eager-load the nodes that are connected to
+// the "github_pr_opened_for_teams" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkflowStateQuery) WithGithubPrOpenedForTeams(opts ...func(*TeamQuery)) *WorkflowStateQuery {
+	query := (&TeamClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubPrOpenedForTeams = query
+	return _q
+}
+
+// WithGithubPrMergedForTeams tells the query-builder to eager-load the nodes that are connected to
+// the "github_pr_merged_for_teams" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkflowStateQuery) WithGithubPrMergedForTeams(opts ...func(*TeamQuery)) *WorkflowStateQuery {
+	query := (&TeamClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubPrMergedForTeams = query
 	return _q
 }
 
@@ -480,11 +550,13 @@ func (_q *WorkflowStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*WorkflowState{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			_q.withTeam != nil,
 			_q.withIssues != nil,
 			_q.withDefaultForTeams != nil,
 			_q.withTriageForTeams != nil,
+			_q.withGithubPrOpenedForTeams != nil,
+			_q.withGithubPrMergedForTeams != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -532,6 +604,24 @@ func (_q *WorkflowStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := _q.loadTriageForTeams(ctx, query, nodes,
 			func(n *WorkflowState) { n.Edges.TriageForTeams = []*Team{} },
 			func(n *WorkflowState, e *Team) { n.Edges.TriageForTeams = append(n.Edges.TriageForTeams, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubPrOpenedForTeams; query != nil {
+		if err := _q.loadGithubPrOpenedForTeams(ctx, query, nodes,
+			func(n *WorkflowState) { n.Edges.GithubPrOpenedForTeams = []*Team{} },
+			func(n *WorkflowState, e *Team) {
+				n.Edges.GithubPrOpenedForTeams = append(n.Edges.GithubPrOpenedForTeams, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubPrMergedForTeams; query != nil {
+		if err := _q.loadGithubPrMergedForTeams(ctx, query, nodes,
+			func(n *WorkflowState) { n.Edges.GithubPrMergedForTeams = []*Team{} },
+			func(n *WorkflowState, e *Team) {
+				n.Edges.GithubPrMergedForTeams = append(n.Edges.GithubPrMergedForTeams, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -658,6 +748,72 @@ func (_q *WorkflowStateQuery) loadTriageForTeams(ctx context.Context, query *Tea
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "triage_state_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkflowStateQuery) loadGithubPrOpenedForTeams(ctx context.Context, query *TeamQuery, nodes []*WorkflowState, init func(*WorkflowState), assign func(*WorkflowState, *Team)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*WorkflowState)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(team.FieldGithubPrOpenedStateID)
+	}
+	query.Where(predicate.Team(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workflowstate.GithubPrOpenedForTeamsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.GithubPrOpenedStateID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "github_pr_opened_state_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "github_pr_opened_state_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkflowStateQuery) loadGithubPrMergedForTeams(ctx context.Context, query *TeamQuery, nodes []*WorkflowState, init func(*WorkflowState), assign func(*WorkflowState, *Team)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*WorkflowState)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(team.FieldGithubPrMergedStateID)
+	}
+	query.Where(predicate.Team(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workflowstate.GithubPrMergedForTeamsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.GithubPrMergedStateID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "github_pr_merged_state_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "github_pr_merged_state_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

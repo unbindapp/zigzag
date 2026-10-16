@@ -18,6 +18,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
+	"github.com/unbindapp/zigzag-api/ent/githubintegration"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
 	"github.com/unbindapp/zigzag-api/ent/initiative"
 	"github.com/unbindapp/zigzag-api/ent/initiativepost"
@@ -704,6 +705,21 @@ func (_c *UserCreate) AddImports(v ...*ImportJob) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddImportIDs(ids...)
+}
+
+// AddGithubIntegrationIDs adds the "github_integrations" edge to the GithubIntegration entity by IDs.
+func (_c *UserCreate) AddGithubIntegrationIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddGithubIntegrationIDs(ids...)
+	return _c
+}
+
+// AddGithubIntegrations adds the "github_integrations" edges to the GithubIntegration entity.
+func (_c *UserCreate) AddGithubIntegrations(v ...*GithubIntegration) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGithubIntegrationIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1418,6 +1434,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(importjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubIntegrationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubIntegrationsTable,
+			Columns: []string{user.GithubIntegrationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubintegration.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

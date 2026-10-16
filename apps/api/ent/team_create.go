@@ -334,6 +334,34 @@ func (_c *TeamCreate) SetNillableTriageStateID(v *uuid.UUID) *TeamCreate {
 	return _c
 }
 
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (_c *TeamCreate) SetGithubPrOpenedStateID(v uuid.UUID) *TeamCreate {
+	_c.mutation.SetGithubPrOpenedStateID(v)
+	return _c
+}
+
+// SetNillableGithubPrOpenedStateID sets the "github_pr_opened_state_id" field if the given value is not nil.
+func (_c *TeamCreate) SetNillableGithubPrOpenedStateID(v *uuid.UUID) *TeamCreate {
+	if v != nil {
+		_c.SetGithubPrOpenedStateID(*v)
+	}
+	return _c
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (_c *TeamCreate) SetGithubPrMergedStateID(v uuid.UUID) *TeamCreate {
+	_c.mutation.SetGithubPrMergedStateID(v)
+	return _c
+}
+
+// SetNillableGithubPrMergedStateID sets the "github_pr_merged_state_id" field if the given value is not nil.
+func (_c *TeamCreate) SetNillableGithubPrMergedStateID(v *uuid.UUID) *TeamCreate {
+	if v != nil {
+		_c.SetGithubPrMergedStateID(*v)
+	}
+	return _c
+}
+
 // SetAutoCloseMonths sets the "auto_close_months" field.
 func (_c *TeamCreate) SetAutoCloseMonths(v int) *TeamCreate {
 	_c.mutation.SetAutoCloseMonths(v)
@@ -403,6 +431,16 @@ func (_c *TeamCreate) SetDefaultState(v *WorkflowState) *TeamCreate {
 // SetTriageState sets the "triage_state" edge to the WorkflowState entity.
 func (_c *TeamCreate) SetTriageState(v *WorkflowState) *TeamCreate {
 	return _c.SetTriageStateID(v.ID)
+}
+
+// SetGithubPrOpenedState sets the "github_pr_opened_state" edge to the WorkflowState entity.
+func (_c *TeamCreate) SetGithubPrOpenedState(v *WorkflowState) *TeamCreate {
+	return _c.SetGithubPrOpenedStateID(v.ID)
+}
+
+// SetGithubPrMergedState sets the "github_pr_merged_state" edge to the WorkflowState entity.
+func (_c *TeamCreate) SetGithubPrMergedState(v *WorkflowState) *TeamCreate {
+	return _c.SetGithubPrMergedStateID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the TeamMember entity by IDs.
@@ -914,6 +952,40 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TriageStateID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubPrOpenedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrOpenedStateTable,
+			Columns: []string{team.GithubPrOpenedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.GithubPrOpenedStateID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubPrMergedStateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   team.GithubPrMergedStateTable,
+			Columns: []string{team.GithubPrMergedStateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.GithubPrMergedStateID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
@@ -1446,6 +1518,42 @@ func (u *TeamUpsert) ClearTriageStateID() *TeamUpsert {
 	return u
 }
 
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (u *TeamUpsert) SetGithubPrOpenedStateID(v uuid.UUID) *TeamUpsert {
+	u.Set(team.FieldGithubPrOpenedStateID, v)
+	return u
+}
+
+// UpdateGithubPrOpenedStateID sets the "github_pr_opened_state_id" field to the value that was provided on create.
+func (u *TeamUpsert) UpdateGithubPrOpenedStateID() *TeamUpsert {
+	u.SetExcluded(team.FieldGithubPrOpenedStateID)
+	return u
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (u *TeamUpsert) ClearGithubPrOpenedStateID() *TeamUpsert {
+	u.SetNull(team.FieldGithubPrOpenedStateID)
+	return u
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (u *TeamUpsert) SetGithubPrMergedStateID(v uuid.UUID) *TeamUpsert {
+	u.Set(team.FieldGithubPrMergedStateID, v)
+	return u
+}
+
+// UpdateGithubPrMergedStateID sets the "github_pr_merged_state_id" field to the value that was provided on create.
+func (u *TeamUpsert) UpdateGithubPrMergedStateID() *TeamUpsert {
+	u.SetExcluded(team.FieldGithubPrMergedStateID)
+	return u
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (u *TeamUpsert) ClearGithubPrMergedStateID() *TeamUpsert {
+	u.SetNull(team.FieldGithubPrMergedStateID)
+	return u
+}
+
 // SetAutoCloseMonths sets the "auto_close_months" field.
 func (u *TeamUpsert) SetAutoCloseMonths(v int) *TeamUpsert {
 	u.Set(team.FieldAutoCloseMonths, v)
@@ -1925,6 +2033,48 @@ func (u *TeamUpsertOne) UpdateTriageStateID() *TeamUpsertOne {
 func (u *TeamUpsertOne) ClearTriageStateID() *TeamUpsertOne {
 	return u.Update(func(s *TeamUpsert) {
 		s.ClearTriageStateID()
+	})
+}
+
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (u *TeamUpsertOne) SetGithubPrOpenedStateID(v uuid.UUID) *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetGithubPrOpenedStateID(v)
+	})
+}
+
+// UpdateGithubPrOpenedStateID sets the "github_pr_opened_state_id" field to the value that was provided on create.
+func (u *TeamUpsertOne) UpdateGithubPrOpenedStateID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateGithubPrOpenedStateID()
+	})
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (u *TeamUpsertOne) ClearGithubPrOpenedStateID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearGithubPrOpenedStateID()
+	})
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (u *TeamUpsertOne) SetGithubPrMergedStateID(v uuid.UUID) *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetGithubPrMergedStateID(v)
+	})
+}
+
+// UpdateGithubPrMergedStateID sets the "github_pr_merged_state_id" field to the value that was provided on create.
+func (u *TeamUpsertOne) UpdateGithubPrMergedStateID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateGithubPrMergedStateID()
+	})
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (u *TeamUpsertOne) ClearGithubPrMergedStateID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearGithubPrMergedStateID()
 	})
 }
 
@@ -2584,6 +2734,48 @@ func (u *TeamUpsertBulk) UpdateTriageStateID() *TeamUpsertBulk {
 func (u *TeamUpsertBulk) ClearTriageStateID() *TeamUpsertBulk {
 	return u.Update(func(s *TeamUpsert) {
 		s.ClearTriageStateID()
+	})
+}
+
+// SetGithubPrOpenedStateID sets the "github_pr_opened_state_id" field.
+func (u *TeamUpsertBulk) SetGithubPrOpenedStateID(v uuid.UUID) *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetGithubPrOpenedStateID(v)
+	})
+}
+
+// UpdateGithubPrOpenedStateID sets the "github_pr_opened_state_id" field to the value that was provided on create.
+func (u *TeamUpsertBulk) UpdateGithubPrOpenedStateID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateGithubPrOpenedStateID()
+	})
+}
+
+// ClearGithubPrOpenedStateID clears the value of the "github_pr_opened_state_id" field.
+func (u *TeamUpsertBulk) ClearGithubPrOpenedStateID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearGithubPrOpenedStateID()
+	})
+}
+
+// SetGithubPrMergedStateID sets the "github_pr_merged_state_id" field.
+func (u *TeamUpsertBulk) SetGithubPrMergedStateID(v uuid.UUID) *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetGithubPrMergedStateID(v)
+	})
+}
+
+// UpdateGithubPrMergedStateID sets the "github_pr_merged_state_id" field to the value that was provided on create.
+func (u *TeamUpsertBulk) UpdateGithubPrMergedStateID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateGithubPrMergedStateID()
+	})
+}
+
+// ClearGithubPrMergedStateID clears the value of the "github_pr_merged_state_id" field.
+func (u *TeamUpsertBulk) ClearGithubPrMergedStateID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearGithubPrMergedStateID()
 	})
 }
 

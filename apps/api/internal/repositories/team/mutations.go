@@ -119,28 +119,32 @@ func (self *TeamRepository) Create(ctx context.Context, tx repository.TxInterfac
 }
 
 type UpdateTeamInput struct {
-	Name                *string
-	Key                 *string
-	Description         *string
-	Icon                *string
-	Color               *string
-	Private             *bool
-	Timezone            *string
-	CyclesEnabled       *bool
-	CycleDurationWeeks  *int
-	CycleCooldownWeeks  *int
-	CycleStartDay       *int
-	CycleAutoMove       *bool
-	CycleAutoAddStarted *bool
-	EstimateType        *schema.EstimateType
-	EstimateAllowZero   *bool
-	EstimateExtended    *bool
-	TriageEnabled       *bool
-	DefaultStateID      *uuid.UUID
-	TriageStateID       *uuid.UUID
-	AutoCloseMonths     *int
-	ClearAutoClose      bool
-	AutoArchiveMonths   *int
+	Name                     *string
+	Key                      *string
+	Description              *string
+	Icon                     *string
+	Color                    *string
+	Private                  *bool
+	Timezone                 *string
+	CyclesEnabled            *bool
+	CycleDurationWeeks       *int
+	CycleCooldownWeeks       *int
+	CycleStartDay            *int
+	CycleAutoMove            *bool
+	CycleAutoAddStarted      *bool
+	EstimateType             *schema.EstimateType
+	EstimateAllowZero        *bool
+	EstimateExtended         *bool
+	TriageEnabled            *bool
+	DefaultStateID           *uuid.UUID
+	TriageStateID            *uuid.UUID
+	GithubPrOpenedStateID    *uuid.UUID
+	ClearGithubPrOpenedState bool
+	GithubPrMergedStateID    *uuid.UUID
+	ClearGithubPrMergedState bool
+	AutoCloseMonths          *int
+	ClearAutoClose           bool
+	AutoArchiveMonths        *int
 }
 
 func (self *TeamRepository) Update(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, input *UpdateTeamInput) (*ent.Team, error) {
@@ -202,6 +206,18 @@ func (self *TeamRepository) Update(ctx context.Context, tx repository.TxInterfac
 	}
 	if input.TriageStateID != nil {
 		m.SetTriageStateID(*input.TriageStateID)
+	}
+	if input.GithubPrOpenedStateID != nil {
+		m.SetGithubPrOpenedStateID(*input.GithubPrOpenedStateID)
+	}
+	if input.ClearGithubPrOpenedState {
+		m.ClearGithubPrOpenedStateID()
+	}
+	if input.GithubPrMergedStateID != nil {
+		m.SetGithubPrMergedStateID(*input.GithubPrMergedStateID)
+	}
+	if input.ClearGithubPrMergedState {
+		m.ClearGithubPrMergedStateID()
 	}
 	if input.AutoCloseMonths != nil {
 		m.SetAutoCloseMonths(*input.AutoCloseMonths)

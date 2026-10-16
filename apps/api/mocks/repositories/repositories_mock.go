@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 	"github.com/unbindapp/zigzag-api/internal/repositories/document"
 	"github.com/unbindapp/zigzag-api/internal/repositories/favorite"
+	"github.com/unbindapp/zigzag-api/internal/repositories/github"
 	"github.com/unbindapp/zigzag-api/internal/repositories/importjob"
 	"github.com/unbindapp/zigzag-api/internal/repositories/initiative"
 	"github.com/unbindapp/zigzag-api/internal/repositories/issue"
@@ -342,6 +343,52 @@ func (_c *RepositoriesMock_Favorite_Call) Return(favoriteRepositoryInterface fav
 }
 
 func (_c *RepositoriesMock_Favorite_Call) RunAndReturn(run func() favorite_repo.FavoriteRepositoryInterface) *RepositoriesMock_Favorite_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Github provides a mock function for the type RepositoriesMock
+func (_mock *RepositoriesMock) Github() github_repo.GithubRepositoryInterface {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Github")
+	}
+
+	var r0 github_repo.GithubRepositoryInterface
+	if returnFunc, ok := ret.Get(0).(func() github_repo.GithubRepositoryInterface); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(github_repo.GithubRepositoryInterface)
+		}
+	}
+	return r0
+}
+
+// RepositoriesMock_Github_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Github'
+type RepositoriesMock_Github_Call struct {
+	*mock.Call
+}
+
+// Github is a helper method to define mock.On call
+func (_e *RepositoriesMock_Expecter) Github() *RepositoriesMock_Github_Call {
+	return &RepositoriesMock_Github_Call{Call: _e.mock.On("Github")}
+}
+
+func (_c *RepositoriesMock_Github_Call) Run(run func()) *RepositoriesMock_Github_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *RepositoriesMock_Github_Call) Return(githubRepositoryInterface github_repo.GithubRepositoryInterface) *RepositoriesMock_Github_Call {
+	_c.Call.Return(githubRepositoryInterface)
+	return _c
+}
+
+func (_c *RepositoriesMock_Github_Call) RunAndReturn(run func() github_repo.GithubRepositoryInterface) *RepositoriesMock_Github_Call {
 	_c.Call.Return(run)
 	return _c
 }
