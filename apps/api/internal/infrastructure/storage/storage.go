@@ -7,8 +7,11 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 )
+
+const uploadsPrefix = "uploads"
 
 var (
 	ErrNotFound   = errors.New("stored file not found")
@@ -21,7 +24,7 @@ type LocalStore struct {
 }
 
 func NewLocalStore(dataDir string) (*LocalStore, error) {
-	root, err := filepath.Abs(filepath.Join(dataDir, "uploads"))
+	root, err := filepath.Abs(filepath.Join(dataDir, uploadsPrefix))
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +34,12 @@ func NewLocalStore(dataDir string) (*LocalStore, error) {
 	return &LocalStore{root: root}, nil
 }
 
-func (self *LocalStore) Put(ctx context.Context, key string, reader io.Reader) error {
+func HasLocalUploads(dataDir string) bool {
+	info, err := os.Stat(filepath.Join(dataDir, uploadsPrefix))
+	return err == nil && info.IsDir()
+}
+
+func (self *LocalStore) Put(ctx context.Context, key string, reader io.Reader, contentType string) error {
 	target, err := self.path(key)
 	if err != nil {
 		return err
@@ -67,6 +75,18 @@ func (self *LocalStore) Open(ctx context.Context, key string) (io.ReadCloser, er
 	return f, err
 }
 
+func (self *LocalStore) Exists(ctx context.Context, key string) (bool, error) {
+	target, err := self.path(key)
+	if err != nil {
+		return false, err
+	}
+	_, err = os.Stat(target)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	return err == nil, err
+}
+
 func (self *LocalStore) Delete(ctx context.Context, key string) error {
 	target, err := self.path(key)
 	if err != nil {
@@ -80,10 +100,17 @@ func (self *LocalStore) Delete(ctx context.Context, key string) error {
 }
 
 func (self *LocalStore) path(key string) (string, error) {
-	if key == "" || !filepath.IsLocal(filepath.FromSlash(key)) {
-		return "", ErrInvalidKey
+	if err := validateKey(key); err != nil {
+		return "", err
 	}
 	return filepath.Join(self.root, filepath.FromSlash(key)), nil
+}
+
+func validateKey(key string) error {
+	if key == "" || path.Clean(key) != key || !filepath.IsLocal(filepath.FromSlash(key)) {
+		return ErrInvalidKey
+	}
+	return nil
 }
 
 type contextReader struct {

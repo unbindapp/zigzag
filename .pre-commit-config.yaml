@@ -9,7 +9,7 @@ repos:
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: end-of-file-fixer
-        exclude: ^apps/web/src/lib/server/client\.gen\.ts$
+        exclude: ^(apps/web/src/lib/server/client\.gen\.ts|.*/testdata/.*)$
 
   - repo: local
     hooks:

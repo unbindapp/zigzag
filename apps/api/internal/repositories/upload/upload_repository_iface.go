@@ -14,4 +14,5 @@ type UploadRepositoryInterface interface {
 	Create(ctx context.Context, input *CreateUploadInput) (*ent.Upload, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Upload, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	ListAfter(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error)
 }

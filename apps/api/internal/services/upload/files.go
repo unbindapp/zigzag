@@ -78,7 +78,7 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 	key := input.WorkspaceID.String() + "/" + id.String() + extensionOf(input.FileName)
 
 	counter := &countingReader{reader: io.LimitReader(body, self.cfg.MaxUploadBytes+1)}
-	if err := self.store.Put(ctx, key, counter); err != nil {
+	if err := self.store.Put(ctx, key, counter, contentType); err != nil {
 		return nil, errdefs.NewInternalError(err, "Failed to store the file")
 	}
 	if counter.count > self.cfg.MaxUploadBytes {

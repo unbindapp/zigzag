@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -101,5 +102,78 @@ func TestDatabaseURLRejectsOtherSchemes(t *testing.T) {
 		cfg := baseConfig()
 		cfg.DatabaseURL = raw
 		assert.Error(t, cfg.resolve(lookupOf(nil)), raw)
+	}
+}
+
+func parseEnvironment(t *testing.T, vars map[string]string) (*Config, error) {
+	t.Helper()
+	vars["ENCRYPTION_KEY"] = testKey
+	cfg := Config{}
+	require.NoError(t, env.ParseWithOptions(&cfg, env.Options{Environment: vars}))
+	return &cfg, cfg.resolve(lookupOf(vars))
+}
+
+func TestS3IsOffWithoutABucket(t *testing.T) {
+	cfg, err := parseEnvironment(t, map[string]string{"S3_ENDPOINT": "http://silo:9000"})
+	require.NoError(t, err)
+	assert.False(t, cfg.S3Enabled())
+	assert.Equal(t, "./.data", cfg.DataDir)
+}
+
+func TestS3Defaults(t *testing.T) {
+	cfg, err := parseEnvironment(t, map[string]string{
+		"S3_ENDPOINT":          "http://silo:9000",
+		"S3_BUCKET":            "zigzag",
+		"S3_ACCESS_KEY_ID":     "key",
+		"S3_SECRET_ACCESS_KEY": "secret",
+	})
+	require.NoError(t, err)
+	assert.True(t, cfg.S3Enabled())
+	assert.Equal(t, "us-east-1", cfg.S3Region)
+	assert.True(t, cfg.S3UsePathStyle)
+	assert.Equal(t, "http://silo:9000", cfg.S3Endpoint)
+	assert.Empty(t, cfg.S3KeyPrefix)
+}
+
+func TestS3ForCloudflareR2(t *testing.T) {
+	cfg, err := parseEnvironment(t, map[string]string{
+		"S3_ENDPOINT":          "https://0123456789abcdef.r2.cloudflarestorage.com",
+		"S3_BUCKET":            "zigzag",
+		"S3_ACCESS_KEY_ID":     "key",
+		"S3_SECRET_ACCESS_KEY": "secret",
+		"S3_REGION":            "auto",
+		"S3_KEY_PREFIX":        "dux/",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "auto", cfg.S3Region)
+	assert.True(t, cfg.S3UsePathStyle)
+	assert.Equal(t, "dux/", cfg.S3KeyPrefix)
+}
+
+func TestS3Overrides(t *testing.T) {
+	cfg, err := parseEnvironment(t, map[string]string{
+		"S3_BUCKET":            "zigzag",
+		"S3_ACCESS_KEY_ID":     "key",
+		"S3_SECRET_ACCESS_KEY": "secret",
+		"S3_REGION":            "auto",
+		"S3_USE_PATH_STYLE":    "false",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "auto", cfg.S3Region)
+	assert.False(t, cfg.S3UsePathStyle)
+	assert.Empty(t, cfg.S3Endpoint, "no endpoint means AWS S3")
+}
+
+func TestS3Validation(t *testing.T) {
+	for name, vars := range map[string]map[string]string{
+		"missing access key": {"S3_BUCKET": "zigzag", "S3_SECRET_ACCESS_KEY": "secret"},
+		"missing secret":     {"S3_BUCKET": "zigzag", "S3_ACCESS_KEY_ID": "key"},
+		"endpoint not a url": {"S3_BUCKET": "zigzag", "S3_ACCESS_KEY_ID": "key", "S3_SECRET_ACCESS_KEY": "secret", "S3_ENDPOINT": "silo:9000"},
+		"endpoint scheme":    {"S3_BUCKET": "zigzag", "S3_ACCESS_KEY_ID": "key", "S3_SECRET_ACCESS_KEY": "secret", "S3_ENDPOINT": "ftp://silo"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, err := parseEnvironment(t, vars)
+			assert.Error(t, err)
+		})
 	}
 }

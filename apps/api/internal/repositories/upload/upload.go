@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/upload"
 	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
@@ -49,4 +50,12 @@ func (self *UploadRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.U
 
 func (self *UploadRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return self.base.DB.Upload.DeleteOneID(id).Exec(ctx)
+}
+
+func (self *UploadRepository) ListAfter(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error) {
+	return self.base.DB.Upload.Query().
+		Where(upload.IDGT(afterID)).
+		Order(ent.Asc(upload.FieldID)).
+		Limit(limit).
+		All(ctx)
 }

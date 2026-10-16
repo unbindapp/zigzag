@@ -104,6 +104,72 @@ func (_c *StoreMock_Delete_Call) RunAndReturn(run func(ctx context.Context, key 
 	return _c
 }
 
+// Exists provides a mock function for the type StoreMock
+func (_mock *StoreMock) Exists(ctx context.Context, key string) (bool, error) {
+	ret := _mock.Called(ctx, key)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Exists")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
+		return returnFunc(ctx, key)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = returnFunc(ctx, key)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, key)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// StoreMock_Exists_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Exists'
+type StoreMock_Exists_Call struct {
+	*mock.Call
+}
+
+// Exists is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+func (_e *StoreMock_Expecter) Exists(ctx any, key any) *StoreMock_Exists_Call {
+	return &StoreMock_Exists_Call{Call: _e.mock.On("Exists", ctx, key)}
+}
+
+func (_c *StoreMock_Exists_Call) Run(run func(ctx context.Context, key string)) *StoreMock_Exists_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *StoreMock_Exists_Call) Return(b bool, err error) *StoreMock_Exists_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *StoreMock_Exists_Call) RunAndReturn(run func(ctx context.Context, key string) (bool, error)) *StoreMock_Exists_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Open provides a mock function for the type StoreMock
 func (_mock *StoreMock) Open(ctx context.Context, key string) (io.ReadCloser, error) {
 	ret := _mock.Called(ctx, key)
@@ -173,16 +239,16 @@ func (_c *StoreMock_Open_Call) RunAndReturn(run func(ctx context.Context, key st
 }
 
 // Put provides a mock function for the type StoreMock
-func (_mock *StoreMock) Put(ctx context.Context, key string, reader io.Reader) error {
-	ret := _mock.Called(ctx, key, reader)
+func (_mock *StoreMock) Put(ctx context.Context, key string, reader io.Reader, contentType string) error {
+	ret := _mock.Called(ctx, key, reader, contentType)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Put")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, io.Reader) error); ok {
-		r0 = returnFunc(ctx, key, reader)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, io.Reader, string) error); ok {
+		r0 = returnFunc(ctx, key, reader, contentType)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -198,11 +264,12 @@ type StoreMock_Put_Call struct {
 //   - ctx context.Context
 //   - key string
 //   - reader io.Reader
-func (_e *StoreMock_Expecter) Put(ctx any, key any, reader any) *StoreMock_Put_Call {
-	return &StoreMock_Put_Call{Call: _e.mock.On("Put", ctx, key, reader)}
+//   - contentType string
+func (_e *StoreMock_Expecter) Put(ctx any, key any, reader any, contentType any) *StoreMock_Put_Call {
+	return &StoreMock_Put_Call{Call: _e.mock.On("Put", ctx, key, reader, contentType)}
 }
 
-func (_c *StoreMock_Put_Call) Run(run func(ctx context.Context, key string, reader io.Reader)) *StoreMock_Put_Call {
+func (_c *StoreMock_Put_Call) Run(run func(ctx context.Context, key string, reader io.Reader, contentType string)) *StoreMock_Put_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -216,10 +283,15 @@ func (_c *StoreMock_Put_Call) Run(run func(ctx context.Context, key string, read
 		if args[2] != nil {
 			arg2 = args[2].(io.Reader)
 		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -230,7 +302,7 @@ func (_c *StoreMock_Put_Call) Return(err error) *StoreMock_Put_Call {
 	return _c
 }
 
-func (_c *StoreMock_Put_Call) RunAndReturn(run func(ctx context.Context, key string, reader io.Reader) error) *StoreMock_Put_Call {
+func (_c *StoreMock_Put_Call) RunAndReturn(run func(ctx context.Context, key string, reader io.Reader, contentType string) error) *StoreMock_Put_Call {
 	_c.Call.Return(run)
 	return _c
 }

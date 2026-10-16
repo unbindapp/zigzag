@@ -21,5 +21,4 @@ COPY --from=api /out/zigzag /app/zigzag
 COPY --from=api --chown=65532:65532 /out/data /data
 ENV DATA_DIR=/data
 EXPOSE 8091
-VOLUME /data
 CMD ["/app/zigzag"]

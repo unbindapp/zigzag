@@ -46,6 +46,14 @@ type Config struct {
 	LogLevel         string `env:"LOG_LEVEL" envDefault:"info"`
 	GithubAPIURL     string `env:"GITHUB_API_URL" envDefault:"https://api.github.com"`
 
+	S3Endpoint        string `env:"S3_ENDPOINT"`
+	S3Bucket          string `env:"S3_BUCKET"`
+	S3AccessKeyID     string `env:"S3_ACCESS_KEY_ID"`
+	S3SecretAccessKey string `env:"S3_SECRET_ACCESS_KEY"`
+	S3Region          string `env:"S3_REGION" envDefault:"us-east-1"`
+	S3UsePathStyle    bool   `env:"S3_USE_PATH_STYLE" envDefault:"true"`
+	S3KeyPrefix       string `env:"S3_KEY_PREFIX"`
+
 	encryptionKey []byte
 }
 
@@ -58,6 +66,7 @@ func (self *Config) GetPostgresSSLMode() string  { return self.PostgresSSLMode }
 func (self *Config) EncryptionKeyBytes() []byte  { return self.encryptionKey }
 func (self *Config) APIPathPrefix() string       { return apiPathPrefix }
 func (self *Config) ListenAddr() string          { return fmt.Sprintf(":%d", self.Port) }
+func (self *Config) S3Enabled() bool             { return self.S3Bucket != "" }
 
 func Load() (*Config, error) {
 	cfg := Config{}
@@ -94,10 +103,34 @@ func (self *Config) resolve(lookup func(string) (string, bool)) error {
 		}
 	}
 
+	if err := self.validateS3(); err != nil {
+		return err
+	}
+
 	if self.DatabaseURL == "" {
 		return nil
 	}
 	return self.applyDatabaseURL(self.DatabaseURL)
+}
+
+func (self *Config) validateS3() error {
+	if !self.S3Enabled() {
+		return nil
+	}
+	if self.S3AccessKeyID == "" || self.S3SecretAccessKey == "" {
+		return fmt.Errorf("S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY are required when S3_BUCKET is set")
+	}
+	if self.S3Region == "" {
+		self.S3Region = "us-east-1"
+	}
+	if self.S3Endpoint == "" {
+		return nil
+	}
+	endpoint, err := url.Parse(self.S3Endpoint)
+	if err != nil || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Host == "" {
+		return fmt.Errorf("S3_ENDPOINT must be a full url like https://s3.example.com")
+	}
+	return nil
 }
 
 func parseEncryptionKey(raw string) ([]byte, error) {

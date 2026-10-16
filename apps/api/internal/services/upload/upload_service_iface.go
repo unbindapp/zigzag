@@ -9,6 +9,7 @@ import (
 	_ "image/png"
 
 	"github.com/google/uuid"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 )
 
@@ -16,4 +17,6 @@ import (
 type UploadServiceInterface interface {
 	Create(ctx context.Context, userID uuid.UUID, input *CreateUploadInput) (*models.UploadResponse, error)
 	Open(ctx context.Context, userID, uploadID uuid.UUID) (*OpenedUpload, error)
+	MigrateFrom(ctx context.Context, source storage.StoreInterface)
+	CopyFrom(ctx context.Context, source storage.StoreInterface) (*CopyResult, error)
 }

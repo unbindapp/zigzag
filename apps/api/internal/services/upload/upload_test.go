@@ -195,7 +195,7 @@ func (suite *UploadServiceSuite) TestOutsidersDoNotLearnTheWorkspaceExists() {
 
 func (suite *UploadServiceSuite) TestOpenChecksTheWorkspaceAndMarksSafeTypesInline() {
 	key := suite.workspaceID.String() + "/a.html"
-	suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte("<b>hi</b>"))))
+	suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte("<b>hi</b>")), ""))
 	html := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "text/html", StorageKey: key}
 	pngUpload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/png", StorageKey: key}
 	suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, html.ID).Return(html, nil)
@@ -227,7 +227,7 @@ func (suite *UploadServiceSuite) TestOpenServesOnlySafeSVGsInline() {
 	for name, tc := range cases {
 		suite.Run(name, func() {
 			key := suite.workspaceID.String() + "/" + uuid.NewString() + ".svg"
-			suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte(tc.body))))
+			suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte(tc.body)), ""))
 			upload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml", StorageKey: key}
 			suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, upload.ID).Return(upload, nil).Once()
 			opened, err := suite.service.Open(suite.Ctx, suite.userID, upload.ID)

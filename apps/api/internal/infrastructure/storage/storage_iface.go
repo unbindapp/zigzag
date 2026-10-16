@@ -9,7 +9,8 @@ import (
 
 // StoreInterface ...
 type StoreInterface interface {
-	Put(ctx context.Context, key string, reader io.Reader) error
+	Put(ctx context.Context, key string, reader io.Reader, contentType string) error
 	Open(ctx context.Context, key string) (io.ReadCloser, error)
+	Exists(ctx context.Context, key string) (bool, error)
 	Delete(ctx context.Context, key string) error
 }
