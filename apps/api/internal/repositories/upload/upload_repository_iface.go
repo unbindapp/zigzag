@@ -13,6 +13,8 @@ import (
 type UploadRepositoryInterface interface {
 	Create(ctx context.Context, input *CreateUploadInput) (*ent.Upload, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Upload, error)
+	GetData(ctx context.Context, uploadID uuid.UUID) ([]byte, error)
 	Delete(ctx context.Context, id uuid.UUID) error
-	ListAfter(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error)
+	ListMissingData(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error)
+	CreateData(ctx context.Context, uploadID uuid.UUID, data []byte) error
 }

@@ -38,6 +38,7 @@ func (Upload) Edges() []ent.Edge {
 		edge.To("avatar_users", User.Type).Annotations(setNull()),
 		edge.To("icon_workspaces", Workspace.Type).Annotations(setNull()),
 		edge.To("attachments", Attachment.Type).Annotations(setNull()),
+		edge.To("blob", UploadBlob.Type).Unique().Annotations(cascade()),
 	}
 }
 

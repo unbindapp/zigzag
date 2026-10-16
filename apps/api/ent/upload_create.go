@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
@@ -194,6 +195,25 @@ func (_c *UploadCreate) AddAttachments(v ...*Attachment) *UploadCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAttachmentIDs(ids...)
+}
+
+// SetBlobID sets the "blob" edge to the UploadBlob entity by ID.
+func (_c *UploadCreate) SetBlobID(id uuid.UUID) *UploadCreate {
+	_c.mutation.SetBlobID(id)
+	return _c
+}
+
+// SetNillableBlobID sets the "blob" edge to the UploadBlob entity by ID if the given value is not nil.
+func (_c *UploadCreate) SetNillableBlobID(id *uuid.UUID) *UploadCreate {
+	if id != nil {
+		_c = _c.SetBlobID(*id)
+	}
+	return _c
+}
+
+// SetBlob sets the "blob" edge to the UploadBlob entity.
+func (_c *UploadCreate) SetBlob(v *UploadBlob) *UploadCreate {
+	return _c.SetBlobID(v.ID)
 }
 
 // Mutation returns the UploadMutation object of the builder.
@@ -414,6 +434,22 @@ func (_c *UploadCreate) createSpec() (*Upload, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   upload.BlobTable,
+			Columns: []string{upload.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadblob.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

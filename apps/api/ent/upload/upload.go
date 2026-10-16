@@ -45,6 +45,8 @@ const (
 	EdgeIconWorkspaces = "icon_workspaces"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
+	// EdgeBlob holds the string denoting the blob edge name in mutations.
+	EdgeBlob = "blob"
 	// Table holds the table name of the upload in the database.
 	Table = "uploads"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -82,6 +84,13 @@ const (
 	AttachmentsInverseTable = "attachments"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "upload_id"
+	// BlobTable is the table that holds the blob relation/edge.
+	BlobTable = "upload_blobs"
+	// BlobInverseTable is the table name for the UploadBlob entity.
+	// It exists in this package in order to avoid circular dependency with the "uploadblob" package.
+	BlobInverseTable = "upload_blobs"
+	// BlobColumn is the table column denoting the blob relation/edge.
+	BlobColumn = "upload_id"
 )
 
 // Columns holds all SQL columns for upload fields.
@@ -233,6 +242,13 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByBlobField orders the results by blob field.
+func ByBlobField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBlobStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -266,5 +282,12 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+	)
+}
+func newBlobStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BlobInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, BlobTable, BlobColumn),
 	)
 }

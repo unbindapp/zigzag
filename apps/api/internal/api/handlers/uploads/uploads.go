@@ -2,7 +2,6 @@ package uploads_handler
 
 import (
 	"context"
-	"io"
 	"mime"
 	"net/http"
 	"strconv"
@@ -110,7 +109,6 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetUploadInput) (*huma
 		return nil, oapi.MapError(err)
 	}
 	return &huma.StreamResponse{Body: func(hctx huma.Context) {
-		defer opened.Body.Close()
 		disposition := "attachment"
 		contentType := "application/octet-stream"
 		if opened.Inline {
@@ -124,7 +122,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetUploadInput) (*huma
 		hctx.SetHeader("X-Content-Type-Options", "nosniff")
 		hctx.SetHeader("Content-Security-Policy", contentSecurityPolicy(contentType))
 		hctx.SetStatus(http.StatusOK)
-		if _, err := io.Copy(hctx.BodyWriter(), opened.Body); err != nil {
+		if _, err := hctx.BodyWriter().Write(opened.Data); err != nil {
 			log.Warn("Failed to stream an upload", "upload_id", opened.Upload.ID, "err", err)
 		}
 	}}, nil

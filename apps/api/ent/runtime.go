@@ -47,6 +47,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
 	"github.com/zigzagapp-org/zigzag-api/ent/template"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/view"
 	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
@@ -1185,6 +1186,19 @@ func init() {
 	uploadDescID := uploadMixinFields0[0].Descriptor()
 	// upload.DefaultID holds the default value on creation for the id field.
 	upload.DefaultID = uploadDescID.Default.(func() uuid.UUID)
+	uploadblobMixin := schema.UploadBlob{}.Mixin()
+	uploadblobMixinFields0 := uploadblobMixin[0].Fields()
+	_ = uploadblobMixinFields0
+	uploadblobFields := schema.UploadBlob{}.Fields()
+	_ = uploadblobFields
+	// uploadblobDescCreatedAt is the schema descriptor for created_at field.
+	uploadblobDescCreatedAt := uploadblobFields[2].Descriptor()
+	// uploadblob.DefaultCreatedAt holds the default value on creation for the created_at field.
+	uploadblob.DefaultCreatedAt = uploadblobDescCreatedAt.Default.(func() time.Time)
+	// uploadblobDescID is the schema descriptor for id field.
+	uploadblobDescID := uploadblobMixinFields0[0].Descriptor()
+	// uploadblob.DefaultID holds the default value on creation for the id field.
+	uploadblob.DefaultID = uploadblobDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

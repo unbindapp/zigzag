@@ -21,7 +21,6 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
-	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
 	"github.com/zigzagapp-org/zigzag-api/internal/services"
@@ -30,17 +29,13 @@ import (
 type UploadServiceSuite struct {
 	services.ServiceTestSuite
 	service     *UploadService
-	store       *storage.LocalStore
 	userID      uuid.UUID
 	workspaceID uuid.UUID
 }
 
 func (suite *UploadServiceSuite) SetupTest() {
 	suite.ServiceTestSuite.SetupTest()
-	store, err := storage.NewLocalStore(suite.T().TempDir())
-	suite.Require().NoError(err)
-	suite.store = store
-	suite.service = NewUploadService(&config.Config{MaxUploadBytes: 64 << 10}, suite.MockRepo, store)
+	suite.service = NewUploadService(&config.Config{MaxUploadBytes: 64 << 10}, suite.MockRepo)
 	suite.userID = uuid.New()
 	suite.workspaceID = uuid.New()
 }
@@ -53,7 +48,7 @@ func (suite *UploadServiceSuite) expectStored() *upload_repo.CreateUploadInput {
 	stored := &upload_repo.CreateUploadInput{}
 	suite.MockUploadRepo.EXPECT().Create(suite.Ctx, mock.Anything).RunAndReturn(func(_ context.Context, input *upload_repo.CreateUploadInput) (*ent.Upload, error) {
 		*stored = *input
-		return &ent.Upload{ID: input.ID, WorkspaceID: input.WorkspaceID, FileName: input.FileName, ContentType: input.ContentType, SizeBytes: input.SizeBytes, StorageKey: input.StorageKey, Width: input.Width, Height: input.Height}, nil
+		return &ent.Upload{ID: input.ID, WorkspaceID: input.WorkspaceID, FileName: input.FileName, ContentType: input.ContentType, SizeBytes: int64(len(input.Data)), StorageKey: input.StorageKey, Width: input.Width, Height: input.Height}, nil
 	}).Once()
 	return stored
 }
@@ -97,7 +92,7 @@ func (suite *UploadServiceSuite) TestImagesGetTheirSize() {
 			suite.Require().NotNil(resp.Width)
 			suite.Equal(37, *resp.Width)
 			suite.Equal(21, *resp.Height)
-			suite.Equal(int64(len(body)), stored.SizeBytes)
+			suite.Equal(body, stored.Data)
 			suite.Equal(suite.workspaceID.String()+"/"+stored.ID.String()+"."+name, stored.StorageKey, "files live under the workspace id")
 			suite.Equal("/api/go/uploads/get?upload_id="+stored.ID.String(), resp.URL)
 		})
@@ -136,12 +131,8 @@ func (suite *UploadServiceSuite) TestSVGsAreValidatedAndSized() {
 			suite.Equal("image/svg+xml", resp.ContentType)
 			suite.Equal(tc.width, resp.Width)
 			suite.Equal(tc.height, resp.Height)
-			suite.Equal(int64(len(tc.body)), stored.SizeBytes)
-			body, err := suite.store.Open(suite.Ctx, stored.StorageKey)
-			suite.Require().NoError(err)
-			defer body.Close()
-			content, _ := io.ReadAll(body)
-			suite.Equal(tc.body, string(content))
+			suite.Equal(int64(len(tc.body)), resp.SizeBytes)
+			suite.Equal(tc.body, string(stored.Data))
 		})
 	}
 }
@@ -166,7 +157,7 @@ func (suite *UploadServiceSuite) TestUnsafeSVGsAreRefused() {
 	}
 }
 
-func (suite *UploadServiceSuite) TestTooLargeFilesAreRemoved() {
+func (suite *UploadServiceSuite) TestTooLargeFilesAreRefused() {
 	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
 	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "big.bin", Body: bytes.NewReader(make([]byte, 65<<10))})
@@ -194,24 +185,21 @@ func (suite *UploadServiceSuite) TestOutsidersDoNotLearnTheWorkspaceExists() {
 }
 
 func (suite *UploadServiceSuite) TestOpenChecksTheWorkspaceAndMarksSafeTypesInline() {
-	key := suite.workspaceID.String() + "/a.html"
-	suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte("<b>hi</b>")), ""))
-	html := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "text/html", StorageKey: key}
-	pngUpload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/png", StorageKey: key}
+	html := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "text/html"}
+	pngUpload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/png"}
 	suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, html.ID).Return(html, nil)
 	suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, pngUpload.ID).Return(pngUpload, nil)
+	suite.MockUploadRepo.EXPECT().GetData(suite.Ctx, html.ID).Return([]byte("<b>hi</b>"), nil)
+	suite.MockUploadRepo.EXPECT().GetData(suite.Ctx, pngUpload.ID).Return([]byte("png"), nil)
 
 	suite.allow(schema.WorkspaceRoleViewer, nil)
 	opened, err := suite.service.Open(suite.Ctx, suite.userID, html.ID)
 	suite.Require().NoError(err)
-	body, _ := io.ReadAll(opened.Body)
-	opened.Body.Close()
-	suite.Equal("<b>hi</b>", string(body))
+	suite.Equal("<b>hi</b>", string(opened.Data))
 	suite.False(opened.Inline, "html is never rendered inline")
 
 	opened, err = suite.service.Open(suite.Ctx, suite.userID, pngUpload.ID)
 	suite.Require().NoError(err)
-	opened.Body.Close()
 	suite.True(opened.Inline)
 }
 
@@ -226,15 +214,12 @@ func (suite *UploadServiceSuite) TestOpenServesOnlySafeSVGsInline() {
 	suite.allow(schema.WorkspaceRoleViewer, nil)
 	for name, tc := range cases {
 		suite.Run(name, func() {
-			key := suite.workspaceID.String() + "/" + uuid.NewString() + ".svg"
-			suite.Require().NoError(suite.store.Put(suite.Ctx, key, bytes.NewReader([]byte(tc.body)), ""))
-			upload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml", StorageKey: key}
+			upload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml"}
 			suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, upload.ID).Return(upload, nil).Once()
+			suite.MockUploadRepo.EXPECT().GetData(suite.Ctx, upload.ID).Return([]byte(tc.body), nil).Once()
 			opened, err := suite.service.Open(suite.Ctx, suite.userID, upload.ID)
 			suite.Require().NoError(err)
-			defer opened.Body.Close()
-			content, _ := io.ReadAll(opened.Body)
-			suite.Equal(tc.body, string(content))
+			suite.Equal(tc.body, string(opened.Data))
 			suite.Equal(tc.inline, opened.Inline)
 		})
 	}

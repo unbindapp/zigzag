@@ -30,7 +30,6 @@ Workspaces, teams, issues, projects, cycles, labels, views, documents, inbox. On
 ```sh
 docker run -d --name zigzag \
   -p 8091:8091 \
-  -v zigzag-data:/data \
   -e DATABASE_URL=postgres://user:pass@host:5432/zigzag \
   -e EXTERNAL_UI_URL=https://issues.example.com \
   -e ENCRYPTION_KEY=$(openssl rand -hex 32) \
@@ -39,25 +38,19 @@ docker run -d --name zigzag \
 
 Open the URL. The first visit creates the first user and workspace.
 
-| Variable               | Purpose                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| `DATABASE_URL`         | Postgres connection string                                                        |
-| `EXTERNAL_UI_URL`      | Public URL of the instance, used in links and emails                              |
-| `ENCRYPTION_KEY`       | 64 hex chars, encrypts the SMTP password and GitHub secrets and tokens at rest    |
-| `DATA_DIR`             | Uploads directory when S3 is not set, `/data` in the image                        |
-| `PORT`                 | Listen port, default `8091`                                                       |
-| `GITHUB_API_URL`       | GitHub REST API base for Issues sync, default `https://api.github.com`            |
-| `S3_BUCKET`            | Bucket for uploads; setting it switches uploads to S3                             |
-| `S3_ENDPOINT`          | S3 API URL, e.g. `https://<account>.r2.cloudflarestorage.com`; empty means AWS S3 |
-| `S3_ACCESS_KEY_ID`     | Access key, required with `S3_BUCKET`                                             |
-| `S3_SECRET_ACCESS_KEY` | Secret key, required with `S3_BUCKET`                                             |
-| `S3_REGION`            | Region, default `us-east-1`; `auto` for R2                                        |
-| `S3_USE_PATH_STYLE`    | Path-style bucket urls, default `true` (Silo and MinIO need it)                   |
-| `S3_KEY_PREFIX`        | Prefix for every object key, e.g. `dux/`, so instances can share a bucket         |
+| Variable             | Purpose                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | Postgres connection string                                                               |
+| `EXTERNAL_UI_URL`    | Public URL of the instance, used in links and emails                                     |
+| `ENCRYPTION_KEY`     | 64 hex chars, encrypts the SMTP password and GitHub secrets and tokens at rest           |
+| `PORT`               | Listen port, default `8091`                                                              |
+| `GITHUB_API_URL`     | GitHub REST API base for Issues sync, default `https://api.github.com`                   |
+| `MAX_UPLOAD_BYTES`   | Largest accepted upload, default `26214400` (25 MiB)                                     |
+| `UPLOADS_IMPORT_DIR` | One-time migration: an old `DATA_DIR/uploads` directory to copy into Postgres on startup |
 
-### Object storage
+### Uploads
 
-Uploads go to `DATA_DIR` by default, so the container needs a volume at `/data`. Set `S3_BUCKET` and the other `S3_*` variables to keep them in an S3-compatible bucket instead (Silo, MinIO, R2, S3); the volume is then optional. For Cloudflare R2 use `S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com` and `S3_REGION=auto`. The bucket must exist: the server checks it with a HeadBucket on startup and exits if it is not reachable. Objects keep the `uploads/<workspace_id>/<file>` layout, under `S3_KEY_PREFIX` when it is set (`dux` and `dux/` are the same), and are still served through the API with the same permissions and headers. On boot, when S3 is set and `DATA_DIR/uploads` exists, uploads that are not in the bucket yet are copied from the volume in the background. The copy is safe to run on every boot and never deletes local files, so keep the volume mounted for the first boot after switching.
+Uploads are stored in Postgres, so the container needs no volume. Instances that kept uploads on disk under `DATA_DIR/uploads` can move them once: mount the old volume (at `/data`, say) and set `UPLOADS_IMPORT_DIR=/data/uploads` for one boot, or run `go run ./cmd/cli uploads:import-dir <dir>` from `apps/api` against the same database. Either one stores the file of every upload that has no bytes in the database yet, skips the rest and logs how many it imported, found missing and failed. Running it again is safe. Remove the variable and the volume afterwards.
 
 ## Connect an agent
 

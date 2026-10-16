@@ -117,6 +117,69 @@ func (_c *UploadRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// CreateData provides a mock function for the type UploadRepositoryMock
+func (_mock *UploadRepositoryMock) CreateData(ctx context.Context, uploadID uuid.UUID, data []byte) error {
+	ret := _mock.Called(ctx, uploadID, data)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateData")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []byte) error); ok {
+		r0 = returnFunc(ctx, uploadID, data)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UploadRepositoryMock_CreateData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateData'
+type UploadRepositoryMock_CreateData_Call struct {
+	*mock.Call
+}
+
+// CreateData is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uploadID uuid.UUID
+//   - data []byte
+func (_e *UploadRepositoryMock_Expecter) CreateData(ctx any, uploadID any, data any) *UploadRepositoryMock_CreateData_Call {
+	return &UploadRepositoryMock_CreateData_Call{Call: _e.mock.On("CreateData", ctx, uploadID, data)}
+}
+
+func (_c *UploadRepositoryMock_CreateData_Call) Run(run func(ctx context.Context, uploadID uuid.UUID, data []byte)) *UploadRepositoryMock_CreateData_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []byte
+		if args[2] != nil {
+			arg2 = args[2].([]byte)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UploadRepositoryMock_CreateData_Call) Return(err error) *UploadRepositoryMock_CreateData_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UploadRepositoryMock_CreateData_Call) RunAndReturn(run func(ctx context.Context, uploadID uuid.UUID, data []byte) error) *UploadRepositoryMock_CreateData_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Delete provides a mock function for the type UploadRepositoryMock
 func (_mock *UploadRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
 	ret := _mock.Called(ctx, id)
@@ -242,12 +305,80 @@ func (_c *UploadRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
-// ListAfter provides a mock function for the type UploadRepositoryMock
-func (_mock *UploadRepositoryMock) ListAfter(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error) {
+// GetData provides a mock function for the type UploadRepositoryMock
+func (_mock *UploadRepositoryMock) GetData(ctx context.Context, uploadID uuid.UUID) ([]byte, error) {
+	ret := _mock.Called(ctx, uploadID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetData")
+	}
+
+	var r0 []byte
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]byte, error)); ok {
+		return returnFunc(ctx, uploadID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []byte); ok {
+		r0 = returnFunc(ctx, uploadID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, uploadID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UploadRepositoryMock_GetData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetData'
+type UploadRepositoryMock_GetData_Call struct {
+	*mock.Call
+}
+
+// GetData is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uploadID uuid.UUID
+func (_e *UploadRepositoryMock_Expecter) GetData(ctx any, uploadID any) *UploadRepositoryMock_GetData_Call {
+	return &UploadRepositoryMock_GetData_Call{Call: _e.mock.On("GetData", ctx, uploadID)}
+}
+
+func (_c *UploadRepositoryMock_GetData_Call) Run(run func(ctx context.Context, uploadID uuid.UUID)) *UploadRepositoryMock_GetData_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UploadRepositoryMock_GetData_Call) Return(bytes []byte, err error) *UploadRepositoryMock_GetData_Call {
+	_c.Call.Return(bytes, err)
+	return _c
+}
+
+func (_c *UploadRepositoryMock_GetData_Call) RunAndReturn(run func(ctx context.Context, uploadID uuid.UUID) ([]byte, error)) *UploadRepositoryMock_GetData_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListMissingData provides a mock function for the type UploadRepositoryMock
+func (_mock *UploadRepositoryMock) ListMissingData(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error) {
 	ret := _mock.Called(ctx, afterID, limit)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ListAfter")
+		panic("no return value specified for ListMissingData")
 	}
 
 	var r0 []*ent.Upload
@@ -270,20 +401,20 @@ func (_mock *UploadRepositoryMock) ListAfter(ctx context.Context, afterID uuid.U
 	return r0, r1
 }
 
-// UploadRepositoryMock_ListAfter_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAfter'
-type UploadRepositoryMock_ListAfter_Call struct {
+// UploadRepositoryMock_ListMissingData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListMissingData'
+type UploadRepositoryMock_ListMissingData_Call struct {
 	*mock.Call
 }
 
-// ListAfter is a helper method to define mock.On call
+// ListMissingData is a helper method to define mock.On call
 //   - ctx context.Context
 //   - afterID uuid.UUID
 //   - limit int
-func (_e *UploadRepositoryMock_Expecter) ListAfter(ctx any, afterID any, limit any) *UploadRepositoryMock_ListAfter_Call {
-	return &UploadRepositoryMock_ListAfter_Call{Call: _e.mock.On("ListAfter", ctx, afterID, limit)}
+func (_e *UploadRepositoryMock_Expecter) ListMissingData(ctx any, afterID any, limit any) *UploadRepositoryMock_ListMissingData_Call {
+	return &UploadRepositoryMock_ListMissingData_Call{Call: _e.mock.On("ListMissingData", ctx, afterID, limit)}
 }
 
-func (_c *UploadRepositoryMock_ListAfter_Call) Run(run func(ctx context.Context, afterID uuid.UUID, limit int)) *UploadRepositoryMock_ListAfter_Call {
+func (_c *UploadRepositoryMock_ListMissingData_Call) Run(run func(ctx context.Context, afterID uuid.UUID, limit int)) *UploadRepositoryMock_ListMissingData_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -306,12 +437,12 @@ func (_c *UploadRepositoryMock_ListAfter_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *UploadRepositoryMock_ListAfter_Call) Return(uploads []*ent.Upload, err error) *UploadRepositoryMock_ListAfter_Call {
+func (_c *UploadRepositoryMock_ListMissingData_Call) Return(uploads []*ent.Upload, err error) *UploadRepositoryMock_ListMissingData_Call {
 	_c.Call.Return(uploads, err)
 	return _c
 }
 
-func (_c *UploadRepositoryMock_ListAfter_Call) RunAndReturn(run func(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error)) *UploadRepositoryMock_ListAfter_Call {
+func (_c *UploadRepositoryMock_ListMissingData_Call) RunAndReturn(run func(ctx context.Context, afterID uuid.UUID, limit int) ([]*ent.Upload, error)) *UploadRepositoryMock_ListMissingData_Call {
 	_c.Call.Return(run)
 	return _c
 }

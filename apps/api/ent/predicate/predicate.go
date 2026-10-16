@@ -129,6 +129,9 @@ type Template func(*sql.Selector)
 // Upload is the predicate function for upload builders.
 type Upload func(*sql.Selector)
 
+// UploadBlob is the predicate function for uploadblob builders.
+type UploadBlob func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 

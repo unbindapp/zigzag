@@ -23,6 +23,7 @@ Commands:
                                  Create an active user
   user:reset-password --email=EMAIL --password=PASSWORD
                                  Set a user's password and sign out their sessions
+  uploads:import-dir DIR         Store files of an old DATA_DIR/uploads directory in the database
 `
 
 func main() {
@@ -64,6 +65,13 @@ func main() {
 			os.Exit(1)
 		}
 		newCLI(config.NewConfig()).resetPassword(*resetEmail, *resetPassword)
+	case "uploads:import-dir":
+		if len(os.Args) != 3 {
+			fmt.Println("Error: the uploads directory is required")
+			fmt.Print(usageText)
+			os.Exit(1)
+		}
+		newCLI(config.NewConfig()).importUploads(os.Args[2])
 	case "help", "-h", "--help":
 		fmt.Print(usageText)
 	default:

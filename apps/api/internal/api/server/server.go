@@ -11,7 +11,6 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/api/apictx"
 	"github.com/zigzagapp-org/zigzag-api/internal/auth"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
-	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 	apikey_service "github.com/zigzagapp-org/zigzag-api/internal/services/apikey"
 	comment_service "github.com/zigzagapp-org/zigzag-api/internal/services/comment"
@@ -46,7 +45,6 @@ type Server struct {
 	Cfg          *config.Config
 	Repository   repositories.RepositoriesInterface
 	TokenManager *auth.TokenManager
-	Storage      storage.StoreInterface
 
 	UserService         *user_service.UserService
 	WorkspaceService    *workspace_service.WorkspaceService

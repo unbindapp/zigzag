@@ -234,15 +234,6 @@ packages:
           filename: repositories_mock.go
           structname: RepositoriesMock
           pkgname: mocks_repositories
-  github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage:
-    config:
-      dir: ./mocks/infrastructure/storage
-    interfaces:
-      StoreInterface:
-        config:
-          filename: storage_mock.go
-          structname: StoreMock
-          pkgname: mocks_infrastructure_storage
   github.com/zigzagapp-org/zigzag-api/internal/integrations/github:
     config:
       dir: ./mocks/integrations/github

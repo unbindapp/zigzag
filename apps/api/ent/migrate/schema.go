@@ -1824,6 +1824,27 @@ var (
 			},
 		},
 	}
+	// UploadBlobsColumns holds the columns for the "upload_blobs" table.
+	UploadBlobsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "upload_id", Type: field.TypeUUID, Unique: true},
+	}
+	// UploadBlobsTable holds the schema information for the "upload_blobs" table.
+	UploadBlobsTable = &schema.Table{
+		Name:       "upload_blobs",
+		Columns:    UploadBlobsColumns,
+		PrimaryKey: []*schema.Column{UploadBlobsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "upload_blobs_uploads_blob",
+				Columns:    []*schema.Column{UploadBlobsColumns[3]},
+				RefColumns: []*schema.Column{UploadsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -2239,6 +2260,7 @@ var (
 		TeamMembersTable,
 		TemplatesTable,
 		UploadsTable,
+		UploadBlobsTable,
 		UsersTable,
 		ViewsTable,
 		WebhooksTable,
@@ -2469,6 +2491,10 @@ func init() {
 	UploadsTable.ForeignKeys[1].RefTable = WorkspacesTable
 	UploadsTable.Annotation = &entsql.Annotation{
 		Table: "uploads",
+	}
+	UploadBlobsTable.ForeignKeys[0].RefTable = UploadsTable
+	UploadBlobsTable.Annotation = &entsql.Annotation{
+		Table: "upload_blobs",
 	}
 	UsersTable.ForeignKeys[0].RefTable = UploadsTable
 	UsersTable.Annotation = &entsql.Annotation{

@@ -686,6 +686,29 @@ func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Upload {
 	})
 }
 
+// HasBlob applies the HasEdge predicate on the "blob" edge.
+func HasBlob() predicate.Upload {
+	return predicate.Upload(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, BlobTable, BlobColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBlobWith applies the HasEdge predicate on the "blob" edge with a given conditions (other predicates).
+func HasBlobWith(preds ...predicate.UploadBlob) predicate.Upload {
+	return predicate.Upload(func(s *sql.Selector) {
+		step := newBlobStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Upload) predicate.Upload {
 	return predicate.Upload(sql.AndPredicates(predicates...))

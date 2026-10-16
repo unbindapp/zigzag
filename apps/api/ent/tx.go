@@ -96,6 +96,8 @@ type Tx struct {
 	Template *TemplateClient
 	// Upload is the client for interacting with the Upload builders.
 	Upload *UploadClient
+	// UploadBlob is the client for interacting with the UploadBlob builders.
+	UploadBlob *UploadBlobClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// View is the client for interacting with the View builders.
@@ -280,6 +282,7 @@ func (tx *Tx) init() {
 	tx.TeamMember = NewTeamMemberClient(tx.config)
 	tx.Template = NewTemplateClient(tx.config)
 	tx.Upload = NewUploadClient(tx.config)
+	tx.UploadBlob = NewUploadBlobClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.View = NewViewClient(tx.config)
 	tx.Webhook = NewWebhookClient(tx.config)

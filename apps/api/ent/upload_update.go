@@ -15,6 +15,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
 	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
@@ -245,6 +246,25 @@ func (_u *UploadUpdate) AddAttachments(v ...*Attachment) *UploadUpdate {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// SetBlobID sets the "blob" edge to the UploadBlob entity by ID.
+func (_u *UploadUpdate) SetBlobID(id uuid.UUID) *UploadUpdate {
+	_u.mutation.SetBlobID(id)
+	return _u
+}
+
+// SetNillableBlobID sets the "blob" edge to the UploadBlob entity by ID if the given value is not nil.
+func (_u *UploadUpdate) SetNillableBlobID(id *uuid.UUID) *UploadUpdate {
+	if id != nil {
+		_u = _u.SetBlobID(*id)
+	}
+	return _u
+}
+
+// SetBlob sets the "blob" edge to the UploadBlob entity.
+func (_u *UploadUpdate) SetBlob(v *UploadBlob) *UploadUpdate {
+	return _u.SetBlobID(v.ID)
+}
+
 // Mutation returns the UploadMutation object of the builder.
 func (_u *UploadUpdate) Mutation() *UploadMutation {
 	return _u.mutation
@@ -323,6 +343,12 @@ func (_u *UploadUpdate) RemoveAttachments(v ...*Attachment) *UploadUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearBlob clears the "blob" edge to the UploadBlob entity.
+func (_u *UploadUpdate) ClearBlob() *UploadUpdate {
+	_u.mutation.ClearBlob()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -616,6 +642,35 @@ func (_u *UploadUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.BlobCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   upload.BlobTable,
+			Columns: []string{upload.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadblob.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   upload.BlobTable,
+			Columns: []string{upload.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadblob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -850,6 +905,25 @@ func (_u *UploadUpdateOne) AddAttachments(v ...*Attachment) *UploadUpdateOne {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// SetBlobID sets the "blob" edge to the UploadBlob entity by ID.
+func (_u *UploadUpdateOne) SetBlobID(id uuid.UUID) *UploadUpdateOne {
+	_u.mutation.SetBlobID(id)
+	return _u
+}
+
+// SetNillableBlobID sets the "blob" edge to the UploadBlob entity by ID if the given value is not nil.
+func (_u *UploadUpdateOne) SetNillableBlobID(id *uuid.UUID) *UploadUpdateOne {
+	if id != nil {
+		_u = _u.SetBlobID(*id)
+	}
+	return _u
+}
+
+// SetBlob sets the "blob" edge to the UploadBlob entity.
+func (_u *UploadUpdateOne) SetBlob(v *UploadBlob) *UploadUpdateOne {
+	return _u.SetBlobID(v.ID)
+}
+
 // Mutation returns the UploadMutation object of the builder.
 func (_u *UploadUpdateOne) Mutation() *UploadMutation {
 	return _u.mutation
@@ -928,6 +1002,12 @@ func (_u *UploadUpdateOne) RemoveAttachments(v ...*Attachment) *UploadUpdateOne 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearBlob clears the "blob" edge to the UploadBlob entity.
+func (_u *UploadUpdateOne) ClearBlob() *UploadUpdateOne {
+	_u.mutation.ClearBlob()
+	return _u
 }
 
 // Where appends a list predicates to the UploadUpdate builder.
@@ -1244,6 +1324,35 @@ func (_u *UploadUpdateOne) sqlSave(ctx context.Context) (_node *Upload, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BlobCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   upload.BlobTable,
+			Columns: []string{upload.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadblob.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   upload.BlobTable,
+			Columns: []string{upload.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadblob.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

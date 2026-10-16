@@ -16,6 +16,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
 	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
@@ -32,6 +33,7 @@ type UploadQuery struct {
 	withAvatarUsers    *UserQuery
 	withIconWorkspaces *WorkspaceQuery
 	withAttachments    *AttachmentQuery
+	withBlob           *UploadBlobQuery
 	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -172,6 +174,28 @@ func (_q *UploadQuery) QueryAttachments() *AttachmentQuery {
 			sqlgraph.From(upload.Table, upload.FieldID, selector),
 			sqlgraph.To(attachment.Table, attachment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, upload.AttachmentsTable, upload.AttachmentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBlob chains the current query on the "blob" edge.
+func (_q *UploadQuery) QueryBlob() *UploadBlobQuery {
+	query := (&UploadBlobClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(upload.Table, upload.FieldID, selector),
+			sqlgraph.To(uploadblob.Table, uploadblob.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, upload.BlobTable, upload.BlobColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -376,6 +400,7 @@ func (_q *UploadQuery) Clone() *UploadQuery {
 		withAvatarUsers:    _q.withAvatarUsers.Clone(),
 		withIconWorkspaces: _q.withIconWorkspaces.Clone(),
 		withAttachments:    _q.withAttachments.Clone(),
+		withBlob:           _q.withBlob.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -435,6 +460,17 @@ func (_q *UploadQuery) WithAttachments(opts ...func(*AttachmentQuery)) *UploadQu
 		opt(query)
 	}
 	_q.withAttachments = query
+	return _q
+}
+
+// WithBlob tells the query-builder to eager-load the nodes that are connected to
+// the "blob" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UploadQuery) WithBlob(opts ...func(*UploadBlobQuery)) *UploadQuery {
+	query := (&UploadBlobClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withBlob = query
 	return _q
 }
 
@@ -516,12 +552,13 @@ func (_q *UploadQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Uploa
 	var (
 		nodes       = []*Upload{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withWorkspace != nil,
 			_q.withUploader != nil,
 			_q.withAvatarUsers != nil,
 			_q.withIconWorkspaces != nil,
 			_q.withAttachments != nil,
+			_q.withBlob != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -575,6 +612,12 @@ func (_q *UploadQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Uploa
 		if err := _q.loadAttachments(ctx, query, nodes,
 			func(n *Upload) { n.Edges.Attachments = []*Attachment{} },
 			func(n *Upload, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withBlob; query != nil {
+		if err := _q.loadBlob(ctx, query, nodes, nil,
+			func(n *Upload, e *UploadBlob) { n.Edges.Blob = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -736,6 +779,33 @@ func (_q *UploadQuery) loadAttachments(ctx context.Context, query *AttachmentQue
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "upload_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UploadQuery) loadBlob(ctx context.Context, query *UploadBlobQuery, nodes []*Upload, init func(*Upload), assign func(*Upload, *UploadBlob)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Upload)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(uploadblob.FieldUploadID)
+	}
+	query.Where(predicate.UploadBlob(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(upload.BlobColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UploadID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "upload_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

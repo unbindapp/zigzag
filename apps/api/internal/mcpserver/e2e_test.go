@@ -30,7 +30,6 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/cache"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
-	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
@@ -81,7 +80,7 @@ func (suite *EndToEndSuite) SetupTest() {
 	dsn := "file:" + filepath.Join(suite.T().TempDir(), "e2e.db") + "?_pragma=foreign_keys(1)&_pragma=journal_mode(wal)&_pragma=busy_timeout(10000)"
 	suite.DB = enttest.Open(suite.T(), "sqlite3", dsn)
 	suite.Require().NoError(suite.DB.Schema.Create(suite.Ctx))
-	cfg := &config.Config{ExternalUIUrl: "http://zigzag.test", TokenAudience: "zigzag-api", DataDir: suite.T().TempDir(), MaxUploadBytes: 1 << 20}
+	cfg := &config.Config{ExternalUIUrl: "http://zigzag.test", TokenAudience: "zigzag-api", MaxUploadBytes: 1 << 20}
 	repo := repositories.NewRepositories(suite.DB)
 	_, err := repo.System().GetSystemSettings(suite.Ctx, nil)
 	suite.Require().NoError(err)
@@ -91,8 +90,6 @@ func (suite *EndToEndSuite) SetupTest() {
 	suite.Require().NoError(err)
 	tokens := auth.NewTokenManager(key, issuer, cfg.TokenAudience)
 	encryptor, err := crypto.NewEncryptor(bytes.Repeat([]byte{1}, 32))
-	suite.Require().NoError(err)
-	store, err := storage.NewLocalStore(cfg.DataDir)
 	suite.Require().NoError(err)
 
 	emails := email_service.NewEmailService(cfg, repo, encryptor, mail.SMTPSender{})
@@ -105,7 +102,6 @@ func (suite *EndToEndSuite) SetupTest() {
 		Cfg:                 cfg,
 		Repository:          repo,
 		TokenManager:        tokens,
-		Storage:             store,
 		UserService:         user_service.NewUserService(cfg, repo, emails),
 		WorkspaceService:    workspace_service.NewWorkspaceService(cfg, repo, emails),
 		TeamService:         team_service.NewTeamService(repo, cycles),
@@ -113,7 +109,7 @@ func (suite *EndToEndSuite) SetupTest() {
 		APIKeyService:       apikey_service.NewAPIKeyService(repo),
 		OAuthServerService:  oauthService,
 		SystemService:       system_service.NewSystemService(repo),
-		UploadService:       upload_service.NewUploadService(cfg, repo, store),
+		UploadService:       upload_service.NewUploadService(cfg, repo),
 		IssueService:        issue_service.NewIssueService(cfg, repo, notifications, webhooks, githubSync),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notifications, webhooks),
 		LabelService:        label_service.NewLabelService(cfg, repo),

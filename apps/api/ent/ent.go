@@ -53,6 +53,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
 	"github.com/zigzagapp-org/zigzag-api/ent/template"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/view"
 	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
@@ -160,6 +161,7 @@ func checkColumn(t, c string) error {
 			teammember.Table:             teammember.ValidColumn,
 			template.Table:               template.ValidColumn,
 			upload.Table:                 upload.ValidColumn,
+			uploadblob.Table:             uploadblob.ValidColumn,
 			user.Table:                   user.ValidColumn,
 			view.Table:                   view.ValidColumn,
 			webhook.Table:                webhook.ValidColumn,

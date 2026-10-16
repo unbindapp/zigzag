@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
@@ -59,9 +60,11 @@ type UploadEdges struct {
 	IconWorkspaces []*Workspace `json:"icon_workspaces,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
+	// Blob holds the value of the blob edge.
+	Blob *UploadBlob `json:"blob,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -111,6 +114,17 @@ func (e UploadEdges) AttachmentsOrErr() ([]*Attachment, error) {
 		return e.Attachments, nil
 	}
 	return nil, &NotLoadedError{edge: "attachments"}
+}
+
+// BlobOrErr returns the Blob value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UploadEdges) BlobOrErr() (*UploadBlob, error) {
+	if e.Blob != nil {
+		return e.Blob, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: uploadblob.Label}
+	}
+	return nil, &NotLoadedError{edge: "blob"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -248,6 +262,11 @@ func (_m *Upload) QueryIconWorkspaces() *WorkspaceQuery {
 // QueryAttachments queries the "attachments" edge of the Upload entity.
 func (_m *Upload) QueryAttachments() *AttachmentQuery {
 	return NewUploadClient(_m.config).QueryAttachments(_m)
+}
+
+// QueryBlob queries the "blob" edge of the Upload entity.
+func (_m *Upload) QueryBlob() *UploadBlobQuery {
+	return NewUploadClient(_m.config).QueryBlob(_m)
 }
 
 // Update returns a builder for updating this Upload.

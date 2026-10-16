@@ -55,6 +55,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
 	"github.com/zigzagapp-org/zigzag-api/ent/template"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/view"
 	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
@@ -113,6 +114,7 @@ const (
 	TypeTeamMember             = "TeamMember"
 	TypeTemplate               = "Template"
 	TypeUpload                 = "Upload"
+	TypeUploadBlob             = "UploadBlob"
 	TypeUser                   = "User"
 	TypeView                   = "View"
 	TypeWebhook                = "Webhook"
@@ -46521,6 +46523,8 @@ type UploadMutation struct {
 	attachments            map[uuid.UUID]struct{}
 	removedattachments     map[uuid.UUID]struct{}
 	clearedattachments     bool
+	blob                   *uuid.UUID
+	clearedblob            bool
 	done                   bool
 	oldValue               func(context.Context) (*Upload, error)
 	predicates             []predicate.Upload
@@ -47307,6 +47311,45 @@ func (m *UploadMutation) ResetAttachments() {
 	m.removedattachments = nil
 }
 
+// SetBlobID sets the "blob" edge to the UploadBlob entity by id.
+func (m *UploadMutation) SetBlobID(id uuid.UUID) {
+	m.blob = &id
+}
+
+// ClearBlob clears the "blob" edge to the UploadBlob entity.
+func (m *UploadMutation) ClearBlob() {
+	m.clearedblob = true
+}
+
+// BlobCleared reports if the "blob" edge to the UploadBlob entity was cleared.
+func (m *UploadMutation) BlobCleared() bool {
+	return m.clearedblob
+}
+
+// BlobID returns the "blob" edge ID in the mutation.
+func (m *UploadMutation) BlobID() (id uuid.UUID, exists bool) {
+	if m.blob != nil {
+		return *m.blob, true
+	}
+	return
+}
+
+// BlobIDs returns the "blob" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BlobID instead. It exists only for internal usage by the builders.
+func (m *UploadMutation) BlobIDs() (ids []uuid.UUID) {
+	if id := m.blob; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBlob resets all changes to the "blob" edge.
+func (m *UploadMutation) ResetBlob() {
+	m.blob = nil
+	m.clearedblob = false
+}
+
 // Where appends a list predicates to the UploadMutation builder.
 func (m *UploadMutation) Where(ps ...predicate.Upload) {
 	m.predicates = append(m.predicates, ps...)
@@ -47653,7 +47696,7 @@ func (m *UploadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UploadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.workspace != nil {
 		edges = append(edges, upload.EdgeWorkspace)
 	}
@@ -47668,6 +47711,9 @@ func (m *UploadMutation) AddedEdges() []string {
 	}
 	if m.attachments != nil {
 		edges = append(edges, upload.EdgeAttachments)
+	}
+	if m.blob != nil {
+		edges = append(edges, upload.EdgeBlob)
 	}
 	return edges
 }
@@ -47702,13 +47748,17 @@ func (m *UploadMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case upload.EdgeBlob:
+		if id := m.blob; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UploadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedavatar_users != nil {
 		edges = append(edges, upload.EdgeAvatarUsers)
 	}
@@ -47749,7 +47799,7 @@ func (m *UploadMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UploadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedworkspace {
 		edges = append(edges, upload.EdgeWorkspace)
 	}
@@ -47764,6 +47814,9 @@ func (m *UploadMutation) ClearedEdges() []string {
 	}
 	if m.clearedattachments {
 		edges = append(edges, upload.EdgeAttachments)
+	}
+	if m.clearedblob {
+		edges = append(edges, upload.EdgeBlob)
 	}
 	return edges
 }
@@ -47782,6 +47835,8 @@ func (m *UploadMutation) EdgeCleared(name string) bool {
 		return m.clearedicon_workspaces
 	case upload.EdgeAttachments:
 		return m.clearedattachments
+	case upload.EdgeBlob:
+		return m.clearedblob
 	}
 	return false
 }
@@ -47795,6 +47850,9 @@ func (m *UploadMutation) ClearEdge(name string) error {
 		return nil
 	case upload.EdgeUploader:
 		m.ClearUploader()
+		return nil
+	case upload.EdgeBlob:
+		m.ClearBlob()
 		return nil
 	}
 	return fmt.Errorf("unknown Upload unique edge %s", name)
@@ -47819,8 +47877,505 @@ func (m *UploadMutation) ResetEdge(name string) error {
 	case upload.EdgeAttachments:
 		m.ResetAttachments()
 		return nil
+	case upload.EdgeBlob:
+		m.ResetBlob()
+		return nil
 	}
 	return fmt.Errorf("unknown Upload edge %s", name)
+}
+
+// UploadBlobMutation represents an operation that mutates the UploadBlob nodes in the graph.
+type UploadBlobMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	data          *[]byte
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	upload        *uuid.UUID
+	clearedupload bool
+	done          bool
+	oldValue      func(context.Context) (*UploadBlob, error)
+	predicates    []predicate.UploadBlob
+}
+
+var _ ent.Mutation = (*UploadBlobMutation)(nil)
+
+// uploadblobOption allows management of the mutation configuration using functional options.
+type uploadblobOption func(*UploadBlobMutation)
+
+// newUploadBlobMutation creates new mutation for the UploadBlob entity.
+func newUploadBlobMutation(c config, op Op, opts ...uploadblobOption) *UploadBlobMutation {
+	m := &UploadBlobMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUploadBlob,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUploadBlobID sets the ID field of the mutation.
+func withUploadBlobID(id uuid.UUID) uploadblobOption {
+	return func(m *UploadBlobMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UploadBlob
+		)
+		m.oldValue = func(ctx context.Context) (*UploadBlob, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UploadBlob.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUploadBlob sets the old UploadBlob of the mutation.
+func withUploadBlob(node *UploadBlob) uploadblobOption {
+	return func(m *UploadBlobMutation) {
+		m.oldValue = func(context.Context) (*UploadBlob, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UploadBlobMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UploadBlobMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UploadBlob entities.
+func (m *UploadBlobMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UploadBlobMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UploadBlobMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UploadBlob.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUploadID sets the "upload_id" field.
+func (m *UploadBlobMutation) SetUploadID(u uuid.UUID) {
+	m.upload = &u
+}
+
+// UploadID returns the value of the "upload_id" field in the mutation.
+func (m *UploadBlobMutation) UploadID() (r uuid.UUID, exists bool) {
+	v := m.upload
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUploadID returns the old "upload_id" field's value of the UploadBlob entity.
+// If the UploadBlob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UploadBlobMutation) OldUploadID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUploadID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUploadID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUploadID: %w", err)
+	}
+	return oldValue.UploadID, nil
+}
+
+// ResetUploadID resets all changes to the "upload_id" field.
+func (m *UploadBlobMutation) ResetUploadID() {
+	m.upload = nil
+}
+
+// SetData sets the "data" field.
+func (m *UploadBlobMutation) SetData(b []byte) {
+	m.data = &b
+}
+
+// Data returns the value of the "data" field in the mutation.
+func (m *UploadBlobMutation) Data() (r []byte, exists bool) {
+	v := m.data
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldData returns the old "data" field's value of the UploadBlob entity.
+// If the UploadBlob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UploadBlobMutation) OldData(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldData: %w", err)
+	}
+	return oldValue.Data, nil
+}
+
+// ResetData resets all changes to the "data" field.
+func (m *UploadBlobMutation) ResetData() {
+	m.data = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *UploadBlobMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *UploadBlobMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the UploadBlob entity.
+// If the UploadBlob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UploadBlobMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *UploadBlobMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearUpload clears the "upload" edge to the Upload entity.
+func (m *UploadBlobMutation) ClearUpload() {
+	m.clearedupload = true
+	m.clearedFields[uploadblob.FieldUploadID] = struct{}{}
+}
+
+// UploadCleared reports if the "upload" edge to the Upload entity was cleared.
+func (m *UploadBlobMutation) UploadCleared() bool {
+	return m.clearedupload
+}
+
+// UploadIDs returns the "upload" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UploadID instead. It exists only for internal usage by the builders.
+func (m *UploadBlobMutation) UploadIDs() (ids []uuid.UUID) {
+	if id := m.upload; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUpload resets all changes to the "upload" edge.
+func (m *UploadBlobMutation) ResetUpload() {
+	m.upload = nil
+	m.clearedupload = false
+}
+
+// Where appends a list predicates to the UploadBlobMutation builder.
+func (m *UploadBlobMutation) Where(ps ...predicate.UploadBlob) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UploadBlobMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UploadBlobMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UploadBlob, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UploadBlobMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UploadBlobMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UploadBlob).
+func (m *UploadBlobMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UploadBlobMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.upload != nil {
+		fields = append(fields, uploadblob.FieldUploadID)
+	}
+	if m.data != nil {
+		fields = append(fields, uploadblob.FieldData)
+	}
+	if m.created_at != nil {
+		fields = append(fields, uploadblob.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UploadBlobMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case uploadblob.FieldUploadID:
+		return m.UploadID()
+	case uploadblob.FieldData:
+		return m.Data()
+	case uploadblob.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UploadBlobMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case uploadblob.FieldUploadID:
+		return m.OldUploadID(ctx)
+	case uploadblob.FieldData:
+		return m.OldData(ctx)
+	case uploadblob.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown UploadBlob field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UploadBlobMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case uploadblob.FieldUploadID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUploadID(v)
+		return nil
+	case uploadblob.FieldData:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetData(v)
+		return nil
+	case uploadblob.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UploadBlob field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UploadBlobMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UploadBlobMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UploadBlobMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UploadBlob numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UploadBlobMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UploadBlobMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UploadBlobMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UploadBlob nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UploadBlobMutation) ResetField(name string) error {
+	switch name {
+	case uploadblob.FieldUploadID:
+		m.ResetUploadID()
+		return nil
+	case uploadblob.FieldData:
+		m.ResetData()
+		return nil
+	case uploadblob.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown UploadBlob field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UploadBlobMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.upload != nil {
+		edges = append(edges, uploadblob.EdgeUpload)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UploadBlobMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case uploadblob.EdgeUpload:
+		if id := m.upload; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UploadBlobMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UploadBlobMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UploadBlobMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedupload {
+		edges = append(edges, uploadblob.EdgeUpload)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UploadBlobMutation) EdgeCleared(name string) bool {
+	switch name {
+	case uploadblob.EdgeUpload:
+		return m.clearedupload
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UploadBlobMutation) ClearEdge(name string) error {
+	switch name {
+	case uploadblob.EdgeUpload:
+		m.ClearUpload()
+		return nil
+	}
+	return fmt.Errorf("unknown UploadBlob unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UploadBlobMutation) ResetEdge(name string) error {
+	switch name {
+	case uploadblob.EdgeUpload:
+		m.ResetUpload()
+		return nil
+	}
+	return fmt.Errorf("unknown UploadBlob edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

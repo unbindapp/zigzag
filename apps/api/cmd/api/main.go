@@ -29,7 +29,6 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/database"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
-	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
 	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
 	"github.com/zigzagapp-org/zigzag-api/internal/mcpserver"
 	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
@@ -123,7 +122,6 @@ func startAPI(cfg *config.Config) {
 	if err != nil {
 		log.Fatalf("Invalid ENCRYPTION_KEY: %v", err)
 	}
-	store := newStore(ctx, cfg)
 
 	issuer := oauthserver.Issuer(cfg.ExternalUIUrl)
 	pkey, _, err := repo.Oauth().GetOrGenerateJWTPrivateKey(ctx)
@@ -146,7 +144,6 @@ func startAPI(cfg *config.Config) {
 		Cfg:                 cfg,
 		Repository:          repo,
 		TokenManager:        tokenManager,
-		Storage:             store,
 		UserService:         user_service.NewUserService(cfg, repo, emailService),
 		WorkspaceService:    workspace_service.NewWorkspaceService(cfg, repo, emailService),
 		TeamService:         team_service.NewTeamService(repo, cycleService),
@@ -154,7 +151,7 @@ func startAPI(cfg *config.Config) {
 		APIKeyService:       apikey_service.NewAPIKeyService(repo),
 		OAuthServerService:  oauthServerService,
 		SystemService:       system_service.NewSystemService(repo),
-		UploadService:       upload_service.NewUploadService(cfg, repo, store),
+		UploadService:       upload_service.NewUploadService(cfg, repo),
 		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService, githubSyncService),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notificationService, webhookService),
 		LabelService:        label_service.NewLabelService(cfg, repo),
@@ -176,13 +173,7 @@ func startAPI(cfg *config.Config) {
 	if err := srvImpl.GithubService.RecoverBackfills(ctx); err != nil {
 		log.Error("Failed to mark interrupted GitHub imports", "err", err)
 	}
-	if cfg.S3Enabled() && storage.HasLocalUploads(cfg.DataDir) {
-		local, err := storage.NewLocalStore(cfg.DataDir)
-		if err != nil {
-			log.Fatalf("Failed to open the local upload directory: %v", err)
-		}
-		go srvImpl.UploadService.MigrateFrom(ctx, local)
-	}
+	go importUploads(ctx, srvImpl.UploadService, cfg.UploadsImportDir)
 
 	allowedOrigins := []string{cfg.ExternalUIUrl}
 	if cfg.InjectDevOrigins {
@@ -306,34 +297,18 @@ func startAPI(cfg *config.Config) {
 	log.Info("Server gracefully stopped")
 }
 
-func newStore(ctx context.Context, cfg *config.Config) storage.StoreInterface {
-	if !cfg.S3Enabled() {
-		store, err := storage.NewLocalStore(cfg.DataDir)
-		if err != nil {
-			log.Fatalf("Failed to prepare the upload directory: %v", err)
-		}
-		log.Infof("Storing uploads in %s", cfg.DataDir)
-		return store
+func importUploads(ctx context.Context, uploads *upload_service.UploadService, dir string) {
+	if dir == "" {
+		return
 	}
-	store, err := storage.NewS3Store(ctx, storage.S3Options{
-		Endpoint:        cfg.S3Endpoint,
-		Bucket:          cfg.S3Bucket,
-		AccessKeyID:     cfg.S3AccessKeyID,
-		SecretAccessKey: cfg.S3SecretAccessKey,
-		Region:          cfg.S3Region,
-		UsePathStyle:    cfg.S3UsePathStyle,
-		KeyPrefix:       cfg.S3KeyPrefix,
-	})
-	if err != nil {
-		log.Fatalf("Failed to configure S3 storage: %v", err)
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		log.Warn("UPLOADS_IMPORT_DIR is not a directory, skipping the upload import", "dir", dir)
+		return
 	}
-	checkCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-	if err := store.CheckBucket(checkCtx); err != nil {
-		log.Fatal("S3 bucket is not reachable, check S3_ENDPOINT, S3_BUCKET and the credentials", "bucket", cfg.S3Bucket, "endpoint", cfg.S3Endpoint, "err", err)
+	if _, err := uploads.ImportDir(ctx, dir); err != nil {
+		log.Error("Importing uploads stopped early", "dir", dir, "err", err)
 	}
-	log.Infof("Storing uploads in S3 bucket %s", cfg.S3Bucket)
-	return store
 }
 
 var rootOnlyPaths = []string{"/mcp", "/oauth/", "/.well-known/"}

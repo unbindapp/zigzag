@@ -57,6 +57,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
 	"github.com/zigzagapp-org/zigzag-api/ent/template"
 	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/uploadblob"
 	"github.com/zigzagapp-org/zigzag-api/ent/user"
 	"github.com/zigzagapp-org/zigzag-api/ent/view"
 	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
@@ -154,6 +155,8 @@ type Client struct {
 	Template *TemplateClient
 	// Upload is the client for interacting with the Upload builders.
 	Upload *UploadClient
+	// UploadBlob is the client for interacting with the UploadBlob builders.
+	UploadBlob *UploadBlobClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// View is the client for interacting with the View builders.
@@ -218,6 +221,7 @@ func (c *Client) init() {
 	c.TeamMember = NewTeamMemberClient(c.config)
 	c.Template = NewTemplateClient(c.config)
 	c.Upload = NewUploadClient(c.config)
+	c.UploadBlob = NewUploadBlobClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.View = NewViewClient(c.config)
 	c.Webhook = NewWebhookClient(c.config)
@@ -357,6 +361,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		TeamMember:             NewTeamMemberClient(cfg),
 		Template:               NewTemplateClient(cfg),
 		Upload:                 NewUploadClient(cfg),
+		UploadBlob:             NewUploadBlobClient(cfg),
 		User:                   NewUserClient(cfg),
 		View:                   NewViewClient(cfg),
 		Webhook:                NewWebhookClient(cfg),
@@ -423,6 +428,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		TeamMember:             NewTeamMemberClient(cfg),
 		Template:               NewTemplateClient(cfg),
 		Upload:                 NewUploadClient(cfg),
+		UploadBlob:             NewUploadBlobClient(cfg),
 		User:                   NewUserClient(cfg),
 		View:                   NewViewClient(cfg),
 		Webhook:                NewWebhookClient(cfg),
@@ -466,8 +472,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
 		c.Oauth2Token, c.PasswordResetToken, c.Project, c.ProjectLink,
 		c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
-		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
-		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.UploadBlob,
+		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -485,8 +491,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
 		c.Oauth2Token, c.PasswordResetToken, c.Project, c.ProjectLink,
 		c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
-		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
-		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.UploadBlob,
+		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -577,6 +583,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Template.mutate(ctx, m)
 	case *UploadMutation:
 		return c.Upload.mutate(ctx, m)
+	case *UploadBlobMutation:
+		return c.UploadBlob.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *ViewMutation:
@@ -8422,6 +8430,22 @@ func (c *UploadClient) QueryAttachments(_m *Upload) *AttachmentQuery {
 	return query
 }
 
+// QueryBlob queries the blob edge of a Upload.
+func (c *UploadClient) QueryBlob(_m *Upload) *UploadBlobQuery {
+	query := (&UploadBlobClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(upload.Table, upload.FieldID, id),
+			sqlgraph.To(uploadblob.Table, uploadblob.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, upload.BlobTable, upload.BlobColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UploadClient) Hooks() []Hook {
 	return c.hooks.Upload
@@ -8444,6 +8468,155 @@ func (c *UploadClient) mutate(ctx context.Context, m *UploadMutation) (Value, er
 		return (&UploadDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Upload mutation op: %q", m.Op())
+	}
+}
+
+// UploadBlobClient is a client for the UploadBlob schema.
+type UploadBlobClient struct {
+	config
+}
+
+// NewUploadBlobClient returns a client for the UploadBlob from the given config.
+func NewUploadBlobClient(c config) *UploadBlobClient {
+	return &UploadBlobClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `uploadblob.Hooks(f(g(h())))`.
+func (c *UploadBlobClient) Use(hooks ...Hook) {
+	c.hooks.UploadBlob = append(c.hooks.UploadBlob, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `uploadblob.Intercept(f(g(h())))`.
+func (c *UploadBlobClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UploadBlob = append(c.inters.UploadBlob, interceptors...)
+}
+
+// Create returns a builder for creating a UploadBlob entity.
+func (c *UploadBlobClient) Create() *UploadBlobCreate {
+	mutation := newUploadBlobMutation(c.config, OpCreate)
+	return &UploadBlobCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UploadBlob entities.
+func (c *UploadBlobClient) CreateBulk(builders ...*UploadBlobCreate) *UploadBlobCreateBulk {
+	return &UploadBlobCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UploadBlobClient) MapCreateBulk(slice any, setFunc func(*UploadBlobCreate, int)) *UploadBlobCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UploadBlobCreateBulk{err: fmt.Errorf("calling to UploadBlobClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UploadBlobCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UploadBlobCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UploadBlob.
+func (c *UploadBlobClient) Update() *UploadBlobUpdate {
+	mutation := newUploadBlobMutation(c.config, OpUpdate)
+	return &UploadBlobUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UploadBlobClient) UpdateOne(_m *UploadBlob) *UploadBlobUpdateOne {
+	mutation := newUploadBlobMutation(c.config, OpUpdateOne, withUploadBlob(_m))
+	return &UploadBlobUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UploadBlobClient) UpdateOneID(id uuid.UUID) *UploadBlobUpdateOne {
+	mutation := newUploadBlobMutation(c.config, OpUpdateOne, withUploadBlobID(id))
+	return &UploadBlobUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UploadBlob.
+func (c *UploadBlobClient) Delete() *UploadBlobDelete {
+	mutation := newUploadBlobMutation(c.config, OpDelete)
+	return &UploadBlobDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UploadBlobClient) DeleteOne(_m *UploadBlob) *UploadBlobDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UploadBlobClient) DeleteOneID(id uuid.UUID) *UploadBlobDeleteOne {
+	builder := c.Delete().Where(uploadblob.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UploadBlobDeleteOne{builder}
+}
+
+// Query returns a query builder for UploadBlob.
+func (c *UploadBlobClient) Query() *UploadBlobQuery {
+	return &UploadBlobQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUploadBlob},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UploadBlob entity by its id.
+func (c *UploadBlobClient) Get(ctx context.Context, id uuid.UUID) (*UploadBlob, error) {
+	return c.Query().Where(uploadblob.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UploadBlobClient) GetX(ctx context.Context, id uuid.UUID) *UploadBlob {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUpload queries the upload edge of a UploadBlob.
+func (c *UploadBlobClient) QueryUpload(_m *UploadBlob) *UploadQuery {
+	query := (&UploadClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(uploadblob.Table, uploadblob.FieldID, id),
+			sqlgraph.To(upload.Table, upload.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, uploadblob.UploadTable, uploadblob.UploadColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UploadBlobClient) Hooks() []Hook {
+	return c.hooks.UploadBlob
+}
+
+// Interceptors returns the client interceptors.
+func (c *UploadBlobClient) Interceptors() []Interceptor {
+	return c.inters.UploadBlob
+}
+
+func (c *UploadBlobClient) mutate(ctx context.Context, m *UploadBlobMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UploadBlobCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UploadBlobUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UploadBlobUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UploadBlobDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UploadBlob mutation op: %q", m.Op())
 	}
 }
 
@@ -10311,8 +10484,8 @@ type (
 		NotificationSetting, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PasswordResetToken, Project, ProjectLink,
 		ProjectMilestone, ProjectPost, ProjectStatus, Reaction, SystemSetting, Team,
-		TeamMember, Template, Upload, User, View, Webhook, WorkflowState, Workspace,
-		WorkspaceMember []ent.Hook
+		TeamMember, Template, Upload, UploadBlob, User, View, Webhook, WorkflowState,
+		Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
@@ -10322,8 +10495,8 @@ type (
 		NotificationSetting, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PasswordResetToken, Project, ProjectLink,
 		ProjectMilestone, ProjectPost, ProjectStatus, Reaction, SystemSetting, Team,
-		TeamMember, Template, Upload, User, View, Webhook, WorkflowState, Workspace,
-		WorkspaceMember []ent.Interceptor
+		TeamMember, Template, Upload, UploadBlob, User, View, Webhook, WorkflowState,
+		Workspace, WorkspaceMember []ent.Interceptor
 	}
 )
 

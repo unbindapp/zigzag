@@ -20,7 +20,6 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent"
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
-	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/svg"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
@@ -74,31 +73,27 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 		body = bytes.NewReader(data)
 		width, height = positive(svgWidth), positive(svgHeight)
 	}
-	id := uuid.New()
-	key := input.WorkspaceID.String() + "/" + id.String() + extensionOf(input.FileName)
-
-	counter := &countingReader{reader: io.LimitReader(body, self.cfg.MaxUploadBytes+1)}
-	if err := self.store.Put(ctx, key, counter, contentType); err != nil {
-		return nil, errdefs.NewInternalError(err, "Failed to store the file")
+	data, err := io.ReadAll(io.LimitReader(body, self.cfg.MaxUploadBytes+1))
+	if err != nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Could not read the uploaded file")
 	}
-	if counter.count > self.cfg.MaxUploadBytes {
-		self.discard(ctx, key)
+	if int64(len(data)) > self.cfg.MaxUploadBytes {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The file is larger than the upload limit")
 	}
 
+	id := uuid.New()
 	created, err := self.repo.Upload().Create(ctx, &upload_repo.CreateUploadInput{
 		ID:          id,
 		WorkspaceID: input.WorkspaceID,
 		UploaderID:  userID,
 		FileName:    cleanFileName(input.FileName),
 		ContentType: contentType,
-		SizeBytes:   counter.count,
-		StorageKey:  key,
+		StorageKey:  input.WorkspaceID.String() + "/" + id.String() + extensionOf(input.FileName),
 		Width:       width,
 		Height:      height,
+		Data:        data,
 	})
 	if err != nil {
-		self.discard(ctx, key)
 		return nil, err
 	}
 	return models.TransformUploadEntity(created), nil
@@ -106,7 +101,7 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 
 type OpenedUpload struct {
 	Upload *ent.Upload
-	Body   io.ReadCloser
+	Data   []byte
 	Inline bool
 }
 
@@ -122,33 +117,19 @@ func (self *UploadService) Open(ctx context.Context, userID, uploadID uuid.UUID)
 	if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleViewer, WorkspaceID: upload.WorkspaceID}}); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Upload not found")
 	}
-	body, err := self.store.Open(ctx, upload.StorageKey)
+	data, err := self.repo.Upload().GetData(ctx, upload.ID)
 	if err != nil {
 		return nil, errdefs.NewInternalError(err, "Failed to read the stored file")
 	}
-	if upload.ContentType == svg.ContentType {
-		return openSVG(upload, body)
-	}
-	return &OpenedUpload{Upload: upload, Body: body, Inline: inlineTypes[upload.ContentType]}, nil
+	return &OpenedUpload{Upload: upload, Data: data, Inline: servedInline(upload.ContentType, data)}, nil
 }
 
-type prefixedBody struct {
-	io.Reader
-	io.Closer
-}
-
-func openSVG(upload *ent.Upload, body io.ReadCloser) (*OpenedUpload, error) {
-	data, err := io.ReadAll(io.LimitReader(body, svg.MaxBytes+1))
-	if err != nil {
-		body.Close()
-		return nil, errdefs.NewInternalError(err, "Failed to read the stored file")
+func servedInline(contentType string, data []byte) bool {
+	if contentType != svg.ContentType {
+		return inlineTypes[contentType]
 	}
-	_, _, err = svg.Validate(data)
-	return &OpenedUpload{
-		Upload: upload,
-		Body:   prefixedBody{Reader: io.MultiReader(bytes.NewReader(data), body), Closer: body},
-		Inline: err == nil,
-	}, nil
+	_, _, err := svg.Validate(data)
+	return err == nil
 }
 
 func readSVG(body io.Reader) ([]byte, int, int, error) {
@@ -168,12 +149,6 @@ func positive(value int) *int {
 		return nil
 	}
 	return &value
-}
-
-func (self *UploadService) discard(ctx context.Context, key string) {
-	if err := self.store.Delete(context.WithoutCancel(ctx), key); err != nil {
-		log.Warn("Failed to remove a rejected upload", "key", key, "err", err)
-	}
 }
 
 func detectContentType(header []byte, declared string) string {
@@ -245,15 +220,4 @@ func cleanFileName(fileName string) string {
 		return name[len(name)-255:]
 	}
 	return name
-}
-
-type countingReader struct {
-	reader io.Reader
-	count  int64
-}
-
-func (self *countingReader) Read(p []byte) (int, error) {
-	n, err := self.reader.Read(p)
-	self.count += int64(n)
-	return n, err
 }

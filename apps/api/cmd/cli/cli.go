@@ -14,11 +14,13 @@ import (
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
+	upload_service "github.com/zigzagapp-org/zigzag-api/internal/services/upload"
 )
 
 const minPasswordLength = 8
 
 type cli struct {
+	cfg  *config.Config
 	repo *repositories.Repositories
 	ctx  context.Context
 }
@@ -32,7 +34,7 @@ func newCLI(cfg *config.Config) *cli {
 	if err != nil {
 		log.Fatalf("Failed to create ent client: %v", err)
 	}
-	return &cli{repo: repositories.NewRepositories(db), ctx: permissions_repo.WithSystemCaller(context.Background())}
+	return &cli{cfg: cfg, repo: repositories.NewRepositories(db), ctx: permissions_repo.WithSystemCaller(context.Background())}
 }
 
 func (self *cli) listUsers() {
@@ -105,6 +107,14 @@ func (self *cli) resetPassword(email, password string) {
 		fail("revoking sessions: %v", err)
 	}
 	fmt.Printf("Password updated for %s; existing sessions were signed out\n", user.Email)
+}
+
+func (self *cli) importUploads(dir string) {
+	result, err := upload_service.NewUploadService(self.cfg, self.repo).ImportDir(self.ctx, dir)
+	if err != nil {
+		fail("importing uploads: %v", err)
+	}
+	fmt.Printf("Imported %d uploads, %d files missing, %d failed\n", result.Imported, result.Missing, result.Failed)
 }
 
 func fail(format string, args ...any) {
