@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	notification_repo "github.com/unbindapp/zigzag-api/internal/repositories/notification"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	notification_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/notification"
 )
 
 const notFoundMessage = "Notification not found"

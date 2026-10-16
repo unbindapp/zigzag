@@ -10,10 +10,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/workflowstate"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // Team is the model entity for the Team schema.

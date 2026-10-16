@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/auth"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/apictx"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 const (

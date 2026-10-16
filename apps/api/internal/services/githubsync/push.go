@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
 )
 
 func (self *GithubSyncService) pushIssue(ctx context.Context, issueID uuid.UUID, changes []schema.FieldChange) {

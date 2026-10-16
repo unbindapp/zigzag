@@ -3,11 +3,11 @@ package system_handler
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
-	system_service "github.com/unbindapp/zigzag-api/internal/services/system"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	email_service "github.com/zigzagapp-org/zigzag-api/internal/services/email"
+	system_service "github.com/zigzagapp-org/zigzag-api/internal/services/system"
 )
 
 type SettingsResponse struct {

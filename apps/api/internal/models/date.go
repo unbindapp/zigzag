@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 )
 
 // ParseDate reads YYYY-MM-DD; an empty string is no date.

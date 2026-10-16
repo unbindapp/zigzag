@@ -6,12 +6,12 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/auth"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
-	oauthserver_repo "github.com/unbindapp/zigzag-api/internal/repositories/oauthserver"
-	"github.com/unbindapp/zigzag-api/internal/services/keyaccess"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
+	oauthserver_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/internal/services/keyaccess"
 )
 
 func (self *OAuthServerService) Approve(ctx context.Context, userID uuid.UUID, input *models.ConnectedAppApproveInput) (*models.ConnectedAppRedirectResponse, error) {

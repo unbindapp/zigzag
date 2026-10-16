@@ -1,6 +1,6 @@
 package permissions_repo
 
-import "github.com/unbindapp/zigzag-api/ent/schema"
+import "github.com/zigzagapp-org/zigzag-api/ent/schema"
 
 func roleRank(role schema.WorkspaceRole) int {
 	switch role {

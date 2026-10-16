@@ -10,10 +10,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/oauthex"
-	"github.com/unbindapp/zigzag-api/internal/api/middleware"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
-	oauthserver_service "github.com/unbindapp/zigzag-api/internal/services/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/middleware"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
+	oauthserver_service "github.com/zigzagapp-org/zigzag-api/internal/services/oauthserver"
 )
 
 const (

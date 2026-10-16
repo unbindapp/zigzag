@@ -34,7 +34,7 @@ docker run -d --name zigzag \
   -e DATABASE_URL=postgres://user:pass@host:5432/zigzag \
   -e EXTERNAL_UI_URL=https://issues.example.com \
   -e ENCRYPTION_KEY=$(openssl rand -hex 32) \
-  ghcr.io/unbindapp/zigzag
+  ghcr.io/zigzagapp-org/zigzag
 ```
 
 Open the URL. The first visit creates the first user and workspace.

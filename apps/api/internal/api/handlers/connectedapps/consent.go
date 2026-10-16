@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
 )
 
 type ApproveInput struct {

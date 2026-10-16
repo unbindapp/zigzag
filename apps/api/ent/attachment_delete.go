@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/attachment"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // AttachmentDelete is the builder for deleting a Attachment entity.

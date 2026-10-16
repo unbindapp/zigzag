@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuehistory"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // IssueHistoryCreate is the builder for creating a IssueHistory entity.

@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
 )
 
 func (self *IssueService) teamState(ctx context.Context, team *ent.Team, stateID uuid.UUID) (*ent.WorkflowState, error) {

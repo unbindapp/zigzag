@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
 )
 
 var (

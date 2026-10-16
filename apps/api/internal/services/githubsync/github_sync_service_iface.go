@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 // GithubSyncServiceInterface ...

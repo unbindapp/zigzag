@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 )
 
 func newManager(t *testing.T, issuer string) *TokenManager {

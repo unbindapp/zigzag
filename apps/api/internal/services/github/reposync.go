@@ -6,12 +6,12 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	github_repo "github.com/unbindapp/zigzag-api/internal/repositories/github"
-	project_service "github.com/unbindapp/zigzag-api/internal/services/project"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	github_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/github"
+	project_service "github.com/zigzagapp-org/zigzag-api/internal/services/project"
 )
 
 const (

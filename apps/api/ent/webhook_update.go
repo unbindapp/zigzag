@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/webhook"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // WebhookUpdate is the builder for updating Webhook entities.

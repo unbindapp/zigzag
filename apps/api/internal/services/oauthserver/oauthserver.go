@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 )
 
 const (

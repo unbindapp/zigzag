@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubrepository"
 )
 
 func (self *GithubRepository) GetByWorkspace(ctx context.Context, workspaceID uuid.UUID) (*ent.GithubIntegration, error) {

@@ -3,10 +3,10 @@ package teams_handler
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	team_service "github.com/unbindapp/zigzag-api/internal/services/team"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	team_service "github.com/zigzagapp-org/zigzag-api/internal/services/team"
 )
 
 type ListInput struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 func TestValidate(t *testing.T) {

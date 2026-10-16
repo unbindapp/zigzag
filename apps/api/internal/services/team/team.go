@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	cycle_service "github.com/unbindapp/zigzag-api/internal/services/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	cycle_service "github.com/zigzagapp-org/zigzag-api/internal/services/cycle"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i TeamServiceInterface -p team_service -s TeamService -o team_service_iface.go

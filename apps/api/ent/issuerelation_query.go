@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuerelation"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuerelation"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // IssueRelationQuery is the builder for querying IssueRelation entities.

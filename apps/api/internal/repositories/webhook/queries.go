@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/webhook"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/webhook"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 type CreateWebhookInput struct {

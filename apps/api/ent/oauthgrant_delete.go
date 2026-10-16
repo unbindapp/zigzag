@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/oauthgrant"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthgrant"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // OAuthGrantDelete is the builder for deleting a OAuthGrant entity.

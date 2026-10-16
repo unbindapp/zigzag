@@ -9,7 +9,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/humatest"
-	"github.com/unbindapp/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/config"
 )
 
 func newLimitedHandler(limit int, period time.Duration) (http.Handler, *RateLimiter) {

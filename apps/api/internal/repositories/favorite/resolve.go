@@ -5,15 +5,15 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
-	"github.com/unbindapp/zigzag-api/ent/document"
-	"github.com/unbindapp/zigzag-api/ent/initiative"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/label"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/view"
+	"github.com/zigzagapp-org/zigzag-api/ent/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent/document"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiative"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/label"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/view"
 )
 
 type ResolvedEntity struct {

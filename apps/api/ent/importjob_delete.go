@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/importjob"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/importjob"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // ImportJobDelete is the builder for deleting a ImportJob entity.

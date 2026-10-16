@@ -9,12 +9,12 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	upload_service "github.com/unbindapp/zigzag-api/internal/services/upload"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	upload_service "github.com/zigzagapp-org/zigzag-api/internal/services/upload"
 )
 
 const (

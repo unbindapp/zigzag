@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
-	"github.com/unbindapp/zigzag-api/ent/favorite"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/cyclescopehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/favorite"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 type CreateCycleInput struct {

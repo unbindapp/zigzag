@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuerelation"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuerelation"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 // IssueRelation is the model entity for the IssueRelation schema.

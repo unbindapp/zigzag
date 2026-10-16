@@ -5,13 +5,13 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/importers/linear"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	importjob_repo "github.com/unbindapp/zigzag-api/internal/repositories/importjob"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/importers/linear"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	importjob_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/importjob"
 )
 
 const maxExportIssues = 50000

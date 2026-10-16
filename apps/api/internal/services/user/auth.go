@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 )
 
 var ErrInvalidCredentials = errors.New("invalid email or password")

@@ -6,12 +6,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	comment_repo "github.com/unbindapp/zigzag-api/internal/repositories/comment"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	comment_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/comment"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 func (suite *CommentServiceSuite) TestCreateFromGithubNeedsTheSystemCaller() {

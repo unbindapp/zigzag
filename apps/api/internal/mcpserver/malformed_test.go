@@ -10,7 +10,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
 )
 
 func (suite *EndToEndSuite) send(method, path string, query url.Values, body []byte) (int, string) {

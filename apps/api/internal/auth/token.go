@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 )
 
 const (

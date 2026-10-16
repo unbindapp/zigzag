@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	comment_service "github.com/unbindapp/zigzag-api/internal/services/comment"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	comment_service "github.com/zigzagapp-org/zigzag-api/internal/services/comment"
 )
 
 const commentedLabel = "Commented on GitHub"

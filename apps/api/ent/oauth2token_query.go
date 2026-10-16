@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/oauth2token"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauth2token"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // Oauth2TokenQuery is the builder for querying Oauth2Token entities.

@@ -5,8 +5,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/projectlink"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectlink"
 )
 
 func (self *ProjectRepository) GetLink(ctx context.Context, linkID uuid.UUID) (*ent.ProjectLink, error) {

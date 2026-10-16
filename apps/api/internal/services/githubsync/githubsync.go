@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/crypto"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 )
 
 var errNoToken = errors.New("no GitHub token; add one to send changes made in Zigzag back to GitHub")

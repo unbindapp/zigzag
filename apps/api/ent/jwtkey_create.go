@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/jwtkey"
+	"github.com/zigzagapp-org/zigzag-api/ent/jwtkey"
 )
 
 // JWTKeyCreate is the builder for creating a JWTKey entity.

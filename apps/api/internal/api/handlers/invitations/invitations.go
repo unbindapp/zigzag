@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	workspace_service "github.com/unbindapp/zigzag-api/internal/services/workspace"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	workspace_service "github.com/zigzagapp-org/zigzag-api/internal/services/workspace"
 )
 
 type HandlerGroup struct {

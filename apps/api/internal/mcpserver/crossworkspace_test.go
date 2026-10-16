@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
-	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
+	workspace_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/workspace"
 )
 
 func (suite *EndToEndSuite) callError(token, tool string, args map[string]any) (bool, string) {

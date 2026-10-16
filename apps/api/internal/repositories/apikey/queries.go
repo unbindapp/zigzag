@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/apikey"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/apikey"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func (self *APIKeyRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.APIKey, error) {

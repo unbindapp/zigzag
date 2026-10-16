@@ -6,9 +6,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/oauthclient"
-	"github.com/unbindapp/zigzag-api/ent/oauthgrant"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthclient"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthgrant"
 )
 
 type CreateClientInput struct {

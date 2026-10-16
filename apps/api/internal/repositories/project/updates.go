@@ -6,11 +6,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/projectpost"
-	"github.com/unbindapp/zigzag-api/ent/reaction"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectpost"
+	"github.com/zigzagapp-org/zigzag-api/ent/reaction"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func withUpdateEdges(q *ent.ProjectPostQuery) *ent.ProjectPostQuery {

@@ -9,7 +9,7 @@ import (
 	_ "image/png"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
 )
 
 // UploadServiceInterface ...

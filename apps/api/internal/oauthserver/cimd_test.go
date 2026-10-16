@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/cache"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/cache"
 )
 
 const claudeCodeDocument = `{

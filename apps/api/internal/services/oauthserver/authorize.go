@@ -3,8 +3,8 @@ package oauthserver_service
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
 )
 
 const (

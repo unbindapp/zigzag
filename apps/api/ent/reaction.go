@@ -10,11 +10,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/comment"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/projectpost"
-	"github.com/unbindapp/zigzag-api/ent/reaction"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/comment"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectpost"
+	"github.com/zigzagapp-org/zigzag-api/ent/reaction"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // Reaction is the model entity for the Reaction schema.

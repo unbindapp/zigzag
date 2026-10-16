@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/unbindapp/zigzag-api/ent/jwtkey"
+	"github.com/zigzagapp-org/zigzag-api/ent/jwtkey"
 )
 
 // JWTKey is the model entity for the JWTKey schema.

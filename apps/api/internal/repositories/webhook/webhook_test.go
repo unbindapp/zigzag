@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
 )
 
 type WebhookRepositorySuite struct {

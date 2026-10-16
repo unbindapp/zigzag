@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
-	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent/cyclescopehistory"
 )
 
 // CycleScopeHistoryCreate is the builder for creating a CycleScopeHistory entity.

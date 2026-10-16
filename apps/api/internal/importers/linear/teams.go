@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
 )
 
 type stateRef struct {

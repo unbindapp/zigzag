@@ -16,13 +16,13 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	upload_repo "github.com/unbindapp/zigzag-api/internal/repositories/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
 )
 
 const headerBytes = 256 << 10

@@ -7,17 +7,17 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
-	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
+	workspace_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/workspace"
 )
 
 const minPasswordLength = 8

@@ -3,8 +3,8 @@ package apictx
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 func HistorySource(ctx context.Context) schema.HistorySource {

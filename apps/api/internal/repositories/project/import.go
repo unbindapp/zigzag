@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/projectmilestone"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectmilestone"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 const importBatchSize = 500

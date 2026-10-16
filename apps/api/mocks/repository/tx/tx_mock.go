@@ -6,7 +6,7 @@ package mocks_repository_tx
 
 import (
 	mock "github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 )
 
 // NewTxMock creates a new instance of TxMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

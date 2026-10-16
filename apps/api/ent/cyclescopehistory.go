@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
-	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent/cyclescopehistory"
 )
 
 // CycleScopeHistory is the model entity for the CycleScopeHistory schema.

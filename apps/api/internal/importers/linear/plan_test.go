@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
 )
 
 var now = time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)

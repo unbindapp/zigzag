@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 // APIKeyRepositoryInterface ...

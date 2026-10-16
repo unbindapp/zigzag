@@ -11,11 +11,11 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/internal/api/middleware"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/router"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/middleware"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/router"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
 )
 
 func realAPI() huma.API {

@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/initiative"
-	"github.com/unbindapp/zigzag-api/ent/initiativepost"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiative"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiativepost"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // InitiativePostQuery is the builder for querying InitiativePost entities.

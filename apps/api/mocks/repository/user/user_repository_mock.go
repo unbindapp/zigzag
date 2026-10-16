@@ -10,10 +10,10 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/internal/repositories"
-	"github.com/unbindapp/zigzag-api/internal/repositories/user"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 )
 
 // NewUserRepositoryMock creates a new instance of UserRepositoryMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

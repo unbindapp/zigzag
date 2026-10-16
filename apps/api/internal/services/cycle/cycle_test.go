@@ -8,14 +8,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/services"
-	mocks_services_webhook "github.com/unbindapp/zigzag-api/mocks/services/webhook"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	cycle_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/cycle"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/services"
+	mocks_services_webhook "github.com/zigzagapp-org/zigzag-api/mocks/services/webhook"
 )
 
 type CycleServiceSuite struct {

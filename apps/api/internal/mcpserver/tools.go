@@ -8,9 +8,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	entSchema "github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	entSchema "github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 const (

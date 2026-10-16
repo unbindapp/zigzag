@@ -5,11 +5,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
-	"github.com/unbindapp/zigzag-api/ent/workspacemember"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspacemember"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func (self *WorkspaceRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.Workspace, error) {

@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/attachment"
-	"github.com/unbindapp/zigzag-api/ent/upload"
-	"github.com/unbindapp/zigzag-api/ent/user"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
+	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // UploadCreate is the builder for creating a Upload entity.

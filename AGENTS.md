@@ -14,7 +14,7 @@ The UI. A React app using Vite. Tanstack Router, Tanstack Query, Tanstack Forms,
 
 ### 2- apps/api
 
-The server built with Go. Huma on chi, ent for the database, goose for migrations. The UI interacts with this server to manage workspaces, teams, issues, projects, cycles, labels, notifications and everything else. It also serves the static UI and the MCP server. Module `github.com/unbindapp/zigzag-api`.
+The server built with Go. Huma on chi, ent for the database, goose for migrations. The UI interacts with this server to manage workspaces, teams, issues, projects, cycles, labels, notifications and everything else. It also serves the static UI and the MCP server. Module `github.com/zigzagapp-org/zigzag-api`.
 
 ### Conventions that are not in the code
 

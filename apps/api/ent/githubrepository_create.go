@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubrepository"
 )
 
 // GithubRepositoryCreate is the builder for creating a GithubRepository entity.

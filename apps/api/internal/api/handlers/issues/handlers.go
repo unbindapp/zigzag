@@ -5,11 +5,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	comment_service "github.com/unbindapp/zigzag-api/internal/services/comment"
-	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	comment_service "github.com/zigzagapp-org/zigzag-api/internal/services/comment"
+	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
 )
 
 type ListInput struct {

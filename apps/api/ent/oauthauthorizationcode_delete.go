@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/oauthauthorizationcode"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthauthorizationcode"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // OAuthAuthorizationCodeDelete is the builder for deleting a OAuthAuthorizationCode entity.

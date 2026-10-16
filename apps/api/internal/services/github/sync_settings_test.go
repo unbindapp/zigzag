@@ -6,16 +6,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	github_repo "github.com/unbindapp/zigzag-api/internal/repositories/github"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	comment_service "github.com/unbindapp/zigzag-api/internal/services/comment"
-	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
-	project_service "github.com/unbindapp/zigzag-api/internal/services/project"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	github_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/github"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	comment_service "github.com/zigzagapp-org/zigzag-api/internal/services/comment"
+	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
+	project_service "github.com/zigzagapp-org/zigzag-api/internal/services/project"
 )
 
 func (suite *GithubSyncSuite) admin(result error) {

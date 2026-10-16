@@ -8,8 +8,8 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
 )
 
 func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*rsa.PrivateKey, []byte, error) {

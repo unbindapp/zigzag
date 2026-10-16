@@ -3,10 +3,10 @@ package cycles_handler
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	cycle_service "github.com/unbindapp/zigzag-api/internal/services/cycle"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	cycle_service "github.com/zigzagapp-org/zigzag-api/internal/services/cycle"
 )
 
 type ListInput struct {

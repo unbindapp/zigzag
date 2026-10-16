@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 // ID filters vertices based on their ID field.

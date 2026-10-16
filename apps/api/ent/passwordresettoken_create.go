@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/passwordresettoken"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/passwordresettoken"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // PasswordResetTokenCreate is the builder for creating a PasswordResetToken entity.

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 type ImportedCycle struct {

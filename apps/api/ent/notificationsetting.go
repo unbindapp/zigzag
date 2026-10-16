@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/notificationsetting"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/notificationsetting"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // NotificationSetting is the model entity for the NotificationSetting schema.

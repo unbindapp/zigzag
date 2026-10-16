@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/unbindapp/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
 )
 
 func (self *Middleware) CSRF(ctx huma.Context, next func(huma.Context)) {

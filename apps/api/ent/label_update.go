@@ -12,12 +12,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/label"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/label"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // LabelUpdate is the builder for updating Label entities.

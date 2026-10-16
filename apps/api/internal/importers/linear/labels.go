@@ -2,8 +2,8 @@ package linear
 
 import (
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	label_repo "github.com/unbindapp/zigzag-api/internal/repositories/label"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	label_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/label"
 )
 
 const defaultLabelColor = "#95a2b3"

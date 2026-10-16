@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	view_repo "github.com/unbindapp/zigzag-api/internal/repositories/view"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	view_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/view"
 )
 
 type CreateViewInput struct {

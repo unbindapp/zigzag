@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
 )
 
 const defaultLimit = 10

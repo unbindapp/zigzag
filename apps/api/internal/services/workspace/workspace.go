@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	email_service "github.com/zigzagapp-org/zigzag-api/internal/services/email"
 )
 
 const invitationTTL = 7 * 24 * time.Hour

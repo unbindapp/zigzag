@@ -12,14 +12,14 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/document"
-	"github.com/unbindapp/zigzag-api/ent/initiative"
-	"github.com/unbindapp/zigzag-api/ent/initiativepost"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/user"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/document"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiative"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiativepost"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // InitiativeUpdate is the builder for updating Initiative entities.

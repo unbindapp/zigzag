@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/apictx"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
 )
 
 type dispatcher struct {

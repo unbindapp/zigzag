@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/projectstatus"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectstatus"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // ProjectStatusCreate is the builder for creating a ProjectStatus entity.

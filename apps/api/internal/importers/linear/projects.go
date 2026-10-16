@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
-	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
-	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
+	cycle_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/cycle"
+	project_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/project"
 )
 
 const (

@@ -5,15 +5,15 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	favorite_repo "github.com/unbindapp/zigzag-api/internal/repositories/favorite"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	favorite_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/favorite"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i FavoriteServiceInterface -p favorite_service -s FavoriteService -o favorite_service_iface.go

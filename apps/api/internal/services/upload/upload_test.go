@@ -15,14 +15,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/storage"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	upload_repo "github.com/unbindapp/zigzag-api/internal/repositories/upload"
-	"github.com/unbindapp/zigzag-api/internal/services"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/storage"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
+	"github.com/zigzagapp-org/zigzag-api/internal/services"
 )
 
 type UploadServiceSuite struct {

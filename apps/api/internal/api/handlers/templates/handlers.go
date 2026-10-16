@@ -3,10 +3,10 @@ package templates_handler
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	template_service "github.com/unbindapp/zigzag-api/internal/services/template"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	template_service "github.com/zigzagapp-org/zigzag-api/internal/services/template"
 )
 
 type ListInput struct {

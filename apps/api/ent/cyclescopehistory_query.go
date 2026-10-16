@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
-	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/cycle"
+	"github.com/zigzagapp-org/zigzag-api/ent/cyclescopehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // CycleScopeHistoryQuery is the builder for querying CycleScopeHistory entities.

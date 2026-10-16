@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/apictx"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 func mcpContext(h *apiKeyHarness, access permissions_repo.APIKeyAccess) context.Context {

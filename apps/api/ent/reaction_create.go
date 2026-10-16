@@ -13,11 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/comment"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/projectpost"
-	"github.com/unbindapp/zigzag-api/ent/reaction"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/comment"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectpost"
+	"github.com/zigzagapp-org/zigzag-api/ent/reaction"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // ReactionCreate is the builder for creating a Reaction entity.

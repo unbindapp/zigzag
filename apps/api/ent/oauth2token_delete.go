@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/oauth2token"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauth2token"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // Oauth2TokenDelete is the builder for deleting a Oauth2Token entity.

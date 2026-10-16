@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/unbindapp/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
 )
 
 func TestOAuthTokensRefusedOnREST(t *testing.T) {

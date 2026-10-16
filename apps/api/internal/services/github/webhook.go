@@ -7,13 +7,13 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
 )
 
 const (

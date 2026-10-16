@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	system_repo "github.com/unbindapp/zigzag-api/internal/repositories/system"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	system_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/system"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i SystemServiceInterface -p system_service -s SystemService -o system_service_iface.go

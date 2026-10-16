@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"entgo.io/ent/dialect"
-	"github.com/unbindapp/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/config"
 )
 
 type SqlDBConn interface {

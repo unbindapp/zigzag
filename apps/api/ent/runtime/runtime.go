@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/unbindapp/zigzag-api/ent/runtime.go
+// The schema-stitching logic is generated in github.com/zigzagapp-org/zigzag-api/ent/runtime.go
 
 const (
 	Version = "v0.14.6"                                         // Version of ent codegen.

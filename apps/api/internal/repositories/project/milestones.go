@@ -6,9 +6,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/projectmilestone"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectmilestone"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func (self *ProjectRepository) ListMilestones(ctx context.Context, projectID uuid.UUID) ([]*ent.ProjectMilestone, error) {

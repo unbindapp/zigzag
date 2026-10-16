@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/githubrepository"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubrepository"
 )
 
 // GithubRepository is the model entity for the GithubRepository schema.

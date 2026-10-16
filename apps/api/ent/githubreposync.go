@@ -11,11 +11,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/githubreposync"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubreposync"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
 )
 
 // GithubRepoSync is the model entity for the GithubRepoSync schema.

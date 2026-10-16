@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 )
 
 // The APIKeyFunc type is an adapter to allow the use of ordinary

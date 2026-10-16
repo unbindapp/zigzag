@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/auth"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	apikey_repo "github.com/unbindapp/zigzag-api/internal/repositories/apikey"
-	"github.com/unbindapp/zigzag-api/internal/services/keyaccess"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	apikey_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/apikey"
+	"github.com/zigzagapp-org/zigzag-api/internal/services/keyaccess"
 )
 
 func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID, input *models.APIKeyCreateInput) (*models.APIKeyCreatedResponse, error) {

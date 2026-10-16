@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
 )
 
 // LabelServiceInterface ...

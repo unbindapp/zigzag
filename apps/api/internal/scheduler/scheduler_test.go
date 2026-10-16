@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 type recorder struct {

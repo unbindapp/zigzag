@@ -13,9 +13,9 @@ import (
 	_ "github.com/ncruces/go-sqlite3/driver"
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/enttest"
-	entmigrate "github.com/unbindapp/zigzag-api/ent/migrate"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/enttest"
+	entmigrate "github.com/zigzagapp-org/zigzag-api/ent/migrate"
 )
 
 const PostgresURLEnv = "ZIGZAG_TEST_DATABASE_URL"

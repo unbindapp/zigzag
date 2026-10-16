@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/apikey"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/apikey"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // APIKeyDelete is the builder for deleting a APIKey entity.

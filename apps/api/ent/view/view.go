@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 const (

@@ -5,11 +5,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/workflowstate"
-	"github.com/unbindapp/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
 )
 
 func (self *ProjectRepository) IssueTotals(ctx context.Context, projectIDs []uuid.UUID) (map[uuid.UUID]*models.IssueTotals, error) {

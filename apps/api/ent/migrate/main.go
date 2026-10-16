@@ -19,7 +19,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql/schema"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
-	"github.com/unbindapp/zigzag-api/ent/migrate"
+	"github.com/zigzagapp-org/zigzag-api/ent/migrate"
 )
 
 func regenerateChecksum(directory *sqltool.GooseDir) error {

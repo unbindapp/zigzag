@@ -5,12 +5,12 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/teammember"
-	"github.com/unbindapp/zigzag-api/ent/workflowstate"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
+	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 const importBatchSize = 500

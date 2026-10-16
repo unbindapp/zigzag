@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 )
 
 const maxUserListLimit = 250

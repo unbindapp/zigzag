@@ -5,13 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 func (suite *IssueServiceSuite) githubLink(state *ent.WorkflowState) *GithubLink {

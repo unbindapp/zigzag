@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/oauthclient"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthclient"
 )
 
 // OAuthClientCreate is the builder for creating a OAuthClient entity.

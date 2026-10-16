@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/jwtkey"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/jwtkey"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // JWTKeyUpdate is the builder for updating JWTKey entities.

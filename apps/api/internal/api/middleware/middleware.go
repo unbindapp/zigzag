@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/internal/auth"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
 )
 
 type Middleware struct {

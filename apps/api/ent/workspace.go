@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/upload"
-	"github.com/unbindapp/zigzag-api/ent/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/upload"
+	"github.com/zigzagapp-org/zigzag-api/ent/workspace"
 )
 
 // Workspace is the model entity for the Workspace schema.

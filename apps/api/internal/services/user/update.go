@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/user"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 )
 
 type UpdateMeInput struct {

@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/workflowstate"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
 )
 
 type IssueRepositorySuite struct {

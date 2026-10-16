@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
 )
 
 type OIDCHandler struct {

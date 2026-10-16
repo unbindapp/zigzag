@@ -1,4 +1,4 @@
-module github.com/unbindapp/zigzag-api
+module github.com/zigzagapp-org/zigzag-api
 
 go 1.27.2
 

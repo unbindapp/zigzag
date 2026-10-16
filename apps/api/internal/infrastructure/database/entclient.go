@@ -5,9 +5,9 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 	// without it every insert panics at runtime: schema defaults are registered there
-	_ "github.com/unbindapp/zigzag-api/ent/runtime"
+	_ "github.com/zigzagapp-org/zigzag-api/ent/runtime"
 )
 
 func NewEntClient(connInfo SqlDBConn) (*ent.Client, *sql.DB, error) {

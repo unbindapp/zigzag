@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/oauthclient"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthclient"
 )
 
 // OAuthClient is the model entity for the OAuthClient schema.

@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 func (suite *GithubRepositorySuite) syncedRepo() (*ent.GithubRepoSync, *ent.Issue) {
@@ -65,7 +65,7 @@ func (suite *GithubRepositorySuite) TestOnlyOneBackfillRunsAtATime() {
 func (suite *GithubRepositorySuite) TestIssueLinksOnlyMoveForwardAndCount() {
 	created, issue := suite.syncedRepo()
 	first := time.Date(2026, 10, 16, 10, 0, 0, 0, time.UTC)
-	link, err := suite.repo.CreateIssueLink(suite.Ctx, nil, &IssueLinkInput{IssueID: issue.ID, RepoSyncID: created.ID, Number: 12, NodeID: "I_12", HTMLURL: "https://github.com/unbindapp/zigzag/issues/12", GithubUpdatedAt: first})
+	link, err := suite.repo.CreateIssueLink(suite.Ctx, nil, &IssueLinkInput{IssueID: issue.ID, RepoSyncID: created.ID, Number: 12, NodeID: "I_12", HTMLURL: "https://github.com/zigzagapp-org/zigzag/issues/12", GithubUpdatedAt: first})
 	suite.Require().NoError(err)
 	suite.Require().NoError(suite.repo.RecordInbound(suite.Ctx, link.ID, first.Add(-time.Hour)))
 	found, err := suite.repo.IssueLinkByNodeID(suite.Ctx, "I_12")

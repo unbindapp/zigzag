@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
 )
 
 type CommentRepositorySuite struct {

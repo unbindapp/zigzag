@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
 )
 
 type contextKey struct {

@@ -1,8 +1,8 @@
 package user_repo
 
 import (
-	"github.com/unbindapp/zigzag-api/ent"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i UserRepositoryInterface -p user_repo -s UserRepository -o user_repository_iface.go

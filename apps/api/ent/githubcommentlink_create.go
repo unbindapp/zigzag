@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
-	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubcommentlink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubissuelink"
 )
 
 // GithubCommentLinkCreate is the builder for creating a GithubCommentLink entity.

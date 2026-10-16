@@ -6,9 +6,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/oauthserver"
 )
 
 // OAuthServerServiceInterface ...

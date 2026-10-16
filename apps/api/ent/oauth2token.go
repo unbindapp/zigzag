@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/oauth2token"
-	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauth2token"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
 )
 
 // Oauth2Token is the model entity for the Oauth2Token schema.

@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
-	"github.com/unbindapp/zigzag-api/ent/githubintegration"
-	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
-	"github.com/unbindapp/zigzag-api/ent/githubreposync"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubcommentlink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubintegration"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubissuelink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubreposync"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func (self *GithubRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.GithubIntegration, error) {

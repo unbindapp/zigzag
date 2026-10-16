@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubissuelink"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // GithubIssueLinkDelete is the builder for deleting a GithubIssueLink entity.

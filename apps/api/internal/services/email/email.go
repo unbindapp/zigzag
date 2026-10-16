@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/crypto"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	system_repo "github.com/unbindapp/zigzag-api/internal/repositories/system"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	system_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/system"
 )
 
 const asyncSendTimeout = 20 * time.Second

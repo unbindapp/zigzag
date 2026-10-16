@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent"
 	// required by schema hooks.
-	_ "github.com/unbindapp/zigzag-api/ent/runtime"
+	_ "github.com/zigzagapp-org/zigzag-api/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/unbindapp/zigzag-api/ent/migrate"
+	"github.com/zigzagapp-org/zigzag-api/ent/migrate"
 )
 
 type (

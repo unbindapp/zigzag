@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
 )
 
 const (

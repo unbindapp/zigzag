@@ -5,17 +5,17 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/attachment"
-	"github.com/unbindapp/zigzag-api/ent/comment"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuehistory"
-	"github.com/unbindapp/zigzag-api/ent/issuerelation"
-	"github.com/unbindapp/zigzag-api/ent/projectpost"
-	"github.com/unbindapp/zigzag-api/ent/reaction"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/ent/user"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
+	"github.com/zigzagapp-org/zigzag-api/ent/comment"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuehistory"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuerelation"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectpost"
+	"github.com/zigzagapp-org/zigzag-api/ent/reaction"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent/user"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func (self *IssueRepository) CreateHistory(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, actorID *uuid.UUID, source schema.HistorySource, changes []schema.FieldChange) error {

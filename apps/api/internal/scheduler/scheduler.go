@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 )
 
 type Job struct {

@@ -6,7 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/unbindapp/zigzag-api/ent/schema/mixin"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema/mixin"
 )
 
 type OAuthClient struct {

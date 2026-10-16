@@ -5,9 +5,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/initiativepost"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/initiativepost"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 func (self *InitiativeRepository) ListUpdates(ctx context.Context, initiativeID uuid.UUID) ([]*ent.InitiativePost, error) {

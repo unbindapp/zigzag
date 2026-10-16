@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
 )
 
 type JWTKeySuite struct {

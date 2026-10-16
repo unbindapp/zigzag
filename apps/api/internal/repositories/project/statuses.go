@@ -6,11 +6,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/project"
-	"github.com/unbindapp/zigzag-api/ent/projectstatus"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/project"
+	"github.com/zigzagapp-org/zigzag-api/ent/projectstatus"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 func orderStatuses(s *sql.Selector) {

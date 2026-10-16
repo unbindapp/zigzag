@@ -4,7 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/schema/mixin"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema/mixin"
 )
 
 type SystemSetting struct {

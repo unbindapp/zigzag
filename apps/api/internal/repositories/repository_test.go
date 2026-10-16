@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	mockRepoTx "github.com/unbindapp/zigzag-api/mocks/repository/tx"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	mockRepoTx "github.com/zigzagapp-org/zigzag-api/mocks/repository/tx"
 )
 
 type RepositorySuite struct {

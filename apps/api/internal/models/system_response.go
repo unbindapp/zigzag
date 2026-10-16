@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 )
 
 type EmailSettingsResponse struct {

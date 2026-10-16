@@ -10,12 +10,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/crypto"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	"github.com/unbindapp/zigzag-api/internal/services"
-	mocks_integrations_github "github.com/unbindapp/zigzag-api/mocks/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	"github.com/zigzagapp-org/zigzag-api/internal/services"
+	mocks_integrations_github "github.com/zigzagapp-org/zigzag-api/mocks/integrations/github"
 )
 
 const (

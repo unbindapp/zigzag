@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/team"
-	"github.com/unbindapp/zigzag-api/ent/teammember"
-	"github.com/unbindapp/zigzag-api/ent/workflowstate"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/teammember"
+	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
 )
 
 type WorkspaceDatabaseSuite struct {

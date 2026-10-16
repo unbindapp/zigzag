@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositorytest"
 )
 
 func TestIssueRepositoryOnPostgres(t *testing.T) {

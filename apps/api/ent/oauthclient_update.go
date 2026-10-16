@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/unbindapp/zigzag-api/ent/oauthclient"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/oauthclient"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // OAuthClientUpdate is the builder for updating OAuthClient entities.

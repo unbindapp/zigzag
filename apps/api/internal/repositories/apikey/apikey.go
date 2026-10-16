@@ -1,8 +1,8 @@
 package apikey_repo
 
 import (
-	"github.com/unbindapp/zigzag-api/ent"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i APIKeyRepositoryInterface -p apikey_repo -s APIKeyRepository -o apikey_repository_iface.go

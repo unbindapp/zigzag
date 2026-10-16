@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
 )
 
 func (self *APIKeyService) List(ctx context.Context, requesterUserID uuid.UUID, input *models.APIKeyListInput) ([]*models.APIKeyResponse, error) {

@@ -7,7 +7,7 @@ import (
 	_ "github.com/ncruces/go-sqlite3/driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unbindapp/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/config"
 )
 
 type sqliteConn struct{}

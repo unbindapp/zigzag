@@ -6,7 +6,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema/mixin"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema/mixin"
 )
 
 type GithubCommentLink struct {

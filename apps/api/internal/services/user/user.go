@@ -3,9 +3,9 @@ package user_service
 import (
 	"time"
 
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	email_service "github.com/unbindapp/zigzag-api/internal/services/email"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	email_service "github.com/zigzagapp-org/zigzag-api/internal/services/email"
 )
 
 const (

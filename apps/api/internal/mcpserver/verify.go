@@ -9,12 +9,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/modelcontextprotocol/go-sdk/auth"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
-	zigzag_auth "github.com/unbindapp/zigzag-api/internal/auth"
-	"github.com/unbindapp/zigzag-api/internal/common/log"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	oauthserver_service "github.com/unbindapp/zigzag-api/internal/services/oauthserver"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/apictx"
+	zigzag_auth "github.com/zigzagapp-org/zigzag-api/internal/auth"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	oauthserver_service "github.com/zigzagapp-org/zigzag-api/internal/services/oauthserver"
 )
 
 const (

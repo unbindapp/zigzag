@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
-	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubcommentlink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubissuelink"
 )
 
 // GithubCommentLink is the model entity for the GithubCommentLink schema.

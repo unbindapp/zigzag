@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuemove"
-	"github.com/unbindapp/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuemove"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
 )
 
 // IssueMoveCreate is the builder for creating a IssueMove entity.

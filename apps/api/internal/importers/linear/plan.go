@@ -7,16 +7,16 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	comment_repo "github.com/unbindapp/zigzag-api/internal/repositories/comment"
-	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
-	label_repo "github.com/unbindapp/zigzag-api/internal/repositories/label"
-	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
-	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	comment_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/comment"
+	cycle_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/cycle"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
+	label_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/label"
+	project_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/project"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
+	workspace_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/workspace"
 )
 
 const Source = string(schema.ImportSourceLinear)

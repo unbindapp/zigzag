@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/config"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/crypto"
-	"github.com/unbindapp/zigzag-api/internal/integrations/github"
-	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
-	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
-	comment_service "github.com/unbindapp/zigzag-api/internal/services/comment"
-	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
-	label_service "github.com/unbindapp/zigzag-api/internal/services/label"
-	project_service "github.com/unbindapp/zigzag-api/internal/services/project"
+	"github.com/zigzagapp-org/zigzag-api/config"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
+	"github.com/zigzagapp-org/zigzag-api/internal/integrations/github"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	comment_service "github.com/zigzagapp-org/zigzag-api/internal/services/comment"
+	issue_service "github.com/zigzagapp-org/zigzag-api/internal/services/issue"
+	label_service "github.com/zigzagapp-org/zigzag-api/internal/services/label"
+	project_service "github.com/zigzagapp-org/zigzag-api/internal/services/project"
 )
 
 type Dependencies struct {

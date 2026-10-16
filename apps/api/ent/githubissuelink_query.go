@@ -13,11 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/githubcommentlink"
-	"github.com/unbindapp/zigzag-api/ent/githubissuelink"
-	"github.com/unbindapp/zigzag-api/ent/githubreposync"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/predicate"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubcommentlink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubissuelink"
+	"github.com/zigzagapp-org/zigzag-api/ent/githubreposync"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/predicate"
 )
 
 // GithubIssueLinkQuery is the builder for querying GithubIssueLink entities.

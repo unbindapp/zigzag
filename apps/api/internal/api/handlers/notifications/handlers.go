@@ -3,10 +3,10 @@ package notifications_handler
 import (
 	"context"
 
-	"github.com/unbindapp/zigzag-api/internal/api/oapi"
-	"github.com/unbindapp/zigzag-api/internal/api/server"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	notification_service "github.com/unbindapp/zigzag-api/internal/services/notification"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/oapi"
+	"github.com/zigzagapp-org/zigzag-api/internal/api/server"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	notification_service "github.com/zigzagapp-org/zigzag-api/internal/services/notification"
 )
 
 type ListInput struct {

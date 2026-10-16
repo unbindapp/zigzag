@@ -2,9 +2,9 @@ package linear
 
 import (
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	comment_repo "github.com/unbindapp/zigzag-api/internal/repositories/comment"
-	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	comment_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/comment"
+	issue_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/issue"
 )
 
 func (self *planner) planComments() {

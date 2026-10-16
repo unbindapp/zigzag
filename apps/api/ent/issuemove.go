@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/issue"
-	"github.com/unbindapp/zigzag-api/ent/issuemove"
-	"github.com/unbindapp/zigzag-api/ent/team"
+	"github.com/zigzagapp-org/zigzag-api/ent/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuemove"
+	"github.com/zigzagapp-org/zigzag-api/ent/team"
 )
 
 // IssueMove is the model entity for the IssueMove schema.

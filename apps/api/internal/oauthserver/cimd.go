@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/cache"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/cache"
 )
 
 const (

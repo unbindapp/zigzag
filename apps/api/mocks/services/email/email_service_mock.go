@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/services/email"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/services/email"
 )
 
 // NewEmailServiceMock creates a new instance of EmailServiceMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

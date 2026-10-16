@@ -9,10 +9,10 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/models"
-	"github.com/unbindapp/zigzag-api/internal/services/issue"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/models"
+	"github.com/zigzagapp-org/zigzag-api/internal/services/issue"
 )
 
 // NewIssueServiceMock creates a new instance of IssueServiceMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

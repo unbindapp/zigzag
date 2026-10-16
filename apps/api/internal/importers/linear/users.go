@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
-	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
-	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
-	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
+	"github.com/zigzagapp-org/zigzag-api/internal/common/names"
+	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
+	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
+	workspace_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/workspace"
 )
 
 const (

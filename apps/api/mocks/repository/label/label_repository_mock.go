@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/internal/repositories"
-	"github.com/unbindapp/zigzag-api/internal/repositories/label"
+	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	"github.com/zigzagapp-org/zigzag-api/internal/repositories/label"
 )
 
 // NewLabelRepositoryMock creates a new instance of LabelRepositoryMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
