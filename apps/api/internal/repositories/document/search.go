@@ -12,7 +12,7 @@ import (
 
 const searchCandidates = 200
 
-func (self *DocumentRepository) Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error) {
+func (self *DocumentRepository) Search(ctx context.Context, workspaceIDs []uuid.UUID, visibleTeamIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error) {
 	query = strings.TrimSpace(query)
 	if query == "" || len(workspaceIDs) == 0 || limit <= 0 {
 		return []*ent.Document{}, nil
@@ -20,6 +20,7 @@ func (self *DocumentRepository) Search(ctx context.Context, workspaceIDs []uuid.
 	found, err := self.base.DB.Document.Query().
 		Where(
 			document.WorkspaceIDIn(workspaceIDs...),
+			onVisibleIssue(visibleTeamIDs),
 			document.ArchivedAtIsNil(),
 			document.TrashedAtIsNil(),
 			document.Or(document.TitleContainsFold(query), document.ContentContainsFold(query)),

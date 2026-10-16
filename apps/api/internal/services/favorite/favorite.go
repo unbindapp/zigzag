@@ -123,7 +123,7 @@ func (self *FavoriteService) Remove(ctx context.Context, userID uuid.UUID, input
 	if err := self.checkViewer(ctx, userID, input.WorkspaceID); err != nil {
 		return err
 	}
-	removed, err := self.repo.Favorite().Delete(ctx, userID, input.Kind, input.EntityID)
+	removed, err := self.repo.Favorite().Delete(ctx, userID, input.WorkspaceID, input.Kind, input.EntityID)
 	if err != nil {
 		return err
 	}
@@ -135,14 +135,14 @@ func (self *FavoriteService) Remove(ctx context.Context, userID uuid.UUID, input
 
 type ReorderFavoritesInput struct {
 	WorkspaceID uuid.UUID   `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
-	FavoriteIDs []uuid.UUID `json:"favorite_ids" required:"true" maxItems:"500" doc:"Favorite ids (not entity ids) in the new order, first on top"`
+	FavoriteIDs []uuid.UUID `json:"favorite_ids" format:"uuid" required:"true" nullable:"false" maxItems:"500" doc:"Favorite ids (not entity ids) in the new order, first on top"`
 }
 
 func (self *FavoriteService) Reorder(ctx context.Context, userID uuid.UUID, input *ReorderFavoritesInput) ([]*models.FavoriteResponse, error) {
 	if err := self.checkViewer(ctx, userID, input.WorkspaceID); err != nil {
 		return nil, err
 	}
-	if err := self.repo.Favorite().Reorder(ctx, userID, input.FavoriteIDs); err != nil {
+	if err := self.repo.Favorite().Reorder(ctx, userID, input.WorkspaceID, input.FavoriteIDs); err != nil {
 		return nil, err
 	}
 	return self.List(ctx, userID, &ListFavoritesInput{WorkspaceID: input.WorkspaceID})

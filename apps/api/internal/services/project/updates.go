@@ -130,7 +130,6 @@ func (self *ProjectService) refreshHealth(ctx context.Context, tx repository.TxI
 	return self.repo.Project().SetHealth(ctx, tx, projectID, health)
 }
 
-// authorOrAdminUpdate lets the author (still a member) or a workspace admin change an update.
 func (self *ProjectService) authorOrAdminUpdate(ctx context.Context, userID, updateID uuid.UUID) (*ent.ProjectPost, error) {
 	update, err := self.repo.Project().GetUpdate(ctx, updateID)
 	if ent.IsNotFound(err) {

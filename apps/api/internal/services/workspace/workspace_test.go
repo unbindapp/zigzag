@@ -86,6 +86,17 @@ func (suite *WorkspaceServiceSuite) TestCreateMakesTheCreatorAdmin() {
 	suite.Equal(2, resp.MemberCount)
 }
 
+func (suite *WorkspaceServiceSuite) TestNarrowedCredentialsCreateWorkspacesOnlyWithFullWriteAccess() {
+	for name, access := range map[string]permissions_repo.APIKeyAccess{
+		"scoped to a workspace": {Role: schema.WorkspaceRoleAdmin, WorkspaceIDs: []uuid.UUID{suite.workspaceID}},
+		"read only":             {Role: schema.WorkspaceRoleViewer, FullAccess: true},
+	} {
+		ctx := permissions_repo.WithAPIKeyAccess(suite.Ctx, access)
+		_, err := suite.service.Create(ctx, suite.adminID, &CreateWorkspaceInput{Name: "Acme", Slug: "acme"})
+		suite.ErrorIs(err, errdefs.ErrUnauthorized, name)
+	}
+}
+
 func (suite *WorkspaceServiceSuite) TestDeleteNeedsTheSlugRepeated() {
 	suite.allow(schema.WorkspaceRoleViewer)
 	suite.allow(schema.WorkspaceRoleAdmin)
@@ -209,6 +220,42 @@ func (suite *WorkspaceServiceSuite) TestAcceptCreatesTheAccountAndJoinsTeams() {
 	suite.Require().NoError(err)
 	suite.Equal(created.ID, user.ID)
 	suite.Equal(suite.workspaceID, workspace.ID)
+}
+
+func (suite *WorkspaceServiceSuite) TestAcceptCannotTakeOverDeactivatedOrForeignAccounts() {
+	inv := suite.invitation()
+	suite.MockWorkspaceRepo.EXPECT().GetInvitationByTokenHash(suite.Ctx, utils.HashToken("t")).Return(inv, nil)
+
+	deactivated := &ent.User{ID: uuid.New(), Email: inv.Email, Active: false, PasswordHash: "h"}
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, inv.Email).Return(deactivated, nil).Once()
+	_, _, err := suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: "t", Password: utils.ToPtr("long-enough")})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "an invitation never reactivates an account a system admin turned off")
+
+	placeholder := &ent.User{ID: uuid.New(), Email: inv.Email, Active: false}
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, inv.Email).Return(placeholder, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().MembershipsOfUser(suite.Ctx, placeholder.ID).Return([]*ent.WorkspaceMember{
+		{WorkspaceID: suite.workspaceID}, {WorkspaceID: uuid.New()},
+	}, nil).Once()
+	_, _, err = suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: "t", Password: utils.ToPtr("long-enough")})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "an admin of one workspace cannot claim a placeholder that also belongs to another")
+}
+
+func (suite *WorkspaceServiceSuite) TestAcceptClaimsAPlaceholderOfTheInvitingWorkspace() {
+	inv := suite.invitation()
+	placeholder := &ent.User{ID: uuid.New(), Email: inv.Email, Active: false}
+	claimed := &ent.User{ID: placeholder.ID, Email: inv.Email, Active: true}
+	suite.expectRespond()
+	suite.MockWorkspaceRepo.EXPECT().GetInvitationByTokenHash(suite.Ctx, utils.HashToken("t")).Return(inv, nil).Once()
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, inv.Email).Return(placeholder, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().MembershipsOfUser(suite.Ctx, placeholder.ID).Return([]*ent.WorkspaceMember{{WorkspaceID: suite.workspaceID}}, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().ClaimInvitation(suite.Ctx, mock.Anything, inv.ID, suite.now).Return(true, nil).Once()
+	suite.MockUserRepo.EXPECT().UpdatePassword(suite.Ctx, mock.Anything, placeholder.ID, "long-enough").Return(nil).Once()
+	suite.MockUserRepo.EXPECT().Update(suite.Ctx, mock.Anything, placeholder.ID, mock.Anything).Return(claimed, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().AddMember(suite.Ctx, mock.Anything, suite.workspaceID, placeholder.ID, schema.WorkspaceRoleMember).Return(&ent.WorkspaceMember{}, nil).Once()
+
+	user, _, err := suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: "t", Password: utils.ToPtr("long-enough")})
+	suite.Require().NoError(err)
+	suite.True(user.Active)
 }
 
 func (suite *WorkspaceServiceSuite) TestAcceptLosesTheRace() {

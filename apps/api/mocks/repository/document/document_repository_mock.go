@@ -461,8 +461,8 @@ func (_c *DocumentRepositoryMock_ResolveWorkspaceOfDocument_Call) RunAndReturn(r
 }
 
 // Search provides a mock function for the type DocumentRepositoryMock
-func (_mock *DocumentRepositoryMock) Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error) {
-	ret := _mock.Called(ctx, workspaceIDs, query, limit)
+func (_mock *DocumentRepositoryMock) Search(ctx context.Context, workspaceIDs []uuid.UUID, visibleTeamIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error) {
+	ret := _mock.Called(ctx, workspaceIDs, visibleTeamIDs, query, limit)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Search")
@@ -470,18 +470,18 @@ func (_mock *DocumentRepositoryMock) Search(ctx context.Context, workspaceIDs []
 
 	var r0 []*ent.Document
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, string, int) ([]*ent.Document, error)); ok {
-		return returnFunc(ctx, workspaceIDs, query, limit)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, []uuid.UUID, string, int) ([]*ent.Document, error)); ok {
+		return returnFunc(ctx, workspaceIDs, visibleTeamIDs, query, limit)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, string, int) []*ent.Document); ok {
-		r0 = returnFunc(ctx, workspaceIDs, query, limit)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, []uuid.UUID, string, int) []*ent.Document); ok {
+		r0 = returnFunc(ctx, workspaceIDs, visibleTeamIDs, query, limit)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*ent.Document)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, string, int) error); ok {
-		r1 = returnFunc(ctx, workspaceIDs, query, limit)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, []uuid.UUID, string, int) error); ok {
+		r1 = returnFunc(ctx, workspaceIDs, visibleTeamIDs, query, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -496,13 +496,14 @@ type DocumentRepositoryMock_Search_Call struct {
 // Search is a helper method to define mock.On call
 //   - ctx context.Context
 //   - workspaceIDs []uuid.UUID
+//   - visibleTeamIDs []uuid.UUID
 //   - query string
 //   - limit int
-func (_e *DocumentRepositoryMock_Expecter) Search(ctx any, workspaceIDs any, query any, limit any) *DocumentRepositoryMock_Search_Call {
-	return &DocumentRepositoryMock_Search_Call{Call: _e.mock.On("Search", ctx, workspaceIDs, query, limit)}
+func (_e *DocumentRepositoryMock_Expecter) Search(ctx any, workspaceIDs any, visibleTeamIDs any, query any, limit any) *DocumentRepositoryMock_Search_Call {
+	return &DocumentRepositoryMock_Search_Call{Call: _e.mock.On("Search", ctx, workspaceIDs, visibleTeamIDs, query, limit)}
 }
 
-func (_c *DocumentRepositoryMock_Search_Call) Run(run func(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int)) *DocumentRepositoryMock_Search_Call {
+func (_c *DocumentRepositoryMock_Search_Call) Run(run func(ctx context.Context, workspaceIDs []uuid.UUID, visibleTeamIDs []uuid.UUID, query string, limit int)) *DocumentRepositoryMock_Search_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -512,19 +513,24 @@ func (_c *DocumentRepositoryMock_Search_Call) Run(run func(ctx context.Context, 
 		if args[1] != nil {
 			arg1 = args[1].([]uuid.UUID)
 		}
-		var arg2 string
+		var arg2 []uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].([]uuid.UUID)
 		}
-		var arg3 int
+		var arg3 string
 		if args[3] != nil {
-			arg3 = args[3].(int)
+			arg3 = args[3].(string)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -535,7 +541,7 @@ func (_c *DocumentRepositoryMock_Search_Call) Return(documents []*ent.Document, 
 	return _c
 }
 
-func (_c *DocumentRepositoryMock_Search_Call) RunAndReturn(run func(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)) *DocumentRepositoryMock_Search_Call {
+func (_c *DocumentRepositoryMock_Search_Call) RunAndReturn(run func(ctx context.Context, workspaceIDs []uuid.UUID, visibleTeamIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)) *DocumentRepositoryMock_Search_Call {
 	_c.Call.Return(run)
 	return _c
 }

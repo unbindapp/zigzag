@@ -37,7 +37,7 @@ type TemplateData struct {
 	Description string             `json:"description,omitempty" required:"false" doc:"Prefilled description in markdown"`
 	Priority    *int               `json:"priority,omitempty" nullable:"true" required:"false" minimum:"0" maximum:"4" doc:"0 none, 1 urgent, 2 high, 3 medium, 4 low"`
 	Estimate    *float64           `json:"estimate,omitempty" nullable:"true" required:"false" doc:"Prefilled estimate"`
-	LabelIDs    []uuid.UUID        `json:"label_ids,omitempty" required:"false" doc:"Labels to apply"`
+	LabelIDs    []uuid.UUID        `json:"label_ids,omitempty" format:"uuid" required:"false" doc:"Labels to apply"`
 	AssigneeID  *uuid.UUID         `json:"assignee_id,omitempty" nullable:"true" required:"false" format:"uuid" doc:"Assignee"`
 	StateID     *uuid.UUID         `json:"state_id,omitempty" nullable:"true" required:"false" format:"uuid" doc:"Workflow state"`
 	ProjectID   *uuid.UUID         `json:"project_id,omitempty" nullable:"true" required:"false" format:"uuid" doc:"Project"`

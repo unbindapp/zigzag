@@ -462,8 +462,8 @@ func (_c *CommentRepositoryMock_ImportedComments_Call) RunAndReturn(run func(ctx
 }
 
 // ListThreads provides a mock function for the type CommentRepositoryMock
-func (_mock *CommentRepositoryMock) ListThreads(ctx context.Context, issueID uuid.UUID, offset int, limit int) ([]*ent.Comment, error) {
-	ret := _mock.Called(ctx, issueID, offset, limit)
+func (_mock *CommentRepositoryMock) ListThreads(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.Comment, error) {
+	ret := _mock.Called(ctx, issueID, after, limit)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListThreads")
@@ -471,18 +471,18 @@ func (_mock *CommentRepositoryMock) ListThreads(ctx context.Context, issueID uui
 
 	var r0 []*ent.Comment
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int, int) ([]*ent.Comment, error)); ok {
-		return returnFunc(ctx, issueID, offset, limit)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *repository.TimeCursor, int) ([]*ent.Comment, error)); ok {
+		return returnFunc(ctx, issueID, after, limit)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int, int) []*ent.Comment); ok {
-		r0 = returnFunc(ctx, issueID, offset, limit)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *repository.TimeCursor, int) []*ent.Comment); ok {
+		r0 = returnFunc(ctx, issueID, after, limit)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*ent.Comment)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, int, int) error); ok {
-		r1 = returnFunc(ctx, issueID, offset, limit)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *repository.TimeCursor, int) error); ok {
+		r1 = returnFunc(ctx, issueID, after, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -497,13 +497,13 @@ type CommentRepositoryMock_ListThreads_Call struct {
 // ListThreads is a helper method to define mock.On call
 //   - ctx context.Context
 //   - issueID uuid.UUID
-//   - offset int
+//   - after *repository.TimeCursor
 //   - limit int
-func (_e *CommentRepositoryMock_Expecter) ListThreads(ctx any, issueID any, offset any, limit any) *CommentRepositoryMock_ListThreads_Call {
-	return &CommentRepositoryMock_ListThreads_Call{Call: _e.mock.On("ListThreads", ctx, issueID, offset, limit)}
+func (_e *CommentRepositoryMock_Expecter) ListThreads(ctx any, issueID any, after any, limit any) *CommentRepositoryMock_ListThreads_Call {
+	return &CommentRepositoryMock_ListThreads_Call{Call: _e.mock.On("ListThreads", ctx, issueID, after, limit)}
 }
 
-func (_c *CommentRepositoryMock_ListThreads_Call) Run(run func(ctx context.Context, issueID uuid.UUID, offset int, limit int)) *CommentRepositoryMock_ListThreads_Call {
+func (_c *CommentRepositoryMock_ListThreads_Call) Run(run func(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int)) *CommentRepositoryMock_ListThreads_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -513,9 +513,9 @@ func (_c *CommentRepositoryMock_ListThreads_Call) Run(run func(ctx context.Conte
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 int
+		var arg2 *repository.TimeCursor
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(*repository.TimeCursor)
 		}
 		var arg3 int
 		if args[3] != nil {
@@ -536,7 +536,7 @@ func (_c *CommentRepositoryMock_ListThreads_Call) Return(comments []*ent.Comment
 	return _c
 }
 
-func (_c *CommentRepositoryMock_ListThreads_Call) RunAndReturn(run func(ctx context.Context, issueID uuid.UUID, offset int, limit int) ([]*ent.Comment, error)) *CommentRepositoryMock_ListThreads_Call {
+func (_c *CommentRepositoryMock_ListThreads_Call) RunAndReturn(run func(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.Comment, error)) *CommentRepositoryMock_ListThreads_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -679,16 +679,16 @@ func (_c *CommentRepositoryMock_SetResolved_Call) RunAndReturn(run func(ctx cont
 }
 
 // UpdateBody provides a mock function for the type CommentRepositoryMock
-func (_mock *CommentRepositoryMock) UpdateBody(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error {
-	ret := _mock.Called(ctx, id, body, editedAt)
+func (_mock *CommentRepositoryMock) UpdateBody(ctx context.Context, tx repository.TxInterface, id uuid.UUID, body string, editedAt time.Time) error {
+	ret := _mock.Called(ctx, tx, id, body, editedAt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateBody")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, time.Time) error); ok {
-		r0 = returnFunc(ctx, id, body, editedAt)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, string, time.Time) error); ok {
+		r0 = returnFunc(ctx, tx, id, body, editedAt)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -702,36 +702,42 @@ type CommentRepositoryMock_UpdateBody_Call struct {
 
 // UpdateBody is a helper method to define mock.On call
 //   - ctx context.Context
+//   - tx repository.TxInterface
 //   - id uuid.UUID
 //   - body string
 //   - editedAt time.Time
-func (_e *CommentRepositoryMock_Expecter) UpdateBody(ctx any, id any, body any, editedAt any) *CommentRepositoryMock_UpdateBody_Call {
-	return &CommentRepositoryMock_UpdateBody_Call{Call: _e.mock.On("UpdateBody", ctx, id, body, editedAt)}
+func (_e *CommentRepositoryMock_Expecter) UpdateBody(ctx any, tx any, id any, body any, editedAt any) *CommentRepositoryMock_UpdateBody_Call {
+	return &CommentRepositoryMock_UpdateBody_Call{Call: _e.mock.On("UpdateBody", ctx, tx, id, body, editedAt)}
 }
 
-func (_c *CommentRepositoryMock_UpdateBody_Call) Run(run func(ctx context.Context, id uuid.UUID, body string, editedAt time.Time)) *CommentRepositoryMock_UpdateBody_Call {
+func (_c *CommentRepositoryMock_UpdateBody_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, body string, editedAt time.Time)) *CommentRepositoryMock_UpdateBody_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 repository.TxInterface
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(repository.TxInterface)
 		}
-		var arg2 string
+		var arg2 uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 time.Time
+		var arg3 string
 		if args[3] != nil {
-			arg3 = args[3].(time.Time)
+			arg3 = args[3].(string)
+		}
+		var arg4 time.Time
+		if args[4] != nil {
+			arg4 = args[4].(time.Time)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -742,7 +748,7 @@ func (_c *CommentRepositoryMock_UpdateBody_Call) Return(err error) *CommentRepos
 	return _c
 }
 
-func (_c *CommentRepositoryMock_UpdateBody_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error) *CommentRepositoryMock_UpdateBody_Call {
+func (_c *CommentRepositoryMock_UpdateBody_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, body string, editedAt time.Time) error) *CommentRepositoryMock_UpdateBody_Call {
 	_c.Call.Return(run)
 	return _c
 }

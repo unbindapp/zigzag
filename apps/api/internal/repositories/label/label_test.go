@@ -85,3 +85,18 @@ func (suite *LabelRepositorySuite) TestDeleteTakesGroupsLabelsAndIssueLinks() {
 func TestLabelRepositorySuite(t *testing.T) {
 	suite.Run(t, new(LabelRepositorySuite))
 }
+
+func (suite *LabelRepositorySuite) TestDroppingALabelOntoANeighbourRespacesTheList() {
+	bug := suite.label("Bug", nil, nil, false, 1)
+	chore := suite.label("Chore", nil, nil, false, 2)
+	docs := suite.label("Docs", nil, nil, false, 3)
+	moved, err := suite.repo.Update(suite.Ctx, nil, docs.ID, &UpdateLabelInput{SortOrder: new(1.0)})
+	suite.Require().NoError(err)
+	suite.Equal(2048.0, moved.SortOrder, "the response carries the respaced value")
+	suite.Equal(1024.0, suite.DB.Label.GetX(suite.Ctx, bug.ID).SortOrder)
+	suite.Equal(3072.0, suite.DB.Label.GetX(suite.Ctx, chore.ID).SortOrder)
+
+	untouched, err := suite.repo.Update(suite.Ctx, nil, chore.ID, &UpdateLabelInput{SortOrder: new(4000.0)})
+	suite.Require().NoError(err)
+	suite.Equal(4000.0, untouched.SortOrder)
+}

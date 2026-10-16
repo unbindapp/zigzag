@@ -28,48 +28,24 @@ func main() {
 	mw := middleware.NewMiddleware(cfg, nil, api, nil, nil)
 	router.RegisterRoutes(api, &server.Server{}, mw)
 
+	spec := api.OpenAPI()
 	if *apiKeyOnly {
-		keepAPIKeyOperations(api.OpenAPI())
+		spec = oapi.APIKeySpec(spec)
+		spec.Servers = []*huma.Server{{
+			URL: "https://{domain}/api/go",
+			Variables: map[string]*huma.ServerVariable{
+				"domain": {Default: "zigzag.example.com", Description: "The domain of your Zigzag instance."},
+			},
+		}}
 	}
 
-	spec, err := api.OpenAPI().YAML()
+	rendered, err := spec.YAML()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to render OpenAPI spec:", err)
 		os.Exit(1)
 	}
 
-	if _, err := os.Stdout.Write(spec); err != nil {
+	if _, err := os.Stdout.Write(rendered); err != nil {
 		os.Exit(1)
 	}
-}
-
-func keepAPIKeyOperations(spec *huma.OpenAPI) {
-	bearerOnly := []map[string][]string{{"bearerAuth": {}}}
-
-	for path, item := range spec.Paths {
-		operations := []**huma.Operation{&item.Get, &item.Post, &item.Put, &item.Patch, &item.Delete}
-		kept := 0
-		for _, operation := range operations {
-			if *operation == nil {
-				continue
-			}
-			if len((*operation).Security) == 0 || oapi.IsSessionOnly(*operation) {
-				*operation = nil
-				continue
-			}
-			(*operation).Security = bearerOnly
-			kept++
-		}
-		if kept == 0 {
-			delete(spec.Paths, path)
-		}
-	}
-
-	delete(spec.Components.SecuritySchemes, "cookieAuth")
-	spec.Servers = []*huma.Server{{
-		URL: "https://{domain}/api/go",
-		Variables: map[string]*huma.ServerVariable{
-			"domain": {Default: "zigzag.example.com", Description: "The domain of your Zigzag instance."},
-		},
-	}}
 }

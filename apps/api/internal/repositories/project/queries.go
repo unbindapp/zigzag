@@ -134,7 +134,6 @@ func (self *ProjectRepository) ResolveWorkspaceOfProject(ctx context.Context, id
 	return found.WorkspaceID, nil
 }
 
-// AudienceIDs is the lead and the members, the people who follow a project.
 func (self *ProjectRepository) AudienceIDs(ctx context.Context, projectID uuid.UUID) ([]uuid.UUID, error) {
 	found, err := self.base.DB.Project.Query().
 		Where(project.ID(projectID)).

@@ -48,7 +48,7 @@ func labelResponse(label *models.LabelResponse) *LabelResponse {
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *label_service.CreateLabelInput
+	Body *label_service.CreateLabelInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*LabelResponse, error) {
@@ -65,7 +65,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Labe
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *label_service.UpdateLabelInput
+	Body *label_service.UpdateLabelInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*LabelResponse, error) {
@@ -82,7 +82,7 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Labe
 
 type RefInput struct {
 	server.BaseAuthInput
-	Body *label_service.LabelRefInput
+	Body *label_service.LabelRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) Archive(ctx context.Context, input *RefInput) (*LabelResponse, error) {
@@ -111,7 +111,7 @@ func (self *HandlerGroup) Unarchive(ctx context.Context, input *RefInput) (*Labe
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -124,6 +124,6 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *RefInput) (*Deleted
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.LabelID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.LabelID, Deleted: true}
 	return resp, nil
 }

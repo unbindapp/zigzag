@@ -120,7 +120,10 @@ type teamRefs struct {
 	Data struct {
 		TeamID  *uuid.UUID `json:"team_id"`
 		IssueID *uuid.UUID `json:"issue_id"`
-		Teams   []struct {
+		Issue   *struct {
+			TeamID uuid.UUID `json:"team_id"`
+		} `json:"issue"`
+		Teams []struct {
 			ID uuid.UUID `json:"id"`
 		} `json:"teams"`
 	} `json:"data"`
@@ -133,6 +136,9 @@ func (self *WebhookService) teamsOf(ctx context.Context, body []byte) []uuid.UUI
 	}
 	if refs.Data.TeamID != nil {
 		return []uuid.UUID{*refs.Data.TeamID}
+	}
+	if refs.Data.Issue != nil {
+		return []uuid.UUID{refs.Data.Issue.TeamID}
 	}
 	if len(refs.Data.Teams) > 0 {
 		teams := make([]uuid.UUID, len(refs.Data.Teams))

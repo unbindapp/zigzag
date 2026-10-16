@@ -29,6 +29,8 @@
   --card-hover: hsl(220 16% 96%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(220 25% 8%);
+  --logo: hsl(0 0% 0%);
+  --logo-foreground: hsl(0 0% 100%);
   --primary: hsl(235 60% 55%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(220 14% 94%);
@@ -41,7 +43,7 @@
   --accent-foreground: hsl(220 25% 8%);
   --destructive: hsl(0 72% 45%);
   --destructive-foreground: hsl(0 0% 100%);
-  --warning: hsl(28 90% 42%);
+  --warning: hsl(28 90% 35%);
   --warning-foreground: hsl(0 0% 100%);
   --success: hsl(150 60% 30%);
   --success-foreground: hsl(0 0% 100%);
@@ -167,6 +169,8 @@
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-logo: var(--logo);
+  --color-logo-foreground: var(--logo-foreground);
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);

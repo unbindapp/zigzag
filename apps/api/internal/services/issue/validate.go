@@ -3,6 +3,7 @@ package issue_service
 import (
 	"context"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -180,16 +181,27 @@ func (self *IssueService) cycle(ctx context.Context, team *ent.Team, cycleID uui
 	return cycle, err
 }
 
-func (self *IssueService) parent(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, issueID *uuid.UUID, parentID uuid.UUID) (*ent.Issue, error) {
+func (self *IssueService) parent(ctx context.Context, tx repository.TxInterface, userID, workspaceID uuid.UUID, issueID *uuid.UUID, parentID uuid.UUID) (*ent.Issue, error) {
 	if issueID != nil && *issueID == parentID {
 		return nil, invalid("An issue cannot be its own parent")
 	}
-	parent, err := self.repo.Issue().GetByID(ctx, parentID)
+	notInWorkspace := invalid("parent_id must be an issue of this workspace")
+	parent, err := self.repo.Issue().GetWithEdges(ctx, tx, parentID)
 	if ent.IsNotFound(err) || (err == nil && (parent.WorkspaceID != workspaceID || parent.TrashedAt != nil)) {
-		return nil, invalid("parent_id must be an issue of this workspace")
+		return nil, notInWorkspace
 	}
-	if err != nil || issueID == nil {
-		return parent, err
+	if err != nil {
+		return nil, err
+	}
+	visible, err := self.canSeeTeam(ctx, userID, parent.Edges.Team)
+	if err != nil {
+		return nil, err
+	}
+	if !visible {
+		return nil, notInWorkspace
+	}
+	if issueID == nil {
+		return parent, nil
 	}
 	ancestors, err := self.repo.Issue().AncestorIDs(ctx, tx, parentID)
 	if err != nil {
@@ -235,14 +247,41 @@ func applyStateTimestamps(fields *issue_repo.IssueFields, from *ent.WorkflowStat
 	}
 }
 
+var estimateScales = map[schema.EstimateType]struct{ base, extended []float64 }{
+	schema.EstimateTypeExponential: {base: []float64{1, 2, 4, 8, 16}, extended: []float64{32, 64}},
+	schema.EstimateTypeFibonacci:   {base: []float64{1, 2, 3, 5, 8}, extended: []float64{13, 21}},
+	schema.EstimateTypeLinear:      {base: []float64{1, 2, 3, 4, 5}, extended: []float64{6, 7}},
+	schema.EstimateTypeTShirt:      {base: []float64{1, 2, 3, 5, 8}, extended: []float64{13, 21}},
+}
+
+func estimateValues(team *ent.Team) []float64 {
+	scale, ok := estimateScales[team.EstimateType]
+	if !ok {
+		return nil
+	}
+	values := slices.Clone(scale.base)
+	if team.EstimateExtended {
+		values = append(values, scale.extended...)
+	}
+	if team.EstimateAllowZero {
+		values = append([]float64{0}, values...)
+	}
+	return values
+}
+
 func validateEstimate(team *ent.Team, estimate float64) error {
-	if estimate == 0 && !team.EstimateAllowZero {
-		return invalid("Team " + team.Key + " does not allow a zero estimate")
+	values := estimateValues(team)
+	if len(values) == 0 {
+		return invalid("Team " + team.Key + " does not use estimates; turn them on in its settings first")
 	}
-	if estimate < 0 {
-		return invalid("estimate cannot be negative")
+	if slices.Contains(values, estimate) {
+		return nil
 	}
-	return nil
+	allowed := make([]string, len(values))
+	for i, value := range values {
+		allowed[i] = strconv.FormatFloat(value, 'f', -1, 64)
+	}
+	return invalid("estimate for team " + team.Key + " takes one of " + strings.Join(allowed, ", "))
 }
 
 func validateTitle(title string) (string, error) {

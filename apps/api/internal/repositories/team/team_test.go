@@ -2,6 +2,7 @@ package team_repo
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -85,12 +86,33 @@ func (suite *TeamRepositorySuite) TestDeleteStateMovesIssuesAndDefaults() {
 	todo := *created.DefaultStateID
 	backlog := suite.DB.WorkflowState.Query().Where(workflowstate.TeamID(created.ID), workflowstate.Name("Backlog")).OnlyX(suite.Ctx)
 	issue := suite.DB.Issue.Create().SetWorkspaceID(suite.workspace.ID).SetTeamID(created.ID).SetNumber(1).SetTitle("t").SetStateID(todo).SaveX(suite.Ctx)
+	from := suite.DB.WorkflowState.GetX(suite.Ctx, todo)
+	at := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
 
-	suite.Require().NoError(suite.repo.DeleteState(suite.Ctx, todo, backlog.ID))
+	suite.Require().NoError(suite.repo.DeleteState(suite.Ctx, &StateMove{From: from, To: backlog, Source: schema.HistorySourceUser, At: at}))
 	suite.Equal(backlog.ID, suite.DB.Issue.GetX(suite.Ctx, issue.ID).StateID)
+	history := suite.DB.IssueHistory.Query().AllX(suite.Ctx)
+	suite.Require().Len(history, 1, "every moved issue records the state change")
+	suite.Equal("state", history[0].Changes[0].Field)
+	suite.Equal("Backlog", history[0].Changes[0].ToLabel)
 	suite.Equal(backlog.ID, *suite.DB.Team.GetX(suite.Ctx, created.ID).DefaultStateID)
 	_, err := suite.repo.GetState(suite.Ctx, todo)
 	suite.True(ent.IsNotFound(err))
+}
+
+func (suite *TeamRepositorySuite) TestDeletingAStateStampsTheTargetTypeTimestamps() {
+	created := suite.team("ENG", false)
+	done := suite.DB.WorkflowState.Query().Where(workflowstate.TeamID(created.ID), workflowstate.Name("Done")).OnlyX(suite.Ctx)
+	started := suite.DB.WorkflowState.Query().Where(workflowstate.TeamID(created.ID), workflowstate.Name("In Progress")).OnlyX(suite.Ctx)
+	before := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	at := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
+	issue := suite.DB.Issue.Create().SetWorkspaceID(suite.workspace.ID).SetTeamID(created.ID).SetNumber(1).SetTitle("t").SetStateID(done.ID).SetCompletedAt(before).SaveX(suite.Ctx)
+
+	suite.Require().NoError(suite.repo.DeleteState(suite.Ctx, &StateMove{From: done, To: started, Source: schema.HistorySourceUser, At: at}))
+	moved := suite.DB.Issue.GetX(suite.Ctx, issue.ID)
+	suite.Nil(moved.CompletedAt, "an issue that is no longer completed loses completed_at")
+	suite.Require().NotNil(moved.StartedAt)
+	suite.True(moved.StartedAt.Equal(at))
 }
 
 func (suite *TeamRepositorySuite) TestStatesHelpers() {
@@ -104,7 +126,7 @@ func (suite *TeamRepositorySuite) TestStatesHelpers() {
 	taken, _ := suite.repo.StateNameTaken(suite.Ctx, created.ID, "done", nil)
 	suite.True(taken, "state names compare without case")
 
-	state, err := suite.repo.CreateState(suite.Ctx, &CreateStateInput{TeamID: created.ID, Name: "QA", Type: schema.StateTypeStarted, Color: "#ffffff", Position: next})
+	state, err := suite.repo.CreateState(suite.Ctx, nil, &CreateStateInput{TeamID: created.ID, Name: "QA", Type: schema.StateTypeStarted, Color: "#ffffff", Position: next})
 	suite.Require().NoError(err)
 	updated, err := suite.repo.UpdateState(suite.Ctx, state.ID, &UpdateStateInput{Name: utils.ToPtr("Testing")})
 	suite.Require().NoError(err)

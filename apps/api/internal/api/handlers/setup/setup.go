@@ -58,7 +58,7 @@ func (self *HandlerGroup) GetStatus(ctx context.Context, _ *server.EmptyInput) (
 }
 
 type CreateUserInput struct {
-	Body *user_service.BootstrapInput
+	Body *user_service.BootstrapInput `required:"true"`
 }
 
 type CreateUserResponse struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
+	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
@@ -18,10 +19,10 @@ import (
 type CreateTeamInput struct {
 	WorkspaceID uuid.UUID `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	Name        string    `json:"name" required:"true" minLength:"1" maxLength:"64" doc:"Team name, unique in the workspace"`
-	Key         string    `json:"key" required:"true" minLength:"1" maxLength:"7" doc:"Issue prefix, 1 to 7 uppercase letters or digits starting with a letter, unique in the workspace"`
+	Key         string    `json:"key" required:"true" minLength:"1" maxLength:"7" pattern:"^[A-Za-z][A-Za-z0-9]{0,6}$" doc:"Issue prefix, 1 to 7 uppercase letters or digits starting with a letter, unique in the workspace"`
 	Description string    `json:"description,omitempty" required:"false" maxLength:"500" doc:"What the team works on"`
 	Icon        string    `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name"`
-	Color       string    `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color such as #5e6ad2"`
+	Color       string    `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color such as #5e6ad2"`
 	Private     bool      `json:"private,omitempty" required:"false" doc:"Private teams are visible to their members and workspace admins only"`
 	Timezone    string    `json:"timezone,omitempty" required:"false" maxLength:"64" doc:"IANA time zone for cycles, defaults to UTC"`
 }
@@ -44,6 +45,10 @@ func (self *TeamService) Create(ctx context.Context, userID uuid.UUID, input *Cr
 	if err := validateTimezone(input.Timezone); err != nil {
 		return nil, err
 	}
+	color, err := names.OptionalColor(input.Color)
+	if err != nil {
+		return nil, err
+	}
 
 	var created *ent.Team
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
@@ -56,7 +61,7 @@ func (self *TeamService) Create(ctx context.Context, userID uuid.UUID, input *Cr
 			Key:         key,
 			Description: strings.TrimSpace(input.Description),
 			Icon:        input.Icon,
-			Color:       input.Color,
+			Color:       color,
 			Private:     input.Private,
 			Timezone:    input.Timezone,
 			CreatorID:   userID,
@@ -72,10 +77,10 @@ func (self *TeamService) Create(ctx context.Context, userID uuid.UUID, input *Cr
 type UpdateTeamInput struct {
 	TeamID              uuid.UUID            `json:"team_id" required:"true" format:"uuid" doc:"The team to change"`
 	Name                *string              `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Key                 *string              `json:"key,omitempty" required:"false" maxLength:"7" doc:"New issue prefix; existing identifiers change with it"`
+	Key                 *string              `json:"key,omitempty" required:"false" maxLength:"7" pattern:"^[A-Za-z][A-Za-z0-9]{0,6}$" doc:"New issue prefix; existing identifiers change with it"`
 	Description         *string              `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
 	Icon                *string              `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color               *string              `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color, empty to clear"`
+	Color               *string              `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
 	Private             *bool                `json:"private,omitempty" required:"false" doc:"Visible to members and workspace admins only"`
 	Timezone            *string              `json:"timezone,omitempty" required:"false" maxLength:"64" doc:"IANA time zone"`
 	CyclesEnabled       *bool                `json:"cycles_enabled,omitempty" required:"false" doc:"Turn cycles on or off"`
@@ -104,6 +109,13 @@ func (self *TeamService) Update(ctx context.Context, userID uuid.UUID, input *Up
 		CycleStartDay: input.CycleStartDay, CycleAutoMove: input.CycleAutoMove, CycleAutoAddStarted: input.CycleAutoAddStarted,
 		EstimateType: input.EstimateType, EstimateAllowZero: input.EstimateAllowZero, EstimateExtended: input.EstimateExtended,
 		TriageEnabled: input.TriageEnabled, AutoArchiveMonths: input.AutoArchiveMonths,
+	}
+	if input.Color != nil {
+		color, err := names.OptionalColor(*input.Color)
+		if err != nil {
+			return nil, err
+		}
+		update.Color = &color
 	}
 	name, key := "", ""
 	if input.Name != nil {
@@ -147,7 +159,7 @@ func (self *TeamService) Update(ctx context.Context, userID uuid.UUID, input *Up
 			return err
 		}
 		if input.TriageEnabled != nil && *input.TriageEnabled && team.TriageStateID == nil {
-			triage, err := self.ensureTriageState(ctx, team.ID)
+			triage, err := self.ensureTriageState(ctx, tx, team.ID)
 			if err != nil {
 				return err
 			}
@@ -158,6 +170,11 @@ func (self *TeamService) Update(ctx context.Context, userID uuid.UUID, input *Up
 	})
 	if err != nil {
 		return nil, err
+	}
+	if updated.CyclesEnabled && !team.CyclesEnabled {
+		if err := self.cycles.PlanTeamCycles(ctx, updated.ID); err != nil {
+			log.Error("Planning the first cycles failed; the scheduler retries", "team", updated.ID, "err", err)
+		}
 	}
 	return self.respondOne(ctx, userID, updated)
 }
@@ -196,7 +213,7 @@ func (self *TeamService) ensureTeamState(ctx context.Context, teamID, stateID uu
 	return err
 }
 
-func (self *TeamService) ensureTriageState(ctx context.Context, teamID uuid.UUID) (uuid.UUID, error) {
+func (self *TeamService) ensureTriageState(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (uuid.UUID, error) {
 	states, err := self.repo.Team().ListStates(ctx, teamID)
 	if err != nil {
 		return uuid.Nil, err
@@ -206,7 +223,7 @@ func (self *TeamService) ensureTriageState(ctx context.Context, teamID uuid.UUID
 			return state.ID, nil
 		}
 	}
-	created, err := self.repo.Team().CreateState(ctx, &team_repo.CreateStateInput{TeamID: teamID, Name: "Triage", Type: schema.StateTypeTriage, Color: "#fc7840"})
+	created, err := self.repo.Team().CreateState(ctx, tx, &team_repo.CreateStateInput{TeamID: teamID, Name: "Triage", Type: schema.StateTypeTriage, Color: "#fc7840"})
 	if err != nil {
 		return uuid.Nil, err
 	}

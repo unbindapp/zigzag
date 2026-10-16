@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPut,
 	}, handlers.Update, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "archive-label",
 		Summary:     "Archive Label",
 		Description: "Archive a label, and the labels of a group. Archived labels stay on issues but are hidden from pickers. Needs admin.",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Archive, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "unarchive-label",
 		Summary:     "Unarchive Label",
 		Description: "Restore an archived label, and the labels of a group. Needs admin.",

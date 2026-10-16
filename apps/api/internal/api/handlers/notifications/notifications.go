@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.Counts, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "mark-notification-read",
 		Summary:     "Mark Notifications Read",
 		Description: "Mark some of your notifications read by notification_ids. Fails as a whole when one id is not yours.",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.MarkRead, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "mark-notification-unread",
 		Summary:     "Mark Notifications Unread",
 		Description: "Mark some of your notifications unread again by notification_ids.",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.MarkUnread, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "archive-notification",
 		Summary:     "Archive Notifications",
 		Description: "Archive some of your notifications by notification_ids. They leave the inbox, count as read and show with filter archived.",
@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Archive, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "unarchive-notification",
 		Summary:     "Unarchive Notifications",
 		Description: "Move archived notifications back to the inbox by notification_ids.",
@@ -63,7 +63,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Unarchive, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "snooze-notification",
 		Summary:     "Snooze Notifications",
 		Description: "Hide some of your notifications until a future time. They come back to the inbox as unread when until passes.",
@@ -71,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Snooze, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "mark-all-notifications-read",
 		Summary:     "Mark All Notifications Read",
 		Description: "Mark every unread notification in your inbox of a workspace read.",

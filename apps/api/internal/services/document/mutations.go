@@ -34,7 +34,7 @@ func (self *DocumentService) Create(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 	projectID, initiativeID, issueID := optionalID(input.ProjectID), optionalID(input.InitiativeID), optionalID(input.IssueID)
-	if err := self.ensureParents(ctx, input.WorkspaceID, projectID, initiativeID, issueID); err != nil {
+	if err := self.ensureParents(ctx, userID, input.WorkspaceID, projectID, initiativeID, issueID); err != nil {
 		return nil, err
 	}
 	title := cleanTitle(input.Title)
@@ -76,7 +76,7 @@ func (self *DocumentService) Update(ctx context.Context, userID uuid.UUID, input
 	update.ProjectID, update.ClearProject, projectID = parentChange(input.ProjectID)
 	update.InitiativeID, update.ClearInitiative, initiativeID = parentChange(input.InitiativeID)
 	update.IssueID, update.ClearIssue, issueID = parentChange(input.IssueID)
-	if err := self.ensureParents(ctx, document.WorkspaceID, projectID, initiativeID, issueID); err != nil {
+	if err := self.ensureParents(ctx, userID, document.WorkspaceID, projectID, initiativeID, issueID); err != nil {
 		return nil, err
 	}
 	if err := self.repo.Document().Update(ctx, document.ID, update); err != nil {
@@ -145,7 +145,6 @@ func cleanTitle(raw string) string {
 	return title
 }
 
-// parentChange reads an optional parent id where the nil uuid detaches: set, clear, and the id to validate.
 func parentChange(id *uuid.UUID) (*uuid.UUID, bool, *uuid.UUID) {
 	if id == nil {
 		return nil, false, nil

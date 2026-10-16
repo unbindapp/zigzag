@@ -1,6 +1,7 @@
 package template_service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -131,6 +132,43 @@ func (suite *TemplateServiceSuite) TestListAddsTheTeamsTemplates() {
 	templates, err := suite.service.List(suite.Ctx, suite.userID, &ListTemplatesInput{WorkspaceID: suite.workspaceID, TeamID: suite.team.ID, Kind: kind})
 	suite.Require().NoError(err)
 	suite.Len(templates, 1)
+}
+
+func (suite *TemplateServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.asAdmin()
+	foreignTeam := &ent.Team{ID: uuid.New(), WorkspaceID: uuid.New()}
+	otherTeamsState := &ent.WorkflowState{ID: uuid.New(), TeamID: uuid.New()}
+	foreignLabel := &ent.Label{ID: uuid.New(), WorkspaceID: uuid.New()}
+	teamTemplate := &ent.Template{ID: uuid.New(), WorkspaceID: suite.workspaceID, TeamID: &suite.team.ID}
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, foreignTeam.ID).Return(foreignTeam, nil).Maybe()
+	suite.MockTeamRepo.EXPECT().GetState(suite.Ctx, otherTeamsState.ID).Return(otherTeamsState, nil).Maybe()
+	suite.MockLabelRepo.EXPECT().GetMany(suite.Ctx, []uuid.UUID{foreignLabel.ID}).Return([]*ent.Label{foreignLabel}, nil).Maybe()
+	suite.MockTemplateRepo.EXPECT().GetByID(suite.Ctx, teamTemplate.ID).Return(teamTemplate, nil).Maybe()
+
+	cases := map[string]func() error{
+		"create with a team of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateTemplateInput{WorkspaceID: suite.workspaceID, TeamID: &foreignTeam.ID, Kind: schema.TemplateKindIssue, Name: "Bug"})
+			return err
+		},
+		"create with a state of another team": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateTemplateInput{WorkspaceID: suite.workspaceID, TeamID: &suite.team.ID, Kind: schema.TemplateKindIssue, Name: "Bug", Data: schema.TemplateData{StateID: &otherTeamsState.ID}})
+			return err
+		},
+		"create with a label of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateTemplateInput{WorkspaceID: suite.workspaceID, Kind: schema.TemplateKindIssue, Name: "Bug", Data: schema.TemplateData{LabelIDs: []uuid.UUID{foreignLabel.ID}}})
+			return err
+		},
+		"update with a state of another team": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTemplateInput{TemplateID: teamTemplate.ID, Data: &schema.TemplateData{StateID: &otherTeamsState.ID}})
+			return err
+		},
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			err := run()
+			suite.Truef(errors.Is(err, errdefs.ErrInvalidInput) || errors.Is(err, errdefs.ErrNotFound), "got %v", err)
+		})
+	}
 }
 
 func TestTemplateServiceSuite(t *testing.T) {

@@ -29,13 +29,15 @@ type ProjectRepositoryInterface interface {
 	NextMilestoneSortOrder(ctx context.Context, projectID uuid.UUID) (float64, error)
 	CreateMilestone(ctx context.Context, input *CreateMilestoneInput) (*ent.ProjectMilestone, error)
 	UpdateMilestone(ctx context.Context, milestoneID uuid.UUID, input *UpdateMilestoneInput) (*ent.ProjectMilestone, error)
-	DeleteMilestone(ctx context.Context, milestoneID uuid.UUID) error
+	DeleteMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateProjectInput) (*ent.Project, error)
 	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *UpdateProjectInput) error
 	SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
 	SetTrashedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
 	SetHealth(ctx context.Context, tx repository.TxInterface, id uuid.UUID, health *schema.Health) error
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
+	IssuesInProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]*ent.Issue, error)
+	IssueIDsInMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) ([]uuid.UUID, error)
 	List(ctx context.Context, filter *ListProjectsFilter) ([]*ent.Project, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Project, error)
 	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Project, error)

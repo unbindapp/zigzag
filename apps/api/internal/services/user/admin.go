@@ -2,7 +2,6 @@ package user_service
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -46,6 +45,10 @@ func (self *UserService) createAccount(ctx context.Context, input *CreateUserInp
 	if !ent.IsNotFound(err) {
 		return nil, err
 	}
+	name, err := names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
 	handle, err := self.freeDisplayName(ctx, input.DisplayName, nil)
 	if err != nil {
 		return nil, err
@@ -53,7 +56,7 @@ func (self *UserService) createAccount(ctx context.Context, input *CreateUserInp
 	return self.repo.User().Create(ctx, nil, &user_repo.CreateUserInput{
 		Email:       email,
 		Password:    input.Password,
-		Name:        strings.TrimSpace(input.Name),
+		Name:        name,
 		DisplayName: handle,
 		SystemAdmin: input.SystemAdmin,
 		Active:      true,
@@ -91,7 +94,10 @@ func (self *UserService) UpdateUser(ctx context.Context, requesterUserID uuid.UU
 
 	update := &user_repo.UpdateUserInput{SystemAdmin: input.SystemAdmin, Active: input.Active}
 	if input.Name != nil {
-		name := strings.TrimSpace(*input.Name)
+		name, err := names.Clean(*input.Name)
+		if err != nil {
+			return nil, err
+		}
 		update.Name = &name
 	}
 	if input.DisplayName != nil {

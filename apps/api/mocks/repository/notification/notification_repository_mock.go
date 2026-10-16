@@ -53,8 +53,8 @@ func (_m *NotificationRepositoryMock) EXPECT() *NotificationRepositoryMock_Expec
 }
 
 // ActiveMembers provides a mock function for the type NotificationRepositoryMock
-func (_mock *NotificationRepositoryMock) ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error) {
-	ret := _mock.Called(ctx, workspaceID, userIDs)
+func (_mock *NotificationRepositoryMock) ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID, issueID *uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, workspaceID, userIDs, issueID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ActiveMembers")
@@ -62,18 +62,18 @@ func (_mock *NotificationRepositoryMock) ActiveMembers(ctx context.Context, work
 
 	var r0 []uuid.UUID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) ([]uuid.UUID, error)); ok {
-		return returnFunc(ctx, workspaceID, userIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, workspaceID, userIDs, issueID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) []uuid.UUID); ok {
-		r0 = returnFunc(ctx, workspaceID, userIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, workspaceID, userIDs, issueID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]uuid.UUID)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, workspaceID, userIDs)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID, userIDs, issueID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -89,11 +89,12 @@ type NotificationRepositoryMock_ActiveMembers_Call struct {
 //   - ctx context.Context
 //   - workspaceID uuid.UUID
 //   - userIDs []uuid.UUID
-func (_e *NotificationRepositoryMock_Expecter) ActiveMembers(ctx any, workspaceID any, userIDs any) *NotificationRepositoryMock_ActiveMembers_Call {
-	return &NotificationRepositoryMock_ActiveMembers_Call{Call: _e.mock.On("ActiveMembers", ctx, workspaceID, userIDs)}
+//   - issueID *uuid.UUID
+func (_e *NotificationRepositoryMock_Expecter) ActiveMembers(ctx any, workspaceID any, userIDs any, issueID any) *NotificationRepositoryMock_ActiveMembers_Call {
+	return &NotificationRepositoryMock_ActiveMembers_Call{Call: _e.mock.On("ActiveMembers", ctx, workspaceID, userIDs, issueID)}
 }
 
-func (_c *NotificationRepositoryMock_ActiveMembers_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID)) *NotificationRepositoryMock_ActiveMembers_Call {
+func (_c *NotificationRepositoryMock_ActiveMembers_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID, issueID *uuid.UUID)) *NotificationRepositoryMock_ActiveMembers_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -107,10 +108,15 @@ func (_c *NotificationRepositoryMock_ActiveMembers_Call) Run(run func(ctx contex
 		if args[2] != nil {
 			arg2 = args[2].([]uuid.UUID)
 		}
+		var arg3 *uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(*uuid.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -121,7 +127,7 @@ func (_c *NotificationRepositoryMock_ActiveMembers_Call) Return(uUIDs []uuid.UUI
 	return _c
 }
 
-func (_c *NotificationRepositoryMock_ActiveMembers_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error)) *NotificationRepositoryMock_ActiveMembers_Call {
+func (_c *NotificationRepositoryMock_ActiveMembers_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID, issueID *uuid.UUID) ([]uuid.UUID, error)) *NotificationRepositoryMock_ActiveMembers_Call {
 	_c.Call.Return(run)
 	return _c
 }

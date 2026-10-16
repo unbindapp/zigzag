@@ -8,7 +8,7 @@ import (
 type WhoamiAPIKey struct {
 	Role         schema.WorkspaceRole  `json:"role" doc:"Strongest role this connection acts with"`
 	FullAccess   bool                  `json:"full_access" doc:"True when it reaches every workspace the user can"`
-	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" nullable:"false" doc:"Workspaces this connection is limited to when not full access"`
+	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" format:"uuid" nullable:"false" doc:"Workspaces this connection is limited to when not full access"`
 	Privileges   []schema.KeyPrivilege `json:"privileges" nullable:"false"`
 }
 

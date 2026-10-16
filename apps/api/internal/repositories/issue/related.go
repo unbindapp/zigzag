@@ -2,6 +2,7 @@ package issue_repo
 
 import (
 	"context"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -29,12 +30,44 @@ func (self *IssueRepository) CreateHistory(ctx context.Context, tx repository.Tx
 		Exec(ctx)
 }
 
-func (self *IssueRepository) ListHistory(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.IssueHistory, error) {
-	return self.base.DB.IssueHistory.Query().
-		Where(issuehistory.IssueID(issueID)).
+type HistoryEntry struct {
+	IssueID uuid.UUID
+	ActorID *uuid.UUID
+	Source  schema.HistorySource
+	Changes []schema.FieldChange
+}
+
+const historyBatchSize = 1000
+
+func (self *IssueRepository) CreateHistoryMany(ctx context.Context, tx repository.TxInterface, entries []HistoryEntry) error {
+	client := self.base.Client(tx)
+	for batch := range slices.Chunk(entries, historyBatchSize) {
+		builders := make([]*ent.IssueHistoryCreate, len(batch))
+		for i, entry := range batch {
+			builders[i] = client.IssueHistory.Create().
+				SetIssueID(entry.IssueID).
+				SetNillableActorID(entry.ActorID).
+				SetSource(entry.Source).
+				SetChanges(entry.Changes)
+		}
+		if err := client.IssueHistory.CreateBulk(builders...).Exec(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (self *IssueRepository) ListHistory(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.IssueHistory, error) {
+	query := self.base.DB.IssueHistory.Query().Where(issuehistory.IssueID(issueID))
+	if after != nil {
+		query = query.Where(issuehistory.Or(
+			issuehistory.CreatedAtGT(after.CreatedAt),
+			issuehistory.And(issuehistory.CreatedAt(after.CreatedAt), issuehistory.IDGT(after.ID)),
+		))
+	}
+	return query.
 		WithActor().
 		Order(issuehistory.ByCreatedAt(), issuehistory.ByID()).
-		Offset(offset).
 		Limit(limit).
 		All(ctx)
 }
@@ -210,10 +243,10 @@ func (self ReactionTarget) predicate() func(*ent.ReactionQuery) *ent.ReactionQue
 	}
 }
 
-func (self *IssueRepository) AddReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error {
+func (self *IssueRepository) AddReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) (bool, error) {
 	exists, err := target.predicate()(self.base.DB.Reaction.Query().Where(reaction.UserID(userID), reaction.Emoji(emoji))).Exist(ctx)
 	if err != nil || exists {
-		return err
+		return false, err
 	}
 	err = self.base.DB.Reaction.Create().
 		SetUserID(userID).
@@ -223,9 +256,9 @@ func (self *IssueRepository) AddReaction(ctx context.Context, userID uuid.UUID, 
 		SetNillableProjectUpdateID(target.ProjectUpdateID).
 		Exec(ctx)
 	if ent.IsConstraintError(err) {
-		return nil
+		return false, nil
 	}
-	return err
+	return err == nil, err
 }
 
 func (self *IssueRepository) RemoveReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error {

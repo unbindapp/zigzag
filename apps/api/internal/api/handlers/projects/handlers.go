@@ -23,7 +23,7 @@ type ProjectResponse struct {
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -51,13 +51,13 @@ type MilestoneResponse struct {
 	}
 }
 
-type UpdateListResponse struct {
+type ProjectUpdateListResponse struct {
 	Body struct {
 		Data []*models.ProjectUpdateResponse `json:"data" nullable:"false"`
 	}
 }
 
-type UpdateResponse struct {
+type ProjectUpdateResponse struct {
 	Body struct {
 		Data *models.ProjectUpdateResponse `json:"data" nullable:"false"`
 	}
@@ -109,7 +109,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*ProjectRes
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *project_service.CreateProjectInput
+	Body *project_service.CreateProjectInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*ProjectResponse, error) {
@@ -128,7 +128,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Proj
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *project_service.UpdateProjectInput
+	Body *project_service.UpdateProjectInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*ProjectResponse, error) {
@@ -147,7 +147,7 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Proj
 
 type ProjectRefBodyInput struct {
 	server.BaseAuthInput
-	Body *project_service.ProjectRefInput
+	Body *project_service.ProjectRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) Delete(ctx context.Context, input *ProjectRefBodyInput) (*DeletedResponse, error) {
@@ -159,7 +159,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *ProjectRefBodyInput
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.ProjectID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.ProjectID, Deleted: true}
 	return resp, nil
 }
 
@@ -240,7 +240,7 @@ func (self *HandlerGroup) ListStatuses(ctx context.Context, input *ListStatusesI
 
 type CreateStatusInput struct {
 	server.BaseAuthInput
-	Body *project_service.CreateProjectStatusInput
+	Body *project_service.CreateProjectStatusInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateStatus(ctx context.Context, input *CreateStatusInput) (*StatusResponse, error) {
@@ -259,7 +259,7 @@ func (self *HandlerGroup) CreateStatus(ctx context.Context, input *CreateStatusI
 
 type UpdateStatusInput struct {
 	server.BaseAuthInput
-	Body *project_service.UpdateProjectStatusInput
+	Body *project_service.UpdateProjectStatusInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateStatus(ctx context.Context, input *UpdateStatusInput) (*StatusResponse, error) {
@@ -278,7 +278,7 @@ func (self *HandlerGroup) UpdateStatus(ctx context.Context, input *UpdateStatusI
 
 type DeleteStatusInput struct {
 	server.BaseAuthInput
-	Body *project_service.DeleteProjectStatusInput
+	Body *project_service.DeleteProjectStatusInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteStatus(ctx context.Context, input *DeleteStatusInput) (*DeletedResponse, error) {
@@ -290,7 +290,7 @@ func (self *HandlerGroup) DeleteStatus(ctx context.Context, input *DeleteStatusI
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.StatusID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.StatusID, Deleted: true}
 	return resp, nil
 }
 
@@ -315,7 +315,7 @@ func (self *HandlerGroup) ListMilestones(ctx context.Context, input *ProjectQuer
 
 type CreateMilestoneInput struct {
 	server.BaseAuthInput
-	Body *project_service.CreateMilestoneInput
+	Body *project_service.CreateMilestoneInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateMilestone(ctx context.Context, input *CreateMilestoneInput) (*MilestoneResponse, error) {
@@ -334,7 +334,7 @@ func (self *HandlerGroup) CreateMilestone(ctx context.Context, input *CreateMile
 
 type UpdateMilestoneInput struct {
 	server.BaseAuthInput
-	Body *project_service.UpdateMilestoneInput
+	Body *project_service.UpdateMilestoneInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateMilestone(ctx context.Context, input *UpdateMilestoneInput) (*MilestoneResponse, error) {
@@ -353,7 +353,7 @@ func (self *HandlerGroup) UpdateMilestone(ctx context.Context, input *UpdateMile
 
 type DeleteMilestoneInput struct {
 	server.BaseAuthInput
-	Body *project_service.MilestoneRefInput
+	Body *project_service.MilestoneRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteMilestone(ctx context.Context, input *DeleteMilestoneInput) (*DeletedResponse, error) {
@@ -365,11 +365,11 @@ func (self *HandlerGroup) DeleteMilestone(ctx context.Context, input *DeleteMile
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.MilestoneID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.MilestoneID, Deleted: true}
 	return resp, nil
 }
 
-func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ProjectQueryInput) (*UpdateListResponse, error) {
+func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ProjectQueryInput) (*ProjectUpdateListResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -378,17 +378,17 @@ func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ProjectQueryIn
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &UpdateListResponse{}
+	resp := &ProjectUpdateListResponse{}
 	resp.Body.Data = data
 	return resp, nil
 }
 
 type CreateUpdateInput struct {
 	server.BaseAuthInput
-	Body *project_service.CreateProjectUpdateInput
+	Body *project_service.CreateProjectUpdateInput `required:"true"`
 }
 
-func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateInput) (*UpdateResponse, error) {
+func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateInput) (*ProjectUpdateResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -397,17 +397,17 @@ func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateI
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &UpdateResponse{}
+	resp := &ProjectUpdateResponse{}
 	resp.Body.Data = data
 	return resp, nil
 }
 
 type EditUpdateInput struct {
 	server.BaseAuthInput
-	Body *project_service.EditProjectUpdateInput
+	Body *project_service.EditProjectUpdateInput `required:"true"`
 }
 
-func (self *HandlerGroup) EditUpdate(ctx context.Context, input *EditUpdateInput) (*UpdateResponse, error) {
+func (self *HandlerGroup) EditUpdate(ctx context.Context, input *EditUpdateInput) (*ProjectUpdateResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -416,14 +416,14 @@ func (self *HandlerGroup) EditUpdate(ctx context.Context, input *EditUpdateInput
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &UpdateResponse{}
+	resp := &ProjectUpdateResponse{}
 	resp.Body.Data = data
 	return resp, nil
 }
 
 type DeleteUpdateInput struct {
 	server.BaseAuthInput
-	Body *project_service.ProjectUpdateRefInput
+	Body *project_service.ProjectUpdateRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteUpdate(ctx context.Context, input *DeleteUpdateInput) (*DeletedResponse, error) {
@@ -435,13 +435,13 @@ func (self *HandlerGroup) DeleteUpdate(ctx context.Context, input *DeleteUpdateI
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.UpdateID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.UpdateID, Deleted: true}
 	return resp, nil
 }
 
 type CreateLinkInput struct {
 	server.BaseAuthInput
-	Body *project_service.CreateProjectLinkInput
+	Body *project_service.CreateProjectLinkInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateLink(ctx context.Context, input *CreateLinkInput) (*LinkResponse, error) {
@@ -460,7 +460,7 @@ func (self *HandlerGroup) CreateLink(ctx context.Context, input *CreateLinkInput
 
 type UpdateLinkInput struct {
 	server.BaseAuthInput
-	Body *project_service.UpdateProjectLinkInput
+	Body *project_service.UpdateProjectLinkInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateLink(ctx context.Context, input *UpdateLinkInput) (*LinkResponse, error) {
@@ -479,7 +479,7 @@ func (self *HandlerGroup) UpdateLink(ctx context.Context, input *UpdateLinkInput
 
 type DeleteLinkInput struct {
 	server.BaseAuthInput
-	Body *project_service.ProjectLinkRefInput
+	Body *project_service.ProjectLinkRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteLink(ctx context.Context, input *DeleteLinkInput) (*DeletedResponse, error) {
@@ -491,6 +491,6 @@ func (self *HandlerGroup) DeleteLink(ctx context.Context, input *DeleteLinkInput
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.LinkID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.LinkID, Deleted: true}
 	return resp, nil
 }

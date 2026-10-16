@@ -84,7 +84,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*IssueDetai
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *issue_service.CreateIssueInput
+	Body *issue_service.CreateIssueInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*IssueResponse, error) {
@@ -101,7 +101,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Issu
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *issue_service.UpdateIssueInput
+	Body *issue_service.UpdateIssueInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*IssueResponse, error) {
@@ -118,18 +118,18 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Issu
 
 type IssueRefInput struct {
 	server.BaseAuthInput
-	Body *issue_service.IssueRefInput
+	Body *issue_service.IssueRefInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
-func deletedResponse(id string) *DeletedResponse {
+func deletedResponse(id uuid.UUID) *DeletedResponse {
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: id, Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: id, Deleted: true}
 	return resp
 }
 
@@ -141,7 +141,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *IssueRefInput) (*De
 	if err := self.srv.IssueService.Delete(ctx, user.ID, input.Body); err != nil {
 		return nil, oapi.MapError(err)
 	}
-	return deletedResponse(input.Body.IssueID.String()), nil
+	return deletedResponse(input.Body.IssueID), nil
 }
 
 func (self *HandlerGroup) lifecycle(ctx context.Context, input *IssueRefInput, apply func(context.Context, uuid.UUID, *issue_service.IssueRefInput) (*models.IssueResponse, error)) (*IssueResponse, error) {
@@ -174,7 +174,7 @@ func (self *HandlerGroup) Unarchive(ctx context.Context, input *IssueRefInput) (
 
 type BulkUpdateInput struct {
 	server.BaseAuthInput
-	Body *issue_service.BulkUpdateIssuesInput
+	Body *issue_service.BulkUpdateIssuesInput `required:"true"`
 }
 
 type IssuesResponse struct {
@@ -284,7 +284,7 @@ func commentResponse(comment *models.CommentResponse) *CommentResponse {
 
 type CreateCommentInput struct {
 	server.BaseAuthInput
-	Body *comment_service.CreateCommentInput
+	Body *comment_service.CreateCommentInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateComment(ctx context.Context, input *CreateCommentInput) (*CommentResponse, error) {
@@ -301,7 +301,7 @@ func (self *HandlerGroup) CreateComment(ctx context.Context, input *CreateCommen
 
 type UpdateCommentInput struct {
 	server.BaseAuthInput
-	Body *comment_service.UpdateCommentInput
+	Body *comment_service.UpdateCommentInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateComment(ctx context.Context, input *UpdateCommentInput) (*CommentResponse, error) {
@@ -318,7 +318,7 @@ func (self *HandlerGroup) UpdateComment(ctx context.Context, input *UpdateCommen
 
 type CommentRefInput struct {
 	server.BaseAuthInput
-	Body *comment_service.CommentRefInput
+	Body *comment_service.CommentRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteComment(ctx context.Context, input *CommentRefInput) (*DeletedResponse, error) {
@@ -329,7 +329,7 @@ func (self *HandlerGroup) DeleteComment(ctx context.Context, input *CommentRefIn
 	if err := self.srv.CommentService.Delete(ctx, user.ID, input.Body); err != nil {
 		return nil, oapi.MapError(err)
 	}
-	return deletedResponse(input.Body.CommentID.String()), nil
+	return deletedResponse(input.Body.CommentID), nil
 }
 
 func (self *HandlerGroup) ResolveComment(ctx context.Context, input *CommentRefInput) (*CommentResponse, error) {
@@ -358,7 +358,7 @@ func (self *HandlerGroup) UnresolveComment(ctx context.Context, input *CommentRe
 
 type CreateRelationInput struct {
 	server.BaseAuthInput
-	Body *issue_service.CreateRelationInput
+	Body *issue_service.CreateRelationInput `required:"true"`
 }
 
 type RelationResponse struct {
@@ -383,7 +383,7 @@ func (self *HandlerGroup) CreateRelation(ctx context.Context, input *CreateRelat
 
 type RelationRefInput struct {
 	server.BaseAuthInput
-	Body *issue_service.RelationRefInput
+	Body *issue_service.RelationRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteRelation(ctx context.Context, input *RelationRefInput) (*DeletedResponse, error) {
@@ -394,7 +394,7 @@ func (self *HandlerGroup) DeleteRelation(ctx context.Context, input *RelationRef
 	if err := self.srv.IssueService.DeleteRelation(ctx, user.ID, input.Body); err != nil {
 		return nil, oapi.MapError(err)
 	}
-	return deletedResponse(input.Body.RelationID.String()), nil
+	return deletedResponse(input.Body.RelationID), nil
 }
 
 type AttachmentResponse struct {
@@ -411,7 +411,7 @@ func attachmentResponse(attachment *models.AttachmentResponse) *AttachmentRespon
 
 type CreateAttachmentInput struct {
 	server.BaseAuthInput
-	Body *issue_service.CreateAttachmentInput
+	Body *issue_service.CreateAttachmentInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateAttachment(ctx context.Context, input *CreateAttachmentInput) (*AttachmentResponse, error) {
@@ -428,7 +428,7 @@ func (self *HandlerGroup) CreateAttachment(ctx context.Context, input *CreateAtt
 
 type UpdateAttachmentInput struct {
 	server.BaseAuthInput
-	Body *issue_service.UpdateAttachmentInput
+	Body *issue_service.UpdateAttachmentInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateAttachment(ctx context.Context, input *UpdateAttachmentInput) (*AttachmentResponse, error) {
@@ -445,7 +445,7 @@ func (self *HandlerGroup) UpdateAttachment(ctx context.Context, input *UpdateAtt
 
 type AttachmentRefInput struct {
 	server.BaseAuthInput
-	Body *issue_service.AttachmentRefInput
+	Body *issue_service.AttachmentRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteAttachment(ctx context.Context, input *AttachmentRefInput) (*DeletedResponse, error) {
@@ -456,12 +456,12 @@ func (self *HandlerGroup) DeleteAttachment(ctx context.Context, input *Attachmen
 	if err := self.srv.IssueService.DeleteAttachment(ctx, user.ID, input.Body); err != nil {
 		return nil, oapi.MapError(err)
 	}
-	return deletedResponse(input.Body.AttachmentID.String()), nil
+	return deletedResponse(input.Body.AttachmentID), nil
 }
 
 type SubscriptionInput struct {
 	server.BaseAuthInput
-	Body *issue_service.SubscriptionInput
+	Body *issue_service.SubscriptionInput `required:"true"`
 }
 
 func (self *HandlerGroup) Subscribe(ctx context.Context, input *SubscriptionInput) (*IssueDetailResponse, error) {
@@ -490,7 +490,7 @@ func (self *HandlerGroup) Unsubscribe(ctx context.Context, input *SubscriptionIn
 
 type ReactionInput struct {
 	server.BaseAuthInput
-	Body *issue_service.ReactionInput
+	Body *issue_service.ReactionInput `required:"true"`
 }
 
 type ReactionsResponse struct {

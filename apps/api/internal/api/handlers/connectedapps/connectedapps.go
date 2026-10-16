@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.GetClient, oapi.SessionOnly)
 
-	oapi.Register(grp, oapi.Create, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "approve-connected-app",
 		Summary:     "Approve Connected App",
 		Description: "Grant an OAuth client access within the current user's own permissions. Returns the URL to send the browser to.",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Approve, oapi.SessionOnly, oapi.Confirm)
 
-	oapi.Register(grp, oapi.Create, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "deny-connected-app",
 		Summary:     "Deny Connected App",
 		Description: "Refuse an OAuth client. Returns the URL to send the browser to.",

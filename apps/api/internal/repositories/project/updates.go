@@ -64,7 +64,6 @@ func (self *ProjectRepository) DeleteUpdate(ctx context.Context, tx repository.T
 	return self.base.Client(tx).ProjectPost.DeleteOneID(updateID).Exec(ctx)
 }
 
-// LatestHealth is the health of the newest update, nil when the project has none.
 func (self *ProjectRepository) LatestHealth(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) (*schema.Health, error) {
 	latest, err := self.base.Client(tx).ProjectPost.Query().
 		Where(projectpost.ProjectID(projectID)).

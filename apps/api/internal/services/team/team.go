@@ -11,16 +11,18 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/models"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	cycle_service "github.com/unbindapp/zigzag-api/internal/services/cycle"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i TeamServiceInterface -p team_service -s TeamService -o team_service_iface.go
 type TeamService struct {
-	repo repositories.RepositoriesInterface
-	now  func() time.Time
+	repo   repositories.RepositoriesInterface
+	cycles cycle_service.CycleServiceInterface
+	now    func() time.Time
 }
 
-func NewTeamService(repo repositories.RepositoriesInterface) *TeamService {
-	return &TeamService{repo: repo, now: time.Now}
+func NewTeamService(repo repositories.RepositoriesInterface, cycles cycle_service.CycleServiceInterface) *TeamService {
+	return &TeamService{repo: repo, cycles: cycles, now: time.Now}
 }
 
 func (self *TeamService) check(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID) error {

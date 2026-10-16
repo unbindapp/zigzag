@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
@@ -21,17 +22,37 @@ func (self *IssueService) Delete(ctx context.Context, userID uuid.UUID, input *I
 		return err
 	}
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		return self.repo.Issue().Delete(ctx, tx, issue.ID)
+		return self.deleteIssue(ctx, tx, issue, &userID)
 	})
 	if err != nil {
 		return err
 	}
+	self.emitDeleted(ctx, issue)
+	return nil
+}
+
+func (self *IssueService) emitDeleted(ctx context.Context, issue *ent.Issue) {
 	self.emit(ctx, issue.WorkspaceID, "issue.deleted", map[string]any{
 		"id":         issue.ID,
 		"identifier": models.Identifier(issue.Edges.Team.Key, issue.Number),
 		"team_id":    issue.TeamID,
 	})
-	return nil
+}
+
+func (self *IssueService) deleteIssue(ctx context.Context, tx repository.TxInterface, issue *ent.Issue, actorID *uuid.UUID) error {
+	children, err := self.repo.Issue().ChildIDs(ctx, tx, issue.ID)
+	if err != nil {
+		return err
+	}
+	change := schema.FieldChange{Field: "parent", From: issue.ID.String(), FromLabel: models.Identifier(issue.Edges.Team.Key, issue.Number)}
+	entries := make([]issue_repo.HistoryEntry, len(children))
+	for i, child := range children {
+		entries[i] = issue_repo.HistoryEntry{IssueID: child, ActorID: actorID, Source: apictx.HistorySource(ctx), Changes: []schema.FieldChange{change}}
+	}
+	if err := self.repo.Issue().CreateHistoryMany(ctx, tx, entries); err != nil {
+		return err
+	}
+	return self.repo.Issue().Delete(ctx, tx, issue.ID)
 }
 
 func (self *IssueService) Trash(ctx context.Context, userID uuid.UUID, input *IssueRefInput) (*models.IssueResponse, error) {
@@ -81,19 +102,23 @@ func (self *IssueService) setLifecycle(ctx context.Context, userID, issueID uuid
 	if err != nil {
 		return nil, err
 	}
-	fields := issue_repo.FieldsOf(issue)
-	changed := apply(&fields, issue)
-	if changed {
-		changes := []schema.FieldChange{{Field: field}}
-		err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-			if err := self.repo.Issue().Update(ctx, tx, issue.ID, &fields); err != nil {
-				return err
-			}
-			return self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, historySource(ctx), changes)
-		})
+	changed := false
+	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		locked, err := self.repo.Issue().LockWithEdges(ctx, tx, issue.ID)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		fields := issue_repo.FieldsOf(locked)
+		if changed = apply(&fields, locked); !changed {
+			return nil
+		}
+		if err := self.repo.Issue().Update(ctx, tx, issue.ID, &fields); err != nil {
+			return err
+		}
+		return self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, apictx.HistorySource(ctx), []schema.FieldChange{{Field: field}})
+	})
+	if err != nil {
+		return nil, err
 	}
 	response, err := self.reload(ctx, userID, issue.ID)
 	if err != nil {

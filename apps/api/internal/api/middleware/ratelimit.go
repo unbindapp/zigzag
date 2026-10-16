@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/danielgtaylor/huma/v2"
 )
 
 type RateLimiter struct {
@@ -25,18 +27,26 @@ func NewRateLimiter() *RateLimiter {
 	return &RateLimiter{windows: map[string]*window{}, now: time.Now}
 }
 
+func (self *RateLimiter) allow(name, address string, limit int, period time.Duration) (bool, string) {
+	now := self.now()
+	windowStart := now.Truncate(period)
+	key := fmt.Sprintf("%s:%s:%d", name, address, windowStart.Unix())
+	if self.hit(key, now, windowStart.Add(period)) <= limit {
+		return true, ""
+	}
+	retryAfter := windowStart.Add(period).Sub(now).Seconds()
+	return false, strconv.Itoa(int(retryAfter) + 1)
+}
+
 func (self *RateLimiter) Limit(name string, limit int, period time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			now := self.now()
-			windowStart := now.Truncate(period)
-			key := fmt.Sprintf("%s:%s:%d", name, clientAddress(r), windowStart.Unix())
-			if self.hit(key, now, windowStart.Add(period)) <= limit {
+			allowed, retryAfter := self.allow(name, clientAddress(r), limit, period)
+			if allowed {
 				next.ServeHTTP(w, r)
 				return
 			}
-			retryAfter := windowStart.Add(period).Sub(now).Seconds()
-			w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter)+1))
+			w.Header().Set("Retry-After", retryAfter)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
 			_ = json.NewEncoder(w).Encode(map[string]string{
@@ -67,9 +77,36 @@ func (self *RateLimiter) hit(key string, now, expiresAt time.Time) int {
 }
 
 func clientAddress(r *http.Request) string {
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	return hostOf(r.RemoteAddr)
+}
+
+func hostOf(remoteAddr string) string {
+	host, _, err := net.SplitHostPort(remoteAddr)
 	if err != nil {
-		return r.RemoteAddr
+		return remoteAddr
 	}
 	return host
+}
+
+const credentialAttemptsPerMinute = 10
+
+var limitedOperations = map[string]int{
+	"login":                  credentialAttemptsPerMinute,
+	"request-password-reset": credentialAttemptsPerMinute,
+	"accept-invitation":      credentialAttemptsPerMinute,
+}
+
+func (self *Middleware) RateLimitOperations(ctx huma.Context, next func(huma.Context)) {
+	limit, limited := limitedOperations[ctx.Operation().OperationID]
+	if !limited {
+		next(ctx)
+		return
+	}
+	allowed, retryAfter := self.limiter.allow(ctx.Operation().OperationID, hostOf(ctx.RemoteAddr()), limit, time.Minute)
+	if allowed {
+		next(ctx)
+		return
+	}
+	ctx.SetHeader("Retry-After", retryAfter)
+	_ = huma.WriteErr(self.api, ctx, http.StatusTooManyRequests, "Too many attempts from this address; try again in a minute")
 }

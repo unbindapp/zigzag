@@ -10,10 +10,21 @@ import (
 //go:embed templates/*
 var templateFS embed.FS
 
+const logoName = "logo.png"
+
 var (
 	htmlTemplate = htmltemplate.Must(htmltemplate.ParseFS(templateFS, "templates/layout.html"))
 	textTemplate = texttemplate.Must(texttemplate.ParseFS(templateFS, "templates/layout.txt"))
+	logoPNG      = mustRead("templates/" + logoName)
 )
+
+func mustRead(name string) []byte {
+	data, err := templateFS.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
 
 type Content struct {
 	Subject      string
@@ -24,12 +35,14 @@ type Content struct {
 	Note         string
 	InstanceName string
 	InstanceURL  string
+	LogoCID      string
 }
 
 func Render(to string, content Content) (Message, error) {
 	if content.InstanceName == "" {
 		content.InstanceName = "Zigzag"
 	}
+	content.LogoCID = "cid:" + logoName
 	var text, html bytes.Buffer
 	if err := textTemplate.Execute(&text, content); err != nil {
 		return Message{}, err
@@ -42,5 +55,6 @@ func Render(to string, content Content) (Message, error) {
 		Subject: content.Subject,
 		Text:    text.String(),
 		HTML:    html.String(),
+		Inline:  []Inline{{Name: logoName, ContentType: "image/png", Data: logoPNG}},
 	}, nil
 }

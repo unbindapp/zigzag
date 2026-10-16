@@ -25,7 +25,7 @@ func (Issue) Fields() []ent.Field {
 		field.UUID("workspace_id", uuid.UUID{}).Comment("Denormalized from the team"),
 		field.UUID("team_id", uuid.UUID{}),
 		field.Int("number"),
-		field.String("title").NotEmpty().MaxLen(255),
+		field.String("title").NotEmpty().MaxRuneLen(255),
 		field.String("description").Optional().Comment("Markdown"),
 		field.String("description_text").Optional().Comment("Plain text derived from description, for search"),
 		field.Int("priority").Default(0).Comment("0 none, 1 urgent, 2 high, 3 medium, 4 low"),
@@ -89,6 +89,7 @@ func (Issue) Indexes() []ent.Index {
 		index.Fields("cycle_id"),
 		index.Fields("parent_id"),
 		index.Fields("workspace_id", "updated_at"),
+		index.Fields("workspace_id", "sort_order"),
 		index.Fields("workspace_id", "import_source", "import_external_id").
 			Unique().
 			Annotations(entsql.IndexWhere("import_source IS NOT NULL AND import_external_id IS NOT NULL")),

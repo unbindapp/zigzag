@@ -1,20 +1,28 @@
 #!/usr/bin/env bash
-# initdb refuses to run as root, so the embedded postgres runs as nobody when we are root.
+# initdb refuses to run as root, so root diffs against a scratch database on the dev postgres container instead.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
-DIR=ent/migrate/migrations
 
 if [ "$(id -u)" != "0" ]; then
 	exec go run -mod=mod ./ent/migrate/main.go "$@"
 fi
 
-SCRATCH="$(mktemp -d -t zigzag-migrate.XXXXXX)"
-trap 'chown -R root:root "$DIR"; chmod 755 "$DIR"; chmod 644 "$DIR"/*; rm -rf "$SCRATCH"' EXIT
-chmod 777 "$SCRATCH" "$DIR"
-chmod 666 "$DIR"/* 2>/dev/null || true
-for d in "$PWD" $(p="$PWD"; while [ "$p" != "/" ]; do p="$(dirname "$p")"; echo "$p"; done); do chmod o+x "$d"; done
+for arg in "$@"; do
+	if [ "$arg" = "-checksum" ]; then
+		exec go run -mod=mod ./ent/migrate/main.go "$@"
+	fi
+done
 
-setpriv --reuid=65534 --regid=65534 --clear-groups env \
-	HOME="$SCRATCH" GOCACHE="$SCRATCH/cache" GOMODCACHE="$(go env GOMODCACHE)" GOFLAGS=-mod=mod GOTOOLCHAIN=local PATH="$PATH" \
-	go run -mod=mod ./ent/migrate/main.go "$@"
+CONTAINER="${MIGRATE_CONTAINER:-zigzag_postgres}"
+PG_PORT="${POSTGRES_PORT:-54329}"
+SCRATCH_DB="zigzag_migrate_$(od -An -N4 -tx4 /dev/urandom | tr -d ' ')"
+
+psql_admin() {
+	docker exec "$CONTAINER" psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres -c "$1"
+}
+
+psql_admin "CREATE DATABASE $SCRATCH_DB"
+trap 'psql_admin "DROP DATABASE IF EXISTS $SCRATCH_DB WITH (FORCE)"' EXIT
+
+go run -mod=mod ./ent/migrate/main.go -database-url="postgres://postgres:postgres@127.0.0.1:$PG_PORT/$SCRATCH_DB?sslmode=disable" "$@"

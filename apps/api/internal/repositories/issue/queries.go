@@ -42,6 +42,10 @@ func (self *IssueRepository) GetWithEdges(ctx context.Context, tx repository.TxI
 	return withIssueEdges(self.base.Client(tx).Issue.Query().Where(issue.ID(id))).Only(ctx)
 }
 
+func (self *IssueRepository) LockWithEdges(ctx context.Context, tx repository.TxInterface, id uuid.UUID) (*ent.Issue, error) {
+	return withIssueEdges(self.base.Client(tx).Issue.Query().Where(issue.ID(id), repository.LockRowsOnPostgres(issue.Table)).Unique(false)).Only(ctx)
+}
+
 // GetManyWithEdges keeps the order of ids and skips ids that do not exist.
 func (self *IssueRepository) GetManyWithEdges(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) ([]*ent.Issue, error) {
 	found, err := withIssueEdges(self.base.Client(tx).Issue.Query().Where(issue.IDIn(ids...))).All(ctx)
@@ -174,6 +178,10 @@ func (self *IssueRepository) Children(ctx context.Context, parentID uuid.UUID) (
 		Where(issue.ParentID(parentID), issue.TrashedAtIsNil())).
 		Order(issue.BySubIssueSortOrder(), issue.ByNumber()).
 		All(ctx)
+}
+
+func (self *IssueRepository) ChildIDs(ctx context.Context, tx repository.TxInterface, parentID uuid.UUID) ([]uuid.UUID, error) {
+	return self.base.Client(tx).Issue.Query().Where(issue.ParentID(parentID)).IDs(ctx)
 }
 
 func (self *IssueRepository) AncestorIDs(ctx context.Context, tx repository.TxInterface, id uuid.UUID) ([]uuid.UUID, error) {

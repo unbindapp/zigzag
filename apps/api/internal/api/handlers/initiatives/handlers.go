@@ -23,17 +23,17 @@ type InitiativeResponse struct {
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
-type UpdateListResponse struct {
+type InitiativeUpdateListResponse struct {
 	Body struct {
 		Data []*models.InitiativeUpdateResponse `json:"data" nullable:"false"`
 	}
 }
 
-type UpdateResponse struct {
+type InitiativeUpdateResponse struct {
 	Body struct {
 		Data *models.InitiativeUpdateResponse `json:"data" nullable:"false"`
 	}
@@ -79,7 +79,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*Initiative
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.CreateInitiativeInput
+	Body *initiative_service.CreateInitiativeInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*InitiativeResponse, error) {
@@ -98,7 +98,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Init
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.UpdateInitiativeInput
+	Body *initiative_service.UpdateInitiativeInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*InitiativeResponse, error) {
@@ -117,7 +117,7 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Init
 
 type InitiativeRefBodyInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.InitiativeRefInput
+	Body *initiative_service.InitiativeRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) Delete(ctx context.Context, input *InitiativeRefBodyInput) (*DeletedResponse, error) {
@@ -129,7 +129,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *InitiativeRefBodyIn
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.InitiativeID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.InitiativeID, Deleted: true}
 	return resp, nil
 }
 
@@ -163,7 +163,7 @@ func (self *HandlerGroup) Unarchive(ctx context.Context, input *InitiativeRefBod
 
 type InitiativeProjectBodyInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.InitiativeProjectInput
+	Body *initiative_service.InitiativeProjectInput `required:"true"`
 }
 
 func (self *HandlerGroup) AddProject(ctx context.Context, input *InitiativeProjectBodyInput) (*InitiativeResponse, error) {
@@ -199,7 +199,7 @@ type ListUpdatesInput struct {
 	initiative_service.InitiativeQueryInput
 }
 
-func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ListUpdatesInput) (*UpdateListResponse, error) {
+func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ListUpdatesInput) (*InitiativeUpdateListResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -208,17 +208,17 @@ func (self *HandlerGroup) ListUpdates(ctx context.Context, input *ListUpdatesInp
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &UpdateListResponse{}
+	resp := &InitiativeUpdateListResponse{}
 	resp.Body.Data = data
 	return resp, nil
 }
 
 type CreateUpdateInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.CreateInitiativeUpdateInput
+	Body *initiative_service.CreateInitiativeUpdateInput `required:"true"`
 }
 
-func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateInput) (*UpdateResponse, error) {
+func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateInput) (*InitiativeUpdateResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -227,14 +227,14 @@ func (self *HandlerGroup) CreateUpdate(ctx context.Context, input *CreateUpdateI
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &UpdateResponse{}
+	resp := &InitiativeUpdateResponse{}
 	resp.Body.Data = data
 	return resp, nil
 }
 
 type DeleteUpdateInput struct {
 	server.BaseAuthInput
-	Body *initiative_service.InitiativeUpdateRefInput
+	Body *initiative_service.InitiativeUpdateRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteUpdate(ctx context.Context, input *DeleteUpdateInput) (*DeletedResponse, error) {
@@ -246,6 +246,6 @@ func (self *HandlerGroup) DeleteUpdate(ctx context.Context, input *DeleteUpdateI
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.UpdateID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.UpdateID, Deleted: true}
 	return resp, nil
 }

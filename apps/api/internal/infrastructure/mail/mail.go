@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -31,6 +32,13 @@ type Message struct {
 	Subject string
 	Text    string
 	HTML    string
+	Inline  []Inline
+}
+
+type Inline struct {
+	Name        string
+	ContentType string
+	Data        []byte
 }
 
 type Sender interface {
@@ -78,6 +86,11 @@ func (SMTPSender) Send(ctx context.Context, settings Settings, msg Message) erro
 	m.Subject(msg.Subject)
 	m.SetBodyString(gomail.TypeTextPlain, msg.Text)
 	m.AddAlternativeString(gomail.TypeTextHTML, msg.HTML)
+	for _, inline := range msg.Inline {
+		if err := m.EmbedReader(inline.Name, bytes.NewReader(inline.Data), gomail.WithFileContentType(gomail.ContentType(inline.ContentType))); err != nil {
+			return fmt.Errorf("embed %s: %w", inline.Name, err)
+		}
+	}
 
 	return client.DialAndSendWithContext(ctx, m)
 }

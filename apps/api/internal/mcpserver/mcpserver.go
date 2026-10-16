@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	maxRequestBodyBytes = 1 << 20
+	maxRequestBodyBytes = 64 << 20
 	requestsPerMinute   = 600
 
 	instructions = `Zigzag is a self-hosted issue tracker modeled on Linear.

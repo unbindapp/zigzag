@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/projectmilestone"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 func (self *ProjectRepository) ListMilestones(ctx context.Context, projectID uuid.UUID) ([]*ent.ProjectMilestone, error) {
@@ -78,9 +79,17 @@ func (self *ProjectRepository) UpdateMilestone(ctx context.Context, milestoneID 
 	if input.SortOrder != nil {
 		m.SetSortOrder(*input.SortOrder)
 	}
-	return m.Save(ctx)
+	updated, err := m.Save(ctx)
+	if err != nil || input.SortOrder == nil {
+		return updated, err
+	}
+	respaced, err := self.base.RespaceIfCrowded(ctx, nil, repository.MilestoneOrder, updated.ProjectID, updated.ID, updated.SortOrder)
+	if err != nil || !respaced {
+		return updated, err
+	}
+	return self.base.DB.ProjectMilestone.Get(ctx, milestoneID)
 }
 
-func (self *ProjectRepository) DeleteMilestone(ctx context.Context, milestoneID uuid.UUID) error {
-	return self.base.DB.ProjectMilestone.DeleteOneID(milestoneID).Exec(ctx)
+func (self *ProjectRepository) DeleteMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) error {
+	return self.base.Client(tx).ProjectMilestone.DeleteOneID(milestoneID).Exec(ctx)
 }

@@ -84,6 +84,7 @@ func (suite *UploadServiceSuite) TestImagesGetTheirSize() {
 		"gif":  encoded(func(w io.Writer, img image.Image) error { return gif.Encode(w, img, nil) }),
 		"webp": webPLossless(37, 21),
 	}
+	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
 	for name, body := range cases {
 		suite.Run(name, func() {
@@ -102,6 +103,7 @@ func (suite *UploadServiceSuite) TestImagesGetTheirSize() {
 }
 
 func (suite *UploadServiceSuite) TestOtherFilesKeepTheirDeclaredType() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
 	stored := suite.expectStored()
 	resp, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "../../notes.TXT", ContentType: "text/plain; charset=utf-8", Body: bytes.NewReader([]byte("hello"))})
@@ -112,19 +114,28 @@ func (suite *UploadServiceSuite) TestOtherFilesKeepTheirDeclaredType() {
 }
 
 func (suite *UploadServiceSuite) TestTooLargeFilesAreRemoved() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
 	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "big.bin", Body: bytes.NewReader(make([]byte, 65<<10))})
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 }
 
 func (suite *UploadServiceSuite) TestEmptyFilesAreRefused() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, nil)
 	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "empty", Body: bytes.NewReader(nil)})
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 }
 
 func (suite *UploadServiceSuite) TestViewersCannotUpload() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
 	suite.allow(schema.WorkspaceRoleMember, errdefs.ErrUnauthorized)
+	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "x", Body: bytes.NewReader([]byte("x"))})
+	suite.ErrorIs(err, errdefs.ErrUnauthorized, "a viewer sees the workspace, so the refusal is forbidden, not not found")
+}
+
+func (suite *UploadServiceSuite) TestOutsidersDoNotLearnTheWorkspaceExists() {
+	suite.allow(schema.WorkspaceRoleViewer, errdefs.ErrUnauthorized)
 	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateUploadInput{WorkspaceID: suite.workspaceID, FileName: "x", Body: bytes.NewReader([]byte("x"))})
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }

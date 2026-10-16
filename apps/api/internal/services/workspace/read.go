@@ -43,6 +43,9 @@ type GetWorkspaceInput struct {
 
 func (self *WorkspaceService) Get(ctx context.Context, userID uuid.UUID, input *GetWorkspaceInput) (*models.WorkspaceResponse, error) {
 	workspace, err := self.lookup(ctx, input)
+	if ent.IsNotFound(err) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Workspace not found")
+	}
 	if err != nil {
 		return nil, err
 	}

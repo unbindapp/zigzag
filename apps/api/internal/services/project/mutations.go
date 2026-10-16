@@ -9,11 +9,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
 )
 
@@ -22,21 +24,21 @@ const slugBaseLength = 48
 type CreateProjectInput struct {
 	WorkspaceID          uuid.UUID             `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	Name                 string                `json:"name" required:"true" minLength:"1" maxLength:"80" doc:"Project name"`
-	TeamIDs              []uuid.UUID           `json:"team_ids" required:"true" minItems:"1" doc:"Teams working on the project, at least one, all from this workspace"`
+	TeamIDs              []uuid.UUID           `json:"team_ids" format:"uuid" required:"true" nullable:"false" minItems:"1" doc:"Teams working on the project, at least one, all from this workspace"`
 	Summary              string                `json:"summary,omitempty" required:"false" maxLength:"255" doc:"One line summary"`
 	Description          string                `json:"description,omitempty" required:"false" maxLength:"100000" doc:"Markdown description"`
 	Icon                 string                `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name"`
-	Color                string                `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color such as #5e6ad2"`
+	Color                string                `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color such as #5e6ad2"`
 	StatusID             uuid.UUID             `json:"status_id,omitempty" required:"false" format:"uuid" doc:"Project status from list-project-statuses; defaults to the first backlog status"`
 	LeadID               uuid.UUID             `json:"lead_id,omitempty" required:"false" format:"uuid" doc:"Workspace member who leads the project"`
-	MemberIDs            []uuid.UUID           `json:"member_ids,omitempty" required:"false" doc:"Workspace members working on the project"`
+	MemberIDs            []uuid.UUID           `json:"member_ids,omitempty" format:"uuid" required:"false" doc:"Workspace members working on the project"`
 	Priority             int                   `json:"priority,omitempty" required:"false" minimum:"0" maximum:"4" doc:"0 none, 1 urgent, 2 high, 3 medium, 4 low"`
 	StartDate            string                `json:"start_date,omitempty" required:"false" format:"date" doc:"Planned start, YYYY-MM-DD"`
 	TargetDate           string                `json:"target_date,omitempty" required:"false" format:"date" doc:"Target completion, YYYY-MM-DD"`
 	StartDateResolution  schema.DateResolution `json:"start_date_resolution,omitempty" required:"false" doc:"Precision of start_date: day (default), month, quarter, half_year or year"`
 	TargetDateResolution schema.DateResolution `json:"target_date_resolution,omitempty" required:"false" doc:"Precision of target_date: day (default), month, quarter, half_year or year"`
-	LabelIDs             []uuid.UUID           `json:"label_ids,omitempty" required:"false" doc:"Workspace labels (not team labels, not groups)"`
-	InitiativeIDs        []uuid.UUID           `json:"initiative_ids,omitempty" required:"false" doc:"Initiatives the project belongs to"`
+	LabelIDs             []uuid.UUID           `json:"label_ids,omitempty" format:"uuid" required:"false" doc:"Workspace labels (not team labels, not groups)"`
+	InitiativeIDs        []uuid.UUID           `json:"initiative_ids,omitempty" format:"uuid" required:"false" doc:"Initiatives the project belongs to"`
 }
 
 func (self *ProjectService) Create(ctx context.Context, userID uuid.UUID, input *CreateProjectInput) (*models.ProjectResponse, error) {
@@ -47,7 +49,7 @@ func (self *ProjectService) Create(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return nil, err
 	}
-	color, err := optionalColor(input.Color)
+	color, err := names.OptionalColor(input.Color)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +71,7 @@ func (self *ProjectService) Create(ctx context.Context, userID uuid.UUID, input 
 	if input.LeadID != uuid.Nil {
 		refs.LeadID = &input.LeadID
 	}
-	if err := self.validateReferences(ctx, input.WorkspaceID, refs); err != nil {
+	if err := self.validateReferences(ctx, userID, input.WorkspaceID, refs); err != nil {
 		return nil, err
 	}
 	status, err := self.statusForCreate(ctx, input.WorkspaceID, input.StatusID)
@@ -137,21 +139,21 @@ func (self *ProjectService) Create(ctx context.Context, userID uuid.UUID, input 
 type UpdateProjectInput struct {
 	ProjectID            uuid.UUID              `json:"project_id" required:"true" format:"uuid" doc:"The project to change"`
 	Name                 *string                `json:"name,omitempty" required:"false" maxLength:"80" doc:"New name"`
-	TeamIDs              []uuid.UUID            `json:"team_ids,omitempty" required:"false" doc:"Replaces the teams; at least one"`
+	TeamIDs              []uuid.UUID            `json:"team_ids,omitempty" format:"uuid" required:"false" doc:"Replaces the teams; at least one"`
 	Summary              *string                `json:"summary,omitempty" required:"false" maxLength:"255" doc:"One line summary, empty to clear"`
 	Description          *string                `json:"description,omitempty" required:"false" maxLength:"100000" doc:"Markdown description, empty to clear"`
 	Icon                 *string                `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color                *string                `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color, empty to clear"`
+	Color                *string                `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
 	StatusID             *uuid.UUID             `json:"status_id,omitempty" required:"false" format:"uuid" doc:"New project status; moving to a started, completed or canceled status stamps started_at, completed_at or canceled_at"`
 	LeadID               *uuid.UUID             `json:"lead_id,omitempty" required:"false" format:"uuid" doc:"New lead; the nil uuid 00000000-0000-0000-0000-000000000000 removes the lead"`
-	MemberIDs            []uuid.UUID            `json:"member_ids,omitempty" required:"false" doc:"Replaces the members; an empty list removes everyone"`
+	MemberIDs            []uuid.UUID            `json:"member_ids,omitempty" format:"uuid" required:"false" doc:"Replaces the members; an empty list removes everyone"`
 	Priority             *int                   `json:"priority,omitempty" required:"false" minimum:"0" maximum:"4" doc:"0 none, 1 urgent, 2 high, 3 medium, 4 low"`
 	StartDate            *string                `json:"start_date,omitempty" required:"false" doc:"Planned start YYYY-MM-DD, empty to clear"`
 	TargetDate           *string                `json:"target_date,omitempty" required:"false" doc:"Target completion YYYY-MM-DD, empty to clear"`
 	StartDateResolution  *schema.DateResolution `json:"start_date_resolution,omitempty" required:"false" doc:"Precision of start_date: day, month, quarter, half_year or year"`
 	TargetDateResolution *schema.DateResolution `json:"target_date_resolution,omitempty" required:"false" doc:"Precision of target_date: day, month, quarter, half_year or year"`
-	LabelIDs             []uuid.UUID            `json:"label_ids,omitempty" required:"false" doc:"Replaces the labels; an empty list removes all"`
-	InitiativeIDs        []uuid.UUID            `json:"initiative_ids,omitempty" required:"false" doc:"Replaces the initiatives; an empty list removes all"`
+	LabelIDs             []uuid.UUID            `json:"label_ids,omitempty" format:"uuid" required:"false" doc:"Replaces the labels; an empty list removes all"`
+	InitiativeIDs        []uuid.UUID            `json:"initiative_ids,omitempty" format:"uuid" required:"false" doc:"Replaces the initiatives; an empty list removes all"`
 	SortOrder            *float64               `json:"sort_order,omitempty" required:"false" doc:"Manual order in lists and boards"`
 }
 
@@ -164,7 +166,7 @@ func (self *ProjectService) Update(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return nil, err
 	}
-	if err := self.validateReferences(ctx, project.WorkspaceID, refs); err != nil {
+	if err := self.validateReferences(ctx, userID, project.WorkspaceID, refs); err != nil {
 		return nil, err
 	}
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
@@ -205,7 +207,7 @@ func (self *ProjectService) buildUpdate(ctx context.Context, project *ent.Projec
 		update.Summary = &summary
 	}
 	if input.Color != nil {
-		color, err := optionalColor(*input.Color)
+		color, err := names.OptionalColor(*input.Color)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -293,7 +295,24 @@ func (self *ProjectService) Delete(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return err
 	}
-	return self.repo.Project().Delete(ctx, project.ID)
+	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		issues, err := self.repo.Project().IssuesInProject(ctx, tx, project.ID)
+		if err != nil {
+			return err
+		}
+		entries := make([]issue_repo.HistoryEntry, len(issues))
+		for i, issue := range issues {
+			changes := []schema.FieldChange{{Field: "project", From: project.ID.String(), FromLabel: project.Name}}
+			if milestone := issue.Edges.Milestone; milestone != nil {
+				changes = append(changes, schema.FieldChange{Field: "milestone", From: milestone.ID.String(), FromLabel: milestone.Name})
+			}
+			entries[i] = issue_repo.HistoryEntry{IssueID: issue.ID, ActorID: &userID, Source: apictx.HistorySource(ctx), Changes: changes}
+		}
+		if err := self.repo.Issue().CreateHistoryMany(ctx, tx, entries); err != nil {
+			return err
+		}
+		return self.repo.Project().Delete(ctx, tx, project.ID)
+	})
 }
 
 func (self *ProjectService) Archive(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) (*models.ProjectResponse, error) {

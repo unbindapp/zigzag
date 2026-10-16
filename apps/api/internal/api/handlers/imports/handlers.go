@@ -12,7 +12,7 @@ import (
 
 type ImportLinearInput struct {
 	server.BaseAuthInput
-	Body *import_service.ImportLinearInput
+	Body *import_service.ImportLinearInput `required:"true"`
 }
 
 type ImportReportResponse struct {

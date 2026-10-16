@@ -80,6 +80,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	}
 	registerGroup := func(prefix, tag string, authed, sessionOnly bool, fn func(*server.Server, *huma.Group)) {
 		grp := huma.NewGroup(api, prefix)
+		grp.UseMiddleware(mw.RateLimitOperations)
 		if authed {
 			grp.UseMiddleware(mw.Authenticate)
 			grp.UseMiddleware(mw.CSRF)

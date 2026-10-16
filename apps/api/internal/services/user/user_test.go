@@ -2,6 +2,7 @@ package user_service
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -44,6 +45,11 @@ func (suite *UserServiceSuite) TestLoginRefusesInactiveAccounts() {
 	suite.MockUserRepo.EXPECT().Authenticate(suite.Ctx, "ada@example.com", "bad").Return(nil, user_repo.ErrInvalidPassword).Once()
 	_, err = suite.service.Login(suite.Ctx, "ada@example.com", "bad")
 	suite.ErrorIs(err, ErrInvalidCredentials, "wrong password and unknown account answer alike")
+
+	outage := errors.New("connection refused")
+	suite.MockUserRepo.EXPECT().Authenticate(suite.Ctx, "ada@example.com", "pw").Return(nil, outage).Once()
+	_, err = suite.service.Login(suite.Ctx, "ada@example.com", "pw")
+	suite.ErrorIs(err, outage, "a database outage is a server error, not a wrong password")
 }
 
 func (suite *UserServiceSuite) TestWhoamiListsWorkspacesWithRolesAndKeyLimits() {
@@ -187,6 +193,10 @@ func (suite *UserServiceSuite) TestDeactivatingSignsOutSessions() {
 }
 
 func (suite *UserServiceSuite) TestUpdateMeValidates() {
+	suite.Run("blank name", func() {
+		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{Name: utils.ToPtr("   ")})
+		suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	})
 	suite.Run("taken display name", func() {
 		suite.MockUserRepo.EXPECT().GetByDisplayName(suite.Ctx, mock.Anything, "bob").Return(&ent.User{ID: uuid.New()}, nil).Once()
 		_, err := suite.service.UpdateMe(suite.Ctx, suite.userID, &UpdateMeInput{DisplayName: utils.ToPtr("Bob")})

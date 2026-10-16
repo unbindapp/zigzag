@@ -8,6 +8,7 @@ Zigzag copies Unbind's shape. Read Unbind's `apps/api` and `apps/web` for any de
 - The SPA build is copied to `apps/api/internal/web/dist` and embedded with `go:embed`. `internal/web/web.go` serves it as the chi `NotFound` fallback: hashed `assets/` are immutable, `config.json` is never cached, unknown paths fall back to `index.html` only for `Accept: text/html`.
 - The SPA calls the API same-origin at `/api/go` (from `public/config.json`). The binary serves every API operation both at the root and under `/api/go` (the same router with the prefix stripped), so it works behind an ingress that strips the prefix, one that does not, and the Vite proxy. `/mcp`, `/oauth/*` and `/.well-known/*` are served at the root only; under `/api/go` they answer 404. The OpenAPI `servers` URL is `EXTERNAL_API_URL`.
 - The root `Dockerfile` builds the SPA (`node:24-alpine`), embeds it and builds the binary (`golang:1.27-alpine`), and ships `/app/zigzag` on `distroless/static-debian12:nonroot` with `DATA_DIR=/data` as a volume. Time zone data is compiled in with `time/tzdata`.
+- `/openapi.json` is the full spec. `/docs` renders `/openapi-public.json`, the operations an API key can call (`oapi.APIKeySpec`, also behind `cmd/openapi -api-key-only`).
 - `apps/api/cmd/openapi` prints the OpenAPI spec offline. `scripts/gen-web-types.sh` feeds it to `apps/web/scripts/generate-sdk` to produce `src/lib/server/client.gen.ts` (zod schemas and a typed client). Both are committed; `scripts/check-web-types.sh` fails CI when stale.
 
 ## API layering (identical to Unbind)
@@ -74,7 +75,7 @@ Credential privileges (`KeyPrivilege`): none at launch. Keep the field and the p
 
 ## MCP
 
-Port `internal/mcpserver` from Unbind unchanged in design: `buildTools` walks the OpenAPI, one `mcp.Server` per distinct offered tool set, `dispatcher` runs tool calls through the router with `apictx.WithMCPCaller`, verifier accepts OAuth access tokens and API keys. `coverage_test.go` fails when an operation an API key can reach has neither `oapi.MCP` nor `oapi.NoMCP`. Rate limit 600 requests/minute per caller.
+Port `internal/mcpserver` from Unbind unchanged in design: `buildTools` walks the OpenAPI, one `mcp.Server` per distinct offered tool set, `dispatcher` runs tool calls through the router with `apictx.WithMCPCaller`, verifier accepts OAuth access tokens and API keys. `coverage_test.go` fails when an operation an API key can reach has neither `oapi.MCP` nor `oapi.NoMCP`. Rate limit 600 requests/minute per caller. `/mcp` accepts request bodies up to 64 MiB so `import-linear` can take a real export.
 
 The `instructions` text tells an agent: resources nest as workspace > team > issue; projects and labels belong to a workspace and are shared by its teams; identifiers look like `KEY-123` and most issue tools accept either `issue_id` or `identifier`; call `whoami` first; `list-issues` is filtered and paginated with an opaque cursor; archived and trashed issues are hidden unless asked for; creating an issue needs `team_id` and `title`, everything else defaults (state = team default, priority none); markdown is accepted in descriptions and comments; `@` mentions use `@[Name](user:<id>)`.
 
@@ -103,7 +104,7 @@ INJECT_DEV_ORIGINS       default false
 LOG_LEVEL                default info
 ```
 
-No Redis. Rate limiting (`middleware.RateLimiter`, same `Limit(name, n, window)` API as Unbind) and the client metadata document cache are in-process (the single binary runs as one replica).
+No Redis. Rate limiting (`middleware.RateLimiter`, same `Limit(name, n, window)` API as Unbind) and the client metadata document cache are in-process (the single binary runs as one replica). `login`, `request-password-reset` and `accept-invitation` are limited to 10 requests per minute per client address (`middleware.RateLimitOperations`, applied to every group and keyed by operation id).
 
 ## Scheduler (`internal/scheduler`, gocron)
 
@@ -121,5 +122,6 @@ No Redis. Rate limiting (`middleware.RateLimiter`, same `Limit(name, n, window)`
 - `make dev-infra` starts it. `make dev-api` runs the API (`COOKIE_SECURE=false INJECT_DEV_ORIGINS=true`). `make dev-web` runs Vite on `:5174` proxying to `:8091`.
 - `make app` builds the SPA, copies it into the embed dir and builds `apps/api/bin/zigzag`.
 - `make check` runs: `go vet`, `gofmt -l`, `go test ./...`, `check-web-types`, `npm run typecheck`, `npm run lint`, `npm run test`.
-- Migrations: `make api-migrate NAME=x` uses embedded-postgres like Unbind, through `apps/api/scripts/migrate.sh`, which runs it as `nobody` when invoked as root because `initdb` refuses root. `make api-migrate-checksum` regenerates `atlas.sum`. Migrations run with goose on startup. The first, hand-written migration `..._extensions.sql` creates `pg_trgm`; atlas applies migrations to its dev database while diffing, so the extension must exist before the generated migration that uses `gin_trgm_ops`.
+- Migrations: `make api-migrate NAME=x` uses embedded-postgres like Unbind, through `apps/api/scripts/migrate.sh`. `initdb` refuses root, so as root the script diffs against a scratch database `zigzag_migrate_<random>` it creates on the running `zigzag_postgres` container and drops afterwards. `make api-migrate-checksum` regenerates `atlas.sum`. Migrations run with goose on startup. The first, hand-written migration `..._extensions.sql` creates `pg_trgm`; atlas applies migrations to its dev database while diffing, so the extension must exist before the generated migration that uses `gin_trgm_ops`.
+- Repository tests run on in-memory SQLite. With `ZIGZAG_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:54329/postgres?sslmode=disable` the issue repository suite also runs on Postgres (search, row locks, keyset paging) in a scratch database `zigzag_test_<random>` it migrates and drops.
 - First run: open the UI, `/welcome` creates the first user.

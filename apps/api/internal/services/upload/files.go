@@ -44,8 +44,11 @@ type CreateUploadInput struct {
 }
 
 func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *CreateUploadInput) (*models.UploadResponse, error) {
-	if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleMember, WorkspaceID: input.WorkspaceID}}); err != nil {
+	if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleViewer, WorkspaceID: input.WorkspaceID}}); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Workspace not found")
+	}
+	if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleMember, WorkspaceID: input.WorkspaceID}}); err != nil {
+		return nil, err
 	}
 
 	header := make([]byte, headerBytes)

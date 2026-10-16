@@ -179,3 +179,29 @@ func (suite *ProjectRepositorySuite) TestValidationCountsStayInTheWorkspace() {
 	suite.Require().NoError(err)
 	suite.Equal(1, count)
 }
+
+func (suite *ProjectRepositorySuite) TestIssuesLosingTheProjectOrMilestone() {
+	project := suite.project("launch", schema.ProjectStatusStarted)
+	beta, err := suite.repo.CreateMilestone(suite.Ctx, &CreateMilestoneInput{ProjectID: project.ID, Name: "Beta"})
+	suite.Require().NoError(err)
+	suite.issue(project, beta, schema.StateTypeStarted, nil, false)
+	suite.issue(project, nil, schema.StateTypeStarted, nil, false)
+
+	issues, err := suite.repo.IssuesInProject(suite.Ctx, nil, project.ID)
+	suite.Require().NoError(err)
+	suite.Require().Len(issues, 2)
+	names := []string{}
+	for _, issue := range issues {
+		if issue.Edges.Milestone != nil {
+			names = append(names, issue.Edges.Milestone.Name)
+		}
+	}
+	suite.Equal([]string{"Beta"}, names, "the milestone comes along for the history label")
+
+	inMilestone, err := suite.repo.IssueIDsInMilestone(suite.Ctx, nil, beta.ID)
+	suite.Require().NoError(err)
+	suite.Len(inMilestone, 1)
+
+	suite.Require().NoError(suite.repo.Delete(suite.Ctx, nil, project.ID))
+	suite.Equal(2, suite.DB.Issue.Query().CountX(suite.Ctx), "issues survive their project")
+}

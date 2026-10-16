@@ -71,7 +71,6 @@ func TransformInitiative(entity *ent.Initiative, health *schema.Health, totals *
 	}
 }
 
-// SumIssueTotals merges the totals of several projects.
 func SumIssueTotals(parts ...*IssueTotals) *IssueTotals {
 	sum := &IssueTotals{Counts: map[schema.StateType]int{}, Scopes: map[schema.StateType]float64{}}
 	for _, part := range parts {

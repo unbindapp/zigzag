@@ -13,6 +13,7 @@ type Middleware struct {
 	api            huma.API
 	cfg            *config.Config
 	allowedOrigins []string
+	limiter        *RateLimiter
 }
 
 func NewMiddleware(cfg *config.Config, repository repositories.RepositoriesInterface, api huma.API, tokenManager *auth.TokenManager, allowedOrigins []string) *Middleware {
@@ -22,5 +23,6 @@ func NewMiddleware(cfg *config.Config, repository repositories.RepositoriesInter
 		api:            api,
 		cfg:            cfg,
 		allowedOrigins: allowedOrigins,
+		limiter:        NewRateLimiter(),
 	}
 }

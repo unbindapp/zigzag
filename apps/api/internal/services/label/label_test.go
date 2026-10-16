@@ -1,6 +1,7 @@
 package label_service
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -203,6 +204,37 @@ func (suite *LabelServiceSuite) TestDeleteRecordsRemovalOnIssues() {
 	suite.MockLabelRepo.EXPECT().Delete(suite.Ctx, mock.Anything, ids).Return(nil).Once()
 
 	suite.NoError(suite.service.Delete(suite.Ctx, suite.userID, &LabelRefInput{LabelID: suite.group.ID}))
+}
+
+func (suite *LabelServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.asAdmin()
+	foreignTeam := &ent.Team{ID: uuid.New(), WorkspaceID: uuid.New(), Key: "OPS"}
+	foreignGroup := &ent.Label{ID: uuid.New(), WorkspaceID: uuid.New(), Name: "Kind", IsGroup: true}
+	plain := &ent.Label{ID: uuid.New(), WorkspaceID: suite.workspaceID, Name: "Bug"}
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, foreignTeam.ID).Return(foreignTeam, nil).Maybe()
+	suite.MockLabelRepo.EXPECT().GetByID(suite.Ctx, foreignGroup.ID).Return(foreignGroup, nil).Maybe()
+	suite.MockLabelRepo.EXPECT().GetByID(suite.Ctx, plain.ID).Return(plain, nil).Maybe()
+
+	cases := map[string]func() error{
+		"create with a team of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateLabelInput{WorkspaceID: suite.workspaceID, TeamID: &foreignTeam.ID, Name: "Bug", Color: "#eb5757"})
+			return err
+		},
+		"create in a group of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateLabelInput{WorkspaceID: suite.workspaceID, Name: "Bug", Color: "#eb5757", ParentID: &foreignGroup.ID})
+			return err
+		},
+		"move into a group of another workspace": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateLabelInput{LabelID: plain.ID, ParentID: &foreignGroup.ID})
+			return err
+		},
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			err := run()
+			suite.Truef(errors.Is(err, errdefs.ErrInvalidInput) || errors.Is(err, errdefs.ErrNotFound), "got %v", err)
+		})
+	}
 }
 
 func TestLabelServiceSuite(t *testing.T) {

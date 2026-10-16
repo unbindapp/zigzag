@@ -8,7 +8,6 @@ import (
 	"github.com/unbindapp/zigzag-api/config"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
@@ -98,14 +97,4 @@ func (self *LabelService) adminLabel(ctx context.Context, userID, labelID uuid.U
 		return nil, err
 	}
 	return found, nil
-}
-
-func historySource(ctx context.Context) schema.HistorySource {
-	if _, ok := apictx.MCPCallerFromContext(ctx); ok {
-		return schema.HistorySourceMCP
-	}
-	if _, ok := permissions_repo.APIKeyAccessFromContext(ctx); ok {
-		return schema.HistorySourceAPI
-	}
-	return schema.HistorySourceUser
 }

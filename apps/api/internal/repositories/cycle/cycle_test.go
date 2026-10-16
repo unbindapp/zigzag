@@ -127,10 +127,10 @@ func (suite *CycleRepositorySuite) TestCountEndingAfterSkipsFinishedCycles() {
 	suite.cycle(3, suite.start.AddDate(0, 0, 14))
 	suite.Require().NoError(suite.repo.Complete(suite.Ctx, nil, past.ID, suite.start))
 
-	count, err := suite.repo.CountEndingAfter(suite.Ctx, suite.team.ID, suite.start.AddDate(0, 0, 1))
+	count, err := suite.repo.CountEndingAfter(suite.Ctx, nil, suite.team.ID, suite.start.AddDate(0, 0, 1))
 	suite.Require().NoError(err)
 	suite.Equal(2, count)
-	latest, err := suite.repo.LatestCycle(suite.Ctx, suite.team.ID)
+	latest, err := suite.repo.LatestCycle(suite.Ctx, nil, suite.team.ID)
 	suite.Require().NoError(err)
 	suite.Equal(3, latest.Number)
 }

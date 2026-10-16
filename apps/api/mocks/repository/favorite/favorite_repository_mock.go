@@ -126,8 +126,8 @@ func (_c *FavoriteRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.
 }
 
 // Delete provides a mock function for the type FavoriteRepositoryMock
-func (_mock *FavoriteRepositoryMock) Delete(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error) {
-	ret := _mock.Called(ctx, userID, kind, entityID)
+func (_mock *FavoriteRepositoryMock) Delete(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error) {
+	ret := _mock.Called(ctx, userID, workspaceID, kind, entityID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Delete")
@@ -135,16 +135,16 @@ func (_mock *FavoriteRepositoryMock) Delete(ctx context.Context, userID uuid.UUI
 
 	var r0 int
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) (int, error)); ok {
-		return returnFunc(ctx, userID, kind, entityID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, schema.FavoriteKind, uuid.UUID) (int, error)); ok {
+		return returnFunc(ctx, userID, workspaceID, kind, entityID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) int); ok {
-		r0 = returnFunc(ctx, userID, kind, entityID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, schema.FavoriteKind, uuid.UUID) int); ok {
+		r0 = returnFunc(ctx, userID, workspaceID, kind, entityID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, userID, kind, entityID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, schema.FavoriteKind, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userID, workspaceID, kind, entityID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -159,13 +159,14 @@ type FavoriteRepositoryMock_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
+//   - workspaceID uuid.UUID
 //   - kind schema.FavoriteKind
 //   - entityID uuid.UUID
-func (_e *FavoriteRepositoryMock_Expecter) Delete(ctx any, userID any, kind any, entityID any) *FavoriteRepositoryMock_Delete_Call {
-	return &FavoriteRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, kind, entityID)}
+func (_e *FavoriteRepositoryMock_Expecter) Delete(ctx any, userID any, workspaceID any, kind any, entityID any) *FavoriteRepositoryMock_Delete_Call {
+	return &FavoriteRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, workspaceID, kind, entityID)}
 }
 
-func (_c *FavoriteRepositoryMock_Delete_Call) Run(run func(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID)) *FavoriteRepositoryMock_Delete_Call {
+func (_c *FavoriteRepositoryMock_Delete_Call) Run(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID)) *FavoriteRepositoryMock_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -175,19 +176,24 @@ func (_c *FavoriteRepositoryMock_Delete_Call) Run(run func(ctx context.Context, 
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 schema.FavoriteKind
+		var arg2 uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(schema.FavoriteKind)
+			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 uuid.UUID
+		var arg3 schema.FavoriteKind
 		if args[3] != nil {
-			arg3 = args[3].(uuid.UUID)
+			arg3 = args[3].(schema.FavoriteKind)
+		}
+		var arg4 uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -198,7 +204,7 @@ func (_c *FavoriteRepositoryMock_Delete_Call) Return(n int, err error) *Favorite
 	return _c
 }
 
-func (_c *FavoriteRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)) *FavoriteRepositoryMock_Delete_Call {
+func (_c *FavoriteRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)) *FavoriteRepositoryMock_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -510,16 +516,16 @@ func (_c *FavoriteRepositoryMock_NextSortOrder_Call) RunAndReturn(run func(ctx c
 }
 
 // Reorder provides a mock function for the type FavoriteRepositoryMock
-func (_mock *FavoriteRepositoryMock) Reorder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
-	ret := _mock.Called(ctx, userID, ids)
+func (_mock *FavoriteRepositoryMock) Reorder(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, ids []uuid.UUID) error {
+	ret := _mock.Called(ctx, userID, workspaceID, ids)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Reorder")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, userID, ids)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, userID, workspaceID, ids)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -534,12 +540,13 @@ type FavoriteRepositoryMock_Reorder_Call struct {
 // Reorder is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
+//   - workspaceID uuid.UUID
 //   - ids []uuid.UUID
-func (_e *FavoriteRepositoryMock_Expecter) Reorder(ctx any, userID any, ids any) *FavoriteRepositoryMock_Reorder_Call {
-	return &FavoriteRepositoryMock_Reorder_Call{Call: _e.mock.On("Reorder", ctx, userID, ids)}
+func (_e *FavoriteRepositoryMock_Expecter) Reorder(ctx any, userID any, workspaceID any, ids any) *FavoriteRepositoryMock_Reorder_Call {
+	return &FavoriteRepositoryMock_Reorder_Call{Call: _e.mock.On("Reorder", ctx, userID, workspaceID, ids)}
 }
 
-func (_c *FavoriteRepositoryMock_Reorder_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID)) *FavoriteRepositoryMock_Reorder_Call {
+func (_c *FavoriteRepositoryMock_Reorder_Call) Run(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, ids []uuid.UUID)) *FavoriteRepositoryMock_Reorder_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -549,14 +556,19 @@ func (_c *FavoriteRepositoryMock_Reorder_Call) Run(run func(ctx context.Context,
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 []uuid.UUID
+		var arg2 uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].([]uuid.UUID)
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].([]uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -567,7 +579,7 @@ func (_c *FavoriteRepositoryMock_Reorder_Call) Return(err error) *FavoriteReposi
 	return _c
 }
 
-func (_c *FavoriteRepositoryMock_Reorder_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error) *FavoriteRepositoryMock_Reorder_Call {
+func (_c *FavoriteRepositoryMock_Reorder_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, ids []uuid.UUID) error) *FavoriteRepositoryMock_Reorder_Call {
 	_c.Call.Return(run)
 	return _c
 }

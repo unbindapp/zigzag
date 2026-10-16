@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +20,7 @@ import (
 	entmigrate "github.com/unbindapp/zigzag-api/ent/migrate"
 	oauthserver_handler "github.com/unbindapp/zigzag-api/internal/api/handlers/oauthserver"
 	"github.com/unbindapp/zigzag-api/internal/api/middleware"
+	"github.com/unbindapp/zigzag-api/internal/api/oapi"
 	"github.com/unbindapp/zigzag-api/internal/api/router"
 	"github.com/unbindapp/zigzag-api/internal/api/server"
 	"github.com/unbindapp/zigzag-api/internal/auth"
@@ -71,7 +73,7 @@ const docsPage = `<!doctype html>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 	</head>
 	<body>
-		<script id="api-reference" data-url="openapi.json"></script>
+		<script id="api-reference" data-url="openapi-public.json"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.29.3"></script>
 	</body>
 </html>`
@@ -136,6 +138,7 @@ func startAPI(cfg *config.Config) {
 	oauthServerService := oauthserver_service.NewOAuthServerService(repo, metadataFetcher, issuer)
 	notificationService := notification_service.NewNotificationService(cfg, repo, emailService)
 	webhookService := webhook_service.NewWebhookService(cfg, repo)
+	cycleService := cycle_service.NewCycleService(cfg, repo, webhookService)
 
 	srvImpl := &server.Server{
 		Cfg:                 cfg,
@@ -144,7 +147,7 @@ func startAPI(cfg *config.Config) {
 		Storage:             store,
 		UserService:         user_service.NewUserService(cfg, repo, emailService),
 		WorkspaceService:    workspace_service.NewWorkspaceService(cfg, repo, emailService),
-		TeamService:         team_service.NewTeamService(repo),
+		TeamService:         team_service.NewTeamService(repo, cycleService),
 		EmailService:        emailService,
 		APIKeyService:       apikey_service.NewAPIKeyService(repo),
 		OAuthServerService:  oauthServerService,
@@ -153,10 +156,9 @@ func startAPI(cfg *config.Config) {
 		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notificationService, webhookService),
 		LabelService:        label_service.NewLabelService(cfg, repo),
-		CycleService:        cycle_service.NewCycleService(cfg, repo),
+		CycleService:        cycleService,
 		InitiativeService:   initiative_service.NewInitiativeService(cfg, repo),
 		NotificationService: notificationService,
-		DocumentService:     document_service.NewDocumentService(cfg, repo),
 		ViewService:         view_service.NewViewService(cfg, repo),
 		TemplateService:     template_service.NewTemplateService(cfg, repo),
 		FavoriteService:     favorite_service.NewFavoriteService(cfg, repo),
@@ -164,6 +166,7 @@ func startAPI(cfg *config.Config) {
 		ImportService:       import_service.NewImportService(cfg, repo),
 	}
 	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
+	srvImpl.DocumentService = document_service.NewDocumentService(cfg, repo, srvImpl.IssueService)
 	srvImpl.CommentService = comment_service.NewCommentService(cfg, repo, srvImpl.IssueService, notificationService, webhookService)
 
 	allowedOrigins := []string{cfg.ExternalUIUrl}
@@ -215,6 +218,15 @@ func startAPI(cfg *config.Config) {
 		})
 
 		router.RegisterRoutes(api, srvImpl, mw)
+
+		publicSpec, err := json.Marshal(oapi.APIKeySpec(api.OpenAPI()))
+		if err != nil {
+			log.Fatal("Failed to render the public OpenAPI spec", "err", err)
+		}
+		r.Get("/openapi-public.json", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write(publicSpec)
+		})
 
 		oauthserver_handler.NewHandler(oauthServerService).Mount(r, rateLimiter)
 

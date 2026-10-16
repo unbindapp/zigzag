@@ -41,8 +41,8 @@ type TeamRepositoryInterface interface {
 	GetState(ctx context.Context, stateID uuid.UUID) (*ent.WorkflowState, error)
 	StateNameTaken(ctx context.Context, teamID uuid.UUID, name string, except *uuid.UUID) (bool, error)
 	NextStatePosition(ctx context.Context, teamID uuid.UUID, stateType schema.StateType) (float64, error)
-	CreateState(ctx context.Context, input *CreateStateInput) (*ent.WorkflowState, error)
+	CreateState(ctx context.Context, tx repository.TxInterface, input *CreateStateInput) (*ent.WorkflowState, error)
 	UpdateState(ctx context.Context, stateID uuid.UUID, input *UpdateStateInput) (*ent.WorkflowState, error)
 	CountStates(ctx context.Context, teamID uuid.UUID) (int, error)
-	DeleteState(ctx context.Context, stateID, moveTo uuid.UUID) error
+	DeleteState(ctx context.Context, move *StateMove) error
 }

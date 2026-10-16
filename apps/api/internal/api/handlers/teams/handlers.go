@@ -61,7 +61,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*TeamRespon
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *team_service.CreateTeamInput
+	Body *team_service.CreateTeamInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*TeamResponse, error) {
@@ -80,7 +80,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Team
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *team_service.UpdateTeamInput
+	Body *team_service.UpdateTeamInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*TeamResponse, error) {
@@ -99,12 +99,12 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Team
 
 type DeleteInput struct {
 	server.BaseAuthInput
-	Body *team_service.DeleteTeamInput
+	Body *team_service.DeleteTeamInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -117,7 +117,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *DeleteInput) (*Dele
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.TeamID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.TeamID, Deleted: true}
 	return resp, nil
 }
 
@@ -126,13 +126,13 @@ type TeamRefInput struct {
 	team_service.TeamRefInput
 }
 
-type MemberListResponse struct {
+type TeamMemberListResponse struct {
 	Body struct {
 		Data []*models.TeamMemberResponse `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) ListMembers(ctx context.Context, input *TeamRefInput) (*MemberListResponse, error) {
+func (self *HandlerGroup) ListMembers(ctx context.Context, input *TeamRefInput) (*TeamMemberListResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -141,23 +141,23 @@ func (self *HandlerGroup) ListMembers(ctx context.Context, input *TeamRefInput) 
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &MemberListResponse{}
+	resp := &TeamMemberListResponse{}
 	resp.Body.Data = members
 	return resp, nil
 }
 
 type AddMemberInput struct {
 	server.BaseAuthInput
-	Body *team_service.AddTeamMemberInput
+	Body *team_service.AddTeamMemberInput `required:"true"`
 }
 
-type MemberResponse struct {
+type TeamMemberResponse struct {
 	Body struct {
 		Data *models.TeamMemberResponse `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) AddMember(ctx context.Context, input *AddMemberInput) (*MemberResponse, error) {
+func (self *HandlerGroup) AddMember(ctx context.Context, input *AddMemberInput) (*TeamMemberResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -166,19 +166,19 @@ func (self *HandlerGroup) AddMember(ctx context.Context, input *AddMemberInput) 
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &MemberResponse{}
+	resp := &TeamMemberResponse{}
 	resp.Body.Data = member
 	return resp, nil
 }
 
 type RemoveMemberInput struct {
 	server.BaseAuthInput
-	Body *team_service.RemoveTeamMemberInput
+	Body *team_service.RemoveTeamMemberInput `required:"true"`
 }
 
 type SuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -217,7 +217,7 @@ func (self *HandlerGroup) ListStates(ctx context.Context, input *TeamRefInput) (
 
 type CreateStateInput struct {
 	server.BaseAuthInput
-	Body *team_service.CreateStateInput
+	Body *team_service.CreateStateInput `required:"true"`
 }
 
 type StateResponse struct {
@@ -242,7 +242,7 @@ func (self *HandlerGroup) CreateState(ctx context.Context, input *CreateStateInp
 
 type UpdateStateInput struct {
 	server.BaseAuthInput
-	Body *team_service.UpdateStateInput
+	Body *team_service.UpdateStateInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateState(ctx context.Context, input *UpdateStateInput) (*StateResponse, error) {
@@ -261,7 +261,7 @@ func (self *HandlerGroup) UpdateState(ctx context.Context, input *UpdateStateInp
 
 type DeleteStateInput struct {
 	server.BaseAuthInput
-	Body *team_service.DeleteStateInput
+	Body *team_service.DeleteStateInput `required:"true"`
 }
 
 func (self *HandlerGroup) DeleteState(ctx context.Context, input *DeleteStateInput) (*DeletedResponse, error) {
@@ -273,6 +273,6 @@ func (self *HandlerGroup) DeleteState(ctx context.Context, input *DeleteStateInp
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.StateID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.StateID, Deleted: true}
 	return resp, nil
 }

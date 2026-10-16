@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodDelete,
 	}, handlers.Delete, oapi.MCP)
 
-	oapi.Register(grp, oapi.Update, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "archive-cycle",
 		Summary:     "Archive Cycle",
 		Description: "Archive a cycle so it is hidden from list-cycles unless include_archived is set. Returns the cycle. Needs admin.",

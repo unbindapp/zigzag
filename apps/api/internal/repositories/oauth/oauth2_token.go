@@ -2,6 +2,8 @@ package oauth_repo
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,8 +12,13 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/user"
 )
 
+func hashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
+}
+
 func (self *OauthRepository) CreateToken(ctx context.Context, accessToken, refreshToken, clientID, scope string, expiresAt time.Time, user *ent.User) (*ent.Oauth2Token, error) {
-	created, err := self.base.DB.Oauth2Token.Create().SetAccessToken(accessToken).SetRefreshToken(refreshToken).SetClientID(clientID).SetExpiresAt(expiresAt).SetScope(scope).SetUser(user).Save(ctx)
+	created, err := self.base.DB.Oauth2Token.Create().SetAccessToken(hashToken(accessToken)).SetRefreshToken(hashToken(refreshToken)).SetClientID(clientID).SetExpiresAt(expiresAt).SetScope(scope).SetUser(user).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -22,24 +29,24 @@ func (self *OauthRepository) CreateToken(ctx context.Context, accessToken, refre
 }
 
 func (self *OauthRepository) RevokeAccessToken(ctx context.Context, accessToken string) error {
-	_, err := self.base.DB.Oauth2Token.Update().Where(oauth2token.AccessToken(accessToken)).SetRevoked(true).Save(ctx)
+	_, err := self.base.DB.Oauth2Token.Update().Where(oauth2token.AccessToken(hashToken(accessToken))).SetRevoked(true).Save(ctx)
 	return err
 }
 
 func (self *OauthRepository) RevokeRefreshToken(ctx context.Context, refreshToken string) error {
-	_, err := self.base.DB.Oauth2Token.Update().Where(oauth2token.RefreshToken(refreshToken)).SetRevoked(true).Save(ctx)
+	_, err := self.base.DB.Oauth2Token.Update().Where(oauth2token.RefreshToken(hashToken(refreshToken))).SetRevoked(true).Save(ctx)
 	return err
 }
 
 func (self *OauthRepository) GetByAccessToken(ctx context.Context, accessToken string) (*ent.Oauth2Token, error) {
 	return self.base.DB.Oauth2Token.Query().Where(
-		oauth2token.AccessToken(accessToken),
+		oauth2token.AccessToken(hashToken(accessToken)),
 	).WithUser().Only(ctx)
 }
 
 func (self *OauthRepository) GetByRefreshToken(ctx context.Context, refreshToken string) (*ent.Oauth2Token, error) {
 	return self.base.DB.Oauth2Token.Query().Where(
-		oauth2token.RefreshToken(refreshToken),
+		oauth2token.RefreshToken(hashToken(refreshToken)),
 	).WithUser().Only(ctx)
 }
 

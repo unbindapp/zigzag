@@ -26,7 +26,7 @@ type CreateInvitationInput struct {
 	WorkspaceID uuid.UUID            `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	Email       string               `json:"email" required:"true" format:"email" maxLength:"254" doc:"Email to invite"`
 	Role        schema.WorkspaceRole `json:"role" required:"true" doc:"admin, member or viewer"`
-	TeamIDs     []uuid.UUID          `json:"team_ids,omitempty" required:"false" doc:"Teams of this workspace joined on accept"`
+	TeamIDs     []uuid.UUID          `json:"team_ids,omitempty" format:"uuid" required:"false" doc:"Teams of this workspace joined on accept"`
 }
 
 func (self *WorkspaceService) CreateInvitation(ctx context.Context, userID uuid.UUID, input *CreateInvitationInput) (*models.InvitationResponse, error) {
@@ -178,7 +178,7 @@ func (self *WorkspaceService) AcceptInvitation(ctx context.Context, input *Accep
 	if input.Password != nil {
 		password = *input.Password
 	}
-	if err := self.verifyAccepter(ctx, existing, invitation.Email, password); err != nil {
+	if err := self.verifyAccepter(ctx, existing, invitation, password); err != nil {
 		return nil, nil, err
 	}
 
@@ -216,15 +216,36 @@ func (self *WorkspaceService) AcceptInvitation(ctx context.Context, input *Accep
 	return user, joined, nil
 }
 
-func (self *WorkspaceService) verifyAccepter(ctx context.Context, existing *ent.User, email, password string) error {
-	if !hasUsableAccount(existing) {
-		if len(password) < minPasswordLength {
-			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Choose a password of at least 8 characters")
+func (self *WorkspaceService) verifyAccepter(ctx context.Context, existing *ent.User, invitation *ent.Invitation, password string) error {
+	if hasUsableAccount(existing) {
+		if _, err := self.repo.User().Authenticate(ctx, invitation.Email, password); err != nil {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Enter the password of your existing account to accept")
 		}
 		return nil
 	}
-	if _, err := self.repo.User().Authenticate(ctx, email, password); err != nil {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Enter the password of your existing account to accept")
+	if existing != nil {
+		if err := self.ensureClaimable(ctx, existing, invitation.WorkspaceID); err != nil {
+			return err
+		}
+	}
+	if len(password) < minPasswordLength {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Choose a password of at least 8 characters")
+	}
+	return nil
+}
+
+func (self *WorkspaceService) ensureClaimable(ctx context.Context, existing *ent.User, workspaceID uuid.UUID) error {
+	if existing.PasswordHash != "" {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "This account is deactivated; ask a system admin to reactivate it")
+	}
+	memberships, err := self.repo.Workspace().MembershipsOfUser(ctx, existing.ID)
+	if err != nil {
+		return err
+	}
+	for _, membership := range memberships {
+		if membership.WorkspaceID != workspaceID {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "This email belongs to an account of another workspace; ask a system admin to set its password")
+		}
 	}
 	return nil
 }

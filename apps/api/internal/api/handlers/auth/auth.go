@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/api/oapi"
 	"github.com/unbindapp/zigzag-api/internal/api/server"
 	"github.com/unbindapp/zigzag-api/internal/auth"
+	"github.com/unbindapp/zigzag-api/internal/models"
 	user_service "github.com/unbindapp/zigzag-api/internal/services/user"
 )
 
@@ -97,7 +98,7 @@ type LogoutInput struct {
 type SuccessResponse struct {
 	SetCookie []http.Cookie `header:"Set-Cookie"`
 	Body      struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -122,7 +123,7 @@ type RequestPasswordResetInput struct {
 
 type PlainSuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -136,7 +137,7 @@ func (self *HandlerGroup) RequestPasswordReset(ctx context.Context, input *Reque
 }
 
 type ResetPasswordInput struct {
-	Body *user_service.ResetPasswordInput
+	Body *user_service.ResetPasswordInput `required:"true"`
 }
 
 func (self *HandlerGroup) ResetPassword(ctx context.Context, input *ResetPasswordInput) (*PlainSuccessResponse, error) {

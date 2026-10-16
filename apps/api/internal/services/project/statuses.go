@@ -33,7 +33,7 @@ type CreateProjectStatusInput struct {
 	WorkspaceID uuid.UUID                `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	Name        string                   `json:"name" required:"true" minLength:"1" maxLength:"64" doc:"Status name, unique in the workspace"`
 	Type        schema.ProjectStatusType `json:"type" required:"true" doc:"backlog, planned, started, paused, completed or canceled"`
-	Color       string                   `json:"color" required:"true" maxLength:"16" doc:"Hex color such as #f2c94c"`
+	Color       string                   `json:"color" required:"true" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color such as #f2c94c"`
 	Description string                   `json:"description,omitempty" required:"false" maxLength:"500" doc:"What the status means"`
 	Position    *float64                 `json:"position,omitempty" required:"false" doc:"Order within its type; appended last when omitted"`
 }
@@ -74,7 +74,7 @@ func (self *ProjectService) CreateStatus(ctx context.Context, userID uuid.UUID, 
 type UpdateProjectStatusInput struct {
 	StatusID    uuid.UUID `json:"status_id" required:"true" format:"uuid" doc:"The project status to change"`
 	Name        *string   `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Color       *string   `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color"`
+	Color       *string   `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color"`
 	Description *string   `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
 	Position    *float64  `json:"position,omitempty" required:"false" doc:"Order within its type"`
 }

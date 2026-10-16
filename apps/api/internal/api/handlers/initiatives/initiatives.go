@@ -71,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPost,
 	}, handlers.Unarchive, oapi.MCP)
 
-	oapi.Register(grp, oapi.Invoke, huma.Operation{
+	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "add-initiative-project",
 		Summary:     "Add Initiative Project",
 		Description: "Add a project of the same workspace to an initiative. Returns the initiative. Needs member.",

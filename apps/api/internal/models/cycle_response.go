@@ -11,13 +11,13 @@ type CycleProgress struct {
 	Scope               float64 `json:"scope" doc:"Sum of estimates when the team estimates, else the issue count; canceled issues are left out"`
 	Completed           float64 `json:"completed" doc:"Scope in completed states"`
 	Started             float64 `json:"started" doc:"Scope in started states"`
-	Percent             float64 `json:"percent" doc:"Completed share of scope, 0 to 100"`
+	Percent             int     `json:"percent" doc:"Completed scope as a percentage of the scope, 0 to 100"`
 	IssueCount          int     `json:"issue_count" doc:"Issues in the cycle, canceled ones left out"`
 	CompletedIssueCount int     `json:"completed_issue_count"`
 }
 
 type CycleScopePoint struct {
-	Date      string  `json:"date" doc:"Day in the team's time zone, YYYY-MM-DD"`
+	Date      string  `json:"date" format:"date" doc:"Day in the team's time zone, YYYY-MM-DD"`
 	Scope     float64 `json:"scope"`
 	Completed float64 `json:"completed"`
 	Started   float64 `json:"started"`

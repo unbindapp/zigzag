@@ -8,11 +8,12 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
 )
 
 type NotificationRepositorySuite struct {
-	repository.RepositoryBaseSuite
+	repositorytest.RepositoryBaseSuite
 	repo      *NotificationRepository
 	now       time.Time
 	user      *ent.User
@@ -46,7 +47,7 @@ func (suite *NotificationRepositorySuite) notification(userID uuid.UUID, age tim
 		SaveX(suite.Ctx)
 }
 
-func (suite *NotificationRepositorySuite) list(filter Filter, limit int, cursor *Cursor) []*ent.Notification {
+func (suite *NotificationRepositorySuite) list(filter Filter, limit int, cursor *repository.TimeCursor) []*ent.Notification {
 	rows, err := suite.repo.List(suite.Ctx, &ListInput{UserID: suite.user.ID, WorkspaceID: suite.workspace.ID, Filter: filter, Limit: limit, Cursor: cursor, Now: suite.now})
 	suite.Require().NoError(err)
 	return rows
@@ -98,7 +99,7 @@ func (suite *NotificationRepositorySuite) TestCursorPagesWithoutGapsOrRepeats() 
 	twinB := suite.DB.Notification.Create().SetUserID(suite.user.ID).SetWorkspaceID(suite.workspace.ID).SetType(schema.NotificationReaction).SetTitle("b").SetCreatedAt(same).SaveX(suite.Ctx)
 
 	var seen []uuid.UUID
-	var cursor *Cursor
+	var cursor *repository.TimeCursor
 	for page := 0; page < 10; page++ {
 		rows := suite.list(FilterInbox, 2, cursor)
 		more := len(rows) > 2
@@ -110,8 +111,8 @@ func (suite *NotificationRepositorySuite) TestCursorPagesWithoutGapsOrRepeats() 
 			break
 		}
 		last := rows[len(rows)-1]
-		encoded := Cursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode()
-		decoded, err := DecodeCursor(encoded)
+		encoded := repository.TimeCursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode()
+		decoded, err := repository.DecodeTimeCursor(encoded)
 		suite.Require().NoError(err)
 		cursor = decoded
 	}
@@ -119,8 +120,8 @@ func (suite *NotificationRepositorySuite) TestCursorPagesWithoutGapsOrRepeats() 
 	suite.Equal(created, seen[:5])
 	suite.ElementsMatch([]uuid.UUID{twinA.ID, twinB.ID}, seen[5:])
 
-	_, err := DecodeCursor("garbage")
-	suite.ErrorIs(err, ErrInvalidCursor)
+	_, err := repository.DecodeTimeCursor("garbage")
+	suite.ErrorIs(err, repository.ErrInvalidCursor)
 }
 
 func (suite *NotificationRepositorySuite) TestWritesTouchOnlyTheOwnersRows() {
@@ -143,11 +144,31 @@ func (suite *NotificationRepositorySuite) TestWritesTouchOnlyTheOwnersRows() {
 	suite.Nil(suite.DB.Notification.GetX(suite.Ctx, theirs.ID).ReadAt)
 }
 
+func (suite *NotificationRepositorySuite) TestIssuesOfPrivateTeamsReachOnlyTheirMembersAndAdmins() {
+	admin := suite.DB.User.Create().SetEmail("root@example.com").SetName("Root").SetDisplayName("root").SaveX(suite.Ctx)
+	suite.DB.WorkspaceMember.Create().SetWorkspaceID(suite.workspace.ID).SetUserID(admin.ID).SetRole(schema.WorkspaceRoleAdmin).SaveX(suite.Ctx)
+	suite.DB.WorkspaceMember.Create().SetWorkspaceID(suite.workspace.ID).SetUserID(suite.other.ID).SetRole(schema.WorkspaceRoleMember).SaveX(suite.Ctx)
+	private := suite.DB.Team.Create().SetWorkspaceID(suite.workspace.ID).SetName("Security").SetKey("SEC").SetPrivate(true).SaveX(suite.Ctx)
+	state := suite.DB.WorkflowState.Create().SetTeamID(private.ID).SetName("Todo").SetType(schema.StateTypeUnstarted).SetColor("#e2e2e2").SetPosition(0).SaveX(suite.Ctx)
+	suite.DB.TeamMember.Create().SetTeamID(private.ID).SetUserID(suite.other.ID).SaveX(suite.Ctx)
+	secret := suite.DB.Issue.Create().SetWorkspaceID(suite.workspace.ID).SetTeamID(private.ID).SetNumber(1).SetTitle("Secret").SetStateID(state.ID).SaveX(suite.Ctx)
+	open := suite.DB.Issue.Create().SetWorkspaceID(suite.workspace.ID).SetTeamID(suite.team.ID).SetNumber(1).SetTitle("Open").SetStateID(suite.todo.ID).SaveX(suite.Ctx)
+	everyone := []uuid.UUID{suite.user.ID, suite.other.ID, admin.ID}
+
+	members, err := suite.repo.ActiveMembers(suite.Ctx, suite.workspace.ID, everyone, &secret.ID)
+	suite.Require().NoError(err)
+	suite.ElementsMatch([]uuid.UUID{suite.other.ID, admin.ID}, members, "a member outside the private team hears nothing about its issues")
+
+	members, err = suite.repo.ActiveMembers(suite.Ctx, suite.workspace.ID, everyone, &open.ID)
+	suite.Require().NoError(err)
+	suite.ElementsMatch(everyone, members)
+}
+
 func (suite *NotificationRepositorySuite) TestActiveMembersAndSettings() {
 	inactive := suite.DB.User.Create().SetEmail("gone@example.com").SetName("Gone").SetDisplayName("gone").SetActive(false).SaveX(suite.Ctx)
 	suite.DB.WorkspaceMember.Create().SetWorkspaceID(suite.workspace.ID).SetUserID(inactive.ID).SetRole(schema.WorkspaceRoleMember).SaveX(suite.Ctx)
 
-	members, err := suite.repo.ActiveMembers(suite.Ctx, suite.workspace.ID, []uuid.UUID{suite.user.ID, suite.other.ID, inactive.ID})
+	members, err := suite.repo.ActiveMembers(suite.Ctx, suite.workspace.ID, []uuid.UUID{suite.user.ID, suite.other.ID, inactive.ID}, nil)
 	suite.Require().NoError(err)
 	suite.Equal([]uuid.UUID{suite.user.ID}, members)
 

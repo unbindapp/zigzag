@@ -32,24 +32,29 @@ type IssueRepositoryInterface interface {
 	TrashedBefore(ctx context.Context, before time.Time) ([]uuid.UUID, error)
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateIssueInput) (*ent.Issue, error)
 	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, fields *IssueFields) error
+	RespaceIfCrowded(ctx context.Context, tx repository.TxInterface, workspaceID, id uuid.UUID, sortOrder float64) error
+	RespaceSubIssuesIfCrowded(ctx context.Context, tx repository.TxInterface, parentID, id uuid.UUID, subIssueSortOrder float64) error
 	SetLabels(ctx context.Context, tx repository.TxInterface, id uuid.UUID, add, remove []uuid.UUID) error
 	RecordMove(ctx context.Context, tx repository.TxInterface, issueID, oldTeamID uuid.UUID, oldNumber int) error
 	Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Issue, error)
 	GetWithEdges(ctx context.Context, tx repository.TxInterface, id uuid.UUID) (*ent.Issue, error)
+	LockWithEdges(ctx context.Context, tx repository.TxInterface, id uuid.UUID) (*ent.Issue, error)
 	// GetManyWithEdges keeps the order of ids and skips ids that do not exist.
 	GetManyWithEdges(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) ([]*ent.Issue, error)
 	ResolveWorkspaceOfIssue(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	FindByIdentifier(ctx context.Context, workspaceIDs []uuid.UUID, key string, number int) ([]uuid.UUID, error)
 	Counts(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]models.IssueCounts, error)
 	Children(ctx context.Context, parentID uuid.UUID) ([]*ent.Issue, error)
+	ChildIDs(ctx context.Context, tx repository.TxInterface, parentID uuid.UUID) ([]uuid.UUID, error)
 	AncestorIDs(ctx context.Context, tx repository.TxInterface, id uuid.UUID) ([]uuid.UUID, error)
 	TopSortOrder(ctx context.Context, tx repository.TxInterface, stateID uuid.UUID) (float64, error)
 	LabelsByIDs(ctx context.Context, ids []uuid.UUID) ([]*ent.Label, error)
 	GetMilestone(ctx context.Context, id uuid.UUID) (*ent.ProjectMilestone, error)
 	GetProject(ctx context.Context, id uuid.UUID) (*ent.Project, error)
 	CreateHistory(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, actorID *uuid.UUID, source schema.HistorySource, changes []schema.FieldChange) error
-	ListHistory(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.IssueHistory, error)
+	CreateHistoryMany(ctx context.Context, tx repository.TxInterface, entries []HistoryEntry) error
+	ListHistory(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.IssueHistory, error)
 	CreateRelation(ctx context.Context, tx repository.TxInterface, issueID, relatedIssueID uuid.UUID, relationType schema.IssueRelationType) (*ent.IssueRelation, error)
 	RelationExists(ctx context.Context, a, b uuid.UUID, relationType schema.IssueRelationType) (bool, error)
 	GetRelation(ctx context.Context, id uuid.UUID) (*ent.IssueRelation, error)
@@ -64,7 +69,7 @@ type IssueRepositoryInterface interface {
 	Unsubscribe(ctx context.Context, issueID, userID uuid.UUID) error
 	Subscribers(ctx context.Context, issueID uuid.UUID) ([]*ent.User, error)
 	SubscriberIDs(ctx context.Context, issueID uuid.UUID) ([]uuid.UUID, error)
-	AddReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error
+	AddReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) (bool, error)
 	RemoveReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error
 	Reactions(ctx context.Context, target ReactionTarget) ([]*ent.Reaction, error)
 	ReactionsForComments(ctx context.Context, commentIDs []uuid.UUID) (map[uuid.UUID][]*ent.Reaction, error)

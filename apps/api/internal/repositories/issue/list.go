@@ -2,17 +2,13 @@ package issue_repo
 
 import (
 	"context"
-	"strconv"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
-	"github.com/unbindapp/zigzag-api/ent/cycle"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/label"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
-	"github.com/unbindapp/zigzag-api/ent/project"
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/ent/team"
 	"github.com/unbindapp/zigzag-api/ent/user"
@@ -75,7 +71,7 @@ type ListFilter struct {
 	OrderBy         OrderBy
 	Descending      bool
 	GroupBy         GroupBy
-	Offset          int
+	After           *Cursor
 	Limit           int
 }
 
@@ -160,87 +156,9 @@ func (self *IssueRepository) List(ctx context.Context, filter *ListFilter) ([]*e
 		return nil, 0, err
 	}
 	query := withIssueEdges(self.base.DB.Issue.Query().Where(where...))
-	query = query.Order(groupOrder(filter.GroupBy)...).Order(sortOrder(filter.OrderBy, filter.Descending)...)
-	issues, err := query.Order(issue.ByID()).Offset(filter.Offset).Limit(filter.Limit).All(ctx)
+	issues, err := query.Order(keysetOrder(filter)).Limit(filter.Limit).All(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
 	return issues, total, nil
-}
-
-func direction(descending bool, extra ...sql.OrderTermOption) []sql.OrderTermOption {
-	if descending {
-		return append([]sql.OrderTermOption{sql.OrderDesc()}, extra...)
-	}
-	return extra
-}
-
-func priorityRank(descending bool) issue.OrderOption {
-	return func(s *sql.Selector) {
-		expr := "CASE WHEN " + s.C(issue.FieldPriority) + " = 0 THEN 5 ELSE " + s.C(issue.FieldPriority) + " END"
-		if descending {
-			expr += " DESC"
-		}
-		s.OrderExpr(sql.Expr(expr))
-	}
-}
-
-func stateRank(s *sql.Selector) {
-	states := sql.Table(workflowstate.Table).As("group_state")
-	s.LeftJoin(states).On(s.C(issue.FieldStateID), states.C(workflowstate.FieldID))
-	rank := "CASE " + states.C(workflowstate.FieldType)
-	for i, stateType := range schema.AllStateTypes() {
-		rank += " WHEN '" + string(stateType) + "' THEN " + strconv.Itoa(i)
-	}
-	s.OrderExpr(sql.Expr(rank + " END"))
-	s.OrderBy(states.C(workflowstate.FieldPosition), states.C(workflowstate.FieldID))
-}
-
-func labelRank(s *sql.Selector) {
-	s.OrderExpr(sql.Expr("(SELECT MIN(l.name) FROM issue_labels il JOIN labels l ON l.id = il.label_id WHERE il.issue_id = " + s.C(issue.FieldID) + ") NULLS LAST"))
-}
-
-func parentRank(s *sql.Selector) {
-	parents := sql.Table(issue.Table).As("group_parent")
-	s.LeftJoin(parents).On(s.C(issue.FieldParentID), parents.C(issue.FieldID))
-	s.OrderExpr(sql.Expr(parents.C(issue.FieldNumber) + " NULLS LAST"))
-	s.OrderBy(s.C(issue.FieldParentID))
-}
-
-func groupOrder(group GroupBy) []issue.OrderOption {
-	switch group {
-	case GroupState:
-		return []issue.OrderOption{stateRank}
-	case GroupAssignee:
-		return []issue.OrderOption{issue.ByAssigneeField(user.FieldName, sql.OrderNullsLast()), issue.ByAssigneeID(sql.OrderNullsLast())}
-	case GroupPriority:
-		return []issue.OrderOption{priorityRank(false)}
-	case GroupProject:
-		return []issue.OrderOption{issue.ByProjectField(project.FieldName, sql.OrderNullsLast()), issue.ByProjectID(sql.OrderNullsLast())}
-	case GroupCycle:
-		return []issue.OrderOption{issue.ByCycleField(cycle.FieldNumber, sql.OrderNullsLast())}
-	case GroupLabel:
-		return []issue.OrderOption{labelRank}
-	case GroupParent:
-		return []issue.OrderOption{parentRank}
-	default:
-		return []issue.OrderOption{}
-	}
-}
-
-func sortOrder(order OrderBy, descending bool) []issue.OrderOption {
-	switch order {
-	case OrderPriority:
-		return []issue.OrderOption{priorityRank(descending), issue.BySortOrder()}
-	case OrderCreatedAt:
-		return []issue.OrderOption{issue.ByCreatedAt(direction(descending)...)}
-	case OrderUpdatedAt:
-		return []issue.OrderOption{issue.ByUpdatedAt(direction(descending)...)}
-	case OrderDueDate:
-		return []issue.OrderOption{issue.ByDueDate(direction(descending, sql.OrderNullsLast())...), issue.BySortOrder()}
-	case OrderTitle:
-		return []issue.OrderOption{issue.ByTitle(direction(descending)...)}
-	default:
-		return []issue.OrderOption{issue.BySortOrder(direction(descending)...), issue.ByCreatedAt(sql.OrderDesc())}
-	}
 }

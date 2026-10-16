@@ -2,10 +2,6 @@ package notification_repo
 
 import (
 	"context"
-	"encoding/base64"
-	"errors"
-	"strconv"
-	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -14,6 +10,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/notification"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 type Filter string
@@ -27,44 +24,12 @@ const (
 	FilterAll      Filter = "all"
 )
 
-var ErrInvalidCursor = errors.New("invalid cursor")
-
-type Cursor struct {
-	CreatedAt time.Time
-	ID        uuid.UUID
-}
-
-func (self Cursor) Encode() string {
-	raw := strconv.FormatInt(self.CreatedAt.UnixNano(), 10) + "|" + self.ID.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
-}
-
-func DecodeCursor(value string) (*Cursor, error) {
-	raw, err := base64.RawURLEncoding.DecodeString(value)
-	if err != nil {
-		return nil, ErrInvalidCursor
-	}
-	nanos, id, found := strings.Cut(string(raw), "|")
-	if !found {
-		return nil, ErrInvalidCursor
-	}
-	unixNano, err := strconv.ParseInt(nanos, 10, 64)
-	if err != nil {
-		return nil, ErrInvalidCursor
-	}
-	parsedID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, ErrInvalidCursor
-	}
-	return &Cursor{CreatedAt: time.Unix(0, unixNano).UTC(), ID: parsedID}, nil
-}
-
 type ListInput struct {
 	UserID      uuid.UUID
 	WorkspaceID uuid.UUID
 	Filter      Filter
 	Limit       int
-	Cursor      *Cursor
+	Cursor      *repository.TimeCursor
 	Now         time.Time
 }
 
@@ -113,7 +78,6 @@ func (self *NotificationRepository) CountUnread(ctx context.Context, userID, wor
 		Count(ctx)
 }
 
-// OwnedWorkspaces leaves out ids that belong to other users.
 func (self *NotificationRepository) OwnedWorkspaces(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
 	found, err := self.base.DB.Notification.Query().
 		Where(notification.UserID(userID), notification.IDIn(ids...)).

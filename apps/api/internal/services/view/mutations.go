@@ -18,7 +18,7 @@ type CreateViewInput struct {
 	Name        string             `json:"name" required:"true" minLength:"1" maxLength:"64" doc:"View name"`
 	Description string             `json:"description,omitempty" required:"false" maxLength:"500" doc:"What the view shows"`
 	Icon        string             `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name"`
-	Color       string             `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color such as #5e6ad2"`
+	Color       string             `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color such as #5e6ad2"`
 	Kind        schema.ViewKind    `json:"kind" required:"true" doc:"issue for issue views; project views are reserved"`
 	Shared      bool               `json:"shared,omitempty" required:"false" doc:"Share with everyone in the workspace; private views are visible to you only"`
 	Filters     map[string]any     `json:"filters" required:"true" doc:"list-issues parameters to apply, for example {\"state_types\": [\"started\"], \"assignee_ids\": [\"<user id>\"]}"`
@@ -44,7 +44,7 @@ func (self *ViewService) Create(ctx context.Context, userID uuid.UUID, input *Cr
 	if !validKind(input.Kind) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "kind must be issue or project")
 	}
-	color, err := optionalColor(input.Color)
+	color, err := names.OptionalColor(input.Color)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ type UpdateViewInput struct {
 	Name        *string             `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
 	Description *string             `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
 	Icon        *string             `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color       *string             `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color, empty to clear"`
+	Color       *string             `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
 	Shared      *bool               `json:"shared,omitempty" required:"false" doc:"Share with the workspace or make private"`
 	Filters     map[string]any      `json:"filters,omitempty" required:"false" doc:"Replaces all filters; list-issues parameter names"`
 	Display     *schema.ViewDisplay `json:"display,omitempty" required:"false" doc:"Replaces the display settings"`
@@ -106,7 +106,7 @@ func (self *ViewService) Update(ctx context.Context, userID uuid.UUID, input *Up
 		update.Description = &description
 	}
 	if input.Color != nil {
-		color, err := optionalColor(*input.Color)
+		color, err := names.OptionalColor(*input.Color)
 		if err != nil {
 			return nil, err
 		}
@@ -140,11 +140,4 @@ func (self *ViewService) Delete(ctx context.Context, userID uuid.UUID, input *De
 		return err
 	}
 	return self.repo.View().Delete(ctx, current.ID)
-}
-
-func optionalColor(raw string) (string, error) {
-	if strings.TrimSpace(raw) == "" {
-		return "", nil
-	}
-	return names.Color(raw)
 }

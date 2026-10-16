@@ -9,9 +9,13 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/notification"
 	"github.com/unbindapp/zigzag-api/ent/notificationsetting"
+	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/ent/team"
+	"github.com/unbindapp/zigzag-api/ent/teammember"
 	"github.com/unbindapp/zigzag-api/ent/user"
 	"github.com/unbindapp/zigzag-api/ent/workflowstate"
+	"github.com/unbindapp/zigzag-api/ent/workspace"
 	"github.com/unbindapp/zigzag-api/ent/workspacemember"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
@@ -35,14 +39,22 @@ func (self *NotificationRepository) CreateMany(ctx context.Context, tx repositor
 	return client.Notification.CreateBulk(builders...).Save(ctx)
 }
 
-func (self *NotificationRepository) ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error) {
+func (self *NotificationRepository) ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID, issueID *uuid.UUID) ([]uuid.UUID, error) {
+	where := []predicate.WorkspaceMember{
+		workspacemember.WorkspaceID(workspaceID),
+		workspacemember.UserIDIn(userIDs...),
+		workspacemember.HasUserWith(user.Active(true)),
+	}
+	if issueID != nil {
+		where = append(where, workspacemember.Or(
+			workspacemember.HasWorkspaceWith(workspace.HasTeamsWith(team.Private(false), team.HasIssuesWith(issue.ID(*issueID)))),
+			workspacemember.RoleEQ(schema.WorkspaceRoleAdmin),
+			workspacemember.HasUserWith(user.HasTeamMembershipsWith(teammember.HasTeamWith(team.HasIssuesWith(issue.ID(*issueID))))),
+		))
+	}
 	var ids []uuid.UUID
 	err := self.base.DB.WorkspaceMember.Query().
-		Where(
-			workspacemember.WorkspaceID(workspaceID),
-			workspacemember.UserIDIn(userIDs...),
-			workspacemember.HasUserWith(user.Active(true)),
-		).
+		Where(where...).
 		Select(workspacemember.FieldUserID).
 		Scan(ctx, &ids)
 	return ids, err

@@ -25,7 +25,10 @@ type UpdateMeInput struct {
 func (self *UserService) UpdateMe(ctx context.Context, userID uuid.UUID, input *UpdateMeInput) (*models.UserResponse, error) {
 	update := &user_repo.UpdateUserInput{}
 	if input.Name != nil {
-		name := strings.TrimSpace(*input.Name)
+		name, err := names.Clean(*input.Name)
+		if err != nil {
+			return nil, err
+		}
 		update.Name = &name
 	}
 	if input.DisplayName != nil {

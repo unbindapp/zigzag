@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/user"
+	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,7 +23,12 @@ type CreateUserInput struct {
 	Active      bool
 }
 
+const maxPasswordBytes = 72
+
 func HashPassword(password string) (string, error) {
+	if len(password) > maxPasswordBytes {
+		return "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A password is at most 72 bytes; fewer characters when it uses accents or emoji")
+	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), PasswordCost)
 	if err != nil {
 		return "", err

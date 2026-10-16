@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/zigzag-api/config"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/models"
@@ -137,19 +136,6 @@ func (self *IssueService) WritableIssue(ctx context.Context, userID, issueID uui
 	return issue, nil
 }
 
-func historySource(ctx context.Context) schema.HistorySource {
-	if _, ok := apictx.MCPCallerFromContext(ctx); ok {
-		return schema.HistorySourceMCP
-	}
-	if _, ok := permissions_repo.APIKeyAccessFromContext(ctx); ok {
-		return schema.HistorySourceAPI
-	}
-	if permissions_repo.IsSystemCaller(ctx) {
-		return schema.HistorySourceSystem
-	}
-	return schema.HistorySourceUser
-}
-
 func (self *IssueService) view(userID uuid.UUID, counts models.IssueCounts) models.IssueView {
 	return models.IssueView{UIURL: self.cfg.ExternalUIUrl, CallerID: userID, Counts: counts}
 }
@@ -163,11 +149,36 @@ func (self *IssueService) respond(ctx context.Context, userID uuid.UUID, issues 
 	if err != nil {
 		return nil, err
 	}
+	hiddenTeams, err := self.hiddenParentTeams(ctx, userID, issues)
+	if err != nil {
+		return nil, err
+	}
 	responses := make([]*models.IssueResponse, len(issues))
 	for i, issue := range issues {
 		responses[i] = models.TransformIssueEntity(issue, self.view(userID, counts[issue.ID]))
+		if parent := issue.Edges.Parent; parent != nil && hiddenTeams[parent.TeamID] {
+			responses[i].Parent = nil
+		}
 	}
 	return responses, nil
+}
+
+func (self *IssueService) hiddenParentTeams(ctx context.Context, userID uuid.UUID, issues []*ent.Issue) (map[uuid.UUID]bool, error) {
+	hidden := map[uuid.UUID]bool{}
+	checked := map[uuid.UUID]bool{}
+	for _, issue := range issues {
+		parent := issue.Edges.Parent
+		if parent == nil || parent.Edges.Team == nil || !parent.Edges.Team.Private || checked[parent.TeamID] {
+			continue
+		}
+		checked[parent.TeamID] = true
+		visible, err := self.canSeeTeam(ctx, userID, parent.Edges.Team)
+		if err != nil {
+			return nil, err
+		}
+		hidden[parent.TeamID] = !visible
+	}
+	return hidden, nil
 }
 
 func (self *IssueService) respondDetail(ctx context.Context, userID uuid.UUID, issue *ent.Issue) (*models.IssueDetailResponse, error) {

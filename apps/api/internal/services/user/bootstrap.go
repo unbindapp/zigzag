@@ -2,7 +2,6 @@ package user_service
 
 import (
 	"context"
-	"strings"
 
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
@@ -28,6 +27,10 @@ func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (
 	}
 	if len(input.Password) < MinPasswordLength {
 		return nil, nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Password must be at least 8 characters")
+	}
+	name, err := names.Clean(input.Name)
+	if err != nil {
+		return nil, nil, err
 	}
 	workspaceName, err := names.Clean(input.WorkspaceName)
 	if err != nil {
@@ -56,7 +59,7 @@ func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (
 		user, err = self.repo.User().Create(ctx, tx, &user_repo.CreateUserInput{
 			Email:       email,
 			Password:    input.Password,
-			Name:        strings.TrimSpace(input.Name),
+			Name:        name,
 			DisplayName: handle,
 			SystemAdmin: true,
 			Active:      true,

@@ -41,15 +41,6 @@ type EmptyInput struct{}
 
 type BaseAuthInput struct{}
 
-type DeletedResponse struct {
-	ID      string `json:"id"`
-	Deleted bool   `json:"deleted"`
-}
-
-type SuccessResponse struct {
-	Success bool `json:"success"`
-}
-
 type Server struct {
 	Cfg          *config.Config
 	Repository   repositories.RepositoriesInterface

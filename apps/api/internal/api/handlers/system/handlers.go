@@ -32,7 +32,7 @@ func (self *HandlerGroup) GetSettings(ctx context.Context, _ *server.BaseAuthInp
 
 type UpdateSettingsInput struct {
 	server.BaseAuthInput
-	Body *system_service.UpdateSettingsInput
+	Body *system_service.UpdateSettingsInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateSettings(ctx context.Context, input *UpdateSettingsInput) (*SettingsResponse, error) {
@@ -71,7 +71,7 @@ func (self *HandlerGroup) GetEmailSettings(ctx context.Context, _ *server.BaseAu
 
 type UpdateEmailSettingsInput struct {
 	server.BaseAuthInput
-	Body *email_service.EmailSettingsUpdateInput
+	Body *email_service.EmailSettingsUpdateInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateEmailSettings(ctx context.Context, input *UpdateEmailSettingsInput) (*EmailSettingsResponse, error) {
@@ -90,7 +90,7 @@ func (self *HandlerGroup) UpdateEmailSettings(ctx context.Context, input *Update
 
 type SuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 

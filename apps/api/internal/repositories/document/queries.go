@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/document"
+	"github.com/unbindapp/zigzag-api/ent/issue"
+	"github.com/unbindapp/zigzag-api/ent/predicate"
 )
 
 type ListDocumentsFilter struct {
@@ -13,6 +15,7 @@ type ListDocumentsFilter struct {
 	ProjectID       *uuid.UUID
 	InitiativeID    *uuid.UUID
 	IssueID         *uuid.UUID
+	VisibleTeamIDs  []uuid.UUID
 	Query           string
 	IncludeArchived bool
 	IncludeTrashed  bool
@@ -22,8 +25,12 @@ func withDocumentEdges(q *ent.DocumentQuery) *ent.DocumentQuery {
 	return q.WithProject().WithInitiative().WithCreator().WithUpdatedBy()
 }
 
+func onVisibleIssue(teamIDs []uuid.UUID) predicate.Document {
+	return document.Or(document.IssueIDIsNil(), document.HasIssueWith(issue.TeamIDIn(teamIDs...)))
+}
+
 func (self *DocumentRepository) List(ctx context.Context, filter *ListDocumentsFilter) ([]*ent.Document, error) {
-	q := withDocumentEdges(self.base.DB.Document.Query().Where(document.WorkspaceID(filter.WorkspaceID)))
+	q := withDocumentEdges(self.base.DB.Document.Query().Where(document.WorkspaceID(filter.WorkspaceID), onVisibleIssue(filter.VisibleTeamIDs)))
 	if !filter.IncludeArchived {
 		q.Where(document.ArchivedAtIsNil())
 	}

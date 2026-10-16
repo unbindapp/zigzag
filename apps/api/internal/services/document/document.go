@@ -11,24 +11,30 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i DocumentServiceInterface -p document_service -s DocumentService -o document_service_iface.go
 type DocumentService struct {
-	cfg  *config.Config
-	repo repositories.RepositoriesInterface
-	now  func() time.Time
+	cfg    *config.Config
+	repo   repositories.RepositoriesInterface
+	issues IssueAccess
+	now    func() time.Time
 }
 
-func NewDocumentService(cfg *config.Config, repo repositories.RepositoriesInterface) *DocumentService {
-	return &DocumentService{cfg: cfg, repo: repo, now: time.Now}
+type IssueAccess interface {
+	VisibleTeams(ctx context.Context, userID, workspaceID uuid.UUID) (*issue_service.VisibleTeams, error)
+	ReadableIssue(ctx context.Context, userID, issueID uuid.UUID) (*ent.Issue, error)
+}
+
+func NewDocumentService(cfg *config.Config, repo repositories.RepositoriesInterface, issues IssueAccess) *DocumentService {
+	return &DocumentService{cfg: cfg, repo: repo, issues: issues, now: time.Now}
 }
 
 func (self *DocumentService) check(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID) error {
 	return self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: role, WorkspaceID: workspaceID}})
 }
 
-// checkRole hides the workspace from outsiders, then requires role.
 func (self *DocumentService) checkRole(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID, notFound string) error {
 	if err := self.check(ctx, userID, schema.WorkspaceRoleViewer, workspaceID); err != nil {
 		return errdefs.MaskAsNotFound(err, notFound)
@@ -50,10 +56,24 @@ func (self *DocumentService) documentWithRole(ctx context.Context, userID, docum
 	if err := self.checkRole(ctx, userID, role, document.WorkspaceID, "Document not found"); err != nil {
 		return nil, err
 	}
+	if err := self.ensureIssueVisible(ctx, userID, document); err != nil {
+		return nil, err
+	}
 	return document, nil
 }
 
-func (self *DocumentService) ensureParents(ctx context.Context, workspaceID uuid.UUID, projectID, initiativeID, issueID *uuid.UUID) error {
+func (self *DocumentService) ensureIssueVisible(ctx context.Context, userID uuid.UUID, document *ent.Document) error {
+	if document.IssueID == nil {
+		return nil
+	}
+	_, err := self.issues.ReadableIssue(ctx, userID, *document.IssueID)
+	if errdefs.IsNotFound(err) {
+		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Document not found")
+	}
+	return err
+}
+
+func (self *DocumentService) ensureParents(ctx context.Context, userID, workspaceID uuid.UUID, projectID, initiativeID, issueID *uuid.UUID) error {
 	parents := []struct {
 		id      *uuid.UUID
 		resolve func(context.Context, uuid.UUID) (uuid.UUID, error)
@@ -61,14 +81,16 @@ func (self *DocumentService) ensureParents(ctx context.Context, workspaceID uuid
 	}{
 		{projectID, self.repo.Project().ResolveWorkspaceOfProject, "The project must belong to this workspace"},
 		{initiativeID, self.repo.Initiative().ResolveWorkspaceOfInitiative, "The initiative must belong to this workspace"},
-		{issueID, self.repo.Issue().ResolveWorkspaceOfIssue, "The issue must belong to this workspace"},
+		{issueID, func(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+			return self.readableIssueWorkspace(ctx, userID, id)
+		}, "The issue must belong to this workspace"},
 	}
 	for _, parent := range parents {
 		if parent.id == nil {
 			continue
 		}
 		found, err := parent.resolve(ctx, *parent.id)
-		if ent.IsNotFound(err) || (err == nil && found != workspaceID) {
+		if ent.IsNotFound(err) || errdefs.IsNotFound(err) || (err == nil && found != workspaceID) {
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, parent.message)
 		}
 		if err != nil {
@@ -76,4 +98,12 @@ func (self *DocumentService) ensureParents(ctx context.Context, workspaceID uuid
 		}
 	}
 	return nil
+}
+
+func (self *DocumentService) readableIssueWorkspace(ctx context.Context, userID, issueID uuid.UUID) (uuid.UUID, error) {
+	issue, err := self.issues.ReadableIssue(ctx, userID, issueID)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return issue.WorkspaceID, nil
 }

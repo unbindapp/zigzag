@@ -31,7 +31,7 @@ func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*r
 		Type:  "RSA PRIVATE KEY",
 		Bytes: derStream,
 	}
-	pemBytes := pem.EncodeToMemory(pemBlock) // []byte PEM
+	pemBytes := pem.EncodeToMemory(pemBlock)
 
 	newKey, err := self.base.DB.JWTKey.
 		Create().
@@ -46,7 +46,7 @@ func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*r
 }
 
 func decodePrivateKey(pkey []byte) (*rsa.PrivateKey, []byte, error) {
-	block, _ := pem.Decode(pkey) // k.PrivateKey is []byte from the DB
+	block, _ := pem.Decode(pkey)
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		return nil, nil, fmt.Errorf("not a valid PEM block")
 	}

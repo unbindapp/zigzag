@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
@@ -68,7 +69,6 @@ func (self *ProjectRepository) Create(ctx context.Context, tx repository.TxInter
 	return m.Save(ctx)
 }
 
-// UpdateProjectInput leaves nil fields unchanged; the Clear flags empty nillable columns.
 type UpdateProjectInput struct {
 	Name                 *string
 	Summary              *string
@@ -178,7 +178,12 @@ func (self *ProjectRepository) Update(ctx context.Context, tx repository.TxInter
 	if input.ReplaceInitiatives {
 		m.ClearInitiatives().AddInitiativeIDs(input.InitiativeIDs...)
 	}
-	return m.Exec(ctx)
+	updated, err := m.Save(ctx)
+	if err != nil || input.SortOrder == nil {
+		return err
+	}
+	_, err = self.base.RespaceIfCrowded(ctx, tx, repository.ProjectSortOrder, updated.WorkspaceID, updated.ID, updated.SortOrder)
+	return err
 }
 
 func (self *ProjectRepository) SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error {
@@ -205,6 +210,18 @@ func (self *ProjectRepository) SetHealth(ctx context.Context, tx repository.TxIn
 	return m.SetHealth(*health).Exec(ctx)
 }
 
-func (self *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return self.base.DB.Project.DeleteOneID(id).Exec(ctx)
+func (self *ProjectRepository) Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error {
+	return self.base.Client(tx).Project.DeleteOneID(id).Exec(ctx)
+}
+
+func (self *ProjectRepository) IssuesInProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]*ent.Issue, error) {
+	return self.base.Client(tx).Issue.Query().
+		Where(issue.ProjectID(projectID)).
+		Select(issue.FieldID, issue.FieldMilestoneID).
+		WithMilestone().
+		All(ctx)
+}
+
+func (self *ProjectRepository) IssueIDsInMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) ([]uuid.UUID, error) {
+	return self.base.Client(tx).Issue.Query().Where(issue.MilestoneID(milestoneID)).IDs(ctx)
 }

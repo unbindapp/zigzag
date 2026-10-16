@@ -12,7 +12,7 @@ MCP column: `yes` = `oapi.MCP`; `no` = `oapi.NoMCP(reason)`; `session` = `oapi.S
 
 All list operations accept `include_archived` (bool, default false) where the entity has `archived_at`, and `include_trashed` where it has `trashed_at`.
 
-Pagination for `list-issues`, `list-notifications`, `list-issue-history`, `list-comments`: `limit` (1..250, default 50) and `cursor` (opaque, from the previous `next_cursor`).
+Pagination for `list-issues`, `list-notifications`, `list-issue-history`, `list-comments`: `limit` (1..250, default 50) and `cursor` (opaque, from the previous `next_cursor`). Cursors are keyset (the last row's sort values and id), so rows created or moved ahead of the cursor never shift a page; a `list-issues` cursor only continues the same `order_by`, `order` and `group_by`.
 
 Every response for an issue, project, cycle, team, comment includes the ids it references and the small embedded shapes the UI needs (`state`, `assignee`, `labels`, `project`, `cycle`, `parent {id, identifier, title}`) so a list renders without extra calls. Define these in `internal/models` once and reuse.
 
@@ -44,9 +44,9 @@ Every response for an issue, project, cycle, team, comment includes the ids it r
 ### /workspaces
 | list-workspaces | GET /list | | workspaces the caller can see with role | self | yes |
 | get-workspace | GET /get | `{workspace_id}` or `{slug}` | workspace with role, counts | viewer | yes |
-| create-workspace | POST /create | `{name, slug, icon?, color?}` | workspace | any authenticated user (creator becomes admin); system admin only when `allow_public_signup` is false and caller is not system admin? No: any user may create a workspace | yes |
+| create-workspace | POST /create | `{name, slug, icon?, color?}` | workspace | any signed-in user, who becomes its admin; an API key or connected app needs `full_access` and at least `member` | yes |
 | update-workspace | PUT /update | `{workspace_id, name?, slug?, icon?, color?}` | workspace | admin | yes |
-| delete-workspace | DELETE /delete | `{workspace_id}` | deleted | admin | yes |
+| delete-workspace | DELETE /delete | `{workspace_id, confirm_slug}` (`confirm_slug` must repeat the slug) | deleted | admin | yes |
 | list-workspace-members | GET /members/list | `{workspace_id}` | `[{user: {id, email, name, display_name, avatar_url, active}, role, joined_at, team_ids}]` | viewer | yes |
 | add-workspace-member | POST /members/add | `{workspace_id, email, role, team_ids?}` | member (existing account) or invitation (no account) `{member?, invitation?}` | admin | session |
 | update-workspace-member | PUT /members/update | `{workspace_id, user_id, role}` | member | admin | session |
@@ -58,13 +58,13 @@ Every response for an issue, project, cycle, team, comment includes the ids it r
 
 ### /invitations (public)
 | get-invitation | GET /get | `{token}` | `{email, workspace_name, role, expires_at, account_exists}` | public | session |
-| accept-invitation | POST /accept | `{token, password?, name?, display_name?}` | session cookies, `{user, workspace}`. A new or placeholder account sets `password` (8+ chars); an existing active account must send its current password, since the link is also returned to the inviting admin | public | session |
+| accept-invitation | POST /accept | `{token, password?, name?, display_name?}` | session cookies, `{user, workspace}`. A new or placeholder account sets `password` (8+ chars); an existing active account must send its current password, since the link is also returned to the inviting admin. A deactivated account with a password, or a placeholder that is also a member of another workspace, cannot be claimed through an invitation. Rate limited to 10 attempts per minute per address, like `login` and `request-password-reset` | public | session |
 
 ### /teams
 | list-teams | GET /list | `{workspace_id, include_archived?}` | teams with member counts, caller `is_member` | viewer | yes |
 | get-team | GET /get | `{team_id}` or `{workspace_id, key}` | team with states, settings | viewer | yes |
 | create-team | POST /create | `{workspace_id, name, key, description?, icon?, color?, private?, timezone?}` | team (default states created) | admin | yes |
-| update-team | PUT /update | `{team_id, name?, key?, description?, icon?, color?, private?, timezone?, cycles_enabled?, cycle_duration_weeks?, cycle_cooldown_weeks?, cycle_start_day?, cycle_auto_move?, cycle_auto_add_started?, estimate_type?, estimate_allow_zero?, estimate_extended?, triage_enabled?, default_state_id?, auto_close_months?, auto_archive_months?}` | team | admin | yes |
+| update-team | PUT /update | `{team_id, name?, key?, description?, icon?, color?, private?, timezone?, cycles_enabled?, cycle_duration_weeks?, cycle_cooldown_weeks?, cycle_start_day?, cycle_auto_move?, cycle_auto_add_started?, estimate_type?, estimate_allow_zero?, estimate_extended?, triage_enabled?, default_state_id?, auto_close_months?, auto_archive_months?}`; turning `cycles_enabled` on creates the current and next cycle at once | team | admin | yes |
 | delete-team | DELETE /delete | `{team_id}` | deleted (issues deleted) | admin | yes |
 | list-team-members | GET /members/list | `{team_id}` | `[{user, owner, joined_at}]` | viewer | yes |
 | add-team-member | POST /members/add | `{team_id, user_id, owner?}` | member | admin, or member adding self to a non-private team | yes |
@@ -117,7 +117,7 @@ Project inputs: dates are `YYYY-MM-DD` strings; on update an empty string clears
 | list-issues | GET /list | `{workspace_id, team_id?, team_ids?, state_ids?, state_types?, assignee_ids? ("null" for unassigned), creator_ids?, label_ids?, project_ids?, milestone_ids?, cycle_ids?, parent_id?, has_parent? ("true"|"false"), priorities?, due_before?, due_after?, created_after?, updated_after?, query?, subscriber_id?, include_archived?, include_trashed?, order_by? (manual|priority|created_at|updated_at|due_date|title), order? (asc|desc), group_by? (none|state|assignee|priority|project|cycle|label|parent), limit?, cursor?}`. `group_by` sorts by the group first (states in workflow order, priority urgent to none, empty groups last; `label` by the alphabetically first label), then by `order_by`, so pages arrive group by group. `order` defaults to desc for created_at and updated_at, asc otherwise. Teams the caller cannot see are dropped from the filter | `IssueResponse` list with embedded shapes, `next_cursor`, `total` | viewer | yes |
 | get-issue | GET /get | `{issue_id}` or `{identifier, workspace_id?}` (`workspace_id` only disambiguates a team key shared by several of the caller's workspaces) | `IssueDetailResponse`: issue with labels, state, assignee, creator, project, milestone, cycle, parent, children summary, relations, attachments, subscribers, reactions, counts | viewer | yes |
 | create-issue | POST /create | `{team_id, title, description?, state_id?, priority?, estimate?, assignee_id?, label_ids?, project_id?, milestone_id?, cycle_id?, parent_id?, due_date?, subscriber_ids?, template_id?, sort_order?}` | issue | member | yes |
-| update-issue | PUT /update | `{issue_id, title?, description?, state_id?, priority?, estimate? (-1 clears), assignee_id?, label_ids?, add_label_ids?, remove_label_ids?, project_id?, milestone_id?, cycle_id?, parent_id?, due_date?, sort_order?, sub_issue_sort_order?, snoozed_until?, team_id? (move)}`. Optional inputs are never nullable: the nil uuid `00000000-0000-0000-0000-000000000000` clears `assignee_id`, `project_id`, `milestone_id`, `cycle_id`, `parent_id`; an empty string clears `due_date` and `snoozed_until` | issue; records history and notifications | member | yes |
+| update-issue | PUT /update | `{issue_id, title?, description?, state_id?, priority?, estimate? (-1 clears; must be a value of the team's scale: exponential 1,2,4,8,16 (+32,64 extended), fibonacci 1,2,3,5,8 (+13,21), linear 1..5 (+6,7), tshirt XS..XL as 1,2,3,5,8 (+13,21); 0 only with `estimate_allow_zero`; refused when the team's `estimate_type` is none), assignee_id?, label_ids?, add_label_ids?, remove_label_ids?, project_id?, milestone_id?, cycle_id?, parent_id?, due_date?, sort_order?, sub_issue_sort_order?, snoozed_until?, team_id? (move)}`. Optional inputs are never nullable: the nil uuid `00000000-0000-0000-0000-000000000000` clears `assignee_id`, `project_id`, `milestone_id`, `cycle_id`, `parent_id`; an empty string clears `due_date` and `snoozed_until` | issue; records history and notifications | member | yes |
 | delete-issue | DELETE /delete | `{issue_id}` | deleted permanently (children re-parented to nil) | admin | yes |
 | trash-issue / restore-issue | POST /trash, /restore | `{issue_id}` | issue | member | yes |
 | archive-issue / unarchive-issue | POST /archive, /unarchive | `{issue_id}` | issue | member | yes |
@@ -141,7 +141,7 @@ Project inputs: dates are `YYYY-MM-DD` strings; on update an empty string clears
 
 ### /views
 | list-views | GET /list | `{workspace_id, team_id?, kind?}` | views the caller owns plus shared views | viewer | yes |
-| get-view, create-view, update-view, delete-view | standard | `{workspace_id, team_id?, name, description?, icon?, color?, kind, shared, filters, display}` | view | member (owner to edit, admin for shared views they do not own) | yes |
+| get-view, create-view, update-view, delete-view | standard | `{workspace_id, team_id?, name, description?, icon?, color?, kind, shared, filters, display}`; update takes `{view_id, name?, description?, icon?, color?, shared?, filters?, display?}` (workspace, team and kind are fixed at creation) | view | member (owner to edit, admin for shared views they do not own) | yes |
 
 ### /templates
 | list-templates, get-template, create-template, update-template, delete-template | standard | `{workspace_id, team_id?, kind, name, description?, data}`; list takes `{workspace_id, team_id?, kind?}` and returns workspace templates plus the team's; update takes `{template_id, name?, description?, data?, sort_order?}`; `data.state_id` needs a team template | template | viewer / admin | yes |

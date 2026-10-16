@@ -2,8 +2,6 @@ package issue_service
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"regexp"
 	"slices"
 	"strconv"
@@ -15,6 +13,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 )
 
@@ -32,50 +31,33 @@ func ParseIdentifier(raw string) (string, int, bool) {
 	return strings.ToUpper(match[1]), number, true
 }
 
-type cursor struct {
-	Offset int `json:"o"`
+func invalidCursor() error {
+	return invalid("cursor is not a next_cursor from a previous page with the same order_by, order and group_by")
 }
 
-func EncodeCursor(offset int) *string {
-	raw, _ := json.Marshal(cursor{Offset: offset})
-	encoded := base64.RawURLEncoding.EncodeToString(raw)
-	return &encoded
-}
-
-func DecodeCursor(raw string) (int, error) {
+func decodeTimeCursor(raw string) (*repository.TimeCursor, error) {
 	if raw == "" {
-		return 0, nil
+		return nil, nil
 	}
-	decoded, err := base64.RawURLEncoding.DecodeString(raw)
-	var parsed cursor
-	if err == nil {
-		err = json.Unmarshal(decoded, &parsed)
+	decoded, err := repository.DecodeTimeCursor(raw)
+	if err != nil {
+		return nil, invalidCursor()
 	}
-	if err != nil || parsed.Offset < 0 {
-		return 0, invalid("cursor is not a next_cursor from a previous page")
-	}
-	return parsed.Offset, nil
-}
-
-func nextCursor(offset, limit, returned int) *string {
-	if returned <= limit {
-		return nil
-	}
-	return EncodeCursor(offset + limit)
+	return decoded, nil
 }
 
 type ListIssuesInput struct {
 	WorkspaceID     uuid.UUID          `query:"workspace_id" required:"true" format:"uuid" doc:"The workspace to list issues of"`
 	TeamID          uuid.UUID          `query:"team_id" required:"false" format:"uuid" doc:"Only issues of this team"`
-	TeamIDs         []uuid.UUID        `query:"team_ids" required:"false" doc:"Only issues of these teams"`
-	StateIDs        []uuid.UUID        `query:"state_ids" required:"false" doc:"Only issues in these workflow states"`
+	TeamIDs         []uuid.UUID        `query:"team_ids" format:"uuid" required:"false" doc:"Only issues of these teams"`
+	StateIDs        []uuid.UUID        `query:"state_ids" format:"uuid" required:"false" doc:"Only issues in these workflow states"`
 	StateTypes      []schema.StateType `query:"state_types" required:"false" doc:"Only issues whose state has one of these types: triage, backlog, unstarted, started, completed, canceled"`
 	AssigneeIDs     []string           `query:"assignee_ids" required:"false" doc:"Only issues assigned to these users; include the word null for unassigned issues"`
-	CreatorIDs      []uuid.UUID        `query:"creator_ids" required:"false" doc:"Only issues created by these users"`
-	LabelIDs        []uuid.UUID        `query:"label_ids" required:"false" doc:"Only issues carrying any of these labels; a label group matches all of its labels"`
-	ProjectIDs      []uuid.UUID        `query:"project_ids" required:"false" doc:"Only issues in these projects"`
-	MilestoneIDs    []uuid.UUID        `query:"milestone_ids" required:"false" doc:"Only issues in these project milestones"`
-	CycleIDs        []uuid.UUID        `query:"cycle_ids" required:"false" doc:"Only issues in these cycles"`
+	CreatorIDs      []uuid.UUID        `query:"creator_ids" format:"uuid" required:"false" doc:"Only issues created by these users"`
+	LabelIDs        []uuid.UUID        `query:"label_ids" format:"uuid" required:"false" doc:"Only issues carrying any of these labels; a label group matches all of its labels"`
+	ProjectIDs      []uuid.UUID        `query:"project_ids" format:"uuid" required:"false" doc:"Only issues in these projects"`
+	MilestoneIDs    []uuid.UUID        `query:"milestone_ids" format:"uuid" required:"false" doc:"Only issues in these project milestones"`
+	CycleIDs        []uuid.UUID        `query:"cycle_ids" format:"uuid" required:"false" doc:"Only issues in these cycles"`
 	ParentID        uuid.UUID          `query:"parent_id" required:"false" format:"uuid" doc:"Only sub-issues of this issue"`
 	HasParent       string             `query:"has_parent" required:"false" enum:"true,false" doc:"true for sub-issues only, false for top-level issues only"`
 	Priorities      []int              `query:"priorities" required:"false" doc:"Only these priorities: 0 none, 1 urgent, 2 high, 3 medium, 4 low"`
@@ -124,9 +106,10 @@ func (self *IssueService) List(ctx context.Context, userID uuid.UUID, input *Lis
 	if err != nil {
 		return nil, err
 	}
-	next := nextCursor(filter.Offset, input.Limit, len(issues))
+	var next *string
 	if len(issues) > input.Limit {
 		issues = issues[:input.Limit]
+		next = new(issue_repo.NextCursor(filter, issues[len(issues)-1]))
 	}
 	responses, err := self.respond(ctx, userID, issues)
 	if err != nil {
@@ -135,17 +118,13 @@ func (self *IssueService) List(ctx context.Context, userID uuid.UUID, input *Lis
 	return &IssueListResult{Issues: responses, NextCursor: next, Total: total}, nil
 }
 
-func (self *IssueService) listFilter(input *ListIssuesInput) (*issue_repo.ListFilter, error) {
-	offset, err := DecodeCursor(input.Cursor)
-	if err != nil {
-		return nil, err
-	}
+func (self *IssueService) listFilter(input *ListIssuesInput) (filter *issue_repo.ListFilter, err error) {
 	limit := input.Limit
 	if limit <= 0 {
 		limit = 50
 	}
 	input.Limit = limit
-	filter := &issue_repo.ListFilter{
+	filter = &issue_repo.ListFilter{
 		WorkspaceID:     input.WorkspaceID,
 		StateIDs:        input.StateIDs,
 		StateTypes:      input.StateTypes,
@@ -160,7 +139,6 @@ func (self *IssueService) listFilter(input *ListIssuesInput) (*issue_repo.ListFi
 		IncludeTrashed:  input.IncludeTrashed,
 		OrderBy:         issue_repo.OrderBy(input.OrderBy),
 		GroupBy:         issue_repo.GroupBy(input.GroupBy),
-		Offset:          offset,
 		Limit:           limit + 1,
 	}
 	if filter.OrderBy == "" {
@@ -219,6 +197,12 @@ func (self *IssueService) listFilter(input *ListIssuesInput) (*issue_repo.ListFi
 	}
 	if key, number, ok := ParseIdentifier(filter.Query); ok {
 		filter.QueryIdentifier = &issue_repo.IdentifierRef{Key: key, Number: number}
+	}
+	if input.Cursor == "" {
+		return filter, nil
+	}
+	if filter.After, err = issue_repo.DecodeCursor(input.Cursor, filter); err != nil {
+		return nil, invalidCursor()
 	}
 	return filter, nil
 }
@@ -285,18 +269,20 @@ func (self *IssueService) ListHistory(ctx context.Context, userID uuid.UUID, inp
 	if err != nil {
 		return nil, nil, err
 	}
-	offset, err := DecodeCursor(input.Cursor)
+	after, err := decodeTimeCursor(input.Cursor)
 	if err != nil {
 		return nil, nil, err
 	}
 	limit := max(input.Limit, 1)
-	entries, err := self.repo.Issue().ListHistory(ctx, issue.ID, offset, limit+1)
+	entries, err := self.repo.Issue().ListHistory(ctx, issue.ID, after, limit+1)
 	if err != nil {
 		return nil, nil, err
 	}
-	next := nextCursor(offset, limit, len(entries))
+	var next *string
 	if len(entries) > limit {
 		entries = entries[:limit]
+		last := entries[limit-1]
+		next = new(repository.TimeCursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode())
 	}
 	return models.TransformHistoryEntities(entries), next, nil
 }

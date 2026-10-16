@@ -10,23 +10,43 @@ import (
 	"github.com/unbindapp/zigzag-api/config"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
-	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
+	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/repositories/repositories"
+	webhook_service "github.com/unbindapp/zigzag-api/internal/services/webhook"
 )
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i CycleServiceInterface -p cycle_service -s CycleService -o cycle_service_iface.go
 type CycleService struct {
-	cfg  *config.Config
-	repo repositories.RepositoriesInterface
-	now  func() time.Time
+	cfg      *config.Config
+	repo     repositories.RepositoriesInterface
+	webhooks webhook_service.WebhookServiceInterface
+	now      func() time.Time
 }
 
-func NewCycleService(cfg *config.Config, repo repositories.RepositoriesInterface) *CycleService {
-	return &CycleService{cfg: cfg, repo: repo, now: time.Now}
+func NewCycleService(cfg *config.Config, repo repositories.RepositoriesInterface, webhooks webhook_service.WebhookServiceInterface) *CycleService {
+	return &CycleService{cfg: cfg, repo: repo, webhooks: webhooks, now: time.Now}
+}
+
+const cycleUpdatedEvent = "cycle.updated"
+
+func (self *CycleService) emitUpdated(ctx context.Context, team *ent.Team, found *ent.Cycle, action string) {
+	response, err := self.respondOne(ctx, team, found)
+	if err != nil {
+		log.Error("Failed to describe the cycle for webhooks", "cycle", found.ID, "err", err)
+		return
+	}
+	self.emitResponse(ctx, team, response, action)
+}
+
+func (self *CycleService) emitResponse(ctx context.Context, team *ent.Team, response *models.CycleResponse, action string) {
+	payload := map[string]any{"action": action, "team_id": team.ID, "cycle": response}
+	if err := self.webhooks.Emit(ctx, team.WorkspaceID, cycleUpdatedEvent, payload); err != nil {
+		log.Error("Failed to emit webhook", "event", cycleUpdatedEvent, "err", err)
+	}
 }
 
 func (self *CycleService) check(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID) error {
@@ -146,7 +166,7 @@ func progressOf(team *ent.Team, tally map[schema.StateType]cycle_repo.StateTally
 		}
 	}
 	if progress.Scope > 0 {
-		progress.Percent = math.Round(progress.Completed/progress.Scope*1000) / 10
+		progress.Percent = int(math.Round(progress.Completed / progress.Scope * 100))
 	}
 	return progress
 }
@@ -169,14 +189,4 @@ func cycleLabel(found *ent.Cycle) string {
 		return found.Name
 	}
 	return "Cycle " + strconv.Itoa(found.Number)
-}
-
-func historySource(ctx context.Context) schema.HistorySource {
-	if _, ok := apictx.MCPCallerFromContext(ctx); ok {
-		return schema.HistorySourceMCP
-	}
-	if _, ok := permissions_repo.APIKeyAccessFromContext(ctx); ok {
-		return schema.HistorySourceAPI
-	}
-	return schema.HistorySourceUser
 }

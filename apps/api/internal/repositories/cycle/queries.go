@@ -56,6 +56,11 @@ func (self *CycleRepository) ListByTeam(ctx context.Context, teamID uuid.UUID, i
 	return q.Order(ent.Desc(cycle.FieldNumber)).All(ctx)
 }
 
+func (self *CycleRepository) LockTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) error {
+	_, err := self.base.Client(tx).Team.Query().Where(team.ID(teamID), repository.LockRowsOnPostgres(team.Table)).Unique(false).Only(ctx)
+	return err
+}
+
 func (self *CycleRepository) NextNumber(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error) {
 	last, err := self.base.Client(tx).Cycle.Query().Where(cycle.TeamID(teamID)).Order(ent.Desc(cycle.FieldNumber)).First(ctx)
 	if ent.IsNotFound(err) {
@@ -141,16 +146,16 @@ func (self *CycleRepository) TeamsWithCyclesEnabled(ctx context.Context) ([]*ent
 	return self.base.DB.Team.Query().Where(team.CyclesEnabled(true), team.ArchivedAtIsNil()).All(ctx)
 }
 
-func (self *CycleRepository) LatestCycle(ctx context.Context, teamID uuid.UUID) (*ent.Cycle, error) {
-	found, err := self.base.DB.Cycle.Query().Where(cycle.TeamID(teamID)).Order(ent.Desc(cycle.FieldEndsAt)).First(ctx)
+func (self *CycleRepository) LatestCycle(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (*ent.Cycle, error) {
+	found, err := self.base.Client(tx).Cycle.Query().Where(cycle.TeamID(teamID)).Order(ent.Desc(cycle.FieldEndsAt)).First(ctx)
 	if ent.IsNotFound(err) {
 		return nil, nil
 	}
 	return found, err
 }
 
-func (self *CycleRepository) CountEndingAfter(ctx context.Context, teamID uuid.UUID, at time.Time) (int, error) {
-	return self.base.DB.Cycle.Query().
+func (self *CycleRepository) CountEndingAfter(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, at time.Time) (int, error) {
+	return self.base.Client(tx).Cycle.Query().
 		Where(cycle.TeamID(teamID), cycle.ArchivedAtIsNil(), cycle.CompletedAtIsNil(), cycle.EndsAtGT(at)).
 		Count(ctx)
 }

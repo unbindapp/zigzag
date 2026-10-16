@@ -22,5 +22,5 @@ type DocumentRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Document, error)
 	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Document, error)
 	ResolveWorkspaceOfDocument(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)
+	Search(ctx context.Context, workspaceIDs []uuid.UUID, visibleTeamIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)
 }

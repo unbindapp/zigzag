@@ -18,4 +18,5 @@ type CycleServiceInterface interface {
 	List(ctx context.Context, userID uuid.UUID, input *ListCyclesInput) ([]*models.CycleResponse, error)
 	Get(ctx context.Context, userID uuid.UUID, input *GetCycleInput) (*models.CycleResponse, error)
 	ProcessCycles(ctx context.Context) error
+	PlanTeamCycles(ctx context.Context, teamID uuid.UUID) error
 }

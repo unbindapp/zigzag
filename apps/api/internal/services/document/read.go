@@ -33,8 +33,13 @@ func (self *DocumentService) List(ctx context.Context, userID uuid.UUID, input *
 	if err := self.checkRole(ctx, userID, schema.WorkspaceRoleViewer, input.WorkspaceID, "Workspace not found"); err != nil {
 		return nil, err
 	}
+	visible, err := self.issues.VisibleTeams(ctx, userID, input.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
 	documents, err := self.repo.Document().List(ctx, &document_repo.ListDocumentsFilter{
 		WorkspaceID:     input.WorkspaceID,
+		VisibleTeamIDs:  visible.IDs(),
 		ProjectID:       optionalID(input.ProjectID),
 		InitiativeID:    optionalID(input.InitiativeID),
 		IssueID:         optionalID(input.IssueID),
@@ -73,6 +78,9 @@ func (self *DocumentService) Get(ctx context.Context, userID uuid.UUID, input *G
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Document not found")
 	}
 	if err != nil {
+		return nil, err
+	}
+	if err := self.ensureIssueVisible(ctx, userID, document); err != nil {
 		return nil, err
 	}
 	return models.TransformDocument(document), nil

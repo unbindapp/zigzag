@@ -65,7 +65,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*CycleRespo
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *cycle_service.CreateCycleInput
+	Body *cycle_service.CreateCycleInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*CycleResponse, error) {
@@ -82,7 +82,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Cycl
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *cycle_service.UpdateCycleInput
+	Body *cycle_service.UpdateCycleInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*CycleResponse, error) {
@@ -99,7 +99,7 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Cycl
 
 type RefInput struct {
 	server.BaseAuthInput
-	Body *cycle_service.CycleRefInput
+	Body *cycle_service.CycleRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) Archive(ctx context.Context, input *RefInput) (*CycleResponse, error) {
@@ -116,7 +116,7 @@ func (self *HandlerGroup) Archive(ctx context.Context, input *RefInput) (*CycleR
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -129,6 +129,6 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *RefInput) (*Deleted
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.CycleID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.CycleID, Deleted: true}
 	return resp, nil
 }

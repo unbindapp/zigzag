@@ -255,6 +255,19 @@ func (suite *WebhookServiceSuite) TestEmitResolvesTheTeamOfAComment() {
 	suite.Len(suite.received, 1)
 }
 
+func (suite *WebhookServiceSuite) TestEmitMatchesTheTeamOfAnUpdatedIssue() {
+	teamID, otherTeam := uuid.New(), uuid.New()
+	scoped := suite.hook("issue.updated")
+	scoped.TeamID = &teamID
+	other := suite.hook("issue.updated")
+	other.TeamID = &otherTeam
+	suite.MockWebhookRepo.EXPECT().ListEnabled(suite.Ctx, suite.workspaceID).Return([]*ent.Webhook{scoped, other}, nil).Once()
+
+	payload := map[string]any{"issue": map[string]any{"id": uuid.New(), "team_id": teamID}, "changes": []any{}}
+	suite.Require().NoError(suite.service.Emit(suite.Ctx, suite.workspaceID, "issue.updated", payload))
+	suite.Len(suite.received, 1, "only the webhook of the issue's team receives it")
+}
+
 func (suite *WebhookServiceSuite) TestEmitRetriesThreeTimes() {
 	suite.MockWebhookRepo.EXPECT().ListEnabled(suite.Ctx, suite.workspaceID).Return([]*ent.Webhook{suite.hook("issue.deleted")}, nil).Twice()
 

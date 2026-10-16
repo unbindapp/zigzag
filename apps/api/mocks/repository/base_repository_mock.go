@@ -7,6 +7,7 @@ package mocks_repository
 import (
 	"context"
 
+	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
@@ -97,6 +98,96 @@ func (_c *BaseRepositoryMock_Client_Call) Return(client *ent.Client) *BaseReposi
 }
 
 func (_c *BaseRepositoryMock_Client_Call) RunAndReturn(run func(tx repository.TxInterface) *ent.Client) *BaseRepositoryMock_Client_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RespaceIfCrowded provides a mock function for the type BaseRepositoryMock
+func (_mock *BaseRepositoryMock) RespaceIfCrowded(ctx context.Context, tx repository.TxInterface, sort repository.SortColumn, scope uuid.UUID, id uuid.UUID, value float64) (bool, error) {
+	ret := _mock.Called(ctx, tx, sort, scope, id, value)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RespaceIfCrowded")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, repository.SortColumn, uuid.UUID, uuid.UUID, float64) (bool, error)); ok {
+		return returnFunc(ctx, tx, sort, scope, id, value)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, repository.SortColumn, uuid.UUID, uuid.UUID, float64) bool); ok {
+		r0 = returnFunc(ctx, tx, sort, scope, id, value)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, repository.SortColumn, uuid.UUID, uuid.UUID, float64) error); ok {
+		r1 = returnFunc(ctx, tx, sort, scope, id, value)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// BaseRepositoryMock_RespaceIfCrowded_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RespaceIfCrowded'
+type BaseRepositoryMock_RespaceIfCrowded_Call struct {
+	*mock.Call
+}
+
+// RespaceIfCrowded is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - sort repository.SortColumn
+//   - scope uuid.UUID
+//   - id uuid.UUID
+//   - value float64
+func (_e *BaseRepositoryMock_Expecter) RespaceIfCrowded(ctx any, tx any, sort any, scope any, id any, value any) *BaseRepositoryMock_RespaceIfCrowded_Call {
+	return &BaseRepositoryMock_RespaceIfCrowded_Call{Call: _e.mock.On("RespaceIfCrowded", ctx, tx, sort, scope, id, value)}
+}
+
+func (_c *BaseRepositoryMock_RespaceIfCrowded_Call) Run(run func(ctx context.Context, tx repository.TxInterface, sort repository.SortColumn, scope uuid.UUID, id uuid.UUID, value float64)) *BaseRepositoryMock_RespaceIfCrowded_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 repository.SortColumn
+		if args[2] != nil {
+			arg2 = args[2].(repository.SortColumn)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		var arg4 uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(uuid.UUID)
+		}
+		var arg5 float64
+		if args[5] != nil {
+			arg5 = args[5].(float64)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *BaseRepositoryMock_RespaceIfCrowded_Call) Return(b bool, err error) *BaseRepositoryMock_RespaceIfCrowded_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *BaseRepositoryMock_RespaceIfCrowded_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, sort repository.SortColumn, scope uuid.UUID, id uuid.UUID, value float64) (bool, error)) *BaseRepositoryMock_RespaceIfCrowded_Call {
 	_c.Call.Return(run)
 	return _c
 }

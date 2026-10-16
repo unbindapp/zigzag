@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
 )
 
@@ -84,6 +85,21 @@ func (suite *ProjectServiceSuite) TestMilestonesNeedMemberToChange() {
 	suite.MockProjectRepo.EXPECT().GetMilestone(suite.Ctx, milestone.ID).Return(milestone, nil).Once()
 	err = suite.service.DeleteMilestone(suite.Ctx, suite.userID, &MilestoneRefInput{MilestoneID: milestone.ID})
 	suite.ErrorIs(err, errdefs.ErrUnauthorized)
+}
+
+func (suite *ProjectServiceSuite) TestDeleteMilestoneRecordsHistoryOnItsIssues() {
+	suite.roles(schema.WorkspaceRoleMember)
+	suite.expectWorkspaceOfProject()
+	milestone := &ent.ProjectMilestone{ID: uuid.New(), ProjectID: suite.project.ID, Name: "Beta"}
+	issueID := uuid.New()
+	suite.MockProjectRepo.EXPECT().GetMilestone(suite.Ctx, milestone.ID).Return(milestone, nil).Once()
+	suite.MockProjectRepo.EXPECT().IssueIDsInMilestone(suite.Ctx, mock.Anything, milestone.ID).Return([]uuid.UUID{issueID}, nil).Once()
+	suite.MockIssueRepo.EXPECT().CreateHistoryMany(suite.Ctx, mock.Anything, []issue_repo.HistoryEntry{{
+		IssueID: issueID, ActorID: &suite.userID, Source: schema.HistorySourceUser,
+		Changes: []schema.FieldChange{{Field: "milestone", From: milestone.ID.String(), FromLabel: "Beta"}},
+	}}).Return(nil).Once()
+	suite.MockProjectRepo.EXPECT().DeleteMilestone(suite.Ctx, mock.Anything, milestone.ID).Return(nil).Once()
+	suite.NoError(suite.service.DeleteMilestone(suite.Ctx, suite.userID, &MilestoneRefInput{MilestoneID: milestone.ID}))
 }
 
 func (suite *ProjectServiceSuite) TestCreateMilestoneValidatesAndAppends() {

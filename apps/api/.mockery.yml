@@ -261,3 +261,12 @@ packages:
           filename: webhook_service_mock.go
           structname: WebhookServiceMock
           pkgname: mocks_services_webhook
+  github.com/unbindapp/zigzag-api/internal/services/cycle:
+    config:
+      dir: ./mocks/services/cycle
+    interfaces:
+      CycleServiceInterface:
+        config:
+          filename: cycle_service_mock.go
+          structname: CycleServiceMock
+          pkgname: mocks_services_cycle

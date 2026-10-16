@@ -97,6 +97,7 @@ func (suite *EndToEndSuite) SetupTest() {
 	oauthService := oauthserver_service.NewOAuthServerService(repo, oauthserver.NewMetadataFetcher(oauthserver.DefaultIPPolicy, cache.NewMemoryCache[oauthserver.ClientMetadata]()), issuer)
 	notifications := notification_service.NewNotificationService(cfg, repo, emails)
 	webhooks := webhook_service.NewWebhookService(cfg, repo)
+	cycles := cycle_service.NewCycleService(cfg, repo, webhooks)
 	srv := &server.Server{
 		Cfg:                 cfg,
 		Repository:          repo,
@@ -104,7 +105,7 @@ func (suite *EndToEndSuite) SetupTest() {
 		Storage:             store,
 		UserService:         user_service.NewUserService(cfg, repo, emails),
 		WorkspaceService:    workspace_service.NewWorkspaceService(cfg, repo, emails),
-		TeamService:         team_service.NewTeamService(repo),
+		TeamService:         team_service.NewTeamService(repo, cycles),
 		EmailService:        emails,
 		APIKeyService:       apikey_service.NewAPIKeyService(repo),
 		OAuthServerService:  oauthService,
@@ -113,10 +114,9 @@ func (suite *EndToEndSuite) SetupTest() {
 		IssueService:        issue_service.NewIssueService(cfg, repo, notifications, webhooks),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notifications, webhooks),
 		LabelService:        label_service.NewLabelService(cfg, repo),
-		CycleService:        cycle_service.NewCycleService(cfg, repo),
+		CycleService:        cycles,
 		InitiativeService:   initiative_service.NewInitiativeService(cfg, repo),
 		NotificationService: notifications,
-		DocumentService:     document_service.NewDocumentService(cfg, repo),
 		ViewService:         view_service.NewViewService(cfg, repo),
 		TemplateService:     template_service.NewTemplateService(cfg, repo),
 		FavoriteService:     favorite_service.NewFavoriteService(cfg, repo),
@@ -124,6 +124,7 @@ func (suite *EndToEndSuite) SetupTest() {
 		ImportService:       import_service.NewImportService(cfg, repo),
 	}
 	srv.SearchService = search_service.NewSearchService(cfg, repo, srv.IssueService)
+	srv.DocumentService = document_service.NewDocumentService(cfg, repo, srv.IssueService)
 	srv.CommentService = comment_service.NewCommentService(cfg, repo, srv.IssueService, notifications, webhooks)
 
 	root := chi.NewRouter()
@@ -360,6 +361,17 @@ func (suite *EndToEndSuite) TestImportLinearDryRun() {
 	suite.Require().Len(imports, 1)
 	suite.Equal("completed", object(imports[0])["status"])
 	suite.Equal(true, object(imports[0])["dry_run"])
+}
+
+func (suite *EndToEndSuite) TestImportLinearTakesExportsOverOneMiB() {
+	raw, err := os.ReadFile("testdata/linear-3-issues.json")
+	suite.Require().NoError(err)
+	export := map[string]any{}
+	suite.Require().NoError(json.Unmarshal(raw, &export))
+	export["exported_by"] = strings.Repeat("x", 3<<20)
+
+	report := object(suite.call(suite.admin, "import-linear", map[string]any{"workspace_id": suite.workspace.ID, "export": export})["data"])
+	suite.EqualValues(3, object(object(report["counts"])["issues"])["created"], "a real export is over 1 MiB and must fit through /mcp")
 }
 
 func TestEndToEndSuite(t *testing.T) {

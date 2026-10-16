@@ -15,11 +15,14 @@ import (
 	cycle_repo "github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
+	mocks_services_webhook "github.com/unbindapp/zigzag-api/mocks/services/webhook"
 )
 
 type CycleServiceSuite struct {
 	services.ServiceTestSuite
 	service     *CycleService
+	webhooks    *mocks_services_webhook.WebhookServiceMock
+	emitted     []map[string]any
 	now         time.Time
 	userID      uuid.UUID
 	workspaceID uuid.UUID
@@ -30,7 +33,13 @@ type CycleServiceSuite struct {
 func (suite *CycleServiceSuite) SetupTest() {
 	suite.ServiceTestSuite.SetupTest()
 	suite.now = time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
-	suite.service = NewCycleService(nil, suite.MockRepo)
+	suite.webhooks = mocks_services_webhook.NewWebhookServiceMock(suite.T())
+	suite.emitted = nil
+	suite.webhooks.EXPECT().Emit(mock.Anything, mock.Anything, "cycle.updated", mock.Anything).RunAndReturn(func(_ context.Context, _ uuid.UUID, _ string, payload any) error {
+		suite.emitted = append(suite.emitted, payload.(map[string]any))
+		return nil
+	}).Maybe()
+	suite.service = NewCycleService(nil, suite.MockRepo, suite.webhooks)
 	suite.service.now = func() time.Time { return suite.now }
 	suite.userID = uuid.New()
 	suite.workspaceID = uuid.New()
@@ -43,6 +52,7 @@ func (suite *CycleServiceSuite) SetupTest() {
 		StartsAt: time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC), EndsAt: time.Date(2026, 10, 26, 0, 0, 0, 0, time.UTC),
 	}
 	suite.ExpectTx()
+	suite.MockCycleRepo.EXPECT().LockTeam(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 }
 
 func (suite *CycleServiceSuite) role(role schema.WorkspaceRole, result error) {
@@ -84,7 +94,7 @@ func (suite *CycleServiceSuite) TestListComputesProgressWithoutCanceledIssues() 
 	suite.Equal(4.0, progress.Scope)
 	suite.Equal(1.0, progress.Completed)
 	suite.Equal(2.0, progress.Started)
-	suite.Equal(25.0, progress.Percent)
+	suite.Equal(25, progress.Percent)
 	suite.Equal(4, progress.IssueCount)
 	suite.Equal(1, progress.CompletedIssueCount)
 	suite.True(cycles[0].IsActive)
@@ -96,7 +106,7 @@ func (suite *CycleServiceSuite) TestListComputesProgressWithoutCanceledIssues() 
 	cycles, err = suite.service.List(suite.Ctx, suite.userID, &ListCyclesInput{TeamID: suite.team.ID})
 	suite.Require().NoError(err)
 	suite.Equal(9.0, cycles[0].Progress.Scope)
-	suite.Equal(55.6, cycles[0].Progress.Percent)
+	suite.Equal(56, cycles[0].Progress.Percent, "percent is rounded like project progress")
 }
 
 func (suite *CycleServiceSuite) TestPrivateTeamCyclesAreNotFound() {
@@ -168,6 +178,7 @@ func (suite *CycleServiceSuite) TestCreateNumbersCycles() {
 	suite.Require().NoError(err)
 	suite.Equal(4, cycle.Number)
 	suite.True(cycle.IsActive)
+	suite.Equal([]string{"created"}, suite.emittedActions())
 }
 
 func (suite *CycleServiceSuite) TestUpdateChecksTheResultingRange() {
@@ -188,13 +199,24 @@ func (suite *CycleServiceSuite) TestDeleteRecordsTheCycleLeavingIssues() {
 		Changes: []schema.FieldChange{{Field: "cycle", From: suite.cycle.ID.String(), FromLabel: "Cycle 3"}},
 	}}).Return(nil).Once()
 	suite.MockCycleRepo.EXPECT().Delete(suite.Ctx, mock.Anything, suite.cycle.ID).Return(nil).Once()
+	suite.tally(map[schema.StateType]cycle_repo.StateTally{})
 	suite.NoError(suite.service.Delete(suite.Ctx, suite.userID, &CycleRefInput{CycleID: suite.cycle.ID}))
+	suite.Equal([]string{"deleted"}, suite.emittedActions())
+	suite.Equal(suite.team.ID, suite.emitted[0]["team_id"], "team-scoped webhooks match on team_id")
+}
+
+func (suite *CycleServiceSuite) emittedActions() []string {
+	actions := make([]string, len(suite.emitted))
+	for i, payload := range suite.emitted {
+		actions[i] = payload["action"].(string)
+	}
+	return actions
 }
 
 func (suite *CycleServiceSuite) TestProcessCyclesPlansCurrentAndNextCycle() {
 	suite.MockCycleRepo.EXPECT().TeamsWithCyclesEnabled(suite.Ctx).Return([]*ent.Team{suite.team}, nil).Once()
-	suite.MockCycleRepo.EXPECT().CountEndingAfter(suite.Ctx, suite.team.ID, suite.now).Return(0, nil).Once()
-	suite.MockCycleRepo.EXPECT().LatestCycle(suite.Ctx, suite.team.ID).Return(nil, nil).Once()
+	suite.MockCycleRepo.EXPECT().CountEndingAfter(suite.Ctx, mock.Anything, suite.team.ID, suite.now).Return(0, nil).Once()
+	suite.MockCycleRepo.EXPECT().LatestCycle(suite.Ctx, mock.Anything, suite.team.ID).Return(nil, nil).Once()
 	suite.MockCycleRepo.EXPECT().NextNumber(suite.Ctx, mock.Anything, suite.team.ID).Return(1, nil).Once()
 	suite.MockCycleRepo.EXPECT().NextNumber(suite.Ctx, mock.Anything, suite.team.ID).Return(2, nil).Once()
 	monday := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
@@ -206,8 +228,10 @@ func (suite *CycleServiceSuite) TestProcessCyclesPlansCurrentAndNextCycle() {
 		}).Twice()
 	suite.MockCycleRepo.EXPECT().EndedOpenCycles(suite.Ctx, suite.now).Return(nil, nil).Once()
 	suite.MockCycleRepo.EXPECT().ActiveCycles(suite.Ctx, suite.now).Return(nil, nil).Once()
+	suite.tally(map[schema.StateType]cycle_repo.StateTally{})
 
 	suite.Require().NoError(suite.service.ProcessCycles(suite.Ctx))
+	suite.Equal([]string{"created", "created"}, suite.emittedActions())
 	suite.Require().Len(created, 2)
 	suite.True(created[0].StartsAt.Equal(monday))
 	suite.True(created[0].EndsAt.Equal(monday.AddDate(0, 0, 14)))
@@ -236,6 +260,25 @@ func (suite *CycleServiceSuite) TestProcessCyclesClosesEndedCyclesAndMovesUnfini
 	suite.MockCycleRepo.EXPECT().ActiveCycles(suite.Ctx, suite.now).Return(nil, nil).Once()
 
 	suite.NoError(suite.service.ProcessCycles(suite.Ctx))
+	suite.Equal([]string{"completed"}, suite.emittedActions())
+}
+
+func (suite *CycleServiceSuite) TestPlanTeamCyclesOnlyForTeamsWithCycles() {
+	off := *suite.team
+	off.CyclesEnabled = false
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, off.ID).Return(&off, nil).Once()
+	suite.NoError(suite.service.PlanTeamCycles(suite.Ctx, off.ID))
+
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.team.ID).Return(suite.team, nil).Once()
+	suite.MockCycleRepo.EXPECT().CountEndingAfter(suite.Ctx, mock.Anything, suite.team.ID, suite.now).Return(1, nil).Once()
+	suite.MockCycleRepo.EXPECT().LatestCycle(suite.Ctx, mock.Anything, suite.team.ID).Return(suite.cycle, nil).Once()
+	suite.MockCycleRepo.EXPECT().NextNumber(suite.Ctx, mock.Anything, suite.team.ID).Return(4, nil).Once()
+	suite.MockCycleRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.MatchedBy(func(input *cycle_repo.CreateCycleInput) bool {
+		return input.Number == 4 && input.StartsAt.Equal(suite.cycle.EndsAt)
+	})).Return(&ent.Cycle{ID: uuid.New(), TeamID: suite.team.ID, Number: 4, StartsAt: suite.cycle.EndsAt, EndsAt: suite.cycle.EndsAt.AddDate(0, 0, 14)}, nil).Once()
+	suite.tally(map[schema.StateType]cycle_repo.StateTally{})
+	suite.NoError(suite.service.PlanTeamCycles(suite.Ctx, suite.team.ID))
+	suite.Equal([]string{"created"}, suite.emittedActions())
 }
 
 func (suite *CycleServiceSuite) TestProcessCyclesLeavesIssuesWithoutAutoMove() {

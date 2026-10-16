@@ -29,6 +29,7 @@ type CycleRepositoryInterface interface {
 	ResolveWorkspaceOfCycle(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	ActiveCycleIDs(ctx context.Context, teamIDs []uuid.UUID, now time.Time) (map[uuid.UUID]uuid.UUID, error)
 	ListByTeam(ctx context.Context, teamID uuid.UUID, includeArchived bool) ([]*ent.Cycle, error)
+	LockTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) error
 	NextNumber(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error)
 	// Ranges are half open, so a cycle may start exactly when another ends.
 	Overlaps(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt, endsAt time.Time, except *uuid.UUID) (bool, error)
@@ -38,8 +39,8 @@ type CycleRepositoryInterface interface {
 	IssueIDsInCycle(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)
 	UnfinishedIssueIDs(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)
 	TeamsWithCyclesEnabled(ctx context.Context) ([]*ent.Team, error)
-	LatestCycle(ctx context.Context, teamID uuid.UUID) (*ent.Cycle, error)
-	CountEndingAfter(ctx context.Context, teamID uuid.UUID, at time.Time) (int, error)
+	LatestCycle(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (*ent.Cycle, error)
+	CountEndingAfter(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, at time.Time) (int, error)
 	EndedOpenCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error)
 	ActiveCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error)
 	NextOpenCycle(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, after time.Time) (*ent.Cycle, error)

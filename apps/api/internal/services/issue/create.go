@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
+	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/common/markdown"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
@@ -23,13 +25,13 @@ type CreateIssueInput struct {
 	Priority      *int        `json:"priority,omitempty" required:"false" minimum:"0" maximum:"4" doc:"0 none (default), 1 urgent, 2 high, 3 medium, 4 low"`
 	Estimate      *float64    `json:"estimate,omitempty" required:"false" minimum:"0" doc:"Estimate in the team's scale"`
 	AssigneeID    *uuid.UUID  `json:"assignee_id,omitempty" required:"false" format:"uuid" doc:"Workspace member to assign"`
-	LabelIDs      []uuid.UUID `json:"label_ids,omitempty" required:"false" maxItems:"50" doc:"Workspace labels or labels of this team; not label groups"`
+	LabelIDs      []uuid.UUID `json:"label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Workspace labels or labels of this team; not label groups"`
 	ProjectID     *uuid.UUID  `json:"project_id,omitempty" required:"false" format:"uuid" doc:"Project of the workspace"`
 	MilestoneID   *uuid.UUID  `json:"milestone_id,omitempty" required:"false" format:"uuid" doc:"Milestone of the project; sets project_id when omitted"`
 	CycleID       *uuid.UUID  `json:"cycle_id,omitempty" required:"false" format:"uuid" doc:"Cycle of the team"`
 	ParentID      *uuid.UUID  `json:"parent_id,omitempty" required:"false" format:"uuid" doc:"Parent issue in the same workspace, making this a sub-issue"`
 	DueDate       string      `json:"due_date,omitempty" required:"false" format:"date" doc:"Due date, YYYY-MM-DD"`
-	SubscriberIDs []uuid.UUID `json:"subscriber_ids,omitempty" required:"false" maxItems:"50" doc:"Workspace members to subscribe besides you, the assignee and mentioned people"`
+	SubscriberIDs []uuid.UUID `json:"subscriber_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Workspace members to subscribe besides you, the assignee and mentioned people"`
 	TemplateID    *uuid.UUID  `json:"template_id,omitempty" required:"false" format:"uuid" doc:"Issue template whose values fill every field you leave out; its sub-issues are created too"`
 	SortOrder     *float64    `json:"sort_order,omitempty" required:"false" doc:"Manual order; defaults to the top of the state"`
 }
@@ -70,16 +72,18 @@ func (self *IssueService) Create(ctx context.Context, userID uuid.UUID, input *C
 	}
 
 	var created *createdIssue
+	var children []*createdIssue
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		created, err = self.insert(ctx, tx, userID, team, input)
 		if err != nil {
 			return err
 		}
 		for _, sub := range subIssues {
-			child := &CreateIssueInput{TeamID: team.ID, Title: sub.Title, Description: sub.Description, ParentID: &created.issue.ID}
-			if _, err := self.insert(ctx, tx, userID, team, child); err != nil {
+			child, err := self.insert(ctx, tx, userID, team, &CreateIssueInput{TeamID: team.ID, Title: sub.Title, Description: sub.Description, ParentID: &created.issue.ID})
+			if err != nil {
 				return err
 			}
+			children = append(children, child)
 		}
 		return nil
 	})
@@ -87,6 +91,19 @@ func (self *IssueService) Create(ctx context.Context, userID uuid.UUID, input *C
 		return nil, err
 	}
 
+	response, err := self.announceCreated(ctx, userID, team, created)
+	if err != nil {
+		return nil, err
+	}
+	for _, child := range children {
+		if _, err := self.announceCreated(ctx, userID, team, child); err != nil {
+			log.Error("Failed to announce a template sub-issue", "issue", child.issue.ID, "err", err)
+		}
+	}
+	return response, nil
+}
+
+func (self *IssueService) announceCreated(ctx context.Context, userID uuid.UUID, team *ent.Team, created *createdIssue) (*models.IssueResponse, error) {
 	response, err := self.reload(ctx, userID, created.issue.ID)
 	if err != nil {
 		return nil, err
@@ -184,7 +201,7 @@ func (self *IssueService) insert(ctx context.Context, tx repository.TxInterface,
 		create.CycleID = input.CycleID
 	}
 	if input.ParentID != nil {
-		if _, err := self.parent(ctx, tx, team.WorkspaceID, nil, *input.ParentID); err != nil {
+		if _, err := self.parent(ctx, tx, userID, team.WorkspaceID, nil, *input.ParentID); err != nil {
 			return nil, err
 		}
 		create.ParentID = input.ParentID
@@ -233,7 +250,7 @@ func (self *IssueService) insert(ctx context.Context, tx repository.TxInterface,
 	}
 	actor := &userID
 	change := schema.FieldChange{Field: "created", ToLabel: models.Identifier(team.Key, create.Number)}
-	if err := self.repo.Issue().CreateHistory(ctx, tx, issue.ID, actor, historySource(ctx), []schema.FieldChange{change}); err != nil {
+	if err := self.repo.Issue().CreateHistory(ctx, tx, issue.ID, actor, apictx.HistorySource(ctx), []schema.FieldChange{change}); err != nil {
 		return nil, err
 	}
 	return &createdIssue{issue: issue, assignee: create.AssigneeID, mentioned: mentioned}, nil

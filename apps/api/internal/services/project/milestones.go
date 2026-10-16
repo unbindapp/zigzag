@@ -7,9 +7,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
 )
 
@@ -115,7 +118,21 @@ func (self *ProjectService) DeleteMilestone(ctx context.Context, userID uuid.UUI
 	if err != nil {
 		return err
 	}
-	return self.repo.Project().DeleteMilestone(ctx, milestone.ID)
+	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		issueIDs, err := self.repo.Project().IssueIDsInMilestone(ctx, tx, milestone.ID)
+		if err != nil {
+			return err
+		}
+		change := schema.FieldChange{Field: "milestone", From: milestone.ID.String(), FromLabel: milestone.Name}
+		entries := make([]issue_repo.HistoryEntry, len(issueIDs))
+		for i, issueID := range issueIDs {
+			entries[i] = issue_repo.HistoryEntry{IssueID: issueID, ActorID: &userID, Source: apictx.HistorySource(ctx), Changes: []schema.FieldChange{change}}
+		}
+		if err := self.repo.Issue().CreateHistoryMany(ctx, tx, entries); err != nil {
+			return err
+		}
+		return self.repo.Project().DeleteMilestone(ctx, tx, milestone.ID)
+	})
 }
 
 func (self *ProjectService) memberMilestone(ctx context.Context, userID, milestoneID uuid.UUID) (*ent.ProjectMilestone, error) {

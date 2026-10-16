@@ -2,6 +2,7 @@ package issue_service
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
@@ -102,7 +104,8 @@ func (suite *IssueServiceSuite) roles(held schema.WorkspaceRole) {
 
 func (suite *IssueServiceSuite) loads(issues ...*ent.Issue) {
 	for _, issue := range issues {
-		suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, nil, issue.ID).Return(issue, nil).Maybe()
+		suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, mock.Anything, issue.ID).Return(issue, nil).Maybe()
+		suite.MockIssueRepo.EXPECT().LockWithEdges(mock.Anything, mock.Anything, issue.ID).Return(issue, nil).Maybe()
 		suite.MockIssueRepo.EXPECT().GetByID(mock.Anything, issue.ID).Return(issue, nil).Maybe()
 	}
 }
@@ -168,6 +171,21 @@ func (suite *IssueServiceSuite) TestPrivateTeamIssuesHideFromNonMembers() {
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }
 
+func (suite *IssueServiceSuite) TestParentsInPrivateTeamsStayHidden() {
+	suite.roles(schema.WorkspaceRoleViewer)
+	suite.expectRespond()
+	privateTeam := &ent.Team{ID: uuid.New(), WorkspaceID: suite.workspaceID, Key: "SEC", Private: true}
+	parent := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, TeamID: privateTeam.ID, Number: 1, Title: "Secret", Edges: ent.IssueEdges{Team: privateTeam}}
+	suite.issue.ParentID = &parent.ID
+	suite.issue.Edges.Parent = parent
+	suite.loads(suite.issue)
+	suite.MockTeamRepo.EXPECT().IsMember(mock.Anything, privateTeam.ID, suite.userID).Return(false, nil).Once()
+
+	issue, err := suite.service.Get(suite.Ctx, suite.userID, &GetIssueInput{IssueID: suite.issue.ID})
+	suite.Require().NoError(err)
+	suite.Nil(issue.Parent, "a public child must not reveal the title of a private parent")
+}
+
 func (suite *IssueServiceSuite) TestGetByIdentifierResolvesInVisibleWorkspaces() {
 	suite.roles(schema.WorkspaceRoleViewer)
 	suite.loads(suite.issue)
@@ -222,20 +240,32 @@ func (suite *IssueServiceSuite) TestListPagesAndKeepsToVisibleTeams() {
 	hidden := uuid.New()
 	issues := []*ent.Issue{suite.issue, suite.newIssue(8, suite.states["Todo"]), suite.newIssue(9, suite.states["Todo"])}
 	suite.MockIssueRepo.EXPECT().List(mock.Anything, mock.MatchedBy(func(filter *issue_repo.ListFilter) bool {
-		return filter.Offset == 2 && filter.Limit == 3 && len(filter.TeamIDs) == 1 && filter.TeamIDs[0] == suite.team.ID &&
+		return filter.After == nil && filter.Limit == 3 && len(filter.TeamIDs) == 1 && filter.TeamIDs[0] == suite.team.ID &&
 			filter.Unassigned && len(filter.AssigneeIDs) == 1 && filter.OrderBy == issue_repo.OrderCreatedAt && filter.Descending
 	})).Return(issues, 10, nil).Once()
 
-	result, err := suite.service.List(suite.Ctx, suite.userID, &ListIssuesInput{
+	input := &ListIssuesInput{
 		WorkspaceID: suite.workspaceID, TeamIDs: []uuid.UUID{suite.team.ID, hidden}, AssigneeIDs: []string{"null", suite.otherID.String()},
-		OrderBy: "created_at", PaginationInput: models.PaginationInput{Limit: 2, Cursor: *EncodeCursor(2)},
-	})
+		OrderBy: "created_at", PaginationInput: models.PaginationInput{Limit: 2},
+	}
+	result, err := suite.service.List(suite.Ctx, suite.userID, input)
 	suite.Require().NoError(err)
 	suite.Len(result.Issues, 2)
 	suite.Equal(10, result.Total)
 	suite.Require().NotNil(result.NextCursor)
-	next, _ := DecodeCursor(*result.NextCursor)
-	suite.Equal(4, next)
+
+	suite.MockIssueRepo.EXPECT().List(mock.Anything, mock.MatchedBy(func(filter *issue_repo.ListFilter) bool {
+		return filter.After != nil && len(filter.After.Values) == 2
+	})).Return(issues[2:], 10, nil).Once()
+	input.Cursor = *result.NextCursor
+	result, err = suite.service.List(suite.Ctx, suite.userID, input)
+	suite.Require().NoError(err)
+	suite.Len(result.Issues, 1)
+	suite.Nil(result.NextCursor)
+
+	input.OrderBy = "title"
+	_, err = suite.service.List(suite.Ctx, suite.userID, input)
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "a cursor only continues the ordering it came from")
 }
 
 func (suite *IssueServiceSuite) TestCreateNeedsMember() {
@@ -283,23 +313,28 @@ func (suite *IssueServiceSuite) TestCreateValidatesReferences() {
 	foreignCycle := &ent.Cycle{ID: uuid.New(), TeamID: uuid.New()}
 	suite.MockCycleRepo.EXPECT().GetByID(mock.Anything, foreignCycle.ID).Return(foreignCycle, nil)
 	foreignParent := &ent.Issue{ID: uuid.New(), WorkspaceID: uuid.New()}
-	suite.MockIssueRepo.EXPECT().GetByID(mock.Anything, foreignParent.ID).Return(foreignParent, nil)
+	suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, mock.Anything, foreignParent.ID).Return(foreignParent, nil)
+	privateTeam := &ent.Team{ID: uuid.New(), WorkspaceID: suite.workspaceID, Key: "SEC", Private: true}
+	hiddenParent := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, TeamID: privateTeam.ID, Edges: ent.IssueEdges{Team: privateTeam}}
+	suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, mock.Anything, hiddenParent.ID).Return(hiddenParent, nil)
+	suite.MockTeamRepo.EXPECT().IsMember(mock.Anything, privateTeam.ID, suite.userID).Return(false, nil)
 
 	for name, input := range map[string]*CreateIssueInput{
-		"blank title":           {Title: "   "},
-		"state of another team": {Title: "x", StateID: &foreignState.ID},
-		"assignee outside":      {Title: "x", AssigneeID: &stranger},
-		"label group":           {Title: "x", LabelIDs: []uuid.UUID{group.ID}},
-		"another team's label":  {Title: "x", LabelIDs: []uuid.UUID{teamLabel.ID}},
-		"archived label":        {Title: "x", LabelIDs: []uuid.UUID{archived.ID}},
-		"unknown label":         {Title: "x", LabelIDs: []uuid.UUID{missing}},
-		"two single-select":     {Title: "x", LabelIDs: []uuid.UUID{small.ID, large.ID}},
-		"foreign project":       {Title: "x", ProjectID: &otherProject.ID},
-		"milestone elsewhere":   {Title: "x", ProjectID: &project.ID, MilestoneID: &milestone.ID},
-		"cycle of another team": {Title: "x", CycleID: &foreignCycle.ID},
-		"parent elsewhere":      {Title: "x", ParentID: &foreignParent.ID},
-		"zero estimate":         {Title: "x", Estimate: new(0.0)},
-		"bad due date":          {Title: "x", DueDate: "soon"},
+		"parent in a private team": {Title: "x", ParentID: &hiddenParent.ID},
+		"blank title":              {Title: "   "},
+		"state of another team":    {Title: "x", StateID: &foreignState.ID},
+		"assignee outside":         {Title: "x", AssigneeID: &stranger},
+		"label group":              {Title: "x", LabelIDs: []uuid.UUID{group.ID}},
+		"another team's label":     {Title: "x", LabelIDs: []uuid.UUID{teamLabel.ID}},
+		"archived label":           {Title: "x", LabelIDs: []uuid.UUID{archived.ID}},
+		"unknown label":            {Title: "x", LabelIDs: []uuid.UUID{missing}},
+		"two single-select":        {Title: "x", LabelIDs: []uuid.UUID{small.ID, large.ID}},
+		"foreign project":          {Title: "x", ProjectID: &otherProject.ID},
+		"milestone elsewhere":      {Title: "x", ProjectID: &project.ID, MilestoneID: &milestone.ID},
+		"cycle of another team":    {Title: "x", CycleID: &foreignCycle.ID},
+		"parent elsewhere":         {Title: "x", ParentID: &foreignParent.ID},
+		"zero estimate":            {Title: "x", Estimate: new(0.0)},
+		"bad due date":             {Title: "x", DueDate: "soon"},
 	} {
 		input.TeamID = suite.team.ID
 		_, err := suite.service.Create(suite.Ctx, suite.userID, input)
@@ -365,16 +400,18 @@ func (suite *IssueServiceSuite) TestCreateFromTemplateFillsGapsAndAddsSubIssues(
 	suite.MockIssueRepo.EXPECT().Create(mock.Anything, mock.Anything, mock.MatchedBy(func(input *issue_repo.CreateIssueInput) bool {
 		return input.Title == "Bug" && input.Description == "Steps" && input.Priority == 2
 	})).Return(suite.issue, nil).Once()
-	suite.MockIssueRepo.EXPECT().GetByID(mock.Anything, suite.issue.ID).Return(suite.issue, nil)
+	suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, mock.Anything, suite.issue.ID).Return(suite.issue, nil)
+	child := suite.newIssue(10, suite.states["Todo"])
 	suite.MockIssueRepo.EXPECT().Create(mock.Anything, mock.Anything, mock.MatchedBy(func(input *issue_repo.CreateIssueInput) bool {
 		return input.Title == "Write test" && *input.ParentID == suite.issue.ID
-	})).Return(suite.newIssue(10, suite.states["Todo"]), nil).Once()
+	})).Return(child, nil).Once()
 	suite.MockIssueRepo.EXPECT().CreateHistory(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	suite.loads(suite.issue)
+	suite.loads(suite.issue, child)
 	suite.expectRespond()
 
 	_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateIssueInput{TeamID: suite.team.ID, Title: "Bug", TemplateID: &template.ID})
 	suite.NoError(err)
+	suite.Equal([]string{"issue.created", "issue.created"}, suite.emitted, "template sub-issues are announced like any new issue")
 
 	project := &ent.Template{ID: uuid.New(), WorkspaceID: suite.workspaceID, Kind: schema.TemplateKindProject}
 	suite.MockTemplateRepo.EXPECT().GetByID(mock.Anything, project.ID).Return(project, nil)
@@ -399,6 +436,7 @@ func (suite *IssueServiceSuite) TestUpdateStateAssigneeAndPriority() {
 	suite.MockUserRepo.EXPECT().GetByID(mock.Anything, suite.otherID).Return(&ent.User{ID: suite.otherID, Name: "Other"}, nil)
 	cycleID := uuid.New()
 	suite.MockCycleRepo.EXPECT().ActiveCycleIDs(mock.Anything, []uuid.UUID{suite.team.ID}, suite.now).Return(map[uuid.UUID]uuid.UUID{suite.team.ID: cycleID}, nil).Once()
+	suite.MockCycleRepo.EXPECT().GetByID(mock.Anything, cycleID).Return(&ent.Cycle{ID: cycleID, Number: 4}, nil).Once()
 	suite.MockIssueRepo.EXPECT().LabelsByIDs(mock.Anything, []uuid.UUID{}).Return([]*ent.Label{}, nil)
 	suite.MockIssueRepo.EXPECT().Update(mock.Anything, mock.Anything, suite.issue.ID, mock.MatchedBy(func(fields *issue_repo.IssueFields) bool {
 		return fields.StateID == suite.states["In Progress"].ID && fields.StartedAt != nil && *fields.CycleID == cycleID &&
@@ -408,7 +446,7 @@ func (suite *IssueServiceSuite) TestUpdateStateAssigneeAndPriority() {
 	suite.MockIssueRepo.EXPECT().Subscribe(mock.Anything, mock.Anything, suite.issue.ID, suite.otherID).Return(nil).Once()
 	suite.MockIssueRepo.EXPECT().CreateHistory(mock.Anything, mock.Anything, suite.issue.ID, &suite.userID, schema.HistorySourceUser, mock.MatchedBy(func(changes []schema.FieldChange) bool {
 		return suite.changes("state", "priority", "assignee", "cycle")(changes) &&
-			changes[0].FromLabel == "Todo" && changes[0].ToLabel == "In Progress" && changes[1].ToLabel == "Urgent" && changes[2].ToLabel == "Other"
+			changes[0].FromLabel == "Todo" && changes[0].ToLabel == "In Progress" && changes[1].ToLabel == "Urgent" && changes[2].ToLabel == "Other" && changes[3].ToLabel == "Cycle 4"
 	})).Return(nil).Once()
 	suite.MockIssueRepo.EXPECT().SubscriberIDs(mock.Anything, suite.issue.ID).Return([]uuid.UUID{suite.userID, suite.otherID}, nil)
 	suite.expectRespond()
@@ -535,6 +573,12 @@ func (suite *IssueServiceSuite) TestDeleteNeedsAdmin() {
 	suite.SetupTest()
 	suite.loads(suite.issue)
 	suite.roles(schema.WorkspaceRoleAdmin)
+	child := uuid.New()
+	suite.MockIssueRepo.EXPECT().ChildIDs(mock.Anything, mock.Anything, suite.issue.ID).Return([]uuid.UUID{child}, nil).Once()
+	suite.MockIssueRepo.EXPECT().CreateHistoryMany(mock.Anything, mock.Anything, []issue_repo.HistoryEntry{{
+		IssueID: child, ActorID: &suite.userID, Source: schema.HistorySourceUser,
+		Changes: []schema.FieldChange{{Field: "parent", From: suite.issue.ID.String(), FromLabel: "ENG-7"}},
+	}}).Return(nil).Once()
 	suite.MockIssueRepo.EXPECT().Delete(mock.Anything, mock.Anything, suite.issue.ID).Return(nil).Once()
 	suite.NoError(suite.service.Delete(suite.Ctx, suite.userID, &IssueRefInput{IssueID: suite.issue.ID}))
 	suite.Equal([]string{"issue.deleted"}, suite.emitted)
@@ -673,22 +717,61 @@ func (suite *IssueServiceSuite) TestReactionsNeedExactlyOneTarget() {
 }
 
 func (suite *IssueServiceSuite) TestAddReactionReturnsTheTargetsReactions() {
+	suite.issue.CreatorID = &suite.otherID
 	suite.loads(suite.issue)
 	suite.roles(schema.WorkspaceRoleMember)
 	target := issue_repo.ReactionTarget{IssueID: &suite.issue.ID}
-	suite.MockIssueRepo.EXPECT().AddReaction(mock.Anything, suite.userID, "🎉", target).Return(nil).Once()
+	suite.MockIssueRepo.EXPECT().AddReaction(mock.Anything, suite.userID, "🎉", target).Return(true, nil).Once()
 	suite.MockIssueRepo.EXPECT().Reactions(mock.Anything, target).Return([]*ent.Reaction{{Emoji: "🎉", UserID: suite.userID}, {Emoji: "🎉", UserID: suite.otherID}}, nil)
 	groups, err := suite.service.AddReaction(suite.Ctx, suite.userID, &ReactionInput{Emoji: "🎉", IssueID: &suite.issue.ID})
 	suite.Require().NoError(err)
 	suite.Require().Len(groups, 1)
 	suite.Equal(2, groups[0].Count)
 	suite.True(groups[0].Reacted)
+	notified := suite.eventsOf(schema.NotificationReaction)
+	suite.Require().Len(notified, 1, "the issue author hears about a new reaction")
+	suite.Equal([]uuid.UUID{suite.otherID}, notified[0].RecipientIDs)
+	suite.Equal(suite.issue.ID, *notified[0].IssueID)
+
+	suite.MockIssueRepo.EXPECT().AddReaction(mock.Anything, suite.userID, "🎉", target).Return(false, nil).Once()
+	_, err = suite.service.AddReaction(suite.Ctx, suite.userID, &ReactionInput{Emoji: "🎉", IssueID: &suite.issue.ID})
+	suite.Require().NoError(err)
+	suite.Len(suite.eventsOf(schema.NotificationReaction), 1, "reacting again with the same emoji notifies nobody")
+}
+
+func (suite *IssueServiceSuite) TestCommentAndProjectUpdateReactionsNotifyTheirAuthors() {
+	suite.loads(suite.issue)
+	suite.roles(schema.WorkspaceRoleMember)
+	suite.MockIssueRepo.EXPECT().Reactions(mock.Anything, mock.Anything).Return([]*ent.Reaction{}, nil)
+
+	comment := &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID, AuthorID: &suite.otherID}
+	suite.MockIssueRepo.EXPECT().IssueOfComment(mock.Anything, comment.ID).Return(suite.issue.ID, nil)
+	suite.MockCommentRepo.EXPECT().GetByID(mock.Anything, comment.ID).Return(comment, nil)
+	suite.MockIssueRepo.EXPECT().AddReaction(mock.Anything, suite.userID, "👍", issue_repo.ReactionTarget{CommentID: &comment.ID}).Return(true, nil).Once()
+	_, err := suite.service.AddReaction(suite.Ctx, suite.userID, &ReactionInput{Emoji: "👍", CommentID: &comment.ID})
+	suite.Require().NoError(err)
+
+	project := &ent.Project{ID: uuid.New(), WorkspaceID: suite.workspaceID, Name: "Launch"}
+	update := &ent.ProjectPost{ID: uuid.New(), ProjectID: project.ID, AuthorID: &suite.userID}
+	suite.MockIssueRepo.EXPECT().WorkspaceOfProjectUpdate(mock.Anything, update.ID).Return(suite.workspaceID, nil)
+	suite.MockProjectRepo.EXPECT().GetUpdate(mock.Anything, update.ID).Return(update, nil)
+	suite.MockProjectRepo.EXPECT().GetByID(mock.Anything, project.ID).Return(project, nil)
+	suite.MockIssueRepo.EXPECT().AddReaction(mock.Anything, suite.userID, "👍", issue_repo.ReactionTarget{ProjectUpdateID: &update.ID}).Return(true, nil).Once()
+	_, err = suite.service.AddReaction(suite.Ctx, suite.userID, &ReactionInput{Emoji: "👍", ProjectUpdateID: &update.ID})
+	suite.Require().NoError(err)
+
+	notified := suite.eventsOf(schema.NotificationReaction)
+	suite.Require().Len(notified, 2)
+	suite.Equal([]uuid.UUID{suite.otherID}, notified[0].RecipientIDs)
+	suite.Equal(comment.ID, *notified[0].CommentID)
+	suite.Equal(update.ID, *notified[1].ProjectUpdateID)
+	suite.Equal(suite.userID, *notified[1].ActorID, "Notify drops the actor, so reacting to your own update notifies nobody")
 }
 
 func (suite *IssueServiceSuite) TestHistoryAndSearchCheckAccess() {
 	suite.loads(suite.issue)
 	suite.roles(schema.WorkspaceRoleViewer)
-	suite.MockIssueRepo.EXPECT().ListHistory(mock.Anything, suite.issue.ID, 0, 3).Return([]*ent.IssueHistory{{ID: uuid.New()}, {ID: uuid.New()}, {ID: uuid.New()}}, nil)
+	suite.MockIssueRepo.EXPECT().ListHistory(mock.Anything, suite.issue.ID, (*repository.TimeCursor)(nil), 3).Return([]*ent.IssueHistory{{ID: uuid.New()}, {ID: uuid.New()}, {ID: uuid.New()}}, nil)
 	entries, next, err := suite.service.ListHistory(suite.Ctx, suite.userID, &ListIssueHistoryInput{IssueID: suite.issue.ID, PaginationInput: models.PaginationInput{Limit: 2}})
 	suite.Require().NoError(err)
 	suite.Len(entries, 2)
@@ -731,12 +814,59 @@ func (suite *IssueServiceSuite) TestAutomationClosesStaleAndArchivesDone() {
 }
 
 func (suite *IssueServiceSuite) TestPurgeDeletesIssuesTrashedAMonthAgo() {
-	old := uuid.New()
-	suite.MockIssueRepo.EXPECT().TrashedBefore(mock.Anything, suite.now.Add(-30*24*time.Hour)).Return([]uuid.UUID{old}, nil).Once()
-	suite.MockIssueRepo.EXPECT().Delete(mock.Anything, mock.Anything, old).Return(nil).Once()
+	old := suite.newIssue(9, suite.states["Todo"])
+	suite.MockIssueRepo.EXPECT().TrashedBefore(mock.Anything, suite.now.Add(-30*24*time.Hour)).Return([]uuid.UUID{old.ID}, nil).Once()
+	suite.MockIssueRepo.EXPECT().GetWithEdges(mock.Anything, mock.Anything, old.ID).Return(old, nil).Once()
+	suite.MockIssueRepo.EXPECT().ChildIDs(mock.Anything, mock.Anything, old.ID).Return([]uuid.UUID{}, nil).Once()
+	suite.MockIssueRepo.EXPECT().CreateHistoryMany(mock.Anything, mock.Anything, []issue_repo.HistoryEntry{}).Return(nil).Once()
+	suite.MockIssueRepo.EXPECT().Delete(mock.Anything, mock.Anything, old.ID).Return(nil).Once()
 	suite.NoError(suite.service.PurgeTrashed(suite.Ctx))
+	suite.Equal([]string{"issue.deleted"}, suite.emitted, "purging announces the deletion like delete-issue")
 }
 
 func TestIssueServiceSuite(t *testing.T) {
 	suite.Run(t, new(IssueServiceSuite))
+}
+
+func (suite *IssueServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	otherWorkspace := uuid.New()
+	suite.roles(schema.WorkspaceRoleMember)
+	for _, role := range []schema.WorkspaceRole{schema.WorkspaceRoleViewer, schema.WorkspaceRoleMember} {
+		suite.MockPermissionsRepo.EXPECT().Check(mock.Anything, suite.userID, []permissions_repo.PermissionCheck{{Role: role, WorkspaceID: otherWorkspace}}).Return(errdefs.ErrUnauthorized).Maybe()
+	}
+	foreignTeam := &ent.Team{ID: uuid.New(), WorkspaceID: otherWorkspace, Key: "OPS"}
+	foreign := &ent.Issue{ID: uuid.New(), WorkspaceID: otherWorkspace, TeamID: foreignTeam.ID, Number: 1, Edges: ent.IssueEdges{Team: foreignTeam}}
+	suite.loads(suite.issue, foreign)
+	suite.MockTeamRepo.EXPECT().GetByID(mock.Anything, suite.team.ID).Return(suite.team, nil).Maybe()
+	foreignTemplate := &ent.Template{ID: uuid.New(), WorkspaceID: otherWorkspace, Kind: schema.TemplateKindIssue}
+	suite.MockTemplateRepo.EXPECT().GetByID(mock.Anything, foreignTemplate.ID).Return(foreignTemplate, nil)
+	foreignLabel := &ent.Label{ID: uuid.New(), WorkspaceID: otherWorkspace, Name: "Bug"}
+	suite.MockIssueRepo.EXPECT().LabelsByIDs(mock.Anything, []uuid.UUID{foreignLabel.ID}).Return([]*ent.Label{foreignLabel}, nil)
+
+	cases := map[string]func() error{
+		"relation to an issue of another workspace": func() error {
+			_, err := suite.service.CreateRelation(suite.Ctx, suite.userID, &CreateRelationInput{IssueID: suite.issue.ID, RelatedIssueID: foreign.ID, Type: schema.IssueRelationRelated})
+			return err
+		},
+		"template of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateIssueInput{TeamID: suite.team.ID, Title: "x", TemplateID: &foreignTemplate.ID})
+			return err
+		},
+		"label of another workspace": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateIssueInput{IssueID: suite.issue.ID, AddLabelIDs: []uuid.UUID{foreignLabel.ID}})
+			return err
+		},
+		"reading an issue of another workspace": func() error {
+			_, err := suite.service.Get(suite.Ctx, suite.userID, &GetIssueInput{IssueID: foreign.ID})
+			return err
+		},
+		"updating an issue of another workspace": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateIssueInput{IssueID: foreign.ID, Title: new("x")})
+			return err
+		},
+	}
+	for name, run := range cases {
+		err := run()
+		suite.True(errors.Is(err, errdefs.ErrInvalidInput) || errors.Is(err, errdefs.ErrNotFound), "%s: %v", name, err)
+	}
 }

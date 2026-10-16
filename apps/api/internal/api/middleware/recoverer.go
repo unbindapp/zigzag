@@ -70,7 +70,7 @@ func (s prettyStack) parse(debugStack []byte, rvr any) ([]byte, error) {
 	for i := len(stack) - 1; i > 0; i-- {
 		lines = append(lines, stack[i])
 		if strings.HasPrefix(stack[i], "panic(") {
-			lines = lines[:len(lines)-2] // chop boilerplate
+			lines = lines[:len(lines)-2]
 			break
 		}
 	}

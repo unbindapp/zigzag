@@ -107,7 +107,7 @@ func (suite *FavoriteServiceSuite) TestAddIsIdempotentAndAppends() {
 func (suite *FavoriteServiceSuite) TestRemoveOfAMissingFavoriteIsNotFound() {
 	suite.role(schema.WorkspaceRoleViewer, nil)
 	entityID := uuid.New()
-	suite.MockFavoriteRepo.EXPECT().Delete(suite.Ctx, suite.userID, schema.FavoriteKindIssue, entityID).Return(0, nil).Once()
+	suite.MockFavoriteRepo.EXPECT().Delete(suite.Ctx, suite.userID, suite.workspaceID, schema.FavoriteKindIssue, entityID).Return(0, nil).Once()
 	err := suite.service.Remove(suite.Ctx, suite.userID, &FavoriteTargetInput{WorkspaceID: suite.workspaceID, Kind: schema.FavoriteKindIssue, EntityID: entityID})
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }
@@ -115,7 +115,7 @@ func (suite *FavoriteServiceSuite) TestRemoveOfAMissingFavoriteIsNotFound() {
 func (suite *FavoriteServiceSuite) TestReorderReturnsTheNewOrder() {
 	suite.role(schema.WorkspaceRoleViewer, nil)
 	ids := []uuid.UUID{uuid.New(), uuid.New()}
-	suite.MockFavoriteRepo.EXPECT().Reorder(suite.Ctx, suite.userID, ids).Return(nil).Once()
+	suite.MockFavoriteRepo.EXPECT().Reorder(suite.Ctx, suite.userID, suite.workspaceID, ids).Return(nil).Once()
 	suite.MockFavoriteRepo.EXPECT().ListByUser(suite.Ctx, suite.userID, suite.workspaceID).Return([]*ent.Favorite{}, nil).Once()
 	favorites, err := suite.service.Reorder(suite.Ctx, suite.userID, &ReorderFavoritesInput{WorkspaceID: suite.workspaceID, FavoriteIDs: ids})
 	suite.Require().NoError(err)

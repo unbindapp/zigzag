@@ -10,12 +10,12 @@ import (
 
 type DeleteAPIKeyInput struct {
 	server.BaseAuthInput
-	Body *models.APIKeyDeleteInput
+	Body *models.APIKeyDeleteInput `required:"true"`
 }
 
 type DeleteAPIKeyResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data"`
+		Data models.DeletedResponse `json:"data"`
 	}
 }
 
@@ -30,8 +30,8 @@ func (self *HandlerGroup) DeleteAPIKey(ctx context.Context, input *DeleteAPIKeyI
 	}
 
 	resp := &DeleteAPIKeyResponse{}
-	resp.Body.Data = server.DeletedResponse{
-		ID:      input.Body.ID.String(),
+	resp.Body.Data = models.DeletedResponse{
+		ID:      input.Body.ID,
 		Deleted: true,
 	}
 	return resp, nil

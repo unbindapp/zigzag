@@ -20,8 +20,8 @@ type CommentRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Comment, error)
 	GetWithEdges(ctx context.Context, id uuid.UUID) (*ent.Comment, error)
 	ResolveWorkspaceOfComment(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	ListThreads(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.Comment, error)
-	UpdateBody(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error
+	ListThreads(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.Comment, error)
+	UpdateBody(ctx context.Context, tx repository.TxInterface, id uuid.UUID, body string, editedAt time.Time) error
 	SetResolved(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }

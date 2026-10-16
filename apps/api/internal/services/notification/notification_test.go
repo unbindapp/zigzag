@@ -47,7 +47,7 @@ func (suite *NotificationServiceSuite) viewer(workspaceID uuid.UUID, result erro
 
 func (suite *NotificationServiceSuite) TestNotifySkipsTheActorDuplicatesAndOutsiders() {
 	outsider := uuid.New()
-	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, []uuid.UUID{suite.userID, outsider}).Return([]uuid.UUID{suite.userID}, nil).Once()
+	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, []uuid.UUID{suite.userID, outsider}, mock.Anything).Return([]uuid.UUID{suite.userID}, nil).Once()
 	suite.MockNotificationRepo.EXPECT().Settings(suite.Ctx, []uuid.UUID{suite.userID}).Return(map[uuid.UUID]*ent.NotificationSetting{}, nil).Once()
 	var created []*notification_repo.CreateNotificationInput
 	suite.MockNotificationRepo.EXPECT().CreateMany(suite.Ctx, mock.Anything, mock.Anything).RunAndReturn(func(_ context.Context, _ repository.TxInterface, inputs []*notification_repo.CreateNotificationInput) ([]*ent.Notification, error) {
@@ -87,7 +87,7 @@ func (suite *NotificationServiceSuite) TestNotifyOnlyTheActorWritesNothing() {
 
 func (suite *NotificationServiceSuite) TestNotifyHonorsSettings() {
 	muted := uuid.New()
-	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, mock.Anything).Return([]uuid.UUID{suite.userID, muted}, nil).Once()
+	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, mock.Anything, mock.Anything).Return([]uuid.UUID{suite.userID, muted}, nil).Once()
 	suite.MockNotificationRepo.EXPECT().Settings(suite.Ctx, mock.Anything).Return(map[uuid.UUID]*ent.NotificationSetting{
 		suite.userID: {UserID: suite.userID, Mentioned: true},
 		muted:        {UserID: muted, Mentioned: false, Assigned: true},
@@ -152,7 +152,7 @@ func (suite *NotificationServiceSuite) TestListPaginates() {
 	suite.Require().NoError(err)
 	suite.Len(page, 2)
 	suite.Require().NotNil(next)
-	cursor, err := notification_repo.DecodeCursor(*next)
+	cursor, err := repository.DecodeTimeCursor(*next)
 	suite.Require().NoError(err)
 	suite.Equal(rows[1].ID, cursor.ID)
 	suite.True(rows[1].CreatedAt.Equal(cursor.CreatedAt))
@@ -311,27 +311,30 @@ func (suite *NotificationServiceSuite) TestDueSoonNotifiesTheAssigneeOnce() {
 	today := time.Date(2026, 10, 16, 0, 0, 0, 0, time.UTC)
 	tomorrow := today.AddDate(0, 0, 1)
 	reminded := uuid.New()
-	dueToday := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Title: "Due today", AssigneeID: &suite.userID, DueDate: &today}
-	dueTomorrow := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Title: "Due tomorrow", AssigneeID: &suite.userID, DueDate: &tomorrow}
-	alreadyReminded := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Title: "Reminded", AssigneeID: &reminded, DueDate: &today}
+	team := ent.IssueEdges{Team: &ent.Team{Key: "ENG"}}
+	dueToday := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Number: 4, Title: "Ship", AssigneeID: &suite.userID, DueDate: &today, Edges: team}
+	dueTomorrow := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Number: 5, Title: "Test", AssigneeID: &suite.userID, DueDate: &tomorrow, Edges: team}
+	alreadyReminded := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, Number: 6, Title: "Reminded", AssigneeID: &reminded, DueDate: &today, Edges: team}
 
 	suite.MockNotificationRepo.EXPECT().DueBetween(suite.Ctx, today, suite.now.Add(dueSoonWindow)).Return([]*ent.Issue{dueToday, dueTomorrow, alreadyReminded}, nil).Once()
 	since := suite.now.Add(-dueSoonRepeat)
 	suite.MockNotificationRepo.EXPECT().HasRecent(suite.Ctx, suite.userID, dueToday.ID, schema.NotificationIssueDueSoon, since).Return(false, nil).Once()
 	suite.MockNotificationRepo.EXPECT().HasRecent(suite.Ctx, suite.userID, dueTomorrow.ID, schema.NotificationIssueDueSoon, since).Return(false, nil).Once()
 	suite.MockNotificationRepo.EXPECT().HasRecent(suite.Ctx, reminded, alreadyReminded.ID, schema.NotificationIssueDueSoon, since).Return(true, nil).Once()
-	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, []uuid.UUID{suite.userID}).Return([]uuid.UUID{suite.userID}, nil).Twice()
+	suite.MockNotificationRepo.EXPECT().ActiveMembers(suite.Ctx, suite.workspaceID, []uuid.UUID{suite.userID}, mock.Anything).Return([]uuid.UUID{suite.userID}, nil).Twice()
 	suite.MockNotificationRepo.EXPECT().Settings(suite.Ctx, []uuid.UUID{suite.userID}).Return(map[uuid.UUID]*ent.NotificationSetting{}, nil).Twice()
-	var bodies []string
+	var bodies, titles []string
 	suite.MockNotificationRepo.EXPECT().CreateMany(suite.Ctx, mock.Anything, mock.Anything).RunAndReturn(func(_ context.Context, _ repository.TxInterface, inputs []*notification_repo.CreateNotificationInput) ([]*ent.Notification, error) {
 		suite.Equal(schema.NotificationIssueDueSoon, inputs[0].Type)
 		suite.Nil(inputs[0].ActorID)
 		bodies = append(bodies, inputs[0].Body)
+		titles = append(titles, inputs[0].Title)
 		return nil, nil
 	}).Twice()
 
 	suite.Require().NoError(suite.service.NotifyDueSoon(suite.Ctx))
 	suite.Equal([]string{"Due today", "Due tomorrow"}, bodies)
+	suite.Equal([]string{"ENG-4 Ship", "ENG-5 Test"}, titles, "titles carry the identifier like every other issue notification")
 }
 
 func TestNotificationServiceSuite(t *testing.T) {

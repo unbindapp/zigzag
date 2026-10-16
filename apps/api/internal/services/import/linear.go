@@ -52,7 +52,8 @@ func (self *ImportService) ImportLinear(ctx context.Context, userID uuid.UUID, i
 	status := schema.ImportStatusCompleted
 	if err != nil {
 		status = schema.ImportStatusFailed
-		report.Warnings = append(report.Warnings, schema.ImportWarning{Entity: "import", Message: "The import stopped: " + err.Error()})
+		log.Error("Import stopped", "import_id", job.ID, "err", err)
+		report.Warnings = append(report.Warnings, schema.ImportWarning{Entity: "import", Message: "The import stopped: " + stopReason(err)})
 	}
 	if _, finishErr := self.repo.ImportJob().Finish(ctx, job.ID, status, &report, self.now()); finishErr != nil {
 		log.Error("Failed to record the import report", "import_id", job.ID, "err", finishErr)
@@ -61,6 +62,14 @@ func (self *ImportService) ImportLinear(ctx context.Context, userID uuid.UUID, i
 		return nil, errdefs.NewInternalError(err, "The import failed; the steps that finished were kept and running it again continues from there")
 	}
 	return &report, nil
+}
+
+func stopReason(err error) string {
+	var custom *errdefs.CustomError
+	if errors.As(err, &custom) && custom.Message != "" {
+		return custom.Message
+	}
+	return "an internal error, logged on the server"
 }
 
 func (self *ImportService) runLinear(ctx context.Context, userID uuid.UUID, input *ImportLinearInput, dryRun bool) (schema.ImportReport, error) {

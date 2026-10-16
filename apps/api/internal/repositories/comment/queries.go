@@ -50,13 +50,18 @@ func (self *CommentRepository) ResolveWorkspaceOfComment(ctx context.Context, id
 	return found.WorkspaceID, nil
 }
 
-func (self *CommentRepository) ListThreads(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.Comment, error) {
-	roots, err := self.base.DB.Comment.Query().
-		Where(comment.IssueID(issueID), comment.ParentIDIsNil()).
+func (self *CommentRepository) ListThreads(ctx context.Context, issueID uuid.UUID, after *repository.TimeCursor, limit int) ([]*ent.Comment, error) {
+	query := self.base.DB.Comment.Query().Where(comment.IssueID(issueID), comment.ParentIDIsNil())
+	if after != nil {
+		query = query.Where(comment.Or(
+			comment.CreatedAtGT(after.CreatedAt),
+			comment.And(comment.CreatedAt(after.CreatedAt), comment.IDGT(after.ID)),
+		))
+	}
+	roots, err := query.
 		WithAuthor().
 		WithResolvedBy().
 		Order(comment.ByCreatedAt(), comment.ByID()).
-		Offset(offset).
 		Limit(limit).
 		All(ctx)
 	if err != nil || len(roots) == 0 {
@@ -78,8 +83,8 @@ func (self *CommentRepository) ListThreads(ctx context.Context, issueID uuid.UUI
 	return append(roots, replies...), nil
 }
 
-func (self *CommentRepository) UpdateBody(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error {
-	return self.base.DB.Comment.UpdateOneID(id).SetBody(body).SetEditedAt(editedAt).Exec(ctx)
+func (self *CommentRepository) UpdateBody(ctx context.Context, tx repository.TxInterface, id uuid.UUID, body string, editedAt time.Time) error {
+	return self.base.Client(tx).Comment.UpdateOneID(id).SetBody(body).SetEditedAt(editedAt).Exec(ctx)
 }
 
 func (self *CommentRepository) SetResolved(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time) error {

@@ -153,6 +153,16 @@ func (self *IssueRepository) Update(ctx context.Context, tx repository.TxInterfa
 	return update.Exec(ctx)
 }
 
+func (self *IssueRepository) RespaceIfCrowded(ctx context.Context, tx repository.TxInterface, workspaceID, id uuid.UUID, sortOrder float64) error {
+	_, err := self.base.RespaceIfCrowded(ctx, tx, repository.IssueSortOrder, workspaceID, id, sortOrder)
+	return err
+}
+
+func (self *IssueRepository) RespaceSubIssuesIfCrowded(ctx context.Context, tx repository.TxInterface, parentID, id uuid.UUID, subIssueSortOrder float64) error {
+	_, err := self.base.RespaceIfCrowded(ctx, tx, repository.SubIssueSortOrder, parentID, id, subIssueSortOrder)
+	return err
+}
+
 func setOrClear[T any](value *T, set func(T) *ent.IssueUpdateOne, clear func() *ent.IssueUpdateOne) {
 	if value == nil {
 		clear()

@@ -63,7 +63,7 @@ func (self *SearchService) Search(ctx context.Context, userID uuid.UUID, input *
 	if err != nil {
 		return nil, err
 	}
-	documents, err := self.repo.Document().Search(ctx, workspaces, input.Query, limit)
+	documents, err := self.repo.Document().Search(ctx, workspaces, visible.IDs(), input.Query, limit)
 	if err != nil {
 		return nil, err
 	}

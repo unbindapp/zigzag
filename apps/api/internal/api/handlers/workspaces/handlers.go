@@ -56,7 +56,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*WorkspaceR
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.CreateWorkspaceInput
+	Body *workspace_service.CreateWorkspaceInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*WorkspaceResponse, error) {
@@ -75,7 +75,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Work
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.UpdateWorkspaceInput
+	Body *workspace_service.UpdateWorkspaceInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*WorkspaceResponse, error) {
@@ -94,12 +94,12 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Work
 
 type DeleteInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.DeleteWorkspaceInput
+	Body *workspace_service.DeleteWorkspaceInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -112,7 +112,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *DeleteInput) (*Dele
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.WorkspaceID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.WorkspaceID, Deleted: true}
 	return resp, nil
 }
 
@@ -121,13 +121,13 @@ type ListMembersInput struct {
 	workspace_service.ListMembersInput
 }
 
-type MemberListResponse struct {
+type WorkspaceMemberListResponse struct {
 	Body struct {
 		Data []*models.WorkspaceMemberResponse `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) ListMembers(ctx context.Context, input *ListMembersInput) (*MemberListResponse, error) {
+func (self *HandlerGroup) ListMembers(ctx context.Context, input *ListMembersInput) (*WorkspaceMemberListResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -136,14 +136,14 @@ func (self *HandlerGroup) ListMembers(ctx context.Context, input *ListMembersInp
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &MemberListResponse{}
+	resp := &WorkspaceMemberListResponse{}
 	resp.Body.Data = members
 	return resp, nil
 }
 
 type AddMemberInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.AddMemberInput
+	Body *workspace_service.AddMemberInput `required:"true"`
 }
 
 type AddMemberResponse struct {
@@ -168,16 +168,16 @@ func (self *HandlerGroup) AddMember(ctx context.Context, input *AddMemberInput) 
 
 type UpdateMemberInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.UpdateMemberInput
+	Body *workspace_service.UpdateMemberInput `required:"true"`
 }
 
-type MemberResponse struct {
+type WorkspaceMemberResponse struct {
 	Body struct {
 		Data *models.WorkspaceMemberResponse `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) UpdateMember(ctx context.Context, input *UpdateMemberInput) (*MemberResponse, error) {
+func (self *HandlerGroup) UpdateMember(ctx context.Context, input *UpdateMemberInput) (*WorkspaceMemberResponse, error) {
 	user, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -186,19 +186,19 @@ func (self *HandlerGroup) UpdateMember(ctx context.Context, input *UpdateMemberI
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	resp := &MemberResponse{}
+	resp := &WorkspaceMemberResponse{}
 	resp.Body.Data = member
 	return resp, nil
 }
 
 type RemoveMemberInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.RemoveMemberInput
+	Body *workspace_service.RemoveMemberInput `required:"true"`
 }
 
 type SuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -242,7 +242,7 @@ func (self *HandlerGroup) ListInvitations(ctx context.Context, input *ListInvita
 
 type CreateInvitationInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.CreateInvitationInput
+	Body *workspace_service.CreateInvitationInput `required:"true"`
 }
 
 type InvitationResponse struct {
@@ -267,7 +267,7 @@ func (self *HandlerGroup) CreateInvitation(ctx context.Context, input *CreateInv
 
 type InvitationRefInput struct {
 	server.BaseAuthInput
-	Body *workspace_service.InvitationRefInput
+	Body *workspace_service.InvitationRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) RevokeInvitation(ctx context.Context, input *InvitationRefInput) (*DeletedResponse, error) {
@@ -279,7 +279,7 @@ func (self *HandlerGroup) RevokeInvitation(ctx context.Context, input *Invitatio
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.InvitationID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.InvitationID, Deleted: true}
 	return resp, nil
 }
 

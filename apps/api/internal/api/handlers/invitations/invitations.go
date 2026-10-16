@@ -26,7 +26,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.GetInvitation, oapi.Public, oapi.SessionOnly)
 
-	oapi.Register(grp, oapi.Create, huma.Operation{
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "accept-invitation",
 		Summary:     "Accept Invitation",
 		Description: "Accept an invitation and sign in. Creates the account when the email has none; an existing account must give its password.",
@@ -56,7 +56,7 @@ func (self *HandlerGroup) GetInvitation(ctx context.Context, input *GetInvitatio
 }
 
 type AcceptInvitationInput struct {
-	Body *workspace_service.AcceptInvitationInput
+	Body *workspace_service.AcceptInvitationInput `required:"true"`
 }
 
 type AcceptInvitationResponse struct {

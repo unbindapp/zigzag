@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
@@ -56,7 +57,7 @@ func (self *IssueService) CreateRelation(ctx context.Context, userID uuid.UUID, 
 		if err != nil {
 			return err
 		}
-		source := historySource(ctx)
+		source := apictx.HistorySource(ctx)
 		label := string(input.Type) + " " + relatedIdentifier
 		if err := self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, source, []schema.FieldChange{{Field: "relation_added", To: related.ID.String(), ToLabel: label}}); err != nil {
 			return err
@@ -150,7 +151,7 @@ func (self *IssueService) DeleteRelation(ctx context.Context, userID uuid.UUID, 
 		if err := self.repo.Issue().DeleteRelation(ctx, tx, relation.ID); err != nil {
 			return err
 		}
-		source := historySource(ctx)
+		source := apictx.HistorySource(ctx)
 		label := string(relation.Type) + " " + models.Identifier(related.Edges.Team.Key, related.Number)
 		if err := self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, source, []schema.FieldChange{{Field: "relation_removed", From: related.ID.String(), FromLabel: label}}); err != nil {
 			return err
@@ -205,7 +206,7 @@ func (self *IssueService) CreateAttachment(ctx context.Context, userID uuid.UUID
 			return err
 		}
 		change := schema.FieldChange{Field: "attachment_added", To: created.ID.String(), ToLabel: title}
-		return self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, historySource(ctx), []schema.FieldChange{change})
+		return self.repo.Issue().CreateHistory(ctx, tx, issue.ID, &userID, apictx.HistorySource(ctx), []schema.FieldChange{change})
 	})
 	if err != nil {
 		return nil, err
@@ -252,7 +253,7 @@ func (self *IssueService) DeleteAttachment(ctx context.Context, userID uuid.UUID
 			return err
 		}
 		change := schema.FieldChange{Field: "attachment_removed", From: attachment.ID.String(), FromLabel: attachment.Title}
-		return self.repo.Issue().CreateHistory(ctx, tx, attachment.IssueID, &userID, historySource(ctx), []schema.FieldChange{change})
+		return self.repo.Issue().CreateHistory(ctx, tx, attachment.IssueID, &userID, apictx.HistorySource(ctx), []schema.FieldChange{change})
 	})
 }
 

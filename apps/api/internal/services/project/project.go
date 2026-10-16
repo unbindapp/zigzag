@@ -40,7 +40,6 @@ func (self *ProjectService) checkVisible(ctx context.Context, userID, workspaceI
 	return errdefs.MaskAsNotFound(self.check(ctx, userID, schema.WorkspaceRoleViewer, workspaceID), notFound)
 }
 
-// checkRole hides the workspace from outsiders, then requires role.
 func (self *ProjectService) checkRole(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID, notFound string) error {
 	if err := self.checkVisible(ctx, userID, workspaceID, notFound); err != nil {
 		return err
@@ -67,7 +66,6 @@ func (self *ProjectService) projectWithRole(ctx context.Context, userID, project
 	return project, nil
 }
 
-// checkProjectRole authorizes access to a resource that belongs to a project.
 func (self *ProjectService) checkProjectRole(ctx context.Context, userID, projectID uuid.UUID, role schema.WorkspaceRole, notFound string) error {
 	workspaceID, err := self.repo.Project().ResolveWorkspaceOfProject(ctx, projectID)
 	if ent.IsNotFound(err) {

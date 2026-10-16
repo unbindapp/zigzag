@@ -2,6 +2,8 @@ package team_repo
 
 import (
 	"context"
+	"slices"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -54,8 +56,8 @@ type CreateStateInput struct {
 	Position    float64
 }
 
-func (self *TeamRepository) CreateState(ctx context.Context, input *CreateStateInput) (*ent.WorkflowState, error) {
-	return self.base.DB.WorkflowState.Create().
+func (self *TeamRepository) CreateState(ctx context.Context, tx repository.TxInterface, input *CreateStateInput) (*ent.WorkflowState, error) {
+	return self.base.Client(tx).WorkflowState.Create().
 		SetTeamID(input.TeamID).
 		SetName(input.Name).
 		SetType(input.Type).
@@ -86,25 +88,94 @@ func (self *TeamRepository) UpdateState(ctx context.Context, stateID uuid.UUID, 
 	if input.Position != nil {
 		m.SetPosition(*input.Position)
 	}
-	return m.Save(ctx)
+	updated, err := m.Save(ctx)
+	if err != nil || input.Position == nil {
+		return updated, err
+	}
+	respaced, err := self.base.RespaceIfCrowded(ctx, nil, repository.StatePosition, updated.TeamID, updated.ID, updated.Position)
+	if err != nil || !respaced {
+		return updated, err
+	}
+	return self.base.DB.WorkflowState.Get(ctx, stateID)
 }
 
 func (self *TeamRepository) CountStates(ctx context.Context, teamID uuid.UUID) (int, error) {
 	return self.base.DB.WorkflowState.Query().Where(workflowstate.TeamID(teamID), workflowstate.ArchivedAtIsNil()).Count(ctx)
 }
 
-func (self *TeamRepository) DeleteState(ctx context.Context, stateID, moveTo uuid.UUID) error {
+type StateMove struct {
+	From    *ent.WorkflowState
+	To      *ent.WorkflowState
+	ActorID *uuid.UUID
+	Source  schema.HistorySource
+	At      time.Time
+}
+
+func (self *TeamRepository) DeleteState(ctx context.Context, move *StateMove) error {
 	return self.base.WithTx(ctx, func(tx repository.TxInterface) error {
 		db := tx.Client()
-		if _, err := db.Issue.Update().Where(issue.StateID(stateID)).SetStateID(moveTo).Save(ctx); err != nil {
+		moved, err := db.Issue.Query().Where(issue.StateID(move.From.ID)).IDs(ctx)
+		if err != nil {
 			return err
 		}
-		if _, err := db.Team.Update().Where(team.DefaultStateID(stateID)).SetDefaultStateID(moveTo).Save(ctx); err != nil {
+		if err := moveIssueTimestamps(ctx, db, move); err != nil {
 			return err
 		}
-		if _, err := db.Team.Update().Where(team.TriageStateID(stateID)).ClearTriageStateID().Save(ctx); err != nil {
+		if _, err := db.Issue.Update().Where(issue.StateID(move.From.ID)).SetStateID(move.To.ID).Save(ctx); err != nil {
 			return err
 		}
-		return db.WorkflowState.DeleteOneID(stateID).Exec(ctx)
+		if err := recordStateMoves(ctx, db, moved, move); err != nil {
+			return err
+		}
+		if _, err := db.Team.Update().Where(team.DefaultStateID(move.From.ID)).SetDefaultStateID(move.To.ID).Save(ctx); err != nil {
+			return err
+		}
+		if _, err := db.Team.Update().Where(team.TriageStateID(move.From.ID)).ClearTriageStateID().Save(ctx); err != nil {
+			return err
+		}
+		return db.WorkflowState.DeleteOneID(move.From.ID).Exec(ctx)
 	})
+}
+
+func moveIssueTimestamps(ctx context.Context, db *ent.Client, move *StateMove) error {
+	inState := issue.StateID(move.From.ID)
+	if move.From.Type == schema.StateTypeTriage && move.To.Type != schema.StateTypeTriage {
+		if _, err := db.Issue.Update().Where(inState).SetTriagedAt(move.At).Save(ctx); err != nil {
+			return err
+		}
+	}
+	update := db.Issue.Update().Where(inState)
+	switch move.To.Type {
+	case schema.StateTypeStarted:
+		if _, err := db.Issue.Update().Where(inState, issue.StartedAtIsNil()).SetStartedAt(move.At).Save(ctx); err != nil {
+			return err
+		}
+		update.ClearCompletedAt().ClearCanceledAt()
+	case schema.StateTypeCompleted:
+		update.SetCompletedAt(move.At).ClearCanceledAt()
+	case schema.StateTypeCanceled:
+		update.SetCanceledAt(move.At).ClearCompletedAt()
+	default:
+		update.ClearStartedAt().ClearCompletedAt().ClearCanceledAt()
+	}
+	_, err := update.Save(ctx)
+	return err
+}
+
+func recordStateMoves(ctx context.Context, db *ent.Client, issueIDs []uuid.UUID, move *StateMove) error {
+	change := schema.FieldChange{Field: "state", From: move.From.ID.String(), To: move.To.ID.String(), FromLabel: move.From.Name, ToLabel: move.To.Name}
+	for batch := range slices.Chunk(issueIDs, 1000) {
+		builders := make([]*ent.IssueHistoryCreate, len(batch))
+		for i, issueID := range batch {
+			builders[i] = db.IssueHistory.Create().
+				SetIssueID(issueID).
+				SetNillableActorID(move.ActorID).
+				SetSource(move.Source).
+				SetChanges([]schema.FieldChange{change})
+		}
+		if err := db.IssueHistory.CreateBulk(builders...).Exec(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }

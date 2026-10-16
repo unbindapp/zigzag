@@ -63,12 +63,12 @@ func (self *HandlerGroup) Counts(ctx context.Context, input *CountsInput) (*Noti
 
 type IDsInput struct {
 	server.BaseAuthInput
-	Body *notification_service.NotificationIDsInput
+	Body *notification_service.NotificationIDsInput `required:"true"`
 }
 
 type SuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -115,7 +115,7 @@ func (self *HandlerGroup) Unarchive(ctx context.Context, input *IDsInput) (*Succ
 
 type SnoozeInput struct {
 	server.BaseAuthInput
-	Body *notification_service.SnoozeNotificationsInput
+	Body *notification_service.SnoozeNotificationsInput `required:"true"`
 }
 
 func (self *HandlerGroup) Snooze(ctx context.Context, input *SnoozeInput) (*SuccessResponse, error) {
@@ -128,7 +128,7 @@ func (self *HandlerGroup) Snooze(ctx context.Context, input *SnoozeInput) (*Succ
 
 type MarkAllReadInput struct {
 	server.BaseAuthInput
-	Body *notification_service.MarkAllReadInput
+	Body *notification_service.MarkAllReadInput `required:"true"`
 }
 
 func (self *HandlerGroup) MarkAllRead(ctx context.Context, input *MarkAllReadInput) (*SuccessResponse, error) {

@@ -21,7 +21,7 @@ func (self *NotificationService) Notify(ctx context.Context, event models.Notifi
 	if len(recipients) == 0 {
 		return nil
 	}
-	members, err := self.repo.Notification().ActiveMembers(ctx, event.WorkspaceID, recipients)
+	members, err := self.repo.Notification().ActiveMembers(ctx, event.WorkspaceID, recipients, event.IssueID)
 	if err != nil {
 		return err
 	}

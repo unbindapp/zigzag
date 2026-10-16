@@ -1,6 +1,7 @@
 package issue_repo
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -77,6 +78,31 @@ func (suite *IssueRepositorySuite) list(edit func(*ListFilter)) ([]string, int) 
 		suite.NotNil(issue.Edges.State)
 	}
 	return titles, total
+}
+
+func (suite *IssueRepositorySuite) walk(base *ListFilter, pageSize int) []string {
+	base.WorkspaceID = suite.workspace.ID
+	base.TeamIDs = []uuid.UUID{suite.eng.ID, suite.ops.ID}
+	base.Limit = pageSize + 1
+	seen := []string{}
+	for range 20 {
+		issues, _, err := suite.repo.List(suite.Ctx, base)
+		suite.Require().NoError(err)
+		more := len(issues) > pageSize
+		if more {
+			issues = issues[:pageSize]
+		}
+		for _, issue := range issues {
+			seen = append(seen, issue.Title)
+		}
+		if !more {
+			return seen
+		}
+		base.After, err = DecodeCursor(NextCursor(base, issues[len(issues)-1]), base)
+		suite.Require().NoError(err)
+	}
+	suite.FailNow("paging never ended")
+	return nil
 }
 
 func (suite *IssueRepositorySuite) label(name string, parent *ent.Label) *ent.Label {
@@ -181,13 +207,7 @@ func (suite *IssueRepositorySuite) TestPagesWalkTheWholeOrderedList() {
 	for _, title := range []string{"a", "b", "c", "d", "e"} {
 		suite.create(title, nil)
 	}
-	seen := []string{}
-	for offset := 0; offset < 6; offset += 2 {
-		titles, total := suite.list(func(f *ListFilter) { f.Offset = offset; f.Limit = 2 })
-		suite.Equal(5, total, "total counts every page")
-		seen = append(seen, titles...)
-	}
-	suite.Equal([]string{"a", "b", "c", "d", "e"}, seen, "manual order ascends by sort_order")
+	suite.Equal([]string{"a", "b", "c", "d", "e"}, suite.walk(&ListFilter{OrderBy: OrderManual}, 2), "manual order ascends by sort_order")
 
 	titles, _ := suite.list(func(f *ListFilter) { f.OrderBy = OrderManual; f.Descending = true; f.Limit = 2 })
 	suite.Equal([]string{"e", "d"}, titles)
@@ -220,6 +240,56 @@ func (suite *IssueRepositorySuite) TestOrderingAndGrouping() {
 		titles, _ = suite.list(func(f *ListFilter) { f.GroupBy = group })
 		suite.Len(titles, 4, group)
 	}
+}
+
+func (suite *IssueRepositorySuite) TestKeysetPagesMatchTheFullListInEveryOrdering() {
+	due := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
+	bug := suite.label("Bug", nil)
+	chore := suite.label("Chore", nil)
+	parent := suite.create("parent", nil)
+	suite.create("a", func(in *CreateIssueInput) {
+		in.Priority = 2
+		in.AssigneeID = &suite.ada.ID
+		in.LabelIDs = []uuid.UUID{bug.ID}
+	})
+	suite.create("b", func(in *CreateIssueInput) { in.Priority = 2; in.DueDate = &due; in.ParentID = &parent.ID })
+	suite.create("c", func(in *CreateIssueInput) { in.StateID = suite.states["Backlog"].ID; in.AssigneeID = &suite.bob.ID })
+	suite.create("d", func(in *CreateIssueInput) { in.Priority = 1; in.LabelIDs = []uuid.UUID{chore.ID}; in.SortOrder = 2 })
+	suite.create("e", func(in *CreateIssueInput) { in.StateID = suite.states["Done"].ID; in.DueDate = &due; in.SortOrder = 2 })
+	suite.create("f", func(in *CreateIssueInput) { in.ParentID = &parent.ID; in.AssigneeID = &suite.ada.ID })
+
+	groups := []GroupBy{GroupNone, GroupState, GroupAssignee, GroupPriority, GroupProject, GroupCycle, GroupLabel, GroupParent}
+	orders := []OrderBy{OrderManual, OrderPriority, OrderCreatedAt, OrderUpdatedAt, OrderDueDate, OrderTitle}
+	for _, group := range groups {
+		for _, order := range orders {
+			for _, descending := range []bool{false, true} {
+				full, _ := suite.list(func(f *ListFilter) { f.GroupBy = group; f.OrderBy = order; f.Descending = descending })
+				paged := suite.walk(&ListFilter{GroupBy: group, OrderBy: order, Descending: descending}, 2)
+				suite.Equal(full, paged, "%s %s desc=%t", group, order, descending)
+			}
+		}
+	}
+}
+
+func (suite *IssueRepositorySuite) TestKeysetPagesDoNotShiftWhenRowsArriveAhead() {
+	for _, title := range []string{"a", "b", "c", "d"} {
+		suite.create(title, nil)
+	}
+	filter := &ListFilter{WorkspaceID: suite.workspace.ID, TeamIDs: []uuid.UUID{suite.eng.ID}, OrderBy: OrderManual, Limit: 2}
+	first, _, err := suite.repo.List(suite.Ctx, filter)
+	suite.Require().NoError(err)
+	suite.create("new on top", func(in *CreateIssueInput) { in.SortOrder = -1 })
+
+	filter.After, err = DecodeCursor(NextCursor(filter, first[1]), filter)
+	suite.Require().NoError(err)
+	second, _, err := suite.repo.List(suite.Ctx, filter)
+	suite.Require().NoError(err)
+	suite.Equal([]string{"c", "d"}, []string{second[0].Title, second[1].Title})
+
+	_, err = DecodeCursor(NextCursor(filter, first[1]), &ListFilter{OrderBy: OrderTitle})
+	suite.ErrorIs(err, ErrInvalidCursor)
+	_, err = DecodeCursor("garbage", filter)
+	suite.ErrorIs(err, ErrInvalidCursor)
 }
 
 func (suite *IssueRepositorySuite) TestIdentifiersFollowMoves() {
@@ -290,8 +360,12 @@ func (suite *IssueRepositorySuite) TestSubscriptionsAndReactions() {
 	suite.Equal([]uuid.UUID{suite.ada.ID}, ids)
 
 	target := ReactionTarget{IssueID: &issue.ID}
-	suite.NoError(suite.repo.AddReaction(suite.Ctx, suite.ada.ID, "👍", target))
-	suite.NoError(suite.repo.AddReaction(suite.Ctx, suite.ada.ID, "👍", target), "reacting twice is a no-op")
+	added, err := suite.repo.AddReaction(suite.Ctx, suite.ada.ID, "👍", target)
+	suite.NoError(err)
+	suite.True(added)
+	added, err = suite.repo.AddReaction(suite.Ctx, suite.ada.ID, "👍", target)
+	suite.NoError(err)
+	suite.False(added, "reacting twice is a no-op")
 	reactions, err := suite.repo.Reactions(suite.Ctx, target)
 	suite.NoError(err)
 	suite.Len(reactions, 1)
@@ -341,4 +415,40 @@ func (suite *IssueRepositorySuite) TestAutomationQueries() {
 
 func TestIssueRepositorySuite(t *testing.T) {
 	suite.Run(t, new(IssueRepositorySuite))
+}
+
+func (suite *IssueRepositorySuite) TestTitlesCountCharactersNotBytes() {
+	suite.number++
+	_, err := suite.repo.Create(suite.Ctx, nil, &CreateIssueInput{
+		WorkspaceID: suite.workspace.ID, TeamID: suite.eng.ID, Number: suite.number, Title: strings.Repeat("é", 255), StateID: suite.states["Todo"].ID,
+	})
+	suite.NoError(err, "255 accented letters are 510 bytes but a valid title")
+	suite.number++
+	_, err = suite.repo.Create(suite.Ctx, nil, &CreateIssueInput{
+		WorkspaceID: suite.workspace.ID, TeamID: suite.eng.ID, Number: suite.number, Title: strings.Repeat("é", 256), StateID: suite.states["Todo"].ID,
+	})
+	suite.True(ent.IsValidationError(err))
+}
+
+func (suite *IssueRepositorySuite) TestCrowdedSortOrdersAreRespacedInListOrder() {
+	a := suite.create("a", func(in *CreateIssueInput) { in.SortOrder = 1 })
+	b := suite.create("b", func(in *CreateIssueInput) { in.SortOrder = 2 })
+	c := suite.create("c", func(in *CreateIssueInput) { in.SortOrder = 1.5 })
+	suite.Require().NoError(suite.repo.RespaceIfCrowded(suite.Ctx, nil, suite.workspace.ID, c.ID, c.SortOrder))
+	suite.Equal(1.5, suite.DB.Issue.GetX(suite.Ctx, c.ID).SortOrder, "a sort order with room around it is left alone")
+
+	suite.DB.Issue.UpdateOneID(c.ID).SetSortOrder(1 + 1e-12).ExecX(suite.Ctx)
+	suite.Require().NoError(suite.repo.RespaceIfCrowded(suite.Ctx, nil, suite.workspace.ID, c.ID, 1+1e-12))
+	suite.Equal(1024.0, suite.DB.Issue.GetX(suite.Ctx, a.ID).SortOrder)
+	suite.Equal(2048.0, suite.DB.Issue.GetX(suite.Ctx, c.ID).SortOrder, "the moved issue keeps its place between its neighbours")
+	suite.Equal(3072.0, suite.DB.Issue.GetX(suite.Ctx, b.ID).SortOrder)
+	titles, _ := suite.list(nil)
+	suite.Equal([]string{"a", "c", "b"}, titles)
+
+	parent := suite.create("parent", nil)
+	first := suite.create("first", func(in *CreateIssueInput) { in.ParentID = &parent.ID; in.SubIssueSortOrder = 1 })
+	second := suite.create("second", func(in *CreateIssueInput) { in.ParentID = &parent.ID; in.SubIssueSortOrder = 1 })
+	suite.Require().NoError(suite.repo.RespaceSubIssuesIfCrowded(suite.Ctx, nil, parent.ID, second.ID, 1))
+	suite.Equal(1024.0, suite.DB.Issue.GetX(suite.Ctx, first.ID).SubIssueSortOrder)
+	suite.Equal(2048.0, suite.DB.Issue.GetX(suite.Ctx, second.ID).SubIssueSortOrder)
 }

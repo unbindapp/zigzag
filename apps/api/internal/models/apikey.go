@@ -13,7 +13,7 @@ type APIKeyCreateInput struct {
 	ExpiresAt    *time.Time            `json:"expires_at,omitempty" nullable:"true" required:"false" doc:"When the key stops working. Omit for a key that never expires."`
 	Role         schema.WorkspaceRole  `json:"role" required:"true" doc:"Strongest role the key acts with. It never exceeds your own role in a workspace."`
 	FullAccess   bool                  `json:"full_access" required:"true" doc:"Reach every workspace you can, capped at role. workspace_ids must be empty."`
-	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" required:"true" nullable:"false" doc:"Workspaces the key is limited to. Required unless full_access."`
+	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" format:"uuid" required:"true" nullable:"false" doc:"Workspaces the key is limited to. Required unless full_access."`
 	Privileges   []schema.KeyPrivilege `json:"privileges,omitempty" required:"false" nullable:"false" doc:"What the key may see beyond its role. None exist yet."`
 }
 
@@ -28,7 +28,7 @@ type APIKeyResponse struct {
 	TokenPrefix  string                `json:"token_prefix" doc:"First characters of the token, for recognizing the key. Never the full token."`
 	Role         schema.WorkspaceRole  `json:"role"`
 	FullAccess   bool                  `json:"full_access"`
-	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" nullable:"false"`
+	WorkspaceIDs []uuid.UUID           `json:"workspace_ids" format:"uuid" nullable:"false"`
 	Privileges   []schema.KeyPrivilege `json:"privileges" nullable:"false"`
 	ExpiresAt    *time.Time            `json:"expires_at,omitempty" nullable:"true" required:"false"`
 	LastUsedAt   *time.Time            `json:"last_used_at,omitempty" nullable:"true" required:"false"`

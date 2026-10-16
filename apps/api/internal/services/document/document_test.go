@@ -1,6 +1,7 @@
 package document_service
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -13,10 +14,33 @@ import (
 	document_repo "github.com/unbindapp/zigzag-api/internal/repositories/document"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
+	issue_service "github.com/unbindapp/zigzag-api/internal/services/issue"
 )
+
+type fakeIssueAccess struct {
+	visible  []*ent.Team
+	readable map[uuid.UUID]*ent.Issue
+}
+
+func (self *fakeIssueAccess) VisibleTeams(_ context.Context, _, workspaceID uuid.UUID) (*issue_service.VisibleTeams, error) {
+	teams := map[uuid.UUID]*ent.Team{}
+	for _, team := range self.visible {
+		teams[team.ID] = team
+	}
+	return &issue_service.VisibleTeams{WorkspaceID: workspaceID, Teams: teams}, nil
+}
+
+func (self *fakeIssueAccess) ReadableIssue(_ context.Context, _, issueID uuid.UUID) (*ent.Issue, error) {
+	issue, ok := self.readable[issueID]
+	if !ok {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Issue not found")
+	}
+	return issue, nil
+}
 
 type DocumentServiceSuite struct {
 	services.ServiceTestSuite
+	issues      *fakeIssueAccess
 	service     *DocumentService
 	now         time.Time
 	userID      uuid.UUID
@@ -26,7 +50,8 @@ type DocumentServiceSuite struct {
 
 func (suite *DocumentServiceSuite) SetupTest() {
 	suite.ServiceTestSuite.SetupTest()
-	suite.service = NewDocumentService(nil, suite.MockRepo)
+	suite.issues = &fakeIssueAccess{readable: map[uuid.UUID]*ent.Issue{}}
+	suite.service = NewDocumentService(nil, suite.MockRepo, suite.issues)
 	suite.now = time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
 	suite.service.now = func() time.Time { return suite.now }
 	suite.userID = uuid.New()
@@ -88,9 +113,30 @@ func (suite *DocumentServiceSuite) TestCreateRejectsParentsOfOtherWorkspaces() {
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 
 	issue := uuid.New()
-	suite.MockIssueRepo.EXPECT().ResolveWorkspaceOfIssue(suite.Ctx, issue).Return(uuid.Nil, &ent.NotFoundError{}).Once()
 	_, err = suite.service.Create(suite.Ctx, suite.userID, &CreateDocumentInput{WorkspaceID: suite.workspaceID, Title: "Spec", IssueID: issue})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "an issue the caller cannot read, private team or another workspace, is refused")
+
+	foreign := &ent.Issue{ID: uuid.New(), WorkspaceID: uuid.New()}
+	suite.issues.readable[foreign.ID] = foreign
+	_, err = suite.service.Create(suite.Ctx, suite.userID, &CreateDocumentInput{WorkspaceID: suite.workspaceID, Title: "Spec", IssueID: foreign.ID})
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+}
+
+func (suite *DocumentServiceSuite) TestDocumentsOfHiddenIssuesAreNotFound() {
+	suite.roles(schema.WorkspaceRoleViewer)
+	hidden := uuid.New()
+	suite.document.IssueID = &hidden
+	suite.expectDocument()
+	_, err := suite.service.Get(suite.Ctx, suite.userID, &GetDocumentInput{DocumentID: suite.document.ID})
+	suite.ErrorIs(err, errdefs.ErrNotFound)
+
+	team := &ent.Team{ID: uuid.New()}
+	suite.issues.visible = []*ent.Team{team}
+	suite.MockDocumentRepo.EXPECT().List(suite.Ctx, mock.MatchedBy(func(filter *document_repo.ListDocumentsFilter) bool {
+		return len(filter.VisibleTeamIDs) == 1 && filter.VisibleTeamIDs[0] == team.ID
+	})).Return([]*ent.Document{}, nil).Once()
+	_, err = suite.service.List(suite.Ctx, suite.userID, &ListDocumentsInput{WorkspaceID: suite.workspaceID})
+	suite.NoError(err, "lists keep only documents of issues in teams the caller can see")
 }
 
 func (suite *DocumentServiceSuite) TestCreateDefaultsTheTitle() {
@@ -140,4 +186,33 @@ func (suite *DocumentServiceSuite) TestTrashAndRestore() {
 	suite.NoError(err)
 	_, err = suite.service.Restore(suite.Ctx, suite.userID, &DocumentRefInput{DocumentID: suite.document.ID})
 	suite.NoError(err)
+}
+
+func (suite *DocumentServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.roles(schema.WorkspaceRoleMember)
+	suite.expectDocument()
+	foreignProject, foreignInitiative, unreadableIssue := uuid.New(), uuid.New(), uuid.New()
+	foreignIssue := &ent.Issue{ID: uuid.New(), WorkspaceID: uuid.New()}
+	suite.issues.readable[foreignIssue.ID] = foreignIssue
+	suite.MockProjectRepo.EXPECT().ResolveWorkspaceOfProject(suite.Ctx, foreignProject).Return(uuid.New(), nil).Maybe()
+	suite.MockInitiativeRepo.EXPECT().ResolveWorkspaceOfInitiative(suite.Ctx, foreignInitiative).Return(uuid.New(), nil).Maybe()
+
+	update := func(input *UpdateDocumentInput) func() error {
+		return func() error {
+			input.DocumentID = suite.document.ID
+			_, err := suite.service.Update(suite.Ctx, suite.userID, input)
+			return err
+		}
+	}
+	cases := map[string]func() error{
+		"move to a project of another workspace":     update(&UpdateDocumentInput{ProjectID: &foreignProject}),
+		"move to an initiative of another workspace": update(&UpdateDocumentInput{InitiativeID: &foreignInitiative}),
+		"move to an issue the caller cannot read":    update(&UpdateDocumentInput{IssueID: &unreadableIssue}),
+		"move to an issue of another workspace":      update(&UpdateDocumentInput{IssueID: &foreignIssue.ID}),
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			suite.ErrorIs(run(), errdefs.ErrInvalidInput)
+		})
+	}
 }

@@ -57,7 +57,7 @@ func (suite *SearchServiceSuite) TestGroupsIssuesProjectsAndDocuments() {
 	suite.MockIssueRepo.EXPECT().Search(suite.Ctx, suite.workspaceID, []uuid.UUID{suite.team.ID}, "login", defaultLimit).Return([]uuid.UUID{issue.ID}, nil).Once()
 	suite.MockIssueRepo.EXPECT().GetManyWithEdges(suite.Ctx, mock.Anything, []uuid.UUID{issue.ID}).Return([]*ent.Issue{issue}, nil).Once()
 	suite.MockProjectRepo.EXPECT().Search(suite.Ctx, []uuid.UUID{suite.workspaceID}, "login", defaultLimit).Return([]*ent.Project{{ID: uuid.New(), Name: "Login revamp", Slug: "login-revamp-1a2b3c4d"}}, nil).Once()
-	suite.MockDocumentRepo.EXPECT().Search(suite.Ctx, []uuid.UUID{suite.workspaceID}, "login", defaultLimit).Return([]*ent.Document{{ID: uuid.New(), Title: "Login spec", Slug: "login-spec"}}, nil).Once()
+	suite.MockDocumentRepo.EXPECT().Search(suite.Ctx, []uuid.UUID{suite.workspaceID}, []uuid.UUID{suite.team.ID}, "login", defaultLimit).Return([]*ent.Document{{ID: uuid.New(), Title: "Login spec", Slug: "login-spec"}}, nil).Once()
 
 	result, err := suite.service.Search(suite.Ctx, suite.userID, &SearchInput{WorkspaceID: suite.workspaceID, Query: "login"})
 	suite.Require().NoError(err)
@@ -75,7 +75,7 @@ func (suite *SearchServiceSuite) TestPassesTheLimit() {
 	suite.MockIssueRepo.EXPECT().Search(suite.Ctx, suite.workspaceID, mock.Anything, "x", 3).Return([]uuid.UUID{}, nil).Once()
 	suite.MockIssueRepo.EXPECT().GetManyWithEdges(suite.Ctx, mock.Anything, []uuid.UUID{}).Return([]*ent.Issue{}, nil).Once()
 	suite.MockProjectRepo.EXPECT().Search(suite.Ctx, mock.Anything, "x", 3).Return([]*ent.Project{}, nil).Once()
-	suite.MockDocumentRepo.EXPECT().Search(suite.Ctx, mock.Anything, "x", 3).Return([]*ent.Document{}, nil).Once()
+	suite.MockDocumentRepo.EXPECT().Search(suite.Ctx, mock.Anything, mock.Anything, "x", 3).Return([]*ent.Document{}, nil).Once()
 
 	result, err := suite.service.Search(suite.Ctx, suite.userID, &SearchInput{WorkspaceID: suite.workspaceID, Query: "x", Limit: 3})
 	suite.Require().NoError(err)

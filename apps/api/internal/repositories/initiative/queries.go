@@ -78,7 +78,6 @@ func (self *InitiativeRepository) CountProjectsInWorkspace(ctx context.Context, 
 	return self.base.DB.Project.Query().Where(project.WorkspaceID(workspaceID), project.IDIn(projectIDs...)).Count(ctx)
 }
 
-// LatestHealths maps each initiative that has updates to the health of its newest one.
 func (self *InitiativeRepository) LatestHealths(ctx context.Context, initiativeIDs []uuid.UUID) (map[uuid.UUID]schema.Health, error) {
 	healths := map[uuid.UUID]schema.Health{}
 	if len(initiativeIDs) == 0 {

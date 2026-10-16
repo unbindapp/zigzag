@@ -19,7 +19,7 @@ type FavoriteRepositoryInterface interface {
 	ListByUser(ctx context.Context, userID, workspaceID uuid.UUID) ([]*ent.Favorite, error)
 	Find(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (*ent.Favorite, error)
 	NextSortOrder(ctx context.Context, tx repository.TxInterface, userID, workspaceID uuid.UUID) (float64, error)
-	Delete(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)
-	Reorder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error
+	Delete(ctx context.Context, userID, workspaceID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)
+	Reorder(ctx context.Context, userID, workspaceID uuid.UUID, ids []uuid.UUID) error
 	Resolve(ctx context.Context, kind schema.FavoriteKind, ids []uuid.UUID) (map[uuid.UUID]ResolvedEntity, error)
 }

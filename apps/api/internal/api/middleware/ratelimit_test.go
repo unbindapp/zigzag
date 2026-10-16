@@ -1,10 +1,15 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/humatest"
+	"github.com/unbindapp/zigzag-api/config"
 )
 
 func newLimitedHandler(limit int, period time.Duration) (http.Handler, *RateLimiter) {
@@ -61,5 +66,40 @@ func TestRateLimiterSeparatesNames(t *testing.T) {
 	}
 	if rec := hit(a, "10.0.0.1:1"); rec.Code != http.StatusTooManyRequests {
 		t.Fatalf("status = %d", rec.Code)
+	}
+}
+
+func TestCredentialOperationsAreLimitedPerAddress(t *testing.T) {
+	_, api := humatest.New(t)
+	mw := NewMiddleware(&config.Config{}, nil, api, nil, nil)
+	mw.limiter.now = func() time.Time { return time.Date(2026, 9, 18, 12, 0, 10, 0, time.UTC) }
+	api.UseMiddleware(mw.RateLimitOperations)
+	type empty struct{}
+	ok := func(context.Context, *empty) (*empty, error) { return &empty{}, nil }
+	huma.Register(api, huma.Operation{OperationID: "login", Method: http.MethodPost, Path: "/auth/login"}, ok)
+	huma.Register(api, huma.Operation{OperationID: "get-setup-status", Method: http.MethodGet, Path: "/setup/status"}, ok)
+
+	call := func(method, path, addr string) int {
+		req := httptest.NewRequest(method, path, nil)
+		req.RemoteAddr = addr
+		rec := httptest.NewRecorder()
+		api.Adapter().ServeHTTP(rec, req)
+		return rec.Code
+	}
+	for i := range 10 {
+		if code := call(http.MethodPost, "/auth/login", "10.0.0.1:1000"); code == http.StatusTooManyRequests {
+			t.Fatalf("attempt %d was limited", i+1)
+		}
+	}
+	if code := call(http.MethodPost, "/auth/login", "10.0.0.1:2000"); code != http.StatusTooManyRequests {
+		t.Fatalf("the eleventh login in a minute from one address answered %d", code)
+	}
+	if code := call(http.MethodPost, "/auth/login", "10.0.0.2:1000"); code == http.StatusTooManyRequests {
+		t.Fatal("another address has its own budget")
+	}
+	for range 20 {
+		if code := call(http.MethodGet, "/setup/status", "10.0.0.1:1000"); code == http.StatusTooManyRequests {
+			t.Fatal("operations without a limit are never limited")
+		}
 	}
 }

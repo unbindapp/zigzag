@@ -10,7 +10,7 @@ import (
 
 type CreateAPIKeyInput struct {
 	server.BaseAuthInput
-	Body *models.APIKeyCreateInput
+	Body *models.APIKeyCreateInput `required:"true"`
 }
 
 type CreateAPIKeyResponse struct {

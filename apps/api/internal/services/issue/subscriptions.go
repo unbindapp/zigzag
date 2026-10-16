@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
+	"github.com/unbindapp/zigzag-api/internal/common/log"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 )
@@ -71,10 +72,73 @@ func (self *IssueService) AddReaction(ctx context.Context, userID uuid.UUID, inp
 	if err != nil {
 		return nil, err
 	}
-	if err := self.repo.Issue().AddReaction(ctx, userID, emoji, target); err != nil {
+	added, err := self.repo.Issue().AddReaction(ctx, userID, emoji, target)
+	if err != nil {
 		return nil, err
 	}
+	if added {
+		self.notifyReaction(ctx, userID, emoji, target)
+	}
 	return self.reactions(ctx, userID, target)
+}
+
+func (self *IssueService) notifyReaction(ctx context.Context, userID uuid.UUID, emoji string, target issue_repo.ReactionTarget) {
+	event, err := self.reactionEvent(ctx, target)
+	if err != nil {
+		log.Error("Failed to load the reaction target", "err", err)
+		return
+	}
+	if event == nil {
+		return
+	}
+	event.Type = schema.NotificationReaction
+	event.ActorID = &userID
+	event.Body = event.Body + " " + emoji
+	self.notify(ctx, *event)
+}
+
+func (self *IssueService) reactionEvent(ctx context.Context, target issue_repo.ReactionTarget) (*models.NotificationEvent, error) {
+	switch {
+	case target.IssueID != nil:
+		issue, err := self.repo.Issue().GetWithEdges(ctx, nil, *target.IssueID)
+		if err != nil || issue.CreatorID == nil {
+			return nil, err
+		}
+		return &models.NotificationEvent{
+			WorkspaceID: issue.WorkspaceID, RecipientIDs: []uuid.UUID{*issue.CreatorID}, IssueID: &issue.ID,
+			Title: issueEntityTitle(issue), Body: "Reacted to your issue with",
+		}, nil
+	case target.CommentID != nil:
+		comment, err := self.repo.Comment().GetByID(ctx, *target.CommentID)
+		if err != nil || comment.AuthorID == nil {
+			return nil, err
+		}
+		issue, err := self.repo.Issue().GetWithEdges(ctx, nil, comment.IssueID)
+		if err != nil {
+			return nil, err
+		}
+		return &models.NotificationEvent{
+			WorkspaceID: issue.WorkspaceID, RecipientIDs: []uuid.UUID{*comment.AuthorID}, IssueID: &issue.ID, CommentID: &comment.ID,
+			Title: issueEntityTitle(issue), Body: "Reacted to your comment with",
+		}, nil
+	default:
+		update, err := self.repo.Project().GetUpdate(ctx, *target.ProjectUpdateID)
+		if err != nil || update.AuthorID == nil {
+			return nil, err
+		}
+		project, err := self.repo.Project().GetByID(ctx, update.ProjectID)
+		if err != nil {
+			return nil, err
+		}
+		return &models.NotificationEvent{
+			WorkspaceID: project.WorkspaceID, RecipientIDs: []uuid.UUID{*update.AuthorID}, ProjectID: &project.ID, ProjectUpdateID: &update.ID,
+			Title: project.Name, Body: "Reacted to your project update with",
+		}, nil
+	}
+}
+
+func issueEntityTitle(issue *ent.Issue) string {
+	return models.Identifier(issue.Edges.Team.Key, issue.Number) + " " + issue.Title
 }
 
 func (self *IssueService) RemoveReaction(ctx context.Context, userID uuid.UUID, input *ReactionInput) ([]*models.ReactionGroup, error) {

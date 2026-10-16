@@ -18,7 +18,6 @@ func (self *ProjectRepository) CountWorkspaceMembers(ctx context.Context, worksp
 	return self.base.DB.WorkspaceMember.Query().Where(workspacemember.WorkspaceID(workspaceID), workspacemember.UserIDIn(userIDs...)).Count(ctx)
 }
 
-// CountApplicableLabels counts workspace labels (not team labels, not groups) among labelIDs.
 func (self *ProjectRepository) CountApplicableLabels(ctx context.Context, workspaceID uuid.UUID, labelIDs []uuid.UUID) (int, error) {
 	return self.base.DB.Label.Query().
 		Where(label.WorkspaceID(workspaceID), label.TeamIDIsNil(), label.IsGroup(false), label.ArchivedAtIsNil(), label.IDIn(labelIDs...)).

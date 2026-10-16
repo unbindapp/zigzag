@@ -13,11 +13,13 @@ import (
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	"github.com/unbindapp/zigzag-api/internal/services"
+	mocks_services_cycle "github.com/unbindapp/zigzag-api/mocks/services/cycle"
 )
 
 type TeamServiceSuite struct {
 	services.ServiceTestSuite
 	service     *TeamService
+	cycles      *mocks_services_cycle.CycleServiceMock
 	userID      uuid.UUID
 	workspaceID uuid.UUID
 	team        *ent.Team
@@ -25,7 +27,8 @@ type TeamServiceSuite struct {
 
 func (suite *TeamServiceSuite) SetupTest() {
 	suite.ServiceTestSuite.SetupTest()
-	suite.service = NewTeamService(suite.MockRepo)
+	suite.cycles = mocks_services_cycle.NewCycleServiceMock(suite.T())
+	suite.service = NewTeamService(suite.MockRepo, suite.cycles)
 	suite.service.now = func() time.Time { return time.Date(2026, 10, 16, 0, 0, 0, 0, time.UTC) }
 	suite.userID = uuid.New()
 	suite.workspaceID = uuid.New()
@@ -58,6 +61,8 @@ func (suite *TeamServiceSuite) TestCreateValidatesAndRejectsTakenKeys() {
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 	_, err = suite.service.Create(suite.Ctx, suite.userID, &CreateTeamInput{WorkspaceID: suite.workspaceID, Name: "Eng", Key: "ENG", Timezone: "Mars/Olympus"})
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	_, err = suite.service.Create(suite.Ctx, suite.userID, &CreateTeamInput{WorkspaceID: suite.workspaceID, Name: "Eng", Key: "ENG", Color: "red"})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "team colors are hex like every other color")
 
 	suite.MockTeamRepo.EXPECT().KeyOrNameTaken(suite.Ctx, mock.Anything, suite.workspaceID, "ENG", "Eng", (*uuid.UUID)(nil)).Return(true, false, nil).Once()
 	_, err = suite.service.Create(suite.Ctx, suite.userID, &CreateTeamInput{WorkspaceID: suite.workspaceID, Name: "Eng", Key: "eng"})
@@ -151,7 +156,7 @@ func (suite *TeamServiceSuite) TestCreateStateValidates() {
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 
 	suite.MockTeamRepo.EXPECT().NextStatePosition(suite.Ctx, suite.team.ID, schema.StateTypeStarted).Return(2, nil).Once()
-	suite.MockTeamRepo.EXPECT().CreateState(suite.Ctx, &team_repo.CreateStateInput{TeamID: suite.team.ID, Name: "QA", Type: schema.StateTypeStarted, Color: "#ffffff", Position: 2}).
+	suite.MockTeamRepo.EXPECT().CreateState(suite.Ctx, mock.Anything, &team_repo.CreateStateInput{TeamID: suite.team.ID, Name: "QA", Type: schema.StateTypeStarted, Color: "#ffffff", Position: 2}).
 		Return(&ent.WorkflowState{ID: uuid.New(), Name: "QA"}, nil).Once()
 	state, err := suite.service.CreateState(suite.Ctx, suite.userID, &CreateStateInput{TeamID: suite.team.ID, Name: "QA", Type: schema.StateTypeStarted, Color: "#FFFFFF"})
 	suite.Require().NoError(err)
@@ -173,10 +178,59 @@ func (suite *TeamServiceSuite) TestDeleteStateNeedsAnotherStateOfTheTeam() {
 
 	sibling := uuid.New()
 	suite.MockTeamRepo.EXPECT().GetState(suite.Ctx, sibling).Return(&ent.WorkflowState{ID: sibling, TeamID: suite.team.ID}, nil).Once()
-	suite.MockTeamRepo.EXPECT().DeleteState(suite.Ctx, stateID, sibling).Return(nil).Once()
+	suite.MockTeamRepo.EXPECT().DeleteState(suite.Ctx, mock.MatchedBy(func(move *team_repo.StateMove) bool {
+		return move.From.ID == stateID && move.To.ID == sibling && *move.ActorID == suite.userID && move.Source == schema.HistorySourceUser
+	})).Return(nil).Once()
 	suite.NoError(suite.service.DeleteState(suite.Ctx, suite.userID, &DeleteStateInput{StateID: stateID, MoveIssuesToStateID: sibling}))
 }
 
 func TestTeamServiceSuite(t *testing.T) {
 	suite.Run(t, new(TeamServiceSuite))
+}
+
+func (suite *TeamServiceSuite) TestTurningCyclesOnPlansTheFirstCycles() {
+	suite.role(schema.WorkspaceRoleViewer, nil)
+	suite.role(schema.WorkspaceRoleAdmin, nil)
+	suite.expectRespond()
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.team.ID).Return(suite.team, nil)
+	suite.MockTeamRepo.EXPECT().KeyOrNameTaken(suite.Ctx, mock.Anything, suite.workspaceID, "", "", &suite.team.ID).Return(false, false, nil)
+	enabled := *suite.team
+	enabled.CyclesEnabled = true
+	suite.MockTeamRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.team.ID, mock.MatchedBy(func(input *team_repo.UpdateTeamInput) bool {
+		return input.CyclesEnabled != nil && *input.CyclesEnabled
+	})).Return(&enabled, nil).Once()
+	suite.cycles.EXPECT().PlanTeamCycles(suite.Ctx, suite.team.ID).Return(nil).Once()
+	_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, CyclesEnabled: new(true)})
+	suite.Require().NoError(err)
+
+	suite.team.CyclesEnabled = true
+	suite.MockTeamRepo.EXPECT().Update(suite.Ctx, mock.Anything, suite.team.ID, mock.Anything).Return(&enabled, nil).Once()
+	_, err = suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, CyclesEnabled: new(true)})
+	suite.Require().NoError(err, "cycles that were already on are left to the scheduler")
+}
+
+func (suite *TeamServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.role(schema.WorkspaceRoleViewer, nil)
+	suite.role(schema.WorkspaceRoleAdmin, nil)
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.team.ID).Return(suite.team, nil).Maybe()
+	otherTeamsState := &ent.WorkflowState{ID: uuid.New(), TeamID: uuid.New()}
+	missingState := uuid.New()
+	suite.MockTeamRepo.EXPECT().GetState(suite.Ctx, otherTeamsState.ID).Return(otherTeamsState, nil).Maybe()
+	suite.MockTeamRepo.EXPECT().GetState(suite.Ctx, missingState).Return(nil, &ent.NotFoundError{}).Maybe()
+
+	cases := map[string]func() error{
+		"default state of another team": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, DefaultStateID: &otherTeamsState.ID})
+			return err
+		},
+		"default state that does not exist": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateTeamInput{TeamID: suite.team.ID, DefaultStateID: &missingState})
+			return err
+		},
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			suite.ErrorIs(run(), errdefs.ErrInvalidInput)
+		})
+	}
 }

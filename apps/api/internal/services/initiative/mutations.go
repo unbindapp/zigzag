@@ -23,11 +23,11 @@ type CreateInitiativeInput struct {
 	Name        string                  `json:"name" required:"true" minLength:"1" maxLength:"80" doc:"Initiative name"`
 	Description string                  `json:"description,omitempty" required:"false" maxLength:"100000" doc:"Markdown description"`
 	Icon        string                  `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name"`
-	Color       string                  `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color such as #5e6ad2"`
+	Color       string                  `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color such as #5e6ad2"`
 	OwnerID     uuid.UUID               `json:"owner_id,omitempty" required:"false" format:"uuid" doc:"Workspace member who owns the initiative"`
 	Status      schema.InitiativeStatus `json:"status,omitempty" required:"false" doc:"planned (default), active or completed"`
 	TargetDate  string                  `json:"target_date,omitempty" required:"false" format:"date" doc:"Target date, YYYY-MM-DD"`
-	ProjectIDs  []uuid.UUID             `json:"project_ids,omitempty" required:"false" doc:"Projects of this workspace that belong to the initiative"`
+	ProjectIDs  []uuid.UUID             `json:"project_ids,omitempty" format:"uuid" required:"false" doc:"Projects of this workspace that belong to the initiative"`
 }
 
 func (self *InitiativeService) Create(ctx context.Context, userID uuid.UUID, input *CreateInitiativeInput) (*models.InitiativeResponse, error) {
@@ -38,7 +38,7 @@ func (self *InitiativeService) Create(ctx context.Context, userID uuid.UUID, inp
 	if err != nil {
 		return nil, err
 	}
-	color, err := optionalColor(input.Color)
+	color, err := names.OptionalColor(input.Color)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +86,12 @@ type UpdateInitiativeInput struct {
 	Name         *string                  `json:"name,omitempty" required:"false" maxLength:"80" doc:"New name"`
 	Description  *string                  `json:"description,omitempty" required:"false" maxLength:"100000" doc:"Markdown description, empty to clear"`
 	Icon         *string                  `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color        *string                  `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color, empty to clear"`
+	Color        *string                  `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
 	OwnerID      *uuid.UUID               `json:"owner_id,omitempty" required:"false" format:"uuid" doc:"New owner; the nil uuid 00000000-0000-0000-0000-000000000000 removes the owner"`
 	Status       *schema.InitiativeStatus `json:"status,omitempty" required:"false" doc:"planned, active or completed"`
 	TargetDate   *string                  `json:"target_date,omitempty" required:"false" doc:"Target date YYYY-MM-DD, empty to clear"`
 	SortOrder    *float64                 `json:"sort_order,omitempty" required:"false" doc:"Manual order in lists"`
-	ProjectIDs   []uuid.UUID              `json:"project_ids,omitempty" required:"false" doc:"Replaces the projects; an empty list removes all"`
+	ProjectIDs   []uuid.UUID              `json:"project_ids,omitempty" format:"uuid" required:"false" doc:"Replaces the projects; an empty list removes all"`
 }
 
 func (self *InitiativeService) Update(ctx context.Context, userID uuid.UUID, input *UpdateInitiativeInput) (*models.InitiativeResponse, error) {
@@ -108,7 +108,7 @@ func (self *InitiativeService) Update(ctx context.Context, userID uuid.UUID, inp
 		update.Name = &name
 	}
 	if input.Color != nil {
-		color, err := optionalColor(*input.Color)
+		color, err := names.OptionalColor(*input.Color)
 		if err != nil {
 			return nil, err
 		}
@@ -235,13 +235,6 @@ func (self *InitiativeService) validateReferences(ctx context.Context, workspace
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Every project must belong to this workspace")
 	}
 	return nil
-}
-
-func optionalColor(raw string) (string, error) {
-	if raw == "" {
-		return "", nil
-	}
-	return names.Color(raw)
 }
 
 func uniqueIDs(ids []uuid.UUID) []uuid.UUID {

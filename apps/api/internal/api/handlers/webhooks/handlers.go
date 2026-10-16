@@ -36,7 +36,7 @@ func (self *HandlerGroup) List(ctx context.Context, input *ListInput) (*WebhookL
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *webhook_service.CreateWebhookInput
+	Body *webhook_service.CreateWebhookInput `required:"true"`
 }
 
 type WebhookCreatedResult struct {
@@ -61,7 +61,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Webh
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *webhook_service.UpdateWebhookInput
+	Body *webhook_service.UpdateWebhookInput `required:"true"`
 }
 
 type WebhookResult struct {
@@ -86,12 +86,12 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Webh
 
 type RefInput struct {
 	server.BaseAuthInput
-	Body *webhook_service.WebhookRefInput
+	Body *webhook_service.WebhookRefInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -104,7 +104,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *RefInput) (*Deleted
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.WebhookID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.WebhookID, Deleted: true}
 	return resp, nil
 }
 

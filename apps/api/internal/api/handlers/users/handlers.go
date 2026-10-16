@@ -31,7 +31,7 @@ func (self *HandlerGroup) Whoami(ctx context.Context, _ *server.BaseAuthInput) (
 
 type UpdateMeInput struct {
 	server.BaseAuthInput
-	Body *user_service.UpdateMeInput
+	Body *user_service.UpdateMeInput `required:"true"`
 }
 
 type UserResponse struct {
@@ -56,12 +56,12 @@ func (self *HandlerGroup) UpdateMe(ctx context.Context, input *UpdateMeInput) (*
 
 type ChangePasswordInput struct {
 	server.BaseAuthInput
-	Body *user_service.ChangePasswordInput
+	Body *user_service.ChangePasswordInput `required:"true"`
 }
 
 type SuccessResponse struct {
 	Body struct {
-		Data server.SuccessResponse `json:"data" nullable:"false"`
+		Data models.SuccessResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -100,7 +100,7 @@ func (self *HandlerGroup) GetNotificationSettings(ctx context.Context, _ *server
 
 type UpdateNotificationSettingsInput struct {
 	server.BaseAuthInput
-	Body *user_service.UpdateNotificationSettingsInput
+	Body *user_service.UpdateNotificationSettingsInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateNotificationSettings(ctx context.Context, input *UpdateNotificationSettingsInput) (*NotificationSettingsResponse, error) {
@@ -144,7 +144,7 @@ func (self *HandlerGroup) ListUsers(ctx context.Context, input *ListUsersInput) 
 
 type CreateUserInput struct {
 	server.BaseAuthInput
-	Body *user_service.CreateUserInput
+	Body *user_service.CreateUserInput `required:"true"`
 }
 
 func (self *HandlerGroup) CreateUser(ctx context.Context, input *CreateUserInput) (*UserResponse, error) {
@@ -163,7 +163,7 @@ func (self *HandlerGroup) CreateUser(ctx context.Context, input *CreateUserInput
 
 type UpdateUserInput struct {
 	server.BaseAuthInput
-	Body *user_service.UpdateUserInput
+	Body *user_service.UpdateUserInput `required:"true"`
 }
 
 func (self *HandlerGroup) UpdateUser(ctx context.Context, input *UpdateUserInput) (*UserResponse, error) {
@@ -182,12 +182,12 @@ func (self *HandlerGroup) UpdateUser(ctx context.Context, input *UpdateUserInput
 
 type DeleteUserInput struct {
 	server.BaseAuthInput
-	Body *user_service.DeleteUserInput
+	Body *user_service.DeleteUserInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -200,6 +200,6 @@ func (self *HandlerGroup) DeleteUser(ctx context.Context, input *DeleteUserInput
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.UserID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.UserID, Deleted: true}
 	return resp, nil
 }

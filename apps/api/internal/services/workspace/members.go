@@ -42,7 +42,7 @@ type AddMemberInput struct {
 	WorkspaceID uuid.UUID            `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	Email       string               `json:"email" required:"true" format:"email" maxLength:"254" doc:"Email of the person to add"`
 	Role        schema.WorkspaceRole `json:"role" required:"true" doc:"admin, member or viewer"`
-	TeamIDs     []uuid.UUID          `json:"team_ids,omitempty" required:"false" doc:"Teams of this workspace to join"`
+	TeamIDs     []uuid.UUID          `json:"team_ids,omitempty" format:"uuid" required:"false" doc:"Teams of this workspace to join"`
 }
 
 func (self *WorkspaceService) AddMember(ctx context.Context, userID uuid.UUID, input *AddMemberInput) (*models.AddWorkspaceMemberResponse, error) {

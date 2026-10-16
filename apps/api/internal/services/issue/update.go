@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/markdown"
 	"github.com/unbindapp/zigzag-api/internal/models"
@@ -26,9 +27,9 @@ type UpdateIssueInput struct {
 	Priority          *int        `json:"priority,omitempty" required:"false" minimum:"0" maximum:"4" doc:"0 none, 1 urgent, 2 high, 3 medium, 4 low"`
 	Estimate          *float64    `json:"estimate,omitempty" required:"false" minimum:"-1" doc:"Estimate in the team's scale; -1 clears it"`
 	AssigneeID        *uuid.UUID  `json:"assignee_id,omitempty" required:"false" format:"uuid" doc:"Workspace member to assign; the nil uuid 00000000-0000-0000-0000-000000000000 unassigns"`
-	LabelIDs          []uuid.UUID `json:"label_ids,omitempty" required:"false" maxItems:"50" doc:"Replaces every label; an empty list removes all"`
-	AddLabelIDs       []uuid.UUID `json:"add_label_ids,omitempty" required:"false" maxItems:"50" doc:"Labels to add; a label of a single-select group replaces its sibling"`
-	RemoveLabelIDs    []uuid.UUID `json:"remove_label_ids,omitempty" required:"false" maxItems:"50" doc:"Labels to remove"`
+	LabelIDs          []uuid.UUID `json:"label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Replaces every label; an empty list removes all"`
+	AddLabelIDs       []uuid.UUID `json:"add_label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Labels to add; a label of a single-select group replaces its sibling"`
+	RemoveLabelIDs    []uuid.UUID `json:"remove_label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Labels to remove"`
 	ProjectID         *uuid.UUID  `json:"project_id,omitempty" required:"false" format:"uuid" doc:"Project of the workspace; the nil uuid removes it and its milestone"`
 	MilestoneID       *uuid.UUID  `json:"milestone_id,omitempty" required:"false" format:"uuid" doc:"Milestone of the issue's project; the nil uuid removes it"`
 	CycleID           *uuid.UUID  `json:"cycle_id,omitempty" required:"false" format:"uuid" doc:"Cycle of the issue's team; the nil uuid removes it"`
@@ -58,7 +59,11 @@ func (self *IssueService) Update(ctx context.Context, userID uuid.UUID, input *U
 	}
 	var outcome *issueOutcome
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		outcome, err = self.applyUpdate(ctx, tx, userID, current, input)
+		locked, err := self.repo.Issue().LockWithEdges(ctx, tx, current.ID)
+		if err != nil {
+			return err
+		}
+		outcome, err = self.applyUpdate(ctx, tx, userID, locked, input)
 		return err
 	})
 	if err != nil {
@@ -73,12 +78,12 @@ func (self *IssueService) Update(ctx context.Context, userID uuid.UUID, input *U
 }
 
 type BulkUpdateIssuesInput struct {
-	IssueIDs       []uuid.UUID `json:"issue_ids" required:"true" minItems:"1" maxItems:"250" doc:"Issues to change together in one transaction"`
+	IssueIDs       []uuid.UUID `json:"issue_ids" format:"uuid" required:"true" nullable:"false" minItems:"1" maxItems:"250" doc:"Issues to change together in one transaction"`
 	StateID        *uuid.UUID  `json:"state_id,omitempty" required:"false" format:"uuid" doc:"Workflow state; must belong to every issue's team"`
 	Priority       *int        `json:"priority,omitempty" required:"false" minimum:"0" maximum:"4" doc:"0 none, 1 urgent, 2 high, 3 medium, 4 low"`
 	AssigneeID     *uuid.UUID  `json:"assignee_id,omitempty" required:"false" format:"uuid" doc:"Assignee; the nil uuid unassigns"`
-	AddLabelIDs    []uuid.UUID `json:"add_label_ids,omitempty" required:"false" maxItems:"50" doc:"Labels to add"`
-	RemoveLabelIDs []uuid.UUID `json:"remove_label_ids,omitempty" required:"false" maxItems:"50" doc:"Labels to remove"`
+	AddLabelIDs    []uuid.UUID `json:"add_label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Labels to add"`
+	RemoveLabelIDs []uuid.UUID `json:"remove_label_ids,omitempty" format:"uuid" required:"false" maxItems:"50" doc:"Labels to remove"`
 	ProjectID      *uuid.UUID  `json:"project_id,omitempty" required:"false" format:"uuid" doc:"Project; the nil uuid removes it"`
 	CycleID        *uuid.UUID  `json:"cycle_id,omitempty" required:"false" format:"uuid" doc:"Cycle of every issue's team; the nil uuid removes it"`
 	ParentID       *uuid.UUID  `json:"parent_id,omitempty" required:"false" format:"uuid" doc:"Parent issue; the nil uuid makes them top level"`
@@ -98,7 +103,11 @@ func (self *IssueService) BulkUpdate(ctx context.Context, userID uuid.UUID, inpu
 	}
 	outcomes := make([]*issueOutcome, len(issues))
 	err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		for i, issue := range issues {
+		locked, err := self.lockAll(ctx, tx, ids)
+		if err != nil {
+			return err
+		}
+		for i, issue := range locked {
 			outcome, err := self.applyUpdate(ctx, tx, userID, issue, &UpdateIssueInput{
 				IssueID: issue.ID, StateID: input.StateID, Priority: input.Priority, AssigneeID: input.AssigneeID,
 				AddLabelIDs: input.AddLabelIDs, RemoveLabelIDs: input.RemoveLabelIDs, ProjectID: input.ProjectID,
@@ -122,10 +131,32 @@ func (self *IssueService) BulkUpdate(ctx context.Context, userID uuid.UUID, inpu
 	if err != nil {
 		return nil, err
 	}
-	for i, response := range responses {
-		self.afterUpdate(ctx, userID, outcomes[i], response)
+	byID := make(map[uuid.UUID]*issueOutcome, len(outcomes))
+	for _, outcome := range outcomes {
+		byID[outcome.issueID] = outcome
+	}
+	for _, response := range responses {
+		if outcome, ok := byID[response.ID]; ok {
+			self.afterUpdate(ctx, userID, outcome, response)
+		}
 	}
 	return responses, nil
+}
+
+func (self *IssueService) lockAll(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) ([]*ent.Issue, error) {
+	byID := make(map[uuid.UUID]*ent.Issue, len(ids))
+	for _, id := range slices.SortedFunc(slices.Values(ids), func(a, b uuid.UUID) int { return strings.Compare(a.String(), b.String()) }) {
+		issue, err := self.repo.Issue().LockWithEdges(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+		byID[id] = issue
+	}
+	locked := make([]*ent.Issue, len(ids))
+	for i, id := range ids {
+		locked[i] = byID[id]
+	}
+	return locked, nil
 }
 
 func prefixError(identifier string, err error) error {
@@ -271,19 +302,29 @@ func (self *IssueService) applyUpdate(ctx context.Context, tx repository.TxInter
 		}
 	}
 	if !sameID(fields.CycleID, current.CycleID) {
-		record(schema.FieldChange{Field: "cycle", From: idValue(current.CycleID), To: idValue(fields.CycleID), FromLabel: cycleLabel(current.Edges.Cycle)})
+		toLabel, err := self.cycleLabelOf(ctx, fields.CycleID)
+		if err != nil {
+			return nil, err
+		}
+		record(schema.FieldChange{Field: "cycle", From: idValue(current.CycleID), To: idValue(fields.CycleID), FromLabel: cycleLabel(current.Edges.Cycle), ToLabel: toLabel})
 	}
 	if input.ParentID != nil {
 		fields.ParentID = nil
+		parentLabel := ""
 		if !isNil(input.ParentID) {
-			parent, err := self.parent(ctx, tx, current.WorkspaceID, &current.ID, *input.ParentID)
+			parent, err := self.parent(ctx, tx, userID, current.WorkspaceID, &current.ID, *input.ParentID)
 			if err != nil {
 				return nil, err
 			}
 			fields.ParentID = &parent.ID
+			parentLabel = models.Identifier(parent.Edges.Team.Key, parent.Number)
 		}
 		if !sameID(fields.ParentID, current.ParentID) {
-			record(schema.FieldChange{Field: "parent", From: idValue(current.ParentID), To: idValue(fields.ParentID)})
+			change := schema.FieldChange{Field: "parent", From: idValue(current.ParentID), To: idValue(fields.ParentID), ToLabel: parentLabel}
+			if previous := current.Edges.Parent; previous != nil && previous.Edges.Team != nil {
+				change.FromLabel = models.Identifier(previous.Edges.Team.Key, previous.Number)
+			}
+			record(change)
 		}
 	}
 	if input.DueDate != nil {
@@ -327,6 +368,9 @@ func (self *IssueService) applyUpdate(ctx context.Context, tx repository.TxInter
 	if err := self.repo.Issue().Update(ctx, tx, current.ID, &fields); err != nil {
 		return nil, err
 	}
+	if err := self.respaceIfCrowded(ctx, tx, current, &fields, input); err != nil {
+		return nil, err
+	}
 	if err := self.repo.Issue().SetLabels(ctx, tx, current.ID, added, removed); err != nil {
 		return nil, err
 	}
@@ -337,7 +381,7 @@ func (self *IssueService) applyUpdate(ctx context.Context, tx repository.TxInter
 	if err := self.repo.Issue().Subscribe(ctx, tx, current.ID, subscribe...); err != nil {
 		return nil, err
 	}
-	if err := self.repo.Issue().CreateHistory(ctx, tx, current.ID, &userID, historySource(ctx), outcome.changes); err != nil {
+	if err := self.repo.Issue().CreateHistory(ctx, tx, current.ID, &userID, apictx.HistorySource(ctx), outcome.changes); err != nil {
 		return nil, err
 	}
 	return outcome, nil
@@ -407,13 +451,16 @@ func (self *IssueService) updateAssignee(ctx context.Context, current *ent.Issue
 }
 
 func (self *IssueService) updateProject(ctx context.Context, current *ent.Issue, input *UpdateIssueInput, fields *issue_repo.IssueFields, record func(schema.FieldChange)) error {
+	projectName, milestoneName := "", ""
 	if input.ProjectID != nil {
 		fields.ProjectID = nil
 		if !isNil(input.ProjectID) {
-			if _, err := self.project(ctx, current.WorkspaceID, *input.ProjectID); err != nil {
+			project, err := self.project(ctx, current.WorkspaceID, *input.ProjectID)
+			if err != nil {
 				return err
 			}
 			fields.ProjectID = input.ProjectID
+			projectName = project.Name
 		}
 	}
 	if input.MilestoneID != nil {
@@ -423,11 +470,14 @@ func (self *IssueService) updateProject(ctx context.Context, current *ent.Issue,
 			if err != nil {
 				return err
 			}
+			milestoneName = milestone.Name
 			if fields.ProjectID == nil && input.ProjectID == nil {
-				if _, err := self.project(ctx, current.WorkspaceID, milestone.ProjectID); err != nil {
+				project, err := self.project(ctx, current.WorkspaceID, milestone.ProjectID)
+				if err != nil {
 					return err
 				}
 				fields.ProjectID = &milestone.ProjectID
+				projectName = project.Name
 			}
 			if fields.ProjectID == nil || milestone.ProjectID != *fields.ProjectID {
 				return invalid("milestone_id must be a milestone of the issue's project")
@@ -439,14 +489,14 @@ func (self *IssueService) updateProject(ctx context.Context, current *ent.Issue,
 		fields.MilestoneID = nil
 	}
 	if !sameID(fields.ProjectID, current.ProjectID) {
-		change := schema.FieldChange{Field: "project", From: idValue(current.ProjectID), To: idValue(fields.ProjectID)}
+		change := schema.FieldChange{Field: "project", From: idValue(current.ProjectID), To: idValue(fields.ProjectID), ToLabel: projectName}
 		if current.Edges.Project != nil {
 			change.FromLabel = current.Edges.Project.Name
 		}
 		record(change)
 	}
 	if !sameID(fields.MilestoneID, current.MilestoneID) {
-		change := schema.FieldChange{Field: "milestone", From: idValue(current.MilestoneID), To: idValue(fields.MilestoneID)}
+		change := schema.FieldChange{Field: "milestone", From: idValue(current.MilestoneID), To: idValue(fields.MilestoneID), ToLabel: milestoneName}
 		if current.Edges.Milestone != nil {
 			change.FromLabel = current.Edges.Milestone.Name
 		}
@@ -488,6 +538,29 @@ func (self *IssueService) afterUpdate(ctx context.Context, userID uuid.UUID, out
 		}
 	}
 	self.emit(ctx, response.WorkspaceID, "issue.updated", map[string]any{"issue": response, "changes": outcome.changes})
+}
+
+func (self *IssueService) respaceIfCrowded(ctx context.Context, tx repository.TxInterface, current *ent.Issue, fields *issue_repo.IssueFields, input *UpdateIssueInput) error {
+	if input.SortOrder != nil {
+		if err := self.repo.Issue().RespaceIfCrowded(ctx, tx, current.WorkspaceID, current.ID, fields.SortOrder); err != nil {
+			return err
+		}
+	}
+	if input.SubIssueSortOrder == nil || fields.ParentID == nil {
+		return nil
+	}
+	return self.repo.Issue().RespaceSubIssuesIfCrowded(ctx, tx, *fields.ParentID, current.ID, fields.SubIssueSortOrder)
+}
+
+func (self *IssueService) cycleLabelOf(ctx context.Context, cycleID *uuid.UUID) (string, error) {
+	if cycleID == nil {
+		return "", nil
+	}
+	found, err := self.repo.Cycle().GetByID(ctx, *cycleID)
+	if err != nil {
+		return "", err
+	}
+	return cycleLabel(found), nil
 }
 
 func cycleLabel(cycle *ent.Cycle) string {

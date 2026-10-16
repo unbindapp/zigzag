@@ -47,7 +47,7 @@ type WorkspaceMemberResponse struct {
 	User     MemberUser           `json:"user"`
 	Role     schema.WorkspaceRole `json:"role"`
 	JoinedAt time.Time            `json:"joined_at"`
-	TeamIDs  []uuid.UUID          `json:"team_ids" nullable:"false"`
+	TeamIDs  []uuid.UUID          `json:"team_ids" format:"uuid" nullable:"false"`
 }
 
 func TransformWorkspaceMember(entity *ent.WorkspaceMember, teamIDs []uuid.UUID) *WorkspaceMemberResponse {
@@ -67,7 +67,7 @@ type InvitationResponse struct {
 	WorkspaceID uuid.UUID            `json:"workspace_id" format:"uuid"`
 	Email       string               `json:"email"`
 	Role        schema.WorkspaceRole `json:"role"`
-	TeamIDs     []uuid.UUID          `json:"team_ids" nullable:"false" doc:"Teams joined on accept"`
+	TeamIDs     []uuid.UUID          `json:"team_ids" format:"uuid" nullable:"false" doc:"Teams joined on accept"`
 	ExpiresAt   time.Time            `json:"expires_at"`
 	CreatedAt   time.Time            `json:"created_at"`
 	Link        string               `json:"link,omitempty" required:"false" doc:"The invitation link. Only returned when the invitation is created or resent."`

@@ -15,7 +15,7 @@ import (
 // NotificationRepositoryInterface ...
 type NotificationRepositoryInterface interface {
 	CreateMany(ctx context.Context, tx repository.TxInterface, inputs []*CreateNotificationInput) ([]*ent.Notification, error)
-	ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error)
+	ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID, issueID *uuid.UUID) ([]uuid.UUID, error)
 	// Settings has no entry for users who kept the defaults.
 	Settings(ctx context.Context, userIDs []uuid.UUID) (map[uuid.UUID]*ent.NotificationSetting, error)
 	PendingEmail(ctx context.Context, createdBefore, createdAfter time.Time) ([]*ent.Notification, error)

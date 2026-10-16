@@ -55,7 +55,7 @@ func dueSoonEvent(issue *ent.Issue, today time.Time) models.NotificationEvent {
 		WorkspaceID:  issue.WorkspaceID,
 		RecipientIDs: []uuid.UUID{*issue.AssigneeID},
 		IssueID:      &issueID,
-		Title:        issue.Title,
+		Title:        models.Identifier(issue.Edges.Team.Key, issue.Number) + " " + issue.Title,
 		Body:         body,
 	}
 }

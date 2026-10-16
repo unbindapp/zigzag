@@ -631,6 +631,11 @@ var (
 				Columns: []*schema.Column{IssuesColumns[32], IssuesColumns[2]},
 			},
 			{
+				Name:    "issue_workspace_id_sort_order",
+				Unique:  false,
+				Columns: []*schema.Column{IssuesColumns[32], IssuesColumns[9]},
+			},
+			{
 				Name:    "issue_workspace_id_import_source_import_external_id",
 				Unique:  true,
 				Columns: []*schema.Column{IssuesColumns[32], IssuesColumns[21], IssuesColumns[22]},

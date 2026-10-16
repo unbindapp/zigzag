@@ -33,7 +33,7 @@ type ConnectedAppResponse struct {
 	VerifiedBrand oauthserver.VerifiedBrand `json:"verified_brand,omitempty" required:"false" enum:"claude,chatgpt" doc:"Set when the client is proven to be this first party."`
 	Role          schema.WorkspaceRole      `json:"role"`
 	FullAccess    bool                      `json:"full_access"`
-	WorkspaceIDs  []uuid.UUID               `json:"workspace_ids" nullable:"false"`
+	WorkspaceIDs  []uuid.UUID               `json:"workspace_ids" format:"uuid" nullable:"false"`
 	Privileges    []schema.KeyPrivilege     `json:"privileges" nullable:"false"`
 	CreatedAt     time.Time                 `json:"created_at"`
 	LastUsedAt    *time.Time                `json:"last_used_at,omitempty" nullable:"true" required:"false"`

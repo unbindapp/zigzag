@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	"github.com/unbindapp/zigzag-api/internal/models"
@@ -29,7 +30,7 @@ type CreateStateInput struct {
 	TeamID      uuid.UUID        `json:"team_id" required:"true" format:"uuid" doc:"The team"`
 	Name        string           `json:"name" required:"true" minLength:"1" maxLength:"64" doc:"State name, unique in the team"`
 	Type        schema.StateType `json:"type" required:"true" doc:"triage, backlog, unstarted, started, completed or canceled"`
-	Color       string           `json:"color" required:"true" maxLength:"16" doc:"Hex color such as #f2c94c"`
+	Color       string           `json:"color" required:"true" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color such as #f2c94c"`
 	Description string           `json:"description,omitempty" required:"false" maxLength:"500" doc:"What the state means"`
 	Position    *float64         `json:"position,omitempty" required:"false" doc:"Order within its type; appended last when omitted"`
 }
@@ -54,7 +55,7 @@ func (self *TeamService) CreateState(ctx context.Context, userID uuid.UUID, inpu
 	if err != nil {
 		return nil, err
 	}
-	state, err := self.repo.Team().CreateState(ctx, &team_repo.CreateStateInput{
+	state, err := self.repo.Team().CreateState(ctx, nil, &team_repo.CreateStateInput{
 		TeamID: team.ID, Name: name, Type: input.Type, Color: color, Description: strings.TrimSpace(input.Description), Position: position,
 	})
 	if err != nil {
@@ -66,7 +67,7 @@ func (self *TeamService) CreateState(ctx context.Context, userID uuid.UUID, inpu
 type UpdateStateInput struct {
 	StateID     uuid.UUID `json:"state_id" required:"true" format:"uuid" doc:"The state to change"`
 	Name        *string   `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Color       *string   `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color"`
+	Color       *string   `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color"`
 	Description *string   `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
 	Position    *float64  `json:"position,omitempty" required:"false" doc:"Order within its type"`
 }
@@ -111,10 +112,14 @@ func (self *TeamService) DeleteState(ctx context.Context, userID uuid.UUID, inpu
 	if input.MoveIssuesToStateID == state.ID {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "move_issues_to_state_id must be a different state")
 	}
-	if err := self.ensureTeamState(ctx, state.TeamID, input.MoveIssuesToStateID); err != nil {
+	target, err := self.repo.Team().GetState(ctx, input.MoveIssuesToStateID)
+	if ent.IsNotFound(err) || (err == nil && target.TeamID != state.TeamID) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "move_issues_to_state_id must be a state of the same team")
+	}
+	if err != nil {
 		return err
 	}
-	return self.repo.Team().DeleteState(ctx, state.ID, input.MoveIssuesToStateID)
+	return self.repo.Team().DeleteState(ctx, &team_repo.StateMove{From: state, To: target, ActorID: &userID, Source: apictx.HistorySource(ctx), At: self.now()})
 }
 
 func (self *TeamService) adminState(ctx context.Context, userID, stateID uuid.UUID) (*ent.WorkflowState, error) {

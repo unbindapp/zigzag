@@ -138,6 +138,32 @@ func (suite *ViewServiceSuite) TestListHidesViewsOfPrivateTeams() {
 	suite.Equal(open.ID, views[0].ID)
 }
 
+func (suite *ViewServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.role(schema.WorkspaceRoleViewer, nil)
+	suite.role(schema.WorkspaceRoleMember, nil)
+	foreignTeam := &ent.Team{ID: uuid.New(), WorkspaceID: uuid.New()}
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, foreignTeam.ID).Return(foreignTeam, nil).Maybe()
+	onForeignTeam := suite.view(suite.userID, false)
+	onForeignTeam.TeamID = &foreignTeam.ID
+	renamed := "Renamed"
+
+	cases := map[string]func() error{
+		"create with a team of another workspace": func() error {
+			_, err := suite.service.Create(suite.Ctx, suite.userID, &CreateViewInput{WorkspaceID: suite.workspaceID, TeamID: &foreignTeam.ID, Name: "Mine", Kind: schema.ViewKindIssue, Display: suite.display})
+			return err
+		},
+		"update a view tied to a team of another workspace": func() error {
+			_, err := suite.service.Update(suite.Ctx, suite.userID, &UpdateViewInput{ViewID: onForeignTeam.ID, Name: &renamed})
+			return err
+		},
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			suite.ErrorIs(run(), errdefs.ErrNotFound)
+		})
+	}
+}
+
 func TestViewServiceSuite(t *testing.T) {
 	suite.Run(t, new(ViewServiceSuite))
 }

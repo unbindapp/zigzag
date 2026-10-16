@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
-	"github.com/unbindapp/zigzag-api/internal/common/names"
 )
 
 type references struct {
@@ -20,7 +19,7 @@ type references struct {
 	InitiativeIDs []uuid.UUID
 }
 
-func (self *ProjectService) validateReferences(ctx context.Context, workspaceID uuid.UUID, refs *references) error {
+func (self *ProjectService) validateReferences(ctx context.Context, userID, workspaceID uuid.UUID, refs *references) error {
 	repo := self.repo.Project()
 	people := uniqueIDs(refs.MemberIDs)
 	if refs.LeadID != nil {
@@ -48,6 +47,29 @@ func (self *ProjectService) validateReferences(ctx context.Context, workspaceID 
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, check.message)
 		}
 	}
+	return self.ensureTeamsVisible(ctx, userID, workspaceID, uniqueIDs(refs.TeamIDs))
+}
+
+func (self *ProjectService) ensureTeamsVisible(ctx context.Context, userID, workspaceID uuid.UUID, teamIDs []uuid.UUID) error {
+	if len(teamIDs) == 0 || self.check(ctx, userID, schema.WorkspaceRoleAdmin, workspaceID) == nil {
+		return nil
+	}
+	for _, teamID := range teamIDs {
+		team, err := self.repo.Team().GetByID(ctx, teamID)
+		if err != nil {
+			return err
+		}
+		if !team.Private {
+			continue
+		}
+		member, err := self.repo.Team().IsMember(ctx, teamID, userID)
+		if err != nil {
+			return err
+		}
+		if !member {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Every team must belong to this workspace")
+		}
+	}
 	return nil
 }
 
@@ -68,13 +90,6 @@ func (self *ProjectService) workspaceStatus(ctx context.Context, workspaceID, st
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The status must be a project status of this workspace")
 	}
 	return status, err
-}
-
-func optionalColor(raw string) (string, error) {
-	if raw == "" {
-		return "", nil
-	}
-	return names.Color(raw)
 }
 
 func validateDates(start, target *time.Time) error {

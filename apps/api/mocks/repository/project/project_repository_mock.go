@@ -830,16 +830,16 @@ func (_c *ProjectRepositoryMock_DefaultStatus_Call) RunAndReturn(run func(ctx co
 }
 
 // Delete provides a mock function for the type ProjectRepositoryMock
-func (_mock *ProjectRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
-	ret := _mock.Called(ctx, id)
+func (_mock *ProjectRepositoryMock) Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Delete")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, id)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -853,24 +853,30 @@ type ProjectRepositoryMock_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
+//   - tx repository.TxInterface
 //   - id uuid.UUID
-func (_e *ProjectRepositoryMock_Expecter) Delete(ctx any, id any) *ProjectRepositoryMock_Delete_Call {
-	return &ProjectRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+func (_e *ProjectRepositoryMock_Expecter) Delete(ctx any, tx any, id any) *ProjectRepositoryMock_Delete_Call {
+	return &ProjectRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, tx, id)}
 }
 
-func (_c *ProjectRepositoryMock_Delete_Call) Run(run func(ctx context.Context, id uuid.UUID)) *ProjectRepositoryMock_Delete_Call {
+func (_c *ProjectRepositoryMock_Delete_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID)) *ProjectRepositoryMock_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 repository.TxInterface
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -881,7 +887,7 @@ func (_c *ProjectRepositoryMock_Delete_Call) Return(err error) *ProjectRepositor
 	return _c
 }
 
-func (_c *ProjectRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *ProjectRepositoryMock_Delete_Call {
+func (_c *ProjectRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error) *ProjectRepositoryMock_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -944,16 +950,16 @@ func (_c *ProjectRepositoryMock_DeleteLink_Call) RunAndReturn(run func(ctx conte
 }
 
 // DeleteMilestone provides a mock function for the type ProjectRepositoryMock
-func (_mock *ProjectRepositoryMock) DeleteMilestone(ctx context.Context, milestoneID uuid.UUID) error {
-	ret := _mock.Called(ctx, milestoneID)
+func (_mock *ProjectRepositoryMock) DeleteMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, milestoneID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteMilestone")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, milestoneID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, milestoneID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -967,24 +973,30 @@ type ProjectRepositoryMock_DeleteMilestone_Call struct {
 
 // DeleteMilestone is a helper method to define mock.On call
 //   - ctx context.Context
+//   - tx repository.TxInterface
 //   - milestoneID uuid.UUID
-func (_e *ProjectRepositoryMock_Expecter) DeleteMilestone(ctx any, milestoneID any) *ProjectRepositoryMock_DeleteMilestone_Call {
-	return &ProjectRepositoryMock_DeleteMilestone_Call{Call: _e.mock.On("DeleteMilestone", ctx, milestoneID)}
+func (_e *ProjectRepositoryMock_Expecter) DeleteMilestone(ctx any, tx any, milestoneID any) *ProjectRepositoryMock_DeleteMilestone_Call {
+	return &ProjectRepositoryMock_DeleteMilestone_Call{Call: _e.mock.On("DeleteMilestone", ctx, tx, milestoneID)}
 }
 
-func (_c *ProjectRepositoryMock_DeleteMilestone_Call) Run(run func(ctx context.Context, milestoneID uuid.UUID)) *ProjectRepositoryMock_DeleteMilestone_Call {
+func (_c *ProjectRepositoryMock_DeleteMilestone_Call) Run(run func(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID)) *ProjectRepositoryMock_DeleteMilestone_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 repository.TxInterface
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -995,7 +1007,7 @@ func (_c *ProjectRepositoryMock_DeleteMilestone_Call) Return(err error) *Project
 	return _c
 }
 
-func (_c *ProjectRepositoryMock_DeleteMilestone_Call) RunAndReturn(run func(ctx context.Context, milestoneID uuid.UUID) error) *ProjectRepositoryMock_DeleteMilestone_Call {
+func (_c *ProjectRepositoryMock_DeleteMilestone_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) error) *ProjectRepositoryMock_DeleteMilestone_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1827,6 +1839,80 @@ func (_c *ProjectRepositoryMock_ImportedProjects_Call) RunAndReturn(run func(ctx
 	return _c
 }
 
+// IssueIDsInMilestone provides a mock function for the type ProjectRepositoryMock
+func (_mock *ProjectRepositoryMock) IssueIDsInMilestone(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, tx, milestoneID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssueIDsInMilestone")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, tx, milestoneID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, tx, milestoneID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, milestoneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ProjectRepositoryMock_IssueIDsInMilestone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssueIDsInMilestone'
+type ProjectRepositoryMock_IssueIDsInMilestone_Call struct {
+	*mock.Call
+}
+
+// IssueIDsInMilestone is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - milestoneID uuid.UUID
+func (_e *ProjectRepositoryMock_Expecter) IssueIDsInMilestone(ctx any, tx any, milestoneID any) *ProjectRepositoryMock_IssueIDsInMilestone_Call {
+	return &ProjectRepositoryMock_IssueIDsInMilestone_Call{Call: _e.mock.On("IssueIDsInMilestone", ctx, tx, milestoneID)}
+}
+
+func (_c *ProjectRepositoryMock_IssueIDsInMilestone_Call) Run(run func(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID)) *ProjectRepositoryMock_IssueIDsInMilestone_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_IssueIDsInMilestone_Call) Return(uUIDs []uuid.UUID, err error) *ProjectRepositoryMock_IssueIDsInMilestone_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_IssueIDsInMilestone_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, milestoneID uuid.UUID) ([]uuid.UUID, error)) *ProjectRepositoryMock_IssueIDsInMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // IssueTotals provides a mock function for the type ProjectRepositoryMock
 func (_mock *ProjectRepositoryMock) IssueTotals(ctx context.Context, projectIDs []uuid.UUID) (map[uuid.UUID]*models.IssueTotals, error) {
 	ret := _mock.Called(ctx, projectIDs)
@@ -1891,6 +1977,80 @@ func (_c *ProjectRepositoryMock_IssueTotals_Call) Return(uUIDToIssueTotals map[u
 }
 
 func (_c *ProjectRepositoryMock_IssueTotals_Call) RunAndReturn(run func(ctx context.Context, projectIDs []uuid.UUID) (map[uuid.UUID]*models.IssueTotals, error)) *ProjectRepositoryMock_IssueTotals_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssuesInProject provides a mock function for the type ProjectRepositoryMock
+func (_mock *ProjectRepositoryMock) IssuesInProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]*ent.Issue, error) {
+	ret := _mock.Called(ctx, tx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssuesInProject")
+	}
+
+	var r0 []*ent.Issue
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]*ent.Issue, error)); ok {
+		return returnFunc(ctx, tx, projectID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []*ent.Issue); ok {
+		r0 = returnFunc(ctx, tx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Issue)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ProjectRepositoryMock_IssuesInProject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssuesInProject'
+type ProjectRepositoryMock_IssuesInProject_Call struct {
+	*mock.Call
+}
+
+// IssuesInProject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - projectID uuid.UUID
+func (_e *ProjectRepositoryMock_Expecter) IssuesInProject(ctx any, tx any, projectID any) *ProjectRepositoryMock_IssuesInProject_Call {
+	return &ProjectRepositoryMock_IssuesInProject_Call{Call: _e.mock.On("IssuesInProject", ctx, tx, projectID)}
+}
+
+func (_c *ProjectRepositoryMock_IssuesInProject_Call) Run(run func(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID)) *ProjectRepositoryMock_IssuesInProject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_IssuesInProject_Call) Return(issues []*ent.Issue, err error) *ProjectRepositoryMock_IssuesInProject_Call {
+	_c.Call.Return(issues, err)
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_IssuesInProject_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]*ent.Issue, error)) *ProjectRepositoryMock_IssuesInProject_Call {
 	_c.Call.Return(run)
 	return _c
 }

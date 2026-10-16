@@ -29,7 +29,6 @@ func (self *InitiativeService) check(ctx context.Context, userID uuid.UUID, role
 	return self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: role, WorkspaceID: workspaceID}})
 }
 
-// checkRole hides the workspace from outsiders, then requires role.
 func (self *InitiativeService) checkRole(ctx context.Context, userID uuid.UUID, role schema.WorkspaceRole, workspaceID uuid.UUID, notFound string) error {
 	if err := self.check(ctx, userID, schema.WorkspaceRoleViewer, workspaceID); err != nil {
 		return errdefs.MaskAsNotFound(err, notFound)

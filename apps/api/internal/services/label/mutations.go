@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	"github.com/unbindapp/zigzag-api/internal/models"
@@ -18,7 +19,7 @@ type CreateLabelInput struct {
 	WorkspaceID       uuid.UUID  `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace"`
 	TeamID            *uuid.UUID `json:"team_id,omitempty" required:"false" format:"uuid" doc:"Make it a label of this team only; omit for a workspace label every team shares"`
 	Name              string     `json:"name" required:"true" minLength:"1" maxLength:"64" doc:"Label name, unique among its siblings"`
-	Color             string     `json:"color" required:"true" maxLength:"16" doc:"Hex color such as #eb5757"`
+	Color             string     `json:"color" required:"true" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color such as #eb5757"`
 	Description       string     `json:"description,omitempty" required:"false" maxLength:"500" doc:"What the label means"`
 	ParentID          *uuid.UUID `json:"parent_id,omitempty" required:"false" format:"uuid" doc:"Put the label in this group; the group must have the same team"`
 	IsGroup           bool       `json:"is_group,omitempty" required:"false" doc:"Create a label group that holds other labels; groups cannot be applied to issues"`
@@ -85,7 +86,7 @@ func (self *LabelService) Create(ctx context.Context, userID uuid.UUID, input *C
 type UpdateLabelInput struct {
 	LabelID           uuid.UUID  `json:"label_id" required:"true" format:"uuid" doc:"The label to change"`
 	Name              *string    `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Color             *string    `json:"color,omitempty" required:"false" maxLength:"16" doc:"Hex color"`
+	Color             *string    `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^#[0-9a-fA-F]{6}$" doc:"Hex color"`
 	Description       *string    `json:"description,omitempty" required:"false" maxLength:"500" doc:"Description, empty to clear"`
 	ParentID          *uuid.UUID `json:"parent_id,omitempty" required:"false" format:"uuid" doc:"Move the label into this group; the nil uuid 00000000-0000-0000-0000-000000000000 takes it out of its group"`
 	GroupSingleSelect *bool      `json:"group_single_select,omitempty" required:"false" doc:"For groups: an issue may carry only one label of the group"`
@@ -200,7 +201,7 @@ func (self *LabelService) Delete(ctx context.Context, userID uuid.UUID, input *L
 }
 
 func removalHistory(ctx context.Context, userID uuid.UUID, byIssue map[uuid.UUID][]*ent.Label) []label_repo.HistoryEntry {
-	source := historySource(ctx)
+	source := apictx.HistorySource(ctx)
 	entries := make([]label_repo.HistoryEntry, 0, len(byIssue))
 	for issueID, labels := range byIssue {
 		ids := make([]string, len(labels))

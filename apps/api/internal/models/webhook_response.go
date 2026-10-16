@@ -13,7 +13,7 @@ type WebhookResponse struct {
 	TeamID      *uuid.UUID `json:"team_id" nullable:"true" format:"uuid" doc:"Only events of this team are sent; null for the whole workspace"`
 	URL         string     `json:"url"`
 	Label       string     `json:"label"`
-	Events      []string   `json:"events" nullable:"false"`
+	Events      []string   `json:"events" nullable:"false" enum:"issue.created,issue.updated,issue.deleted,comment.created,project.updated,cycle.updated"`
 	Enabled     bool       `json:"enabled"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`

@@ -34,7 +34,6 @@ func (self *ProjectRepository) GetStatus(ctx context.Context, statusID uuid.UUID
 	return self.base.DB.ProjectStatus.Get(ctx, statusID)
 }
 
-// DefaultStatus is the first backlog status, or the first status of any type when there is none.
 func (self *ProjectRepository) DefaultStatus(ctx context.Context, workspaceID uuid.UUID) (*ent.ProjectStatus, error) {
 	statuses, err := self.ListStatuses(ctx, workspaceID)
 	if err != nil {
@@ -114,7 +113,15 @@ func (self *ProjectRepository) UpdateStatus(ctx context.Context, statusID uuid.U
 	if input.Position != nil {
 		m.SetPosition(*input.Position)
 	}
-	return m.Save(ctx)
+	updated, err := m.Save(ctx)
+	if err != nil || input.Position == nil {
+		return updated, err
+	}
+	respaced, err := self.base.RespaceIfCrowded(ctx, nil, repository.StatusPosition, updated.WorkspaceID, updated.ID, updated.Position)
+	if err != nil || !respaced {
+		return updated, err
+	}
+	return self.base.DB.ProjectStatus.Get(ctx, statusID)
 }
 
 func (self *ProjectRepository) DeleteStatus(ctx context.Context, tx repository.TxInterface, statusID, moveToStatusID uuid.UUID) error {

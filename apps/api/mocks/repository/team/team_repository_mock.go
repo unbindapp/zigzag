@@ -330,8 +330,8 @@ func (_c *TeamRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Cont
 }
 
 // CreateState provides a mock function for the type TeamRepositoryMock
-func (_mock *TeamRepositoryMock) CreateState(ctx context.Context, input *team_repo.CreateStateInput) (*ent.WorkflowState, error) {
-	ret := _mock.Called(ctx, input)
+func (_mock *TeamRepositoryMock) CreateState(ctx context.Context, tx repository.TxInterface, input *team_repo.CreateStateInput) (*ent.WorkflowState, error) {
+	ret := _mock.Called(ctx, tx, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateState")
@@ -339,18 +339,18 @@ func (_mock *TeamRepositoryMock) CreateState(ctx context.Context, input *team_re
 
 	var r0 *ent.WorkflowState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *team_repo.CreateStateInput) (*ent.WorkflowState, error)); ok {
-		return returnFunc(ctx, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *team_repo.CreateStateInput) (*ent.WorkflowState, error)); ok {
+		return returnFunc(ctx, tx, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *team_repo.CreateStateInput) *ent.WorkflowState); ok {
-		r0 = returnFunc(ctx, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *team_repo.CreateStateInput) *ent.WorkflowState); ok {
+		r0 = returnFunc(ctx, tx, input)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.WorkflowState)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *team_repo.CreateStateInput) error); ok {
-		r1 = returnFunc(ctx, input)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, *team_repo.CreateStateInput) error); ok {
+		r1 = returnFunc(ctx, tx, input)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -364,24 +364,30 @@ type TeamRepositoryMock_CreateState_Call struct {
 
 // CreateState is a helper method to define mock.On call
 //   - ctx context.Context
+//   - tx repository.TxInterface
 //   - input *team_repo.CreateStateInput
-func (_e *TeamRepositoryMock_Expecter) CreateState(ctx any, input any) *TeamRepositoryMock_CreateState_Call {
-	return &TeamRepositoryMock_CreateState_Call{Call: _e.mock.On("CreateState", ctx, input)}
+func (_e *TeamRepositoryMock_Expecter) CreateState(ctx any, tx any, input any) *TeamRepositoryMock_CreateState_Call {
+	return &TeamRepositoryMock_CreateState_Call{Call: _e.mock.On("CreateState", ctx, tx, input)}
 }
 
-func (_c *TeamRepositoryMock_CreateState_Call) Run(run func(ctx context.Context, input *team_repo.CreateStateInput)) *TeamRepositoryMock_CreateState_Call {
+func (_c *TeamRepositoryMock_CreateState_Call) Run(run func(ctx context.Context, tx repository.TxInterface, input *team_repo.CreateStateInput)) *TeamRepositoryMock_CreateState_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *team_repo.CreateStateInput
+		var arg1 repository.TxInterface
 		if args[1] != nil {
-			arg1 = args[1].(*team_repo.CreateStateInput)
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 *team_repo.CreateStateInput
+		if args[2] != nil {
+			arg2 = args[2].(*team_repo.CreateStateInput)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -392,7 +398,7 @@ func (_c *TeamRepositoryMock_CreateState_Call) Return(workflowState *ent.Workflo
 	return _c
 }
 
-func (_c *TeamRepositoryMock_CreateState_Call) RunAndReturn(run func(ctx context.Context, input *team_repo.CreateStateInput) (*ent.WorkflowState, error)) *TeamRepositoryMock_CreateState_Call {
+func (_c *TeamRepositoryMock_CreateState_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, input *team_repo.CreateStateInput) (*ent.WorkflowState, error)) *TeamRepositoryMock_CreateState_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -455,16 +461,16 @@ func (_c *TeamRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Cont
 }
 
 // DeleteState provides a mock function for the type TeamRepositoryMock
-func (_mock *TeamRepositoryMock) DeleteState(ctx context.Context, stateID uuid.UUID, moveTo uuid.UUID) error {
-	ret := _mock.Called(ctx, stateID, moveTo)
+func (_mock *TeamRepositoryMock) DeleteState(ctx context.Context, move *team_repo.StateMove) error {
+	ret := _mock.Called(ctx, move)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteState")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, stateID, moveTo)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *team_repo.StateMove) error); ok {
+		r0 = returnFunc(ctx, move)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -478,30 +484,24 @@ type TeamRepositoryMock_DeleteState_Call struct {
 
 // DeleteState is a helper method to define mock.On call
 //   - ctx context.Context
-//   - stateID uuid.UUID
-//   - moveTo uuid.UUID
-func (_e *TeamRepositoryMock_Expecter) DeleteState(ctx any, stateID any, moveTo any) *TeamRepositoryMock_DeleteState_Call {
-	return &TeamRepositoryMock_DeleteState_Call{Call: _e.mock.On("DeleteState", ctx, stateID, moveTo)}
+//   - move *team_repo.StateMove
+func (_e *TeamRepositoryMock_Expecter) DeleteState(ctx any, move any) *TeamRepositoryMock_DeleteState_Call {
+	return &TeamRepositoryMock_DeleteState_Call{Call: _e.mock.On("DeleteState", ctx, move)}
 }
 
-func (_c *TeamRepositoryMock_DeleteState_Call) Run(run func(ctx context.Context, stateID uuid.UUID, moveTo uuid.UUID)) *TeamRepositoryMock_DeleteState_Call {
+func (_c *TeamRepositoryMock_DeleteState_Call) Run(run func(ctx context.Context, move *team_repo.StateMove)) *TeamRepositoryMock_DeleteState_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 *team_repo.StateMove
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg1 = args[1].(*team_repo.StateMove)
 		}
 		run(
 			arg0,
 			arg1,
-			arg2,
 		)
 	})
 	return _c
@@ -512,7 +512,7 @@ func (_c *TeamRepositoryMock_DeleteState_Call) Return(err error) *TeamRepository
 	return _c
 }
 
-func (_c *TeamRepositoryMock_DeleteState_Call) RunAndReturn(run func(ctx context.Context, stateID uuid.UUID, moveTo uuid.UUID) error) *TeamRepositoryMock_DeleteState_Call {
+func (_c *TeamRepositoryMock_DeleteState_Call) RunAndReturn(run func(ctx context.Context, move *team_repo.StateMove) error) *TeamRepositoryMock_DeleteState_Call {
 	_c.Call.Return(run)
 	return _c
 }

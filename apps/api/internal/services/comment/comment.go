@@ -57,12 +57,14 @@ func (self *CommentService) List(ctx context.Context, userID uuid.UUID, input *L
 	if err != nil {
 		return nil, nil, err
 	}
-	offset, err := issue_service.DecodeCursor(input.Cursor)
-	if err != nil {
-		return nil, nil, err
+	var after *repository.TimeCursor
+	if input.Cursor != "" {
+		if after, err = repository.DecodeTimeCursor(input.Cursor); err != nil {
+			return nil, nil, invalid("cursor is not a next_cursor from a previous page")
+		}
 	}
 	limit := max(input.Limit, 1)
-	comments, err := self.repo.Comment().ListThreads(ctx, issue.ID, offset, limit+1)
+	comments, err := self.repo.Comment().ListThreads(ctx, issue.ID, after, limit+1)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,7 +76,8 @@ func (self *CommentService) List(ctx context.Context, userID uuid.UUID, input *L
 	var next *string
 	if len(threads) > limit {
 		threads = threads[:limit]
-		next = issue_service.EncodeCursor(offset + limit)
+		last := threads[limit-1]
+		next = new(repository.TimeCursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode())
 	}
 	return threads, next, nil
 }
@@ -180,10 +183,13 @@ func (self *CommentService) Update(ctx context.Context, userID uuid.UUID, input 
 	if err != nil {
 		return nil, err
 	}
-	if err := self.repo.Comment().UpdateBody(ctx, comment.ID, body, self.now()); err != nil {
-		return nil, err
-	}
-	if err := self.repo.Issue().Subscribe(ctx, nil, issue.ID, mentioned...); err != nil {
+	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		if err := self.repo.Comment().UpdateBody(ctx, tx, comment.ID, body, self.now()); err != nil {
+			return err
+		}
+		return self.repo.Issue().Subscribe(ctx, tx, issue.ID, mentioned...)
+	})
+	if err != nil {
 		return nil, err
 	}
 	title := models.Identifier(issue.Edges.Team.Key, issue.Number) + " " + issue.Title

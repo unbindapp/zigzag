@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/internal/common/log"
 )
@@ -63,4 +65,12 @@ func (r *BaseRepository) Client(tx TxInterface) *ent.Client {
 		return tx.Client()
 	}
 	return r.DB
+}
+
+func LockRowsOnPostgres(table string) func(*entsql.Selector) {
+	return func(s *entsql.Selector) {
+		if s.Dialect() == dialect.Postgres {
+			s.ForUpdate(entsql.WithLockTables(table))
+		}
+	}
 }

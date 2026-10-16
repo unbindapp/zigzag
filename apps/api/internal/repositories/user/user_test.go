@@ -1,12 +1,14 @@
 package user_repo
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
 )
@@ -151,4 +153,11 @@ func (suite *UserRepositorySuite) TestPasswordResetTokenIsClaimedOnce() {
 
 func TestUserRepositorySuite(t *testing.T) {
 	suite.Run(t, new(UserRepositorySuite))
+}
+
+func (suite *UserRepositorySuite) TestPasswordsOverBcryptsLimitAreInvalidInput() {
+	_, err := HashPassword(strings.Repeat("é", 37))
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "37 accented letters are 74 bytes")
+	_, err = HashPassword(strings.Repeat("é", 36))
+	suite.NoError(err)
 }

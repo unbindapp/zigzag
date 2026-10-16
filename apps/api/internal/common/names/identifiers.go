@@ -72,3 +72,10 @@ func Color(raw string) (string, error) {
 	}
 	return color, nil
 }
+
+func OptionalColor(raw string) (string, error) {
+	if strings.TrimSpace(raw) == "" {
+		return "", nil
+	}
+	return Color(raw)
+}

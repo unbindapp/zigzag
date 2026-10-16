@@ -6,11 +6,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/zigzag-api/ent"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	"github.com/unbindapp/zigzag-api/internal/repositories/repositorytest"
 )
 
 type CommentRepositorySuite struct {
-	repository.RepositoryBaseSuite
+	repositorytest.RepositoryBaseSuite
 	repo  *CommentRepository
 	user  *ent.User
 	issue *ent.Issue
@@ -41,7 +42,7 @@ func (suite *CommentRepositorySuite) TestThreadsPageByRootWithTheirReplies() {
 	suite.comment("second", nil)
 	suite.comment("reply", first)
 
-	page, err := suite.repo.ListThreads(suite.Ctx, suite.issue.ID, 0, 1)
+	page, err := suite.repo.ListThreads(suite.Ctx, suite.issue.ID, nil, 1)
 	suite.Require().NoError(err)
 	bodies := []string{}
 	for _, comment := range page {
@@ -50,7 +51,7 @@ func (suite *CommentRepositorySuite) TestThreadsPageByRootWithTheirReplies() {
 	}
 	suite.Equal([]string{"first", "reply"}, bodies, "a page holds roots followed by their replies")
 
-	page, err = suite.repo.ListThreads(suite.Ctx, suite.issue.ID, 1, 1)
+	page, err = suite.repo.ListThreads(suite.Ctx, suite.issue.ID, &repository.TimeCursor{CreatedAt: first.CreatedAt, ID: first.ID}, 1)
 	suite.Require().NoError(err)
 	suite.Require().Len(page, 1)
 	suite.Equal("second", page[0].Body)
@@ -61,7 +62,7 @@ func (suite *CommentRepositorySuite) TestEditResolveAndDelete() {
 	reply := suite.comment("reply", root)
 	now := time.Now()
 
-	suite.NoError(suite.repo.UpdateBody(suite.Ctx, root.ID, "edited", now))
+	suite.NoError(suite.repo.UpdateBody(suite.Ctx, nil, root.ID, "edited", now))
 	suite.NoError(suite.repo.SetResolved(suite.Ctx, root.ID, &suite.user.ID, &now))
 	loaded, err := suite.repo.GetWithEdges(suite.Ctx, root.ID)
 	suite.Require().NoError(err)

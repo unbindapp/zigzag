@@ -61,7 +61,15 @@ func (self *LabelRepository) Update(ctx context.Context, tx repository.TxInterfa
 	if input.ParentID != nil {
 		update.SetParentID(*input.ParentID)
 	}
-	return update.Save(ctx)
+	updated, err := update.Save(ctx)
+	if err != nil || input.SortOrder == nil {
+		return updated, err
+	}
+	respaced, err := self.base.RespaceIfCrowded(ctx, tx, repository.LabelSortOrder, updated.WorkspaceID, updated.ID, updated.SortOrder)
+	if err != nil || !respaced {
+		return updated, err
+	}
+	return self.base.Client(tx).Label.Get(ctx, id)
 }
 
 func (self *LabelRepository) SetArchived(ctx context.Context, id uuid.UUID, archivedAt *time.Time) (*ent.Label, error) {

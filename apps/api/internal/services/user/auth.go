@@ -11,14 +11,18 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
 )
 
 var ErrInvalidCredentials = errors.New("invalid email or password")
 
 func (self *UserService) Login(ctx context.Context, email, password string) (*ent.User, error) {
 	user, err := self.repo.User().Authenticate(ctx, email, password)
-	if err != nil {
+	if errors.Is(err, user_repo.ErrInvalidUserInput) || errors.Is(err, user_repo.ErrUserNotFound) || errors.Is(err, user_repo.ErrInvalidPassword) {
 		return nil, ErrInvalidCredentials
+	}
+	if err != nil {
+		return nil, err
 	}
 	if !user.Active {
 		return nil, ErrInvalidCredentials

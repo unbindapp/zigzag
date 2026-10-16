@@ -36,7 +36,6 @@ func (self *DocumentRepository) Create(ctx context.Context, tx repository.TxInte
 		Save(ctx)
 }
 
-// UpdateDocumentInput leaves nil fields unchanged; the Clear flags detach the document.
 type UpdateDocumentInput struct {
 	Title           *string
 	Icon            *string

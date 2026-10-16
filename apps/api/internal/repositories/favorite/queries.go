@@ -71,17 +71,17 @@ func (self *FavoriteRepository) NextSortOrder(ctx context.Context, tx repository
 	return last.SortOrder + 1, nil
 }
 
-func (self *FavoriteRepository) Delete(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error) {
+func (self *FavoriteRepository) Delete(ctx context.Context, userID, workspaceID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error) {
 	return self.base.DB.Favorite.Delete().
-		Where(favorite.UserID(userID), favorite.KindEQ(kind), favorite.EntityID(entityID)).
+		Where(favorite.UserID(userID), favorite.WorkspaceID(workspaceID), favorite.KindEQ(kind), favorite.EntityID(entityID)).
 		Exec(ctx)
 }
 
-func (self *FavoriteRepository) Reorder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
+func (self *FavoriteRepository) Reorder(ctx context.Context, userID, workspaceID uuid.UUID, ids []uuid.UUID) error {
 	return self.base.WithTx(ctx, func(tx repository.TxInterface) error {
 		for i, id := range ids {
 			_, err := tx.Client().Favorite.Update().
-				Where(favorite.ID(id), favorite.UserID(userID)).
+				Where(favorite.ID(id), favorite.UserID(userID), favorite.WorkspaceID(workspaceID)).
 				SetSortOrder(float64(i + 1)).
 				Save(ctx)
 			if err != nil {

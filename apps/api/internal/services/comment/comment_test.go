@@ -13,6 +13,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	comment_repo "github.com/unbindapp/zigzag-api/internal/repositories/comment"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	"github.com/unbindapp/zigzag-api/internal/services"
@@ -138,8 +139,8 @@ func (suite *CommentServiceSuite) TestOnlyTheAuthorOrAnAdminEdits() {
 	suite.ErrorIs(err, errdefs.ErrUnauthorized)
 	suite.ErrorIs(suite.service.Delete(suite.Ctx, suite.userID, &CommentRefInput{CommentID: theirs.ID}), errdefs.ErrUnauthorized)
 
-	suite.MockCommentRepo.EXPECT().UpdateBody(mock.Anything, mine.ID, "new", mock.Anything).Return(nil).Once()
-	suite.MockIssueRepo.EXPECT().Subscribe(mock.Anything, nil, suite.issue.ID).Return(nil)
+	suite.MockCommentRepo.EXPECT().UpdateBody(mock.Anything, mock.Anything, mine.ID, "new", mock.Anything).Return(nil).Once()
+	suite.MockIssueRepo.EXPECT().Subscribe(mock.Anything, mock.Anything, suite.issue.ID).Return(nil)
 	_, err = suite.service.Update(suite.Ctx, suite.userID, &UpdateCommentInput{CommentID: mine.ID, Body: "new"})
 	suite.NoError(err)
 
@@ -184,14 +185,25 @@ func (suite *CommentServiceSuite) TestMissingCommentsReadAsNotFound() {
 
 func (suite *CommentServiceSuite) TestListThreadsWithCursor() {
 	suite.roles(schema.WorkspaceRoleViewer)
-	first, second := &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID}, &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID}
+	now := time.Now().UTC()
+	first, second := &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID, CreatedAt: now}, &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID, CreatedAt: now.Add(time.Second)}
 	reply := &ent.Comment{ID: uuid.New(), IssueID: suite.issue.ID, ParentID: &first.ID}
-	suite.MockCommentRepo.EXPECT().ListThreads(mock.Anything, suite.issue.ID, 0, 2).Return([]*ent.Comment{first, second, reply}, nil).Once()
+	suite.MockCommentRepo.EXPECT().ListThreads(mock.Anything, suite.issue.ID, (*repository.TimeCursor)(nil), 2).Return([]*ent.Comment{first, second, reply}, nil).Once()
 	threads, next, err := suite.service.List(suite.Ctx, suite.userID, &ListCommentsInput{IssueID: suite.issue.ID, PaginationInput: models.PaginationInput{Limit: 1}})
 	suite.Require().NoError(err)
 	suite.Require().Len(threads, 1)
 	suite.Len(threads[0].Replies, 1)
-	suite.NotNil(next)
+	suite.Require().NotNil(next)
+
+	after := &repository.TimeCursor{CreatedAt: first.CreatedAt, ID: first.ID}
+	suite.MockCommentRepo.EXPECT().ListThreads(mock.Anything, suite.issue.ID, after, 2).Return([]*ent.Comment{second}, nil).Once()
+	threads, next, err = suite.service.List(suite.Ctx, suite.userID, &ListCommentsInput{IssueID: suite.issue.ID, PaginationInput: models.PaginationInput{Limit: 1, Cursor: *next}})
+	suite.Require().NoError(err)
+	suite.Len(threads, 1)
+	suite.Nil(next)
+
+	_, _, err = suite.service.List(suite.Ctx, suite.userID, &ListCommentsInput{IssueID: suite.issue.ID, PaginationInput: models.PaginationInput{Limit: 1, Cursor: "garbage"}})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 }
 
 func TestCommentServiceSuite(t *testing.T) {

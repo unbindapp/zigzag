@@ -50,6 +50,7 @@ func main() {
 
 	name := flag.String("name", "", "Name of the migration to create")
 	checksum := flag.Bool("checksum", false, "Regenerate atlas checksum")
+	databaseURL := flag.String("database-url", "", "Diff against this empty scratch database instead of an embedded postgres")
 	flag.Parse()
 
 	if err := os.MkdirAll(migrationsDir, 0755); err != nil {
@@ -89,25 +90,16 @@ func main() {
 		schema.WithFormatter(sqltool.GooseFormatter),
 	}
 
-	port := 34529
-	ep := embeddedpostgres.NewDatabase(
-		embeddedpostgres.DefaultConfig().
-			Version(embeddedpostgres.V16).
-			Port(uint32(port)).
-			StartTimeout(30 * time.Second).
-			Logger(io.Discard),
-	)
-	if err := ep.Start(); err != nil {
-		fmt.Printf("Error starting embedded postgres: %v\n", err)
-		return
-	}
-	defer func() {
-		if err := ep.Stop(); err != nil {
-			fmt.Printf("Error stopping embedded postgres: %v\n", err)
+	dbConnString := *databaseURL
+	if dbConnString == "" {
+		stop, url, err := startEmbeddedPostgres()
+		if err != nil {
+			fmt.Printf("Error starting embedded postgres: %v\n", err)
+			os.Exit(1)
 		}
-	}()
-
-	dbConnString := fmt.Sprintf("postgres://postgres:postgres@localhost:%d/postgres?sslmode=disable", port)
+		defer stop()
+		dbConnString = url
+	}
 
 	if err = migrate.NamedDiff(
 		ctx,
@@ -139,6 +131,26 @@ func main() {
 		}
 		fmt.Printf("- %s\n", file)
 	}
+}
+
+func startEmbeddedPostgres() (func(), string, error) {
+	port := 34529
+	ep := embeddedpostgres.NewDatabase(
+		embeddedpostgres.DefaultConfig().
+			Version(embeddedpostgres.V16).
+			Port(uint32(port)).
+			StartTimeout(30 * time.Second).
+			Logger(io.Discard),
+	)
+	if err := ep.Start(); err != nil {
+		return nil, "", err
+	}
+	stop := func() {
+		if err := ep.Stop(); err != nil {
+			fmt.Printf("Error stopping embedded postgres: %v\n", err)
+		}
+	}
+	return stop, fmt.Sprintf("postgres://postgres:postgres@localhost:%d/postgres?sslmode=disable", port), nil
 }
 
 func diffFiles(startingFiles, afterFiles []atlasMigrate.File) []string {

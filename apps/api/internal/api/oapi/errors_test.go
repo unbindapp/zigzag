@@ -87,3 +87,29 @@ func TestInternalErrorKeepsSpecificClassification(t *testing.T) {
 		t.Fatalf("the underlying failure stays as a detail, got %v", resp.Details)
 	}
 }
+
+func TestDatabaseTextNeverReachesTheClient(t *testing.T) {
+	tests := map[string]struct {
+		err    error
+		status int
+		detail string
+	}{
+		"constraint": {
+			errors.Join(errors.New("committing transaction"), &ent.ConstraintError{}), 409, "This conflicts with an existing record",
+		},
+		"ent not found": {fmt.Errorf("error fetching user: %w", &ent.NotFoundError{}), 404, "Not found"},
+		"validator":     {&ent.ValidationError{Name: "title"}, 400, "title is out of range"},
+		"custom kept":   {errdefs.NewCustomError(errdefs.ErrTypeConflict, "The key ENG is taken"), 409, "The key ENG is taken"},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			resp := mapped(t, tt.err)
+			if resp.Status != tt.status || len(resp.Details) != 1 || resp.Details[0] != tt.detail {
+				t.Fatalf("got %d %v, want %d [%s]", resp.Status, resp.Details, tt.status, tt.detail)
+			}
+			if resp.Cause() == nil && name != "custom kept" {
+				t.Fatal("the cause is kept for the logs")
+			}
+		})
+	}
+}

@@ -36,12 +36,12 @@ func (self *HandlerGroup) List(ctx context.Context, input *ListInput) (*ListResp
 
 type RevokeInput struct {
 	server.BaseAuthInput
-	Body *models.ConnectedAppRevokeInput
+	Body *models.ConnectedAppRevokeInput `required:"true"`
 }
 
 type RevokeResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data"`
+		Data models.DeletedResponse `json:"data"`
 	}
 }
 
@@ -56,6 +56,6 @@ func (self *HandlerGroup) Revoke(ctx context.Context, input *RevokeInput) (*Revo
 	}
 
 	resp := &RevokeResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.ID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.ID, Deleted: true}
 	return resp, nil
 }

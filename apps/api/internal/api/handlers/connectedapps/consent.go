@@ -13,12 +13,12 @@ import (
 
 type ApproveInput struct {
 	server.BaseAuthInput
-	Body *models.ConnectedAppApproveInput
+	Body *models.ConnectedAppApproveInput `required:"true"`
 }
 
 type DenyInput struct {
 	server.BaseAuthInput
-	Body *models.ConnectedAppDenyInput
+	Body *models.ConnectedAppDenyInput `required:"true"`
 }
 
 type RedirectResponse struct {

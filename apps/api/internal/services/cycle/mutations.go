@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/api/apictx"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
@@ -38,6 +39,9 @@ func (self *CycleService) Create(ctx context.Context, userID uuid.UUID, input *C
 
 	var created *ent.Cycle
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		if err := self.repo.Cycle().LockTeam(ctx, tx, team.ID); err != nil {
+			return err
+		}
 		if err := self.ensureNoOverlap(ctx, tx, team.ID, input.StartsAt, input.EndsAt, nil); err != nil {
 			return err
 		}
@@ -58,7 +62,7 @@ func (self *CycleService) Create(ctx context.Context, userID uuid.UUID, input *C
 	if err != nil {
 		return nil, err
 	}
-	return self.respondOne(ctx, team, created)
+	return self.respondAndEmit(ctx, team, created, "created")
 }
 
 type UpdateCycleInput struct {
@@ -96,6 +100,9 @@ func (self *CycleService) Update(ctx context.Context, userID uuid.UUID, input *U
 
 	var updated *ent.Cycle
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		if err := self.repo.Cycle().LockTeam(ctx, tx, team.ID); err != nil {
+			return err
+		}
 		if err := self.ensureNoOverlap(ctx, tx, team.ID, startsAt, endsAt, &current.ID); err != nil {
 			return err
 		}
@@ -105,7 +112,16 @@ func (self *CycleService) Update(ctx context.Context, userID uuid.UUID, input *U
 	if err != nil {
 		return nil, err
 	}
-	return self.respondOne(ctx, team, updated)
+	return self.respondAndEmit(ctx, team, updated, "updated")
+}
+
+func (self *CycleService) respondAndEmit(ctx context.Context, team *ent.Team, found *ent.Cycle, action string) (*models.CycleResponse, error) {
+	response, err := self.respondOne(ctx, team, found)
+	if err != nil {
+		return nil, err
+	}
+	self.emitResponse(ctx, team, response, action)
+	return response, nil
 }
 
 type CycleRefInput struct {
@@ -121,25 +137,34 @@ func (self *CycleService) Archive(ctx context.Context, userID uuid.UUID, input *
 	if err != nil {
 		return nil, err
 	}
-	return self.respondOne(ctx, team, archived)
+	return self.respondAndEmit(ctx, team, archived, "archived")
 }
 
 func (self *CycleService) Delete(ctx context.Context, userID uuid.UUID, input *CycleRefInput) error {
-	current, _, err := self.adminCycle(ctx, userID, input.CycleID)
+	current, team, err := self.adminCycle(ctx, userID, input.CycleID)
 	if err != nil {
 		return err
 	}
-	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+	response, err := self.respondOne(ctx, team, current)
+	if err != nil {
+		return err
+	}
+	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		issueIDs, err := self.repo.Cycle().IssueIDsInCycle(ctx, tx, current.ID)
 		if err != nil {
 			return err
 		}
 		change := schema.FieldChange{Field: "cycle", From: current.ID.String(), FromLabel: cycleLabel(current)}
-		if err := self.repo.Cycle().RecordHistory(ctx, tx, cycleHistory(issueIDs, &userID, historySource(ctx), change)); err != nil {
+		if err := self.repo.Cycle().RecordHistory(ctx, tx, cycleHistory(issueIDs, &userID, apictx.HistorySource(ctx), change)); err != nil {
 			return err
 		}
 		return self.repo.Cycle().Delete(ctx, tx, current.ID)
 	})
+	if err != nil {
+		return err
+	}
+	self.emitResponse(ctx, team, response, "deleted")
+	return nil
 }
 
 func (self *CycleService) ensureNoOverlap(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt, endsAt time.Time, except *uuid.UUID) error {

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	notification_repo "github.com/unbindapp/zigzag-api/internal/repositories/notification"
 )
 
@@ -23,11 +24,11 @@ type WorkspaceInput struct {
 }
 
 type NotificationIDsInput struct {
-	NotificationIDs []uuid.UUID `json:"notification_ids" required:"true" nullable:"false" minItems:"1" maxItems:"250" doc:"Ids of your notifications, from list-notifications"`
+	NotificationIDs []uuid.UUID `json:"notification_ids" format:"uuid" required:"true" nullable:"false" minItems:"1" maxItems:"250" doc:"Ids of your notifications, from list-notifications"`
 }
 
 type SnoozeNotificationsInput struct {
-	NotificationIDs []uuid.UUID `json:"notification_ids" required:"true" nullable:"false" minItems:"1" maxItems:"250" doc:"Ids of your notifications, from list-notifications"`
+	NotificationIDs []uuid.UUID `json:"notification_ids" format:"uuid" required:"true" nullable:"false" minItems:"1" maxItems:"250" doc:"Ids of your notifications, from list-notifications"`
 	Until           time.Time   `json:"until" required:"true" doc:"RFC 3339 time in the future when the notifications return to the inbox as unread"`
 }
 
@@ -39,9 +40,9 @@ func (self *NotificationService) List(ctx context.Context, userID uuid.UUID, inp
 	if err := self.checkWorkspace(ctx, userID, input.WorkspaceID); err != nil {
 		return nil, nil, errdefs.MaskAsNotFound(err, "Workspace not found")
 	}
-	var cursor *notification_repo.Cursor
+	var cursor *repository.TimeCursor
 	if input.Cursor != "" {
-		decoded, err := notification_repo.DecodeCursor(input.Cursor)
+		decoded, err := repository.DecodeTimeCursor(input.Cursor)
 		if err != nil {
 			return nil, nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "cursor is not one returned by list-notifications")
 		}
@@ -72,7 +73,7 @@ func (self *NotificationService) List(ctx context.Context, userID uuid.UUID, inp
 	}
 	page := rows[:limit]
 	last := page[len(page)-1]
-	next := notification_repo.Cursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode()
+	next := repository.TimeCursor{CreatedAt: last.CreatedAt, ID: last.ID}.Encode()
 	return models.TransformNotifications(page), &next, nil
 }
 

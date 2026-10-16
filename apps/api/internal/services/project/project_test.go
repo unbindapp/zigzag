@@ -2,6 +2,7 @@ package project_service
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/models"
+	issue_repo "github.com/unbindapp/zigzag-api/internal/repositories/issue"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
 	project_repo "github.com/unbindapp/zigzag-api/internal/repositories/project"
 	"github.com/unbindapp/zigzag-api/internal/services"
@@ -93,6 +95,17 @@ func (suite *ProjectServiceSuite) expectValidReferences() {
 		func(_ context.Context, _ uuid.UUID, ids []uuid.UUID) (int, error) { return len(ids), nil }).Maybe()
 	suite.MockProjectRepo.EXPECT().CountWorkspaceMembers(suite.Ctx, suite.workspaceID, mock.Anything).RunAndReturn(
 		func(_ context.Context, _ uuid.UUID, ids []uuid.UUID) (int, error) { return len(ids), nil }).Maybe()
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.teamID).Return(&ent.Team{ID: suite.teamID, WorkspaceID: suite.workspaceID}, nil).Maybe()
+}
+
+func (suite *ProjectServiceSuite) TestPrivateTeamsNeedMembershipToJoinAProject() {
+	suite.roles(schema.WorkspaceRoleMember)
+	suite.MockProjectRepo.EXPECT().CountTeamsInWorkspace(suite.Ctx, suite.workspaceID, mock.Anything).Return(1, nil)
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.teamID).Return(&ent.Team{ID: suite.teamID, WorkspaceID: suite.workspaceID, Private: true}, nil)
+	suite.MockTeamRepo.EXPECT().IsMember(suite.Ctx, suite.teamID, suite.userID).Return(false, nil).Once()
+	suite.MockProjectRepo.EXPECT().DefaultStatus(suite.Ctx, suite.workspaceID).Return(suite.backlog, nil).Maybe()
+	_, err := suite.service.Create(suite.Ctx, suite.userID, suite.createInput())
+	suite.ErrorIs(err, errdefs.ErrInvalidInput, "a private team the caller is not on is refused like a team of another workspace")
 }
 
 func (suite *ProjectServiceSuite) createInput() *CreateProjectInput {
@@ -331,10 +344,19 @@ func (suite *ProjectServiceSuite) TestDeleteNeedsAdmin() {
 	suite.ErrorIs(err, errdefs.ErrUnauthorized)
 }
 
-func (suite *ProjectServiceSuite) TestDeleteAsAdmin() {
+func (suite *ProjectServiceSuite) TestDeleteAsAdminRecordsHistoryOnItsIssues() {
 	suite.roles(schema.WorkspaceRoleAdmin)
 	suite.expectProject(suite.project)
-	suite.MockProjectRepo.EXPECT().Delete(suite.Ctx, suite.project.ID).Return(nil).Once()
+	milestone := &ent.ProjectMilestone{ID: uuid.New(), ProjectID: suite.project.ID, Name: "Beta"}
+	plain, scheduled := &ent.Issue{ID: uuid.New()}, &ent.Issue{ID: uuid.New(), MilestoneID: &milestone.ID, Edges: ent.IssueEdges{Milestone: milestone}}
+	suite.MockProjectRepo.EXPECT().IssuesInProject(suite.Ctx, mock.Anything, suite.project.ID).Return([]*ent.Issue{plain, scheduled}, nil).Once()
+	suite.MockIssueRepo.EXPECT().CreateHistoryMany(suite.Ctx, mock.Anything, mock.MatchedBy(func(entries []issue_repo.HistoryEntry) bool {
+		return len(entries) == 2 &&
+			entries[0].IssueID == plain.ID && len(entries[0].Changes) == 1 && entries[0].Changes[0].Field == "project" && entries[0].Changes[0].To == nil &&
+			entries[1].IssueID == scheduled.ID && len(entries[1].Changes) == 2 && entries[1].Changes[1].Field == "milestone" && entries[1].Changes[1].FromLabel == "Beta" &&
+			*entries[0].ActorID == suite.userID && entries[0].Source == schema.HistorySourceUser
+	})).Return(nil).Once()
+	suite.MockProjectRepo.EXPECT().Delete(suite.Ctx, mock.Anything, suite.project.ID).Return(nil).Once()
 	suite.NoError(suite.service.Delete(suite.Ctx, suite.userID, &ProjectRefInput{ProjectID: suite.project.ID}))
 }
 
@@ -357,4 +379,56 @@ func (suite *ProjectServiceSuite) TestArchiveNeedsMember() {
 	suite.expectProject(suite.project)
 	_, err := suite.service.Trash(suite.Ctx, suite.userID, &ProjectRefInput{ProjectID: suite.project.ID})
 	suite.ErrorIs(err, errdefs.ErrUnauthorized)
+}
+
+func (suite *ProjectServiceSuite) TestIDsFromAnotherWorkspaceAreRefused() {
+	suite.roles(schema.WorkspaceRoleMember)
+	suite.expectProject(suite.project)
+	stranger, foreignLabel, foreignInitiative := uuid.New(), uuid.New(), uuid.New()
+	foreignStatus := &ent.ProjectStatus{ID: uuid.New(), WorkspaceID: uuid.New(), Type: schema.ProjectStatusStarted}
+	countWithout := func(foreign uuid.UUID) func(context.Context, uuid.UUID, []uuid.UUID) (int, error) {
+		return func(_ context.Context, _ uuid.UUID, ids []uuid.UUID) (int, error) {
+			return len(slices.DeleteFunc(slices.Clone(ids), func(id uuid.UUID) bool { return id == foreign })), nil
+		}
+	}
+	suite.MockProjectRepo.EXPECT().CountTeamsInWorkspace(suite.Ctx, suite.workspaceID, mock.Anything).RunAndReturn(countWithout(uuid.Nil)).Maybe()
+	suite.MockProjectRepo.EXPECT().CountWorkspaceMembers(suite.Ctx, suite.workspaceID, mock.Anything).RunAndReturn(countWithout(stranger)).Maybe()
+	suite.MockProjectRepo.EXPECT().CountApplicableLabels(suite.Ctx, suite.workspaceID, mock.Anything).RunAndReturn(countWithout(foreignLabel)).Maybe()
+	suite.MockProjectRepo.EXPECT().CountInitiativesInWorkspace(suite.Ctx, suite.workspaceID, mock.Anything).RunAndReturn(countWithout(foreignInitiative)).Maybe()
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.teamID).Return(&ent.Team{ID: suite.teamID, WorkspaceID: suite.workspaceID}, nil).Maybe()
+	suite.MockProjectRepo.EXPECT().GetStatus(suite.Ctx, foreignStatus.ID).Return(foreignStatus, nil).Maybe()
+
+	create := func(edit func(*CreateProjectInput)) func() error {
+		return func() error {
+			input := suite.createInput()
+			input.MemberIDs = []uuid.UUID{suite.userID}
+			edit(input)
+			_, err := suite.service.Create(suite.Ctx, suite.userID, input)
+			return err
+		}
+	}
+	update := func(input *UpdateProjectInput) func() error {
+		return func() error {
+			input.ProjectID = suite.project.ID
+			_, err := suite.service.Update(suite.Ctx, suite.userID, input)
+			return err
+		}
+	}
+	cases := map[string]func() error{
+		"create with a member outside the workspace":     create(func(input *CreateProjectInput) { input.MemberIDs = append(input.MemberIDs, stranger) }),
+		"create with a lead outside the workspace":       create(func(input *CreateProjectInput) { input.LeadID = stranger }),
+		"create with a label of another workspace":       create(func(input *CreateProjectInput) { input.LabelIDs = []uuid.UUID{foreignLabel} }),
+		"create with an initiative of another workspace": create(func(input *CreateProjectInput) { input.InitiativeIDs = []uuid.UUID{foreignInitiative} }),
+		"create with a status of another workspace":      create(func(input *CreateProjectInput) { input.StatusID = foreignStatus.ID }),
+		"update with a member outside the workspace":     update(&UpdateProjectInput{MemberIDs: []uuid.UUID{suite.userID, stranger}}),
+		"update with a lead outside the workspace":       update(&UpdateProjectInput{LeadID: &stranger}),
+		"update with a label of another workspace":       update(&UpdateProjectInput{LabelIDs: []uuid.UUID{foreignLabel}}),
+		"update with an initiative of another workspace": update(&UpdateProjectInput{InitiativeIDs: []uuid.UUID{foreignInitiative}}),
+		"update with a status of another workspace":      update(&UpdateProjectInput{StatusID: &foreignStatus.ID}),
+	}
+	for name, run := range cases {
+		suite.Run(name, func() {
+			suite.ErrorIs(run(), errdefs.ErrInvalidInput)
+		})
+	}
 }

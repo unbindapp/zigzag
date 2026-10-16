@@ -65,7 +65,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*TemplateRe
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *template_service.CreateTemplateInput
+	Body *template_service.CreateTemplateInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*TemplateResponse, error) {
@@ -82,7 +82,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Temp
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *template_service.UpdateTemplateInput
+	Body *template_service.UpdateTemplateInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*TemplateResponse, error) {
@@ -99,12 +99,12 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Temp
 
 type DeleteInput struct {
 	server.BaseAuthInput
-	Body *template_service.DeleteTemplateInput
+	Body *template_service.DeleteTemplateInput `required:"true"`
 }
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -117,6 +117,6 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *DeleteInput) (*Dele
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.TemplateID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.TemplateID, Deleted: true}
 	return resp, nil
 }

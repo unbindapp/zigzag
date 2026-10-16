@@ -23,7 +23,7 @@ type DocumentResponse struct {
 
 type DeletedResponse struct {
 	Body struct {
-		Data server.DeletedResponse `json:"data" nullable:"false"`
+		Data models.DeletedResponse `json:"data" nullable:"false"`
 	}
 }
 
@@ -67,7 +67,7 @@ func (self *HandlerGroup) Get(ctx context.Context, input *GetInput) (*DocumentRe
 
 type CreateInput struct {
 	server.BaseAuthInput
-	Body *document_service.CreateDocumentInput
+	Body *document_service.CreateDocumentInput `required:"true"`
 }
 
 func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*DocumentResponse, error) {
@@ -86,7 +86,7 @@ func (self *HandlerGroup) Create(ctx context.Context, input *CreateInput) (*Docu
 
 type UpdateInput struct {
 	server.BaseAuthInput
-	Body *document_service.UpdateDocumentInput
+	Body *document_service.UpdateDocumentInput `required:"true"`
 }
 
 func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*DocumentResponse, error) {
@@ -105,7 +105,7 @@ func (self *HandlerGroup) Update(ctx context.Context, input *UpdateInput) (*Docu
 
 type DocumentRefBodyInput struct {
 	server.BaseAuthInput
-	Body *document_service.DocumentRefInput
+	Body *document_service.DocumentRefInput `required:"true"`
 }
 
 func (self *HandlerGroup) Delete(ctx context.Context, input *DocumentRefBodyInput) (*DeletedResponse, error) {
@@ -117,7 +117,7 @@ func (self *HandlerGroup) Delete(ctx context.Context, input *DocumentRefBodyInpu
 		return nil, oapi.MapError(err)
 	}
 	resp := &DeletedResponse{}
-	resp.Body.Data = server.DeletedResponse{ID: input.Body.DocumentID.String(), Deleted: true}
+	resp.Body.Data = models.DeletedResponse{ID: input.Body.DocumentID, Deleted: true}
 	return resp, nil
 }
 

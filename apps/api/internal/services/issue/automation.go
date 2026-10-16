@@ -21,11 +21,20 @@ func (self *IssueService) PurgeTrashed(ctx context.Context) error {
 	}
 	var failures []error
 	for _, id := range ids {
+		var purged *ent.Issue
 		err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-			return self.repo.Issue().Delete(ctx, tx, id)
+			issue, err := self.repo.Issue().GetWithEdges(ctx, tx, id)
+			if err != nil {
+				return err
+			}
+			purged = issue
+			return self.deleteIssue(ctx, tx, issue, nil)
 		})
 		if err != nil && !ent.IsNotFound(err) {
 			failures = append(failures, err)
+		}
+		if err == nil {
+			self.emitDeleted(ctx, purged)
 		}
 	}
 	return errors.Join(failures...)

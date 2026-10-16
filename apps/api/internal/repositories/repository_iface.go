@@ -5,6 +5,7 @@ package repository
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 )
 
@@ -12,4 +13,5 @@ import (
 type BaseRepositoryInterface interface {
 	WithTx(ctx context.Context, fn func(tx TxInterface) error) error
 	Client(tx TxInterface) *ent.Client
+	RespaceIfCrowded(ctx context.Context, tx TxInterface, sort SortColumn, scope uuid.UUID, id uuid.UUID, value float64) (bool, error)
 }

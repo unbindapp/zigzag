@@ -73,7 +73,6 @@ func TransformProjectStatuses(entities []*ent.ProjectStatus) []*ProjectStatusRes
 	return responses
 }
 
-// IssueTotals is the issue count and scope (sum of estimates, 1 for unestimated issues) per state type.
 type IssueTotals struct {
 	Counts map[schema.StateType]int
 	Scopes map[schema.StateType]float64
@@ -258,7 +257,7 @@ type ProjectResponse struct {
 	Labels               []*LabelSummary        `json:"labels" nullable:"false"`
 	Milestones           []*MilestoneResponse   `json:"milestones" nullable:"false"`
 	Links                []*ProjectLinkResponse `json:"links" nullable:"false"`
-	InitiativeIDs        []uuid.UUID            `json:"initiative_ids" nullable:"false"`
+	InitiativeIDs        []uuid.UUID            `json:"initiative_ids" format:"uuid" nullable:"false"`
 	Progress             ProgressResponse       `json:"progress"`
 	IssueCounts          IssueCountsResponse    `json:"issue_counts"`
 	LastUpdate           *ProjectUpdateResponse `json:"last_update,omitempty" required:"false" doc:"Latest status update, on get-project only"`
