@@ -35,6 +35,9 @@ var (
 		"application/pdf": true, "text/plain": true,
 		"video/mp4": true, "video/webm": true, "audio/mpeg": true, "audio/ogg": true, "audio/wav": true,
 	}
+	avatarExtensions = map[string]string{
+		"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp", svg.ContentType: ".svg",
+	}
 )
 
 type CreateUploadInput struct {
@@ -52,8 +55,45 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 		return nil, err
 	}
 
+	file, err := self.read(input.Body, input.ContentType)
+	if err != nil {
+		return nil, err
+	}
+	return self.store(ctx, userID, input.WorkspaceID, input.FileName, file)
+}
+
+type CreateAvatarInput struct {
+	WorkspaceID uuid.UUID
+	BaseName    string
+	ContentType string
+	Body        io.Reader
+}
+
+func (self *UploadService) CreateAvatar(ctx context.Context, userID uuid.UUID, input *CreateAvatarInput) (*models.UploadResponse, error) {
+	if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleViewer, WorkspaceID: input.WorkspaceID}}); err != nil {
+		return nil, errdefs.MaskAsNotFound(err, "Workspace not found")
+	}
+	file, err := self.read(input.Body, input.ContentType)
+	if err != nil {
+		return nil, err
+	}
+	ext, ok := avatarExtensions[file.contentType]
+	if !ok || (file.width == nil && file.contentType != svg.ContentType) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Avatar must be a png, jpeg, gif, webp or svg image")
+	}
+	return self.store(ctx, userID, input.WorkspaceID, input.BaseName+ext, file)
+}
+
+type sniffedFile struct {
+	contentType string
+	width       *int
+	height      *int
+	data        []byte
+}
+
+func (self *UploadService) read(reader io.Reader, declaredType string) (*sniffedFile, error) {
 	header := make([]byte, headerBytes)
-	n, err := io.ReadFull(input.Body, header)
+	n, err := io.ReadFull(reader, header)
 	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Could not read the uploaded file")
 	}
@@ -62,9 +102,9 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The file is empty")
 	}
 
-	contentType := detectContentType(header, input.ContentType)
+	contentType := detectContentType(header, declaredType)
 	width, height := imageSize(header, contentType)
-	body := io.MultiReader(bytes.NewReader(header), input.Body)
+	body := io.MultiReader(bytes.NewReader(header), reader)
 	if contentType == svg.ContentType {
 		data, svgWidth, svgHeight, err := readSVG(body)
 		if err != nil {
@@ -80,18 +120,21 @@ func (self *UploadService) Create(ctx context.Context, userID uuid.UUID, input *
 	if int64(len(data)) > self.cfg.MaxUploadBytes {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The file is larger than the upload limit")
 	}
+	return &sniffedFile{contentType: contentType, width: width, height: height, data: data}, nil
+}
 
+func (self *UploadService) store(ctx context.Context, userID, workspaceID uuid.UUID, fileName string, file *sniffedFile) (*models.UploadResponse, error) {
 	id := uuid.New()
 	created, err := self.repo.Upload().Create(ctx, &upload_repo.CreateUploadInput{
 		ID:          id,
-		WorkspaceID: input.WorkspaceID,
+		WorkspaceID: workspaceID,
 		UploaderID:  userID,
-		FileName:    cleanFileName(input.FileName),
-		ContentType: contentType,
-		StorageKey:  input.WorkspaceID.String() + "/" + id.String() + extensionOf(input.FileName),
-		Width:       width,
-		Height:      height,
-		Data:        data,
+		FileName:    cleanFileName(fileName),
+		ContentType: file.contentType,
+		StorageKey:  workspaceID.String() + "/" + id.String() + extensionOf(fileName),
+		Width:       file.width,
+		Height:      file.height,
+		Data:        file.data,
 	})
 	if err != nil {
 		return nil, err

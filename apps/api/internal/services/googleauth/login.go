@@ -103,6 +103,7 @@ type FinishLoginInput struct {
 
 type LoginResult struct {
 	User     *ent.User
+	Identity *GoogleIdentity
 	Redirect string
 }
 
@@ -132,7 +133,7 @@ func (self *GoogleAuthService) FinishLogin(ctx context.Context, input *FinishLog
 	if err != nil {
 		return nil, err
 	}
-	return &LoginResult{User: user, Redirect: state.Redirect}, nil
+	return &LoginResult{User: user, Identity: identity, Redirect: state.Redirect}, nil
 }
 
 func (self *GoogleAuthService) readState(cookie, presented string) (*loginState, error) {

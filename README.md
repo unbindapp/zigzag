@@ -55,7 +55,7 @@ Uploads are stored in Postgres, so the container needs no volume. Instances that
 
 ### Google sign-in
 
-A system admin turns it on under Instance settings, Authentication. Create an OAuth client of type Web application in Google Cloud with the redirect URI `<EXTERNAL_UI_URL>/api/go/auth/google/callback` (the page shows it with a copy button), then paste the client ID and secret. An optional hosted domain limits sign-in to one Google Workspace domain. Google accounts sign in to the account with the same verified email; someone without an account gets one only with a pending invitation, which is accepted on the way in, or when public signup is on.
+A system admin turns it on under Instance settings, Authentication. Create an OAuth client of type Web application in Google Cloud with the redirect URI `<EXTERNAL_UI_URL>/api/go/auth/google/callback` (the page shows it with a copy button), then paste the client ID and secret. An optional hosted domain limits sign-in to one Google Workspace domain. Google accounts sign in to the account with the same verified email; someone without an account gets one only with a pending invitation, which is accepted on the way in, or when public signup is on. A user without an avatar gets their Google profile photo on sign-in, once they belong to a workspace.
 
 ## Connect an agent
 

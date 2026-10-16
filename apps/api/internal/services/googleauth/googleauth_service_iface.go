@@ -13,6 +13,7 @@ import (
 type GoogleAuthServiceInterface interface {
 	StartLogin(ctx context.Context, redirect string) (*LoginStart, error)
 	FinishLogin(ctx context.Context, input *FinishLoginInput) (*LoginResult, error)
+	FillProfile(ctx context.Context, result *LoginResult)
 	RedirectURI() string
 	GetSettings(ctx context.Context, requesterUserID uuid.UUID) (*models.GoogleAuthSettingsResponse, error)
 	UpdateSettings(ctx context.Context, requesterUserID uuid.UUID, input *UpdateGoogleAuthSettingsInput) (*models.GoogleAuthSettingsResponse, error)

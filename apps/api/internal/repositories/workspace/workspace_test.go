@@ -81,6 +81,21 @@ func (suite *WorkspaceRepositorySuite) TestMembers() {
 	suite.Equal(0, counts[w.ID].Teams)
 }
 
+func (suite *WorkspaceRepositorySuite) TestMembershipsOfUserAreOrderedByJoinDate() {
+	acme := suite.workspace("acme")
+	globex := suite.workspace("globex")
+	initech := suite.workspace("initech")
+	joined := time.Now()
+	for i, w := range []*ent.Workspace{globex, initech, acme} {
+		suite.DB.WorkspaceMember.Create().SetWorkspaceID(w.ID).SetUserID(suite.other.ID).SetRole(schema.WorkspaceRoleViewer).SetJoinedAt(joined.Add(time.Duration(i) * time.Hour)).SaveX(suite.Ctx)
+	}
+
+	memberships, err := suite.repo.MembershipsOfUser(suite.Ctx, suite.other.ID)
+	suite.Require().NoError(err)
+	suite.Require().Len(memberships, 3)
+	suite.Equal([]uuid.UUID{globex.ID, initech.ID, acme.ID}, []uuid.UUID{memberships[0].WorkspaceID, memberships[1].WorkspaceID, memberships[2].WorkspaceID})
+}
+
 func (suite *WorkspaceRepositorySuite) TestRemoveMemberLeavesTheWorkspacesTeams() {
 	acme := suite.workspace("acme")
 	globex := suite.workspace("globex")

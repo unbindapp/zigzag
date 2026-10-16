@@ -184,6 +184,50 @@ func (suite *UploadServiceSuite) TestOutsidersDoNotLearnTheWorkspaceExists() {
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }
 
+func (suite *UploadServiceSuite) TestAvatarsAreNamedAfterTheSniffedType() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
+	cases := map[string][]byte{
+		".png":  encoded(png.Encode),
+		".jpg":  encoded(func(w io.Writer, img image.Image) error { return jpeg.Encode(w, img, nil) }),
+		".webp": webPLossless(37, 21),
+	}
+	for ext, body := range cases {
+		suite.Run(ext, func() {
+			stored := suite.expectStored()
+			resp, err := suite.service.CreateAvatar(suite.Ctx, suite.userID, &CreateAvatarInput{WorkspaceID: suite.workspaceID, BaseName: "google-avatar", ContentType: "image/png", Body: bytes.NewReader(body)})
+			suite.Require().NoError(err)
+			suite.Equal("google-avatar"+ext, stored.FileName)
+			suite.Equal(suite.workspaceID.String()+"/"+stored.ID.String()+ext, stored.StorageKey)
+			suite.Equal(utils.ToPtr(37), resp.Width)
+		})
+	}
+}
+
+func (suite *UploadServiceSuite) TestAvatarsMustBeSizedImages() {
+	suite.allow(schema.WorkspaceRoleViewer, nil)
+	cases := map[string]struct {
+		declared string
+		body     []byte
+	}{
+		"html":                  {declared: "image/png", body: []byte("<!doctype html><html></html>")},
+		"truncated png":         {declared: "image/png", body: encoded(png.Encode)[:12]},
+		"image larger than max": {declared: "image/png", body: append(encoded(png.Encode), make([]byte, 64<<10)...)},
+	}
+	for name, tc := range cases {
+		suite.Run(name, func() {
+			_, err := suite.service.CreateAvatar(suite.Ctx, suite.userID, &CreateAvatarInput{WorkspaceID: suite.workspaceID, BaseName: "google-avatar", ContentType: tc.declared, Body: bytes.NewReader(tc.body)})
+			suite.ErrorIs(err, errdefs.ErrInvalidInput)
+		})
+	}
+	suite.MockUploadRepo.AssertNotCalled(suite.T(), "Create", mock.Anything, mock.Anything)
+}
+
+func (suite *UploadServiceSuite) TestAvatarsNeedWorkspaceMembership() {
+	suite.allow(schema.WorkspaceRoleViewer, errdefs.ErrUnauthorized)
+	_, err := suite.service.CreateAvatar(suite.Ctx, suite.userID, &CreateAvatarInput{WorkspaceID: suite.workspaceID, BaseName: "google-avatar", Body: bytes.NewReader(encoded(png.Encode))})
+	suite.ErrorIs(err, errdefs.ErrNotFound)
+}
+
 func (suite *UploadServiceSuite) TestOpenChecksTheWorkspaceAndMarksSafeTypesInline() {
 	html := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "text/html"}
 	pngUpload := &ent.Upload{ID: uuid.New(), WorkspaceID: suite.workspaceID, ContentType: "image/png"}

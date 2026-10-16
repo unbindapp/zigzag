@@ -9,6 +9,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/config"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
 	"github.com/zigzagapp-org/zigzag-api/internal/repositories/repositories"
+	upload_service "github.com/zigzagapp-org/zigzag-api/internal/services/upload"
 	"golang.org/x/oauth2"
 )
 
@@ -26,6 +27,7 @@ type GoogleIdentity struct {
 	EmailVerified bool   `json:"email_verified"`
 	HostedDomain  string `json:"hd"`
 	Name          string `json:"name"`
+	Picture       string `json:"picture"`
 	Nonce         string `json:"nonce"`
 }
 
@@ -35,26 +37,30 @@ type IDTokenVerifier interface {
 
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i GoogleAuthServiceInterface -p googleauth_service -s GoogleAuthService -o googleauth_service_iface.go
 type GoogleAuthService struct {
-	cfg         *config.Config
-	repo        repositories.RepositoriesInterface
-	encryptor   *crypto.Encryptor
-	stateSecret []byte
-	verifier    IDTokenVerifier
-	endpoint    oauth2.Endpoint
-	httpClient  *http.Client
-	now         func() time.Time
+	cfg           *config.Config
+	repo          repositories.RepositoriesInterface
+	uploads       upload_service.UploadServiceInterface
+	encryptor     *crypto.Encryptor
+	stateSecret   []byte
+	verifier      IDTokenVerifier
+	endpoint      oauth2.Endpoint
+	httpClient    *http.Client
+	pictureClient *http.Client
+	now           func() time.Time
 }
 
-func NewGoogleAuthService(cfg *config.Config, repo repositories.RepositoriesInterface, encryptor *crypto.Encryptor, stateSecret []byte) *GoogleAuthService {
+func NewGoogleAuthService(cfg *config.Config, repo repositories.RepositoriesInterface, uploads upload_service.UploadServiceInterface, encryptor *crypto.Encryptor, stateSecret []byte) *GoogleAuthService {
 	return &GoogleAuthService{
-		cfg:         cfg,
-		repo:        repo,
-		encryptor:   encryptor,
-		stateSecret: stateSecret,
-		verifier:    &googleVerifier{keys: oidc.NewRemoteKeySet(context.Background(), googleJWKSURL)},
-		endpoint:    oauth2.Endpoint{AuthURL: googleAuthURL, TokenURL: googleTokenURL, AuthStyle: oauth2.AuthStyleInParams},
-		httpClient:  &http.Client{Timeout: exchangeTimeout},
-		now:         time.Now,
+		cfg:           cfg,
+		repo:          repo,
+		uploads:       uploads,
+		encryptor:     encryptor,
+		stateSecret:   stateSecret,
+		verifier:      &googleVerifier{keys: oidc.NewRemoteKeySet(context.Background(), googleJWKSURL)},
+		endpoint:      oauth2.Endpoint{AuthURL: googleAuthURL, TokenURL: googleTokenURL, AuthStyle: oauth2.AuthStyleInParams},
+		httpClient:    &http.Client{Timeout: exchangeTimeout},
+		pictureClient: newPictureClient(),
+		now:           time.Now,
 	}
 }
 

@@ -87,6 +87,7 @@ func (self *HandlerGroup) FinishGoogleLogin(ctx context.Context, input *FinishGo
 		log.Error("Failed to issue a session after Google sign-in", "user_id", result.User.ID, "err", err)
 		return redirect(self.signInErrorURL(signInErrorGoogleFailed), cleared), nil
 	}
+	self.srv.GoogleAuthService.FillProfile(ctx, result)
 	return redirect(self.srv.Cfg.ExternalUIUrl+result.Redirect, append(cookies, cleared)...), nil
 }
 

@@ -28,7 +28,7 @@ func (self *WorkspaceRepository) GetMember(ctx context.Context, tx repository.Tx
 }
 
 func (self *WorkspaceRepository) MembershipsOfUser(ctx context.Context, userID uuid.UUID) ([]*ent.WorkspaceMember, error) {
-	return self.base.DB.WorkspaceMember.Query().Where(workspacemember.UserID(userID)).All(ctx)
+	return self.base.DB.WorkspaceMember.Query().Where(workspacemember.UserID(userID)).Order(orderedByJoin).All(ctx)
 }
 
 // AddMember keeps the existing role when the user is already a member.

@@ -140,6 +140,7 @@ func startAPI(cfg *config.Config) {
 	cycleService := cycle_service.NewCycleService(cfg, repo, webhookService)
 	githubClient := github.NewClient(cfg.GithubAPIURL)
 	githubSyncService := github_sync_service.NewGithubSyncService(repo, encryptor, githubClient)
+	uploadService := upload_service.NewUploadService(cfg, repo)
 
 	srvImpl := &server.Server{
 		Cfg:                 cfg,
@@ -152,7 +153,7 @@ func startAPI(cfg *config.Config) {
 		APIKeyService:       apikey_service.NewAPIKeyService(repo),
 		OAuthServerService:  oauthServerService,
 		SystemService:       system_service.NewSystemService(repo),
-		UploadService:       upload_service.NewUploadService(cfg, repo),
+		UploadService:       uploadService,
 		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService, githubSyncService),
 		ProjectService:      project_service.NewProjectService(cfg, repo, notificationService, webhookService),
 		LabelService:        label_service.NewLabelService(cfg, repo),
@@ -164,7 +165,7 @@ func startAPI(cfg *config.Config) {
 		FavoriteService:     favorite_service.NewFavoriteService(cfg, repo),
 		WebhookService:      webhookService,
 		ImportService:       import_service.NewImportService(cfg, repo),
-		GoogleAuthService:   googleauth_service.NewGoogleAuthService(cfg, repo, encryptor, tokenManager.CSRFSecret()),
+		GoogleAuthService:   googleauth_service.NewGoogleAuthService(cfg, repo, uploadService, encryptor, tokenManager.CSRFSecret()),
 	}
 	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
 	srvImpl.DocumentService = document_service.NewDocumentService(cfg, repo, srvImpl.IssueService)

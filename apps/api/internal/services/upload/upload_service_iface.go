@@ -15,6 +15,7 @@ import (
 // UploadServiceInterface ...
 type UploadServiceInterface interface {
 	Create(ctx context.Context, userID uuid.UUID, input *CreateUploadInput) (*models.UploadResponse, error)
+	CreateAvatar(ctx context.Context, userID uuid.UUID, input *CreateAvatarInput) (*models.UploadResponse, error)
 	Open(ctx context.Context, userID, uploadID uuid.UUID) (*OpenedUpload, error)
 	ImportDir(ctx context.Context, dir string) (*ImportResult, error)
 }

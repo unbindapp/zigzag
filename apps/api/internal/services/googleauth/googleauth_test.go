@@ -7,9 +7,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"image"
+	"image/png"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -24,12 +29,16 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/crypto"
 	repository "github.com/zigzagapp-org/zigzag-api/internal/repositories"
+	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	system_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/system"
+	upload_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/upload"
 	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
 	"github.com/zigzagapp-org/zigzag-api/internal/services"
+	upload_service "github.com/zigzagapp-org/zigzag-api/internal/services/upload"
 )
 
 const (
+	testMaxUpload    = 64 << 10
 	testClientID     = "client-123.apps.googleusercontent.com"
 	testClientSecret = "GOCSPX-test-client-secret"
 	testEmail        = "grace@example.com"
@@ -51,14 +60,19 @@ func (self *fakeVerifier) Verify(_ context.Context, clientID, rawIDToken string)
 
 type GoogleAuthSuite struct {
 	services.ServiceTestSuite
-	service   *GoogleAuthService
-	encryptor *crypto.Encryptor
-	verifier  *fakeVerifier
-	tokens    *httptest.Server
-	settings  *ent.SystemSetting
-	now       time.Time
-	userID    uuid.UUID
-	challenge string
+	service     *GoogleAuthService
+	encryptor   *crypto.Encryptor
+	verifier    *fakeVerifier
+	tokens      *httptest.Server
+	pictures    *httptest.Server
+	settings    *ent.SystemSetting
+	now         time.Time
+	userID      uuid.UUID
+	workspaceID uuid.UUID
+	challenge   string
+	pictureType string
+	pictureBody []byte
+	pictureHits int
 }
 
 func (suite *GoogleAuthSuite) SetupTest() {
@@ -72,6 +86,7 @@ func (suite *GoogleAuthSuite) SetupTest() {
 
 	suite.now = time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
 	suite.userID = uuid.New()
+	suite.workspaceID = uuid.New()
 	suite.settings = &ent.SystemSetting{
 		GoogleAuth:                  &schema.GoogleAuthSettings{Enabled: true, ClientID: testClientID},
 		GoogleClientSecretEncrypted: sealed,
@@ -83,8 +98,14 @@ func (suite *GoogleAuthSuite) SetupTest() {
 	suite.tokens = httptest.NewServer(http.HandlerFunc(suite.tokenEndpoint))
 	suite.T().Cleanup(suite.tokens.Close)
 	suite.verifier = &fakeVerifier{identities: map[string]*GoogleIdentity{}}
+	suite.pictures = httptest.NewServer(http.HandlerFunc(suite.pictureEndpoint))
+	suite.T().Cleanup(suite.pictures.Close)
+	suite.pictureType = "image/png"
+	suite.pictureBody = pngImage(37, 21)
+	suite.pictureHits = 0
 
-	suite.service = NewGoogleAuthService(&config.Config{ExternalUIUrl: "https://zigzag.example.com"}, suite.MockRepo, suite.encryptor, []byte("state-secret-state-secret-state-"))
+	cfg := &config.Config{ExternalUIUrl: "https://zigzag.example.com", MaxUploadBytes: testMaxUpload}
+	suite.service = NewGoogleAuthService(cfg, suite.MockRepo, upload_service.NewUploadService(cfg, suite.MockRepo), suite.encryptor, []byte("state-secret-state-secret-state-"))
 	suite.service.verifier = suite.verifier
 	suite.service.endpoint.TokenURL = suite.tokens.URL
 	suite.service.now = func() time.Time { return suite.now }
@@ -107,6 +128,26 @@ func (suite *GoogleAuthSuite) tokenEndpoint(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	_ = json.NewEncoder(w).Encode(map[string]any{"access_token": "at", "token_type": "Bearer", "expires_in": 3600, "id_token": "id-token-" + code})
+}
+
+func (suite *GoogleAuthSuite) pictureEndpoint(w http.ResponseWriter, r *http.Request) {
+	suite.pictureHits++
+	if r.URL.Path == "/missing" {
+		http.NotFound(w, r)
+		return
+	}
+	if hops, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/hops/")); err == nil && hops > 0 {
+		http.Redirect(w, r, fmt.Sprintf("/hops/%d", hops-1), http.StatusFound)
+		return
+	}
+	w.Header().Set("Content-Type", suite.pictureType)
+	_, _ = w.Write(suite.pictureBody)
+}
+
+func pngImage(width, height int) []byte {
+	var buf bytes.Buffer
+	_ = png.Encode(&buf, image.NewRGBA(image.Rect(0, 0, width, height)))
+	return buf.Bytes()
 }
 
 func (suite *GoogleAuthSuite) startLogin(redirect string) (cookie, state, nonce string) {
@@ -449,6 +490,161 @@ func (suite *GoogleAuthSuite) TestProvidersNeedEnabledClientAndSecret() {
 	resp, err = suite.service.Providers(suite.Ctx)
 	suite.Require().NoError(err)
 	suite.False(resp.Google.Enabled)
+}
+
+func (suite *GoogleAuthSuite) signInLinkedUser(user *ent.User, picture string) *LoginResult {
+	cookie, state, nonce := suite.startLogin("/")
+	identity := suite.identity(nonce)
+	identity.Picture = picture
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, testEmail).Return(user, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().ListPendingInvitationsForEmail(suite.Ctx, mock.Anything, testEmail, suite.now).Return(nil, nil).Once()
+	result, err := suite.finish("good-code", identity, cookie, state)
+	suite.Require().NoError(err)
+	return result
+}
+
+func (suite *GoogleAuthSuite) linkedUser(name string) *ent.User {
+	return &ent.User{ID: suite.userID, Email: testEmail, Name: name, Active: true, GoogleSubject: utils.ToPtr(testSubject)}
+}
+
+func (suite *GoogleAuthSuite) expectMemberships(workspaceIDs ...uuid.UUID) {
+	memberships := make([]*ent.WorkspaceMember, 0, len(workspaceIDs))
+	for _, id := range workspaceIDs {
+		memberships = append(memberships, &ent.WorkspaceMember{WorkspaceID: id, UserID: suite.userID})
+	}
+	suite.MockWorkspaceRepo.EXPECT().MembershipsOfUser(suite.Ctx, suite.userID).Return(memberships, nil).Once()
+}
+
+func (suite *GoogleAuthSuite) expectAvatarStored() *upload_repo.CreateUploadInput {
+	suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, suite.userID, []permissions_repo.PermissionCheck{{Role: schema.WorkspaceRoleViewer, WorkspaceID: suite.workspaceID}}).Return(nil).Once()
+	stored := &upload_repo.CreateUploadInput{}
+	suite.MockUploadRepo.EXPECT().Create(suite.Ctx, mock.Anything).RunAndReturn(func(_ context.Context, input *upload_repo.CreateUploadInput) (*ent.Upload, error) {
+		*stored = *input
+		return &ent.Upload{ID: input.ID, WorkspaceID: input.WorkspaceID, FileName: input.FileName, ContentType: input.ContentType, Width: input.Width, Height: input.Height}, nil
+	}).Once()
+	return stored
+}
+
+func (suite *GoogleAuthSuite) expectUserUpdate() *user_repo.UpdateUserInput {
+	applied := &user_repo.UpdateUserInput{}
+	suite.MockUserRepo.EXPECT().Update(suite.Ctx, nil, suite.userID, mock.Anything).RunAndReturn(func(_ context.Context, _ repository.TxInterface, _ uuid.UUID, input *user_repo.UpdateUserInput) (*ent.User, error) {
+		*applied = *input
+		updated := suite.linkedUser("Grace Hopper")
+		updated.AvatarUploadID = input.AvatarUploadID
+		return updated, nil
+	}).Once()
+	return applied
+}
+
+func (suite *GoogleAuthSuite) TestPictureIsStoredAsTheAvatarAndTheEmptyNameFilled() {
+	result := suite.signInLinkedUser(suite.linkedUser(""), suite.pictures.URL+"/hops/3")
+	suite.expectMemberships(suite.workspaceID, uuid.New())
+	stored := suite.expectAvatarStored()
+	applied := suite.expectUserUpdate()
+
+	suite.service.FillProfile(suite.Ctx, result)
+	suite.Equal(suite.workspaceID, stored.WorkspaceID, "the first workspace by join date")
+	suite.Equal(suite.userID, stored.UploaderID)
+	suite.Equal("google-avatar.png", stored.FileName)
+	suite.Equal("image/png", stored.ContentType)
+	suite.Equal(utils.ToPtr(37), stored.Width)
+	suite.Equal(utils.ToPtr(21), stored.Height)
+	suite.Equal(suite.pictureBody, stored.Data)
+	suite.Equal(&stored.ID, applied.AvatarUploadID)
+	suite.Equal(utils.ToPtr("Grace Hopper"), applied.Name)
+	suite.Equal(&stored.ID, result.User.AvatarUploadID)
+}
+
+func (suite *GoogleAuthSuite) TestPublicSignupStoresThePictureInTheJoinedWorkspace() {
+	suite.settings.AllowPublicSignup = true
+	cookie, state, nonce := suite.startLogin("/")
+	identity := suite.identity(nonce)
+	identity.Picture = suite.pictures.URL + "/photo"
+	inv := &ent.Invitation{ID: uuid.New(), WorkspaceID: suite.workspaceID, Email: testEmail, Role: schema.WorkspaceRoleViewer}
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, testEmail).Return(nil, &ent.NotFoundError{}).Once()
+	suite.MockWorkspaceRepo.EXPECT().ListPendingInvitationsForEmail(suite.Ctx, mock.Anything, testEmail, suite.now).Return([]*ent.Invitation{inv}, nil).Twice()
+	suite.MockUserRepo.EXPECT().GetByDisplayName(suite.Ctx, mock.Anything, "grace").Return(nil, &ent.NotFoundError{}).Once()
+	suite.MockUserRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(suite.linkedUser("Grace Hopper"), nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().ClaimInvitation(suite.Ctx, mock.Anything, inv.ID, suite.now).Return(true, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().AddMember(suite.Ctx, mock.Anything, suite.workspaceID, suite.userID, schema.WorkspaceRoleViewer).Return(&ent.WorkspaceMember{}, nil).Once()
+	result, err := suite.finish("good-code", identity, cookie, state)
+	suite.Require().NoError(err)
+
+	suite.expectMemberships(suite.workspaceID)
+	stored := suite.expectAvatarStored()
+	applied := suite.expectUserUpdate()
+	suite.service.FillProfile(suite.Ctx, result)
+	suite.Equal("google-avatar.png", stored.FileName)
+	suite.Equal(&stored.ID, applied.AvatarUploadID)
+	suite.Nil(applied.Name, "the name is already set")
+}
+
+func (suite *GoogleAuthSuite) TestExistingAvatarIsKept() {
+	user := suite.linkedUser("Grace Hopper")
+	user.AvatarUploadID = utils.ToPtr(uuid.New())
+	result := suite.signInLinkedUser(user, suite.pictures.URL+"/photo")
+
+	suite.service.FillProfile(suite.Ctx, result)
+	suite.Zero(suite.pictureHits)
+	suite.MockUserRepo.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *GoogleAuthSuite) TestPictureIsSkippedWithoutAWorkspace() {
+	result := suite.signInLinkedUser(suite.linkedUser("Grace Hopper"), suite.pictures.URL+"/photo")
+	suite.expectMemberships()
+
+	suite.service.FillProfile(suite.Ctx, result)
+	suite.Zero(suite.pictureHits)
+	suite.MockUploadRepo.AssertNotCalled(suite.T(), "Create", mock.Anything, mock.Anything)
+	suite.MockUserRepo.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *GoogleAuthSuite) TestUnusablePicturesAreRefused() {
+	cases := map[string]struct {
+		contentType string
+		body        []byte
+		path        string
+	}{
+		"html content type":     {contentType: "text/html", body: []byte("<html></html>")},
+		"html behind image/png": {contentType: "image/png", body: []byte("<!doctype html><html></html>")},
+		"oversized":             {contentType: "image/png", body: append(pngImage(2, 2), make([]byte, testMaxUpload)...)},
+		"too many redirects":    {contentType: "image/png", body: pngImage(2, 2), path: "/hops/4"},
+	}
+	for name, tc := range cases {
+		suite.Run(name, func() {
+			suite.pictureType, suite.pictureBody = tc.contentType, tc.body
+			path := tc.path
+			if path == "" {
+				path = "/photo"
+			}
+			result := suite.signInLinkedUser(suite.linkedUser("Grace Hopper"), suite.pictures.URL+path)
+			suite.expectMemberships(suite.workspaceID)
+			suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, suite.userID, mock.Anything).Return(nil).Maybe()
+
+			suite.service.FillProfile(suite.Ctx, result)
+			suite.Nil(result.User.AvatarUploadID)
+		})
+	}
+	suite.MockUploadRepo.AssertNotCalled(suite.T(), "Create", mock.Anything, mock.Anything)
+	suite.MockUserRepo.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *GoogleAuthSuite) TestDownloadErrorKeepsTheLoginAndStillFillsTheName() {
+	closed := httptest.NewServer(http.NotFoundHandler())
+	closed.Close()
+	for name, picture := range map[string]string{"unreachable": closed.URL + "/photo", "not found": suite.pictures.URL + "/missing"} {
+		suite.Run(name, func() {
+			result := suite.signInLinkedUser(suite.linkedUser(""), picture)
+			suite.expectMemberships(suite.workspaceID)
+			applied := suite.expectUserUpdate()
+
+			suite.service.FillProfile(suite.Ctx, result)
+			suite.Equal(suite.userID, result.User.ID)
+			suite.Nil(applied.AvatarUploadID)
+			suite.Equal(utils.ToPtr("Grace Hopper"), applied.Name)
+		})
+	}
+	suite.MockUploadRepo.AssertNotCalled(suite.T(), "Create", mock.Anything, mock.Anything)
 }
 
 func TestGoogleAuthSuite(t *testing.T) {
