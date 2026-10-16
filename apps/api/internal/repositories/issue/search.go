@@ -10,7 +10,6 @@ import (
 
 const maxSearchWords = 8
 
-// Postgres only: uses pg_trgm.
 func (self *IssueRepository) Search(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, query string, limit int) ([]uuid.UUID, error) {
 	words := strings.Fields(query)
 	if len(words) == 0 || len(teamIDs) == 0 {

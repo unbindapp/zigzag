@@ -77,6 +77,5 @@ type IssueRepositoryInterface interface {
 	ReactionsForComments(ctx context.Context, commentIDs []uuid.UUID) (map[uuid.UUID][]*ent.Reaction, error)
 	IssueOfComment(ctx context.Context, commentID uuid.UUID) (uuid.UUID, error)
 	WorkspaceOfProjectUpdate(ctx context.Context, updateID uuid.UUID) (uuid.UUID, error)
-	// Postgres only: uses pg_trgm.
 	Search(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, query string, limit int) ([]uuid.UUID, error)
 }

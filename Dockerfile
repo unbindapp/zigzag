@@ -15,7 +15,6 @@ ENV CGO_ENABLED=0 GOCACHE=/gocache GOFLAGS="-trimpath -buildvcs=false"
 WORKDIR /src/apps/api
 COPY apps/api/go.mod apps/api/go.sum ./
 RUN go mod download
-# Compiles the direct dependencies into GOCACHE so the layer, keyed on go.mod and go.sum, carries the compiled tree between builds.
 RUN GOFLAGS="$GOFLAGS -mod=mod" go list -e -f '{{if and (not .Error) (not .DepsErrors) (not .Standard)}}{{.ImportPath}}{{end}}' $(go list -m -f '{{if and (not .Main) (not .Indirect)}}{{.Path}}/...{{end}}' all) 2>/dev/null \
     | grep -vE '/cmd/|/example|/testdata' \
     | xargs -n 20 sh -c 'GOFLAGS="$GOFLAGS -mod=mod" go build "$@" >/dev/null 2>&1 || true' sh
