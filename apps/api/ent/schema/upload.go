@@ -36,6 +36,7 @@ func (Upload) Edges() []ent.Edge {
 		edge.From("workspace", Workspace.Type).Ref("uploads").Field("workspace_id").Unique().Required(),
 		edge.From("uploader", User.Type).Ref("uploads").Field("uploader_id").Unique(),
 		edge.To("avatar_users", User.Type).Annotations(setNull()),
+		edge.To("icon_workspaces", Workspace.Type).Annotations(setNull()),
 		edge.To("attachments", Attachment.Type).Annotations(setNull()),
 	}
 }

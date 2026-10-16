@@ -55,11 +55,13 @@ type UploadEdges struct {
 	Uploader *User `json:"uploader,omitempty"`
 	// AvatarUsers holds the value of the avatar_users edge.
 	AvatarUsers []*User `json:"avatar_users,omitempty"`
+	// IconWorkspaces holds the value of the icon_workspaces edge.
+	IconWorkspaces []*Workspace `json:"icon_workspaces,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -93,10 +95,19 @@ func (e UploadEdges) AvatarUsersOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "avatar_users"}
 }
 
+// IconWorkspacesOrErr returns the IconWorkspaces value or an error if the edge
+// was not loaded in eager-loading.
+func (e UploadEdges) IconWorkspacesOrErr() ([]*Workspace, error) {
+	if e.loadedTypes[3] {
+		return e.IconWorkspaces, nil
+	}
+	return nil, &NotLoadedError{edge: "icon_workspaces"}
+}
+
 // AttachmentsOrErr returns the Attachments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UploadEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Attachments, nil
 	}
 	return nil, &NotLoadedError{edge: "attachments"}
@@ -227,6 +238,11 @@ func (_m *Upload) QueryUploader() *UserQuery {
 // QueryAvatarUsers queries the "avatar_users" edge of the Upload entity.
 func (_m *Upload) QueryAvatarUsers() *UserQuery {
 	return NewUploadClient(_m.config).QueryAvatarUsers(_m)
+}
+
+// QueryIconWorkspaces queries the "icon_workspaces" edge of the Upload entity.
+func (_m *Upload) QueryIconWorkspaces() *WorkspaceQuery {
+	return NewUploadClient(_m.config).QueryIconWorkspaces(_m)
 }
 
 // QueryAttachments queries the "attachments" edge of the Upload entity.

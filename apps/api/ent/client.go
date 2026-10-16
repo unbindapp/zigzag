@@ -7393,6 +7393,22 @@ func (c *UploadClient) QueryAvatarUsers(_m *Upload) *UserQuery {
 	return query
 }
 
+// QueryIconWorkspaces queries the icon_workspaces edge of a Upload.
+func (c *UploadClient) QueryIconWorkspaces(_m *Upload) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(upload.Table, upload.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, upload.IconWorkspacesTable, upload.IconWorkspacesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAttachments queries the attachments edge of a Upload.
 func (c *UploadClient) QueryAttachments(_m *Upload) *AttachmentQuery {
 	query := (&AttachmentClient{config: c.config}).Query()
@@ -9011,6 +9027,22 @@ func (c *WorkspaceClient) QueryFavorites(_m *Workspace) *FavoriteQuery {
 			sqlgraph.From(workspace.Table, workspace.FieldID, id),
 			sqlgraph.To(favorite.Table, favorite.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workspace.FavoritesTable, workspace.FavoritesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIconUpload queries the icon_upload edge of a Workspace.
+func (c *WorkspaceClient) QueryIconUpload(_m *Workspace) *UploadQuery {
+	query := (&UploadClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, id),
+			sqlgraph.To(upload.Table, upload.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspace.IconUploadTable, workspace.IconUploadColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

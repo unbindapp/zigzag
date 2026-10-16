@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/ent/upload"
 	"github.com/unbindapp/zigzag-api/ent/workspace"
 )
 
@@ -31,6 +32,8 @@ type Workspace struct {
 	Icon string `json:"icon,omitempty"`
 	// Color holds the value of the "color" field.
 	Color string `json:"color,omitempty"`
+	// IconUploadID holds the value of the "icon_upload_id" field.
+	IconUploadID *uuid.UUID `json:"icon_upload_id,omitempty"`
 	// ArchivedAt holds the value of the "archived_at" field.
 	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -73,9 +76,11 @@ type WorkspaceEdges struct {
 	Notifications []*Notification `json:"notifications,omitempty"`
 	// Favorites holds the value of the favorites edge.
 	Favorites []*Favorite `json:"favorites,omitempty"`
+	// IconUpload holds the value of the icon_upload edge.
+	IconUpload *Upload `json:"icon_upload,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [16]bool
+	loadedTypes [17]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -222,11 +227,24 @@ func (e WorkspaceEdges) FavoritesOrErr() ([]*Favorite, error) {
 	return nil, &NotLoadedError{edge: "favorites"}
 }
 
+// IconUploadOrErr returns the IconUpload value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WorkspaceEdges) IconUploadOrErr() (*Upload, error) {
+	if e.IconUpload != nil {
+		return e.IconUpload, nil
+	} else if e.loadedTypes[16] {
+		return nil, &NotFoundError{label: upload.Label}
+	}
+	return nil, &NotLoadedError{edge: "icon_upload"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Workspace) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case workspace.FieldIconUploadID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case workspace.FieldName, workspace.FieldSlug, workspace.FieldIcon, workspace.FieldColor:
 			values[i] = new(sql.NullString)
 		case workspace.FieldCreatedAt, workspace.FieldUpdatedAt, workspace.FieldArchivedAt:
@@ -289,6 +307,13 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field color", values[i])
 			} else if value.Valid {
 				_m.Color = value.String
+			}
+		case workspace.FieldIconUploadID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field icon_upload_id", values[i])
+			} else if value.Valid {
+				_m.IconUploadID = new(uuid.UUID)
+				*_m.IconUploadID = *value.S.(*uuid.UUID)
 			}
 		case workspace.FieldArchivedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -390,6 +415,11 @@ func (_m *Workspace) QueryFavorites() *FavoriteQuery {
 	return NewWorkspaceClient(_m.config).QueryFavorites(_m)
 }
 
+// QueryIconUpload queries the "icon_upload" edge of the Workspace entity.
+func (_m *Workspace) QueryIconUpload() *UploadQuery {
+	return NewWorkspaceClient(_m.config).QueryIconUpload(_m)
+}
+
 // Update returns a builder for updating this Workspace.
 // Note that you need to call Workspace.Unwrap() before calling this method if this Workspace
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -430,6 +460,11 @@ func (_m *Workspace) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("color=")
 	builder.WriteString(_m.Color)
+	builder.WriteString(", ")
+	if v := _m.IconUploadID; v != nil {
+		builder.WriteString("icon_upload_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.ArchivedAt; v != nil {
 		builder.WriteString("archived_at=")

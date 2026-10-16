@@ -7,6 +7,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/names"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
+	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
 	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
 )
@@ -20,27 +21,34 @@ type BootstrapInput struct {
 	WorkspaceSlug string `json:"workspace_slug" required:"true" minLength:"2" maxLength:"32" doc:"URL key of the first workspace, lowercase letters, digits and dashes"`
 }
 
-func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (user *ent.User, workspace *ent.Workspace, err error) {
+type BootstrapResult struct {
+	User      *ent.User
+	Workspace *ent.Workspace
+	Team      *ent.Team
+}
+
+func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (*BootstrapResult, error) {
 	email, err := names.Email(input.Email)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if len(input.Password) < MinPasswordLength {
-		return nil, nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Password must be at least 8 characters")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Password must be at least 8 characters")
 	}
 	name, err := names.Clean(input.Name)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	workspaceName, err := names.Clean(input.WorkspaceName)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	slug, err := names.Slug(input.WorkspaceSlug)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
+	var result *BootstrapResult
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.System().LockSettings(ctx, tx); err != nil {
 			return err
@@ -56,7 +64,7 @@ func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (
 		if err != nil {
 			return err
 		}
-		user, err = self.repo.User().Create(ctx, tx, &user_repo.CreateUserInput{
+		user, err := self.repo.User().Create(ctx, tx, &user_repo.CreateUserInput{
 			Email:       email,
 			Password:    input.Password,
 			Name:        name,
@@ -67,15 +75,23 @@ func (self *UserService) Bootstrap(ctx context.Context, input *BootstrapInput) (
 		if err != nil {
 			return err
 		}
-		workspace, err = self.repo.Workspace().Create(ctx, tx, &workspace_repo.CreateWorkspaceInput{
+		workspace, err := self.repo.Workspace().Create(ctx, tx, &workspace_repo.CreateWorkspaceInput{
 			Name:      workspaceName,
 			Slug:      slug,
 			CreatorID: user.ID,
 		})
-		return err
+		if err != nil {
+			return err
+		}
+		team, err := self.repo.Team().Create(ctx, tx, team_repo.DefaultTeamInput(workspace, user.ID))
+		if err != nil {
+			return err
+		}
+		result = &BootstrapResult{User: user, Workspace: workspace, Team: team}
+		return nil
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return user, workspace, nil
+	return result, nil
 }

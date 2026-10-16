@@ -86,6 +86,11 @@ func Color(v string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldColor, v))
 }
 
+// IconUploadID applies equality check predicate on the "icon_upload_id" field. It's identical to IconUploadIDEQ.
+func IconUploadID(v uuid.UUID) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldIconUploadID, v))
+}
+
 // ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
 func ArchivedAt(v time.Time) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldArchivedAt, v))
@@ -449,6 +454,36 @@ func ColorEqualFold(v string) predicate.Workspace {
 // ColorContainsFold applies the ContainsFold predicate on the "color" field.
 func ColorContainsFold(v string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldContainsFold(FieldColor, v))
+}
+
+// IconUploadIDEQ applies the EQ predicate on the "icon_upload_id" field.
+func IconUploadIDEQ(v uuid.UUID) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldIconUploadID, v))
+}
+
+// IconUploadIDNEQ applies the NEQ predicate on the "icon_upload_id" field.
+func IconUploadIDNEQ(v uuid.UUID) predicate.Workspace {
+	return predicate.Workspace(sql.FieldNEQ(FieldIconUploadID, v))
+}
+
+// IconUploadIDIn applies the In predicate on the "icon_upload_id" field.
+func IconUploadIDIn(vs ...uuid.UUID) predicate.Workspace {
+	return predicate.Workspace(sql.FieldIn(FieldIconUploadID, vs...))
+}
+
+// IconUploadIDNotIn applies the NotIn predicate on the "icon_upload_id" field.
+func IconUploadIDNotIn(vs ...uuid.UUID) predicate.Workspace {
+	return predicate.Workspace(sql.FieldNotIn(FieldIconUploadID, vs...))
+}
+
+// IconUploadIDIsNil applies the IsNil predicate on the "icon_upload_id" field.
+func IconUploadIDIsNil() predicate.Workspace {
+	return predicate.Workspace(sql.FieldIsNull(FieldIconUploadID))
+}
+
+// IconUploadIDNotNil applies the NotNil predicate on the "icon_upload_id" field.
+func IconUploadIDNotNil() predicate.Workspace {
+	return predicate.Workspace(sql.FieldNotNull(FieldIconUploadID))
 }
 
 // ArchivedAtEQ applies the EQ predicate on the "archived_at" field.
@@ -861,6 +896,29 @@ func HasFavorites() predicate.Workspace {
 func HasFavoritesWith(preds ...predicate.Favorite) predicate.Workspace {
 	return predicate.Workspace(func(s *sql.Selector) {
 		step := newFavoritesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIconUpload applies the HasEdge predicate on the "icon_upload" edge.
+func HasIconUpload() predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, IconUploadTable, IconUploadColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIconUploadWith applies the HasEdge predicate on the "icon_upload" edge with a given conditions (other predicates).
+func HasIconUploadWith(preds ...predicate.Upload) predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := newIconUploadStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

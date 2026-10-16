@@ -141,6 +141,43 @@ func (suite *WorkspaceRepositorySuite) TestDeleteCascades() {
 	suite.Zero(suite.DB.ProjectStatus.Query().CountX(suite.Ctx))
 }
 
+func (suite *WorkspaceRepositorySuite) upload(workspaceID uuid.UUID, key string) *ent.Upload {
+	return suite.DB.Upload.Create().SetWorkspaceID(workspaceID).SetFileName("logo.png").SetContentType("image/png").SetSizeBytes(1).SetStorageKey(key).SaveX(suite.Ctx)
+}
+
+func (suite *WorkspaceRepositorySuite) TestIconUpload() {
+	w := suite.workspace("acme")
+	logo := suite.upload(w.ID, "logo")
+	updated, err := suite.repo.Update(suite.Ctx, w.ID, &UpdateWorkspaceInput{IconUploadID: &logo.ID})
+	suite.Require().NoError(err)
+	suite.Equal(&logo.ID, updated.IconUploadID)
+
+	updated, err = suite.repo.Update(suite.Ctx, w.ID, &UpdateWorkspaceInput{ClearIconUpload: true})
+	suite.Require().NoError(err)
+	suite.Nil(updated.IconUploadID)
+
+	_, err = suite.repo.Update(suite.Ctx, w.ID, &UpdateWorkspaceInput{IconUploadID: &logo.ID})
+	suite.Require().NoError(err)
+	suite.DB.Upload.DeleteOneID(logo.ID).ExecX(suite.Ctx)
+	suite.Nil(suite.DB.Workspace.GetX(suite.Ctx, w.ID).IconUploadID, "deleting the upload clears the logo")
+
+	other := suite.workspace("other")
+	otherLogo := suite.upload(other.ID, "other-logo")
+	_, err = suite.repo.Update(suite.Ctx, other.ID, &UpdateWorkspaceInput{IconUploadID: &otherLogo.ID})
+	suite.Require().NoError(err)
+	suite.Require().NoError(suite.repo.Delete(suite.Ctx, other.ID), "a workspace with a logo can be deleted")
+	suite.Zero(suite.DB.Upload.Query().CountX(suite.Ctx))
+}
+
 func TestWorkspaceRepositorySuite(t *testing.T) {
 	suite.Run(t, new(WorkspaceRepositorySuite))
+}
+
+func TestWorkspaceRepositoryOnPostgres(t *testing.T) {
+	if !repository.PostgresConfigured() {
+		t.Skip("set " + repository.PostgresURLEnv + " to run the workspace repository against Postgres")
+	}
+	run := new(WorkspaceRepositorySuite)
+	run.Postgres = true
+	suite.Run(t, run)
 }

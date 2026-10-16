@@ -8,16 +8,26 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 )
 
+func workspaceIconURL(entity *ent.Workspace) *string {
+	if entity.IconUploadID == nil {
+		return nil
+	}
+	url := UploadURL(*entity.IconUploadID)
+	return &url
+}
+
 type WorkspaceResponse struct {
-	ID          uuid.UUID            `json:"id" format:"uuid"`
-	Name        string               `json:"name"`
-	Slug        string               `json:"slug" doc:"URL key of the workspace"`
-	Icon        string               `json:"icon"`
-	Color       string               `json:"color"`
-	Role        schema.WorkspaceRole `json:"role" doc:"The caller's effective role in this workspace"`
-	MemberCount int                  `json:"member_count"`
-	TeamCount   int                  `json:"team_count"`
-	CreatedAt   time.Time            `json:"created_at"`
+	ID            uuid.UUID            `json:"id" format:"uuid"`
+	Name          string               `json:"name"`
+	Slug          string               `json:"slug" doc:"URL key of the workspace"`
+	Icon          string               `json:"icon"`
+	IconURL       *string              `json:"icon_url" nullable:"true" doc:"Logo image, shown instead of icon when set"`
+	Color         string               `json:"color"`
+	Role          schema.WorkspaceRole `json:"role" doc:"The caller's effective role in this workspace"`
+	MemberCount   int                  `json:"member_count"`
+	TeamCount     int                  `json:"team_count"`
+	DefaultTeamID *uuid.UUID           `json:"default_team_id,omitempty" required:"false" format:"uuid" doc:"The team created together with the workspace. Only returned when the workspace is created."`
+	CreatedAt     time.Time            `json:"created_at"`
 }
 
 func TransformWorkspaceEntity(entity *ent.Workspace, role schema.WorkspaceRole, memberCount, teamCount int) *WorkspaceResponse {
@@ -26,6 +36,7 @@ func TransformWorkspaceEntity(entity *ent.Workspace, role schema.WorkspaceRole, 
 		Name:        entity.Name,
 		Slug:        entity.Slug,
 		Icon:        entity.Icon,
+		IconURL:     workspaceIconURL(entity),
 		Color:       entity.Color,
 		Role:        role,
 		MemberCount: memberCount,
@@ -35,12 +46,25 @@ func TransformWorkspaceEntity(entity *ent.Workspace, role schema.WorkspaceRole, 
 }
 
 type WorkspaceMembership struct {
-	ID    uuid.UUID            `json:"id" format:"uuid"`
-	Name  string               `json:"name"`
-	Slug  string               `json:"slug"`
-	Icon  string               `json:"icon"`
-	Color string               `json:"color"`
-	Role  schema.WorkspaceRole `json:"role"`
+	ID      uuid.UUID            `json:"id" format:"uuid"`
+	Name    string               `json:"name"`
+	Slug    string               `json:"slug"`
+	Icon    string               `json:"icon"`
+	IconURL *string              `json:"icon_url" nullable:"true" doc:"Logo image, shown instead of icon when set"`
+	Color   string               `json:"color"`
+	Role    schema.WorkspaceRole `json:"role"`
+}
+
+func TransformWorkspaceMembership(entity *ent.Workspace, role schema.WorkspaceRole) *WorkspaceMembership {
+	return &WorkspaceMembership{
+		ID:      entity.ID,
+		Name:    entity.Name,
+		Slug:    entity.Slug,
+		Icon:    entity.Icon,
+		IconURL: workspaceIconURL(entity),
+		Color:   entity.Color,
+		Role:    role,
+	}
 }
 
 type WorkspaceMemberResponse struct {

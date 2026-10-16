@@ -49,6 +49,29 @@ func TestTeamKey(t *testing.T) {
 	}
 }
 
+func TestTeamKeyFromName(t *testing.T) {
+	for in, want := range map[string]string{
+		"Acme Corp":                    "AC",
+		"acme":                         "ACM",
+		"Zig-zag labs":                 "ZZL",
+		"a b c d e f g h i":            "ABCDEFG",
+		"2026 Product Team":            "PT",
+		"Ab":                           "AB",
+		"Q":                            "Q",
+		"42":                           "TEAM",
+		"Café Ünited":                  "CN",
+		"Ölbaum":                       "LBA",
+		"🚀":                            "TEAM",
+		"Unbind 2":                     "U2",
+		"   the   quick brown  fox   ": "TQBF",
+	} {
+		got := TeamKeyFromName(in)
+		assert.Equal(t, want, got, in)
+		_, err := TeamKey(got)
+		assert.NoError(t, err, in)
+	}
+}
+
 func TestEmail(t *testing.T) {
 	got, err := Email("  Ada@Example.COM ")
 	assert.NoError(t, err)

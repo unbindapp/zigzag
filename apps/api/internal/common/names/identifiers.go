@@ -3,6 +3,7 @@ package names
 import (
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
@@ -40,6 +41,47 @@ func TeamKey(raw string) (string, error) {
 		return "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Team key must be 1 to 7 letters or digits, starting with a letter")
 	}
 	return key, nil
+}
+
+const (
+	maxTeamKeyLength      = 7
+	fallbackTeamKeyLength = 3
+	fallbackTeamKey       = "TEAM"
+)
+
+func TeamKeyFromName(name string) string {
+	words := strings.FieldsFunc(name, func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) })
+	initials, letters := "", ""
+	for _, word := range words {
+		ascii := strings.Map(keepTeamKeyRune, strings.ToUpper(word))
+		if ascii == "" {
+			continue
+		}
+		initials += ascii[:1]
+		letters += ascii
+	}
+	if key := teamKeyPrefix(initials, maxTeamKeyLength); len(key) > 1 {
+		return key
+	}
+	if key := teamKeyPrefix(letters, fallbackTeamKeyLength); key != "" {
+		return key
+	}
+	return fallbackTeamKey
+}
+
+func teamKeyPrefix(candidate string, length int) string {
+	key := strings.TrimLeft(candidate, "0123456789")
+	if len(key) > length {
+		key = key[:length]
+	}
+	return key
+}
+
+func keepTeamKeyRune(r rune) rune {
+	if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+		return r
+	}
+	return -1
 }
 
 func Email(raw string) (string, error) {

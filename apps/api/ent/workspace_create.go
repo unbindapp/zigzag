@@ -108,6 +108,20 @@ func (_c *WorkspaceCreate) SetNillableColor(v *string) *WorkspaceCreate {
 	return _c
 }
 
+// SetIconUploadID sets the "icon_upload_id" field.
+func (_c *WorkspaceCreate) SetIconUploadID(v uuid.UUID) *WorkspaceCreate {
+	_c.mutation.SetIconUploadID(v)
+	return _c
+}
+
+// SetNillableIconUploadID sets the "icon_upload_id" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableIconUploadID(v *uuid.UUID) *WorkspaceCreate {
+	if v != nil {
+		_c.SetIconUploadID(*v)
+	}
+	return _c
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (_c *WorkspaceCreate) SetArchivedAt(v time.Time) *WorkspaceCreate {
 	_c.mutation.SetArchivedAt(v)
@@ -374,6 +388,11 @@ func (_c *WorkspaceCreate) AddFavorites(v ...*Favorite) *WorkspaceCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddFavoriteIDs(ids...)
+}
+
+// SetIconUpload sets the "icon_upload" edge to the Upload entity.
+func (_c *WorkspaceCreate) SetIconUpload(v *Upload) *WorkspaceCreate {
+	return _c.SetIconUploadID(v.ID)
 }
 
 // Mutation returns the WorkspaceMutation object of the builder.
@@ -764,6 +783,23 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.IconUploadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workspace.IconUploadTable,
+			Columns: []string{workspace.IconUploadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(upload.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.IconUploadID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -885,6 +921,24 @@ func (u *WorkspaceUpsert) UpdateColor() *WorkspaceUpsert {
 // ClearColor clears the value of the "color" field.
 func (u *WorkspaceUpsert) ClearColor() *WorkspaceUpsert {
 	u.SetNull(workspace.FieldColor)
+	return u
+}
+
+// SetIconUploadID sets the "icon_upload_id" field.
+func (u *WorkspaceUpsert) SetIconUploadID(v uuid.UUID) *WorkspaceUpsert {
+	u.Set(workspace.FieldIconUploadID, v)
+	return u
+}
+
+// UpdateIconUploadID sets the "icon_upload_id" field to the value that was provided on create.
+func (u *WorkspaceUpsert) UpdateIconUploadID() *WorkspaceUpsert {
+	u.SetExcluded(workspace.FieldIconUploadID)
+	return u
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (u *WorkspaceUpsert) ClearIconUploadID() *WorkspaceUpsert {
+	u.SetNull(workspace.FieldIconUploadID)
 	return u
 }
 
@@ -1038,6 +1092,27 @@ func (u *WorkspaceUpsertOne) UpdateColor() *WorkspaceUpsertOne {
 func (u *WorkspaceUpsertOne) ClearColor() *WorkspaceUpsertOne {
 	return u.Update(func(s *WorkspaceUpsert) {
 		s.ClearColor()
+	})
+}
+
+// SetIconUploadID sets the "icon_upload_id" field.
+func (u *WorkspaceUpsertOne) SetIconUploadID(v uuid.UUID) *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetIconUploadID(v)
+	})
+}
+
+// UpdateIconUploadID sets the "icon_upload_id" field to the value that was provided on create.
+func (u *WorkspaceUpsertOne) UpdateIconUploadID() *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateIconUploadID()
+	})
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (u *WorkspaceUpsertOne) ClearIconUploadID() *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.ClearIconUploadID()
 	})
 }
 
@@ -1361,6 +1436,27 @@ func (u *WorkspaceUpsertBulk) UpdateColor() *WorkspaceUpsertBulk {
 func (u *WorkspaceUpsertBulk) ClearColor() *WorkspaceUpsertBulk {
 	return u.Update(func(s *WorkspaceUpsert) {
 		s.ClearColor()
+	})
+}
+
+// SetIconUploadID sets the "icon_upload_id" field.
+func (u *WorkspaceUpsertBulk) SetIconUploadID(v uuid.UUID) *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetIconUploadID(v)
+	})
+}
+
+// UpdateIconUploadID sets the "icon_upload_id" field to the value that was provided on create.
+func (u *WorkspaceUpsertBulk) UpdateIconUploadID() *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateIconUploadID()
+	})
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (u *WorkspaceUpsertBulk) ClearIconUploadID() *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.ClearIconUploadID()
 	})
 }
 

@@ -1805,12 +1805,21 @@ var (
 		{Name: "icon", Type: field.TypeString, Nullable: true},
 		{Name: "color", Type: field.TypeString, Nullable: true},
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
+		{Name: "icon_upload_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// WorkspacesTable holds the schema information for the "workspaces" table.
 	WorkspacesTable = &schema.Table{
 		Name:       "workspaces",
 		Columns:    WorkspacesColumns,
 		PrimaryKey: []*schema.Column{WorkspacesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "workspaces_uploads_icon_workspaces",
+				Columns:    []*schema.Column{WorkspacesColumns[8]},
+				RefColumns: []*schema.Column{UploadsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// WorkspaceMembersColumns holds the columns for the "workspace_members" table.
 	WorkspaceMembersColumns = []*schema.Column{
@@ -2266,6 +2275,7 @@ func init() {
 	WorkflowStatesTable.Annotation = &entsql.Annotation{
 		Table: "workflow_states",
 	}
+	WorkspacesTable.ForeignKeys[0].RefTable = UploadsTable
 	WorkspacesTable.Annotation = &entsql.Annotation{
 		Table: "workspaces",
 	}

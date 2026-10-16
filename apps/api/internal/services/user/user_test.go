@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
 	"github.com/unbindapp/zigzag-api/internal/infrastructure/mail"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
 	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
 	"github.com/unbindapp/zigzag-api/internal/services"
@@ -57,12 +58,14 @@ func (suite *UserServiceSuite) TestWhoamiListsWorkspacesWithRolesAndKeyLimits() 
 	ctx := permissions_repo.WithAPIKeyAccess(suite.Ctx, permissions_repo.APIKeyAccess{Role: schema.WorkspaceRoleViewer, WorkspaceIDs: []uuid.UUID{workspaceID}})
 	suite.MockUserRepo.EXPECT().GetByID(ctx, suite.userID).Return(&ent.User{ID: suite.userID, Email: "ada@example.com", Active: true}, nil).Once()
 	suite.MockPermissionsRepo.EXPECT().GetUserPermissionSet(ctx, suite.userID).Return(permissionSet(workspaceID, schema.WorkspaceRoleViewer), nil).Once()
-	suite.MockWorkspaceRepo.EXPECT().GetByIDs(ctx, []uuid.UUID{workspaceID}).Return([]*ent.Workspace{{ID: workspaceID, Name: "Acme", Slug: "acme"}}, nil).Once()
+	iconID := uuid.New()
+	suite.MockWorkspaceRepo.EXPECT().GetByIDs(ctx, []uuid.UUID{workspaceID}).Return([]*ent.Workspace{{ID: workspaceID, Name: "Acme", Slug: "acme", IconUploadID: &iconID}}, nil).Once()
 
 	resp, err := suite.service.Whoami(ctx, suite.userID)
 	suite.Require().NoError(err)
 	suite.Require().Len(resp.Workspaces, 1)
 	suite.Equal(schema.WorkspaceRoleViewer, resp.Workspaces[0].Role)
+	suite.Equal(utils.ToPtr("/api/go/uploads/get?upload_id="+iconID.String()), resp.Workspaces[0].IconURL)
 	suite.Require().NotNil(resp.APIKey)
 	suite.Equal([]uuid.UUID{workspaceID}, resp.APIKey.WorkspaceIDs)
 	suite.NotNil(resp.APIKey.Privileges)
@@ -131,11 +134,11 @@ func (suite *UserServiceSuite) TestResetPassword() {
 func (suite *UserServiceSuite) TestBootstrapOnlyOnce() {
 	suite.MockSystemRepo.EXPECT().LockSettings(suite.Ctx, mock.Anything).Return(nil).Once()
 	suite.MockUserRepo.EXPECT().Count(suite.Ctx, mock.Anything).Return(1, nil).Once()
-	_, _, err := suite.service.Bootstrap(suite.Ctx, bootstrapInput())
+	_, err := suite.service.Bootstrap(suite.Ctx, bootstrapInput())
 	suite.ErrorIs(err, errdefs.ErrAlreadyBootstrapped)
 }
 
-func (suite *UserServiceSuite) TestBootstrapCreatesSystemAdminAndWorkspace() {
+func (suite *UserServiceSuite) TestBootstrapCreatesSystemAdminWorkspaceAndDefaultTeam() {
 	created := &ent.User{ID: suite.userID, Email: "ada@example.com"}
 	suite.MockSystemRepo.EXPECT().LockSettings(suite.Ctx, mock.Anything).Return(nil).Once()
 	suite.MockUserRepo.EXPECT().Count(suite.Ctx, mock.Anything).Return(0, nil).Once()
@@ -143,19 +146,37 @@ func (suite *UserServiceSuite) TestBootstrapCreatesSystemAdminAndWorkspace() {
 	suite.MockUserRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.MatchedBy(func(input *user_repo.CreateUserInput) bool {
 		return input.SystemAdmin && input.Active && input.Email == "ada@example.com" && input.DisplayName == "ada"
 	})).Return(created, nil).Once()
+	workspace := &ent.Workspace{ID: uuid.New(), Name: "Acme", Slug: "acme-corp"}
 	suite.MockWorkspaceRepo.EXPECT().Create(suite.Ctx, mock.Anything, &workspace_repo.CreateWorkspaceInput{Name: "Acme", Slug: "acme-corp", CreatorID: suite.userID}).
-		Return(&ent.Workspace{ID: uuid.New(), Slug: "acme-corp"}, nil).Once()
+		Return(workspace, nil).Once()
+	team := &ent.Team{ID: uuid.New(), WorkspaceID: workspace.ID, Name: "Acme", Key: "ACM"}
+	suite.MockTeamRepo.EXPECT().Create(suite.Ctx, mock.Anything, &team_repo.CreateTeamInput{WorkspaceID: workspace.ID, Name: "Acme", Key: "ACM", CreatorID: suite.userID}).
+		Return(team, nil).Once()
 
-	user, workspace, err := suite.service.Bootstrap(suite.Ctx, bootstrapInput())
+	result, err := suite.service.Bootstrap(suite.Ctx, bootstrapInput())
 	suite.Require().NoError(err)
-	suite.Equal(created, user)
-	suite.Equal("acme-corp", workspace.Slug)
+	suite.Equal(created, result.User)
+	suite.Equal("acme-corp", result.Workspace.Slug)
+	suite.Equal(team, result.Team)
+}
+
+func (suite *UserServiceSuite) TestBootstrapFailsWhenTheDefaultTeamFails() {
+	suite.MockSystemRepo.EXPECT().LockSettings(suite.Ctx, mock.Anything).Return(nil).Once()
+	suite.MockUserRepo.EXPECT().Count(suite.Ctx, mock.Anything).Return(0, nil).Once()
+	suite.MockUserRepo.EXPECT().GetByDisplayName(suite.Ctx, mock.Anything, "ada").Return(nil, &ent.NotFoundError{}).Once()
+	suite.MockUserRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(&ent.User{ID: suite.userID}, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(&ent.Workspace{ID: uuid.New(), Name: "Acme"}, nil).Once()
+	failure := errors.New("insert failed")
+	suite.MockTeamRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(nil, failure).Once()
+
+	_, err := suite.service.Bootstrap(suite.Ctx, bootstrapInput())
+	suite.ErrorIs(err, failure)
 }
 
 func (suite *UserServiceSuite) TestBootstrapValidatesBeforeWriting() {
 	input := bootstrapInput()
 	input.WorkspaceSlug = "!"
-	_, _, err := suite.service.Bootstrap(suite.Ctx, input)
+	_, err := suite.service.Bootstrap(suite.Ctx, input)
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 }
 

@@ -65,10 +65,12 @@ func (self *WorkspaceRepository) Create(ctx context.Context, tx repository.TxInt
 }
 
 type UpdateWorkspaceInput struct {
-	Name  *string
-	Slug  *string
-	Icon  *string
-	Color *string
+	Name            *string
+	Slug            *string
+	Icon            *string
+	Color           *string
+	IconUploadID    *uuid.UUID
+	ClearIconUpload bool
 }
 
 func (self *WorkspaceRepository) Update(ctx context.Context, id uuid.UUID, input *UpdateWorkspaceInput) (*ent.Workspace, error) {
@@ -84,6 +86,12 @@ func (self *WorkspaceRepository) Update(ctx context.Context, id uuid.UUID, input
 	}
 	if input.Color != nil {
 		m.SetColor(*input.Color)
+	}
+	if input.IconUploadID != nil {
+		m.SetIconUploadID(*input.IconUploadID)
+	}
+	if input.ClearIconUpload {
+		m.ClearIconUploadID()
 	}
 	return m.Save(ctx)
 }

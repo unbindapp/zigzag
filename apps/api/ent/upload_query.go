@@ -23,15 +23,16 @@ import (
 // UploadQuery is the builder for querying Upload entities.
 type UploadQuery struct {
 	config
-	ctx             *QueryContext
-	order           []upload.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Upload
-	withWorkspace   *WorkspaceQuery
-	withUploader    *UserQuery
-	withAvatarUsers *UserQuery
-	withAttachments *AttachmentQuery
-	modifiers       []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []upload.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Upload
+	withWorkspace      *WorkspaceQuery
+	withUploader       *UserQuery
+	withAvatarUsers    *UserQuery
+	withIconWorkspaces *WorkspaceQuery
+	withAttachments    *AttachmentQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -127,6 +128,28 @@ func (_q *UploadQuery) QueryAvatarUsers() *UserQuery {
 			sqlgraph.From(upload.Table, upload.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, upload.AvatarUsersTable, upload.AvatarUsersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIconWorkspaces chains the current query on the "icon_workspaces" edge.
+func (_q *UploadQuery) QueryIconWorkspaces() *WorkspaceQuery {
+	query := (&WorkspaceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(upload.Table, upload.FieldID, selector),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, upload.IconWorkspacesTable, upload.IconWorkspacesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -343,15 +366,16 @@ func (_q *UploadQuery) Clone() *UploadQuery {
 		return nil
 	}
 	return &UploadQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]upload.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.Upload{}, _q.predicates...),
-		withWorkspace:   _q.withWorkspace.Clone(),
-		withUploader:    _q.withUploader.Clone(),
-		withAvatarUsers: _q.withAvatarUsers.Clone(),
-		withAttachments: _q.withAttachments.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]upload.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.Upload{}, _q.predicates...),
+		withWorkspace:      _q.withWorkspace.Clone(),
+		withUploader:       _q.withUploader.Clone(),
+		withAvatarUsers:    _q.withAvatarUsers.Clone(),
+		withIconWorkspaces: _q.withIconWorkspaces.Clone(),
+		withAttachments:    _q.withAttachments.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -389,6 +413,17 @@ func (_q *UploadQuery) WithAvatarUsers(opts ...func(*UserQuery)) *UploadQuery {
 		opt(query)
 	}
 	_q.withAvatarUsers = query
+	return _q
+}
+
+// WithIconWorkspaces tells the query-builder to eager-load the nodes that are connected to
+// the "icon_workspaces" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UploadQuery) WithIconWorkspaces(opts ...func(*WorkspaceQuery)) *UploadQuery {
+	query := (&WorkspaceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIconWorkspaces = query
 	return _q
 }
 
@@ -481,10 +516,11 @@ func (_q *UploadQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Uploa
 	var (
 		nodes       = []*Upload{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withWorkspace != nil,
 			_q.withUploader != nil,
 			_q.withAvatarUsers != nil,
+			_q.withIconWorkspaces != nil,
 			_q.withAttachments != nil,
 		}
 	)
@@ -525,6 +561,13 @@ func (_q *UploadQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Uploa
 		if err := _q.loadAvatarUsers(ctx, query, nodes,
 			func(n *Upload) { n.Edges.AvatarUsers = []*User{} },
 			func(n *Upload, e *User) { n.Edges.AvatarUsers = append(n.Edges.AvatarUsers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIconWorkspaces; query != nil {
+		if err := _q.loadIconWorkspaces(ctx, query, nodes,
+			func(n *Upload) { n.Edges.IconWorkspaces = []*Workspace{} },
+			func(n *Upload, e *Workspace) { n.Edges.IconWorkspaces = append(n.Edges.IconWorkspaces, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -627,6 +670,39 @@ func (_q *UploadQuery) loadAvatarUsers(ctx context.Context, query *UserQuery, no
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "avatar_upload_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UploadQuery) loadIconWorkspaces(ctx context.Context, query *WorkspaceQuery, nodes []*Upload, init func(*Upload), assign func(*Upload, *Workspace)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Upload)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workspace.FieldIconUploadID)
+	}
+	query.Where(predicate.Workspace(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(upload.IconWorkspacesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IconUploadID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "icon_upload_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "icon_upload_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

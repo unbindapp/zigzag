@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-bootstrap-user",
 		Summary:     "Create Bootstrap User",
-		Description: "Create the first user as system admin together with the first workspace, and sign them in. Only works while no user exists.",
+		Description: "Create the first user as system admin together with the first workspace and its default team, and sign them in. Only works while no user exists.",
 		Path:        "/create-user",
 		Method:      http.MethodPost,
 	}, handlers.CreateUser, oapi.Public, oapi.SessionOnly)
@@ -69,18 +69,20 @@ type CreateUserResponse struct {
 }
 
 func (self *HandlerGroup) CreateUser(ctx context.Context, input *CreateUserInput) (*CreateUserResponse, error) {
-	user, workspace, err := self.srv.UserService.Bootstrap(ctx, input.Body)
+	result, err := self.srv.UserService.Bootstrap(ctx, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
-	cookies, err := self.srv.IssueSession(ctx, user)
+	cookies, err := self.srv.IssueSession(ctx, result.User)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
+	workspace := models.TransformWorkspaceEntity(result.Workspace, schema.WorkspaceRoleAdmin, 1, 1)
+	workspace.DefaultTeamID = &result.Team.ID
 	resp := &CreateUserResponse{SetCookie: cookies}
 	resp.Body.Data = &models.SessionWorkspaceResponse{
-		User:      models.TransformUserEntity(user),
-		Workspace: models.TransformWorkspaceEntity(workspace, schema.WorkspaceRoleAdmin, 1, 0),
+		User:      models.TransformUserEntity(result.User),
+		Workspace: workspace,
 	}
 	return resp, nil
 }

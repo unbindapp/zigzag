@@ -27,6 +27,8 @@ const (
 	FieldIcon = "icon"
 	// FieldColor holds the string denoting the color field in the database.
 	FieldColor = "color"
+	// FieldIconUploadID holds the string denoting the icon_upload_id field in the database.
+	FieldIconUploadID = "icon_upload_id"
 	// FieldArchivedAt holds the string denoting the archived_at field in the database.
 	FieldArchivedAt = "archived_at"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
@@ -61,6 +63,8 @@ const (
 	EdgeNotifications = "notifications"
 	// EdgeFavorites holds the string denoting the favorites edge name in mutations.
 	EdgeFavorites = "favorites"
+	// EdgeIconUpload holds the string denoting the icon_upload edge name in mutations.
+	EdgeIconUpload = "icon_upload"
 	// Table holds the table name of the workspace in the database.
 	Table = "workspaces"
 	// MembersTable is the table that holds the members relation/edge.
@@ -175,6 +179,13 @@ const (
 	FavoritesInverseTable = "favorites"
 	// FavoritesColumn is the table column denoting the favorites relation/edge.
 	FavoritesColumn = "workspace_id"
+	// IconUploadTable is the table that holds the icon_upload relation/edge.
+	IconUploadTable = "workspaces"
+	// IconUploadInverseTable is the table name for the Upload entity.
+	// It exists in this package in order to avoid circular dependency with the "upload" package.
+	IconUploadInverseTable = "uploads"
+	// IconUploadColumn is the table column denoting the icon_upload relation/edge.
+	IconUploadColumn = "icon_upload_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
@@ -186,6 +197,7 @@ var Columns = []string{
 	FieldSlug,
 	FieldIcon,
 	FieldColor,
+	FieldIconUploadID,
 	FieldArchivedAt,
 }
 
@@ -248,6 +260,11 @@ func ByIcon(opts ...sql.OrderTermOption) OrderOption {
 // ByColor orders the results by the color field.
 func ByColor(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldColor, opts...).ToFunc()
+}
+
+// ByIconUploadID orders the results by the icon_upload_id field.
+func ByIconUploadID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIconUploadID, opts...).ToFunc()
 }
 
 // ByArchivedAt orders the results by the archived_at field.
@@ -478,6 +495,13 @@ func ByFavorites(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newFavoritesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByIconUploadField orders the results by icon_upload field.
+func ByIconUploadField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIconUploadStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -588,5 +612,12 @@ func newFavoritesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FavoritesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, FavoritesTable, FavoritesColumn),
+	)
+}
+func newIconUploadStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IconUploadInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, IconUploadTable, IconUploadColumn),
 	)
 }

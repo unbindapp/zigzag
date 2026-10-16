@@ -41,6 +41,8 @@ const (
 	EdgeUploader = "uploader"
 	// EdgeAvatarUsers holds the string denoting the avatar_users edge name in mutations.
 	EdgeAvatarUsers = "avatar_users"
+	// EdgeIconWorkspaces holds the string denoting the icon_workspaces edge name in mutations.
+	EdgeIconWorkspaces = "icon_workspaces"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
 	// Table holds the table name of the upload in the database.
@@ -66,6 +68,13 @@ const (
 	AvatarUsersInverseTable = "users"
 	// AvatarUsersColumn is the table column denoting the avatar_users relation/edge.
 	AvatarUsersColumn = "avatar_upload_id"
+	// IconWorkspacesTable is the table that holds the icon_workspaces relation/edge.
+	IconWorkspacesTable = "workspaces"
+	// IconWorkspacesInverseTable is the table name for the Workspace entity.
+	// It exists in this package in order to avoid circular dependency with the "workspace" package.
+	IconWorkspacesInverseTable = "workspaces"
+	// IconWorkspacesColumn is the table column denoting the icon_workspaces relation/edge.
+	IconWorkspacesColumn = "icon_upload_id"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
 	AttachmentsTable = "attachments"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
@@ -197,6 +206,20 @@ func ByAvatarUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByIconWorkspacesCount orders the results by icon_workspaces count.
+func ByIconWorkspacesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIconWorkspacesStep(), opts...)
+	}
+}
+
+// ByIconWorkspaces orders the results by icon_workspaces terms.
+func ByIconWorkspaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIconWorkspacesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAttachmentsCount orders the results by attachments count.
 func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -229,6 +252,13 @@ func newAvatarUsersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AvatarUsersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AvatarUsersTable, AvatarUsersColumn),
+	)
+}
+func newIconWorkspacesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IconWorkspacesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IconWorkspacesTable, IconWorkspacesColumn),
 	)
 }
 func newAttachmentsStep() *sqlgraph.Step {

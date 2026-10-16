@@ -56,6 +56,7 @@ type WorkspaceQuery struct {
 	withIssues          *IssueQuery
 	withNotifications   *NotificationQuery
 	withFavorites       *FavoriteQuery
+	withIconUpload      *UploadQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -445,6 +446,28 @@ func (_q *WorkspaceQuery) QueryFavorites() *FavoriteQuery {
 	return query
 }
 
+// QueryIconUpload chains the current query on the "icon_upload" edge.
+func (_q *WorkspaceQuery) QueryIconUpload() *UploadQuery {
+	query := (&UploadClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
+			sqlgraph.To(upload.Table, upload.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspace.IconUploadTable, workspace.IconUploadColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Workspace entity from the query.
 // Returns a *NotFoundError when no Workspace was found.
 func (_q *WorkspaceQuery) First(ctx context.Context) (*Workspace, error) {
@@ -653,6 +676,7 @@ func (_q *WorkspaceQuery) Clone() *WorkspaceQuery {
 		withIssues:          _q.withIssues.Clone(),
 		withNotifications:   _q.withNotifications.Clone(),
 		withFavorites:       _q.withFavorites.Clone(),
+		withIconUpload:      _q.withIconUpload.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -836,6 +860,17 @@ func (_q *WorkspaceQuery) WithFavorites(opts ...func(*FavoriteQuery)) *Workspace
 	return _q
 }
 
+// WithIconUpload tells the query-builder to eager-load the nodes that are connected to
+// the "icon_upload" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkspaceQuery) WithIconUpload(opts ...func(*UploadQuery)) *WorkspaceQuery {
+	query := (&UploadClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIconUpload = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -914,7 +949,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 	var (
 		nodes       = []*Workspace{}
 		_spec       = _q.querySpec()
-		loadedTypes = [16]bool{
+		loadedTypes = [17]bool{
 			_q.withMembers != nil,
 			_q.withTeams != nil,
 			_q.withProjects != nil,
@@ -931,6 +966,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 			_q.withIssues != nil,
 			_q.withNotifications != nil,
 			_q.withFavorites != nil,
+			_q.withIconUpload != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1063,6 +1099,12 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 		if err := _q.loadFavorites(ctx, query, nodes,
 			func(n *Workspace) { n.Edges.Favorites = []*Favorite{} },
 			func(n *Workspace, e *Favorite) { n.Edges.Favorites = append(n.Edges.Favorites, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIconUpload; query != nil {
+		if err := _q.loadIconUpload(ctx, query, nodes, nil,
+			func(n *Workspace, e *Upload) { n.Edges.IconUpload = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1549,6 +1591,38 @@ func (_q *WorkspaceQuery) loadFavorites(ctx context.Context, query *FavoriteQuer
 	}
 	return nil
 }
+func (_q *WorkspaceQuery) loadIconUpload(ctx context.Context, query *UploadQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *Upload)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Workspace)
+	for i := range nodes {
+		if nodes[i].IconUploadID == nil {
+			continue
+		}
+		fk := *nodes[i].IconUploadID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(upload.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "icon_upload_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *WorkspaceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -1577,6 +1651,9 @@ func (_q *WorkspaceQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != workspace.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withIconUpload != nil {
+			_spec.Node.AddColumnOnce(workspace.FieldIconUploadID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -215,6 +215,21 @@ func (_u *UploadUpdate) AddAvatarUsers(v ...*User) *UploadUpdate {
 	return _u.AddAvatarUserIDs(ids...)
 }
 
+// AddIconWorkspaceIDs adds the "icon_workspaces" edge to the Workspace entity by IDs.
+func (_u *UploadUpdate) AddIconWorkspaceIDs(ids ...uuid.UUID) *UploadUpdate {
+	_u.mutation.AddIconWorkspaceIDs(ids...)
+	return _u
+}
+
+// AddIconWorkspaces adds the "icon_workspaces" edges to the Workspace entity.
+func (_u *UploadUpdate) AddIconWorkspaces(v ...*Workspace) *UploadUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIconWorkspaceIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_u *UploadUpdate) AddAttachmentIDs(ids ...uuid.UUID) *UploadUpdate {
 	_u.mutation.AddAttachmentIDs(ids...)
@@ -266,6 +281,27 @@ func (_u *UploadUpdate) RemoveAvatarUsers(v ...*User) *UploadUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvatarUserIDs(ids...)
+}
+
+// ClearIconWorkspaces clears all "icon_workspaces" edges to the Workspace entity.
+func (_u *UploadUpdate) ClearIconWorkspaces() *UploadUpdate {
+	_u.mutation.ClearIconWorkspaces()
+	return _u
+}
+
+// RemoveIconWorkspaceIDs removes the "icon_workspaces" edge to Workspace entities by IDs.
+func (_u *UploadUpdate) RemoveIconWorkspaceIDs(ids ...uuid.UUID) *UploadUpdate {
+	_u.mutation.RemoveIconWorkspaceIDs(ids...)
+	return _u
+}
+
+// RemoveIconWorkspaces removes "icon_workspaces" edges to Workspace entities.
+func (_u *UploadUpdate) RemoveIconWorkspaces(v ...*Workspace) *UploadUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIconWorkspaceIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -483,6 +519,51 @@ func (_u *UploadUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IconWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIconWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.IconWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconWorkspacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -739,6 +820,21 @@ func (_u *UploadUpdateOne) AddAvatarUsers(v ...*User) *UploadUpdateOne {
 	return _u.AddAvatarUserIDs(ids...)
 }
 
+// AddIconWorkspaceIDs adds the "icon_workspaces" edge to the Workspace entity by IDs.
+func (_u *UploadUpdateOne) AddIconWorkspaceIDs(ids ...uuid.UUID) *UploadUpdateOne {
+	_u.mutation.AddIconWorkspaceIDs(ids...)
+	return _u
+}
+
+// AddIconWorkspaces adds the "icon_workspaces" edges to the Workspace entity.
+func (_u *UploadUpdateOne) AddIconWorkspaces(v ...*Workspace) *UploadUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIconWorkspaceIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_u *UploadUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *UploadUpdateOne {
 	_u.mutation.AddAttachmentIDs(ids...)
@@ -790,6 +886,27 @@ func (_u *UploadUpdateOne) RemoveAvatarUsers(v ...*User) *UploadUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvatarUserIDs(ids...)
+}
+
+// ClearIconWorkspaces clears all "icon_workspaces" edges to the Workspace entity.
+func (_u *UploadUpdateOne) ClearIconWorkspaces() *UploadUpdateOne {
+	_u.mutation.ClearIconWorkspaces()
+	return _u
+}
+
+// RemoveIconWorkspaceIDs removes the "icon_workspaces" edge to Workspace entities by IDs.
+func (_u *UploadUpdateOne) RemoveIconWorkspaceIDs(ids ...uuid.UUID) *UploadUpdateOne {
+	_u.mutation.RemoveIconWorkspaceIDs(ids...)
+	return _u
+}
+
+// RemoveIconWorkspaces removes "icon_workspaces" edges to Workspace entities.
+func (_u *UploadUpdateOne) RemoveIconWorkspaces(v ...*Workspace) *UploadUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIconWorkspaceIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -1037,6 +1154,51 @@ func (_u *UploadUpdateOne) sqlSave(ctx context.Context) (_node *Upload, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IconWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIconWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.IconWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconWorkspacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

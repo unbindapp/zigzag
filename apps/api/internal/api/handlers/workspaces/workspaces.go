@@ -34,7 +34,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-workspace",
 		Summary:     "Create Workspace",
-		Description: "Create a workspace with a name and a unique slug. You become its admin. Default project statuses are created with it. Returns the workspace.",
+		Description: "Create a workspace with a name and a unique slug. You become its admin. Default project statuses and a first team named after the workspace, with default workflow states and you as its member, are created with it. Returns the workspace with default_team_id.",
 		Path:        "/create",
 		Method:      http.MethodPost,
 	}, handlers.Create, oapi.MCP)
@@ -42,7 +42,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-workspace",
 		Summary:     "Update Workspace",
-		Description: "Change a workspace's name, slug, icon or color. Returns the workspace. Needs admin.",
+		Description: "Change a workspace's name, slug, icon, logo image or color. Returns the workspace. Needs admin.",
 		Path:        "/update",
 		Method:      http.MethodPut,
 	}, handlers.Update, oapi.MCP)

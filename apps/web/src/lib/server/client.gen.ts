@@ -81,7 +81,9 @@ export const WorkspaceResponseSchema = z
   .object({
     color: z.string(),
     created_at: z.string().datetime({ offset: true }),
+    default_team_id: z.string().optional(), // The team created together with the workspace. Only returned when the workspace is created.
     icon: z.string(),
+    icon_url: z.string().nullable(), // Logo image, shown instead of icon when set
     id: z.string(),
     member_count: z.number(),
     name: z.string(),
@@ -2540,6 +2542,7 @@ export const UpdateWorkspaceInputSchema = z
   .object({
     color: z.string().optional(), // Hex color, empty to clear
     icon: z.string().optional(), // Emoji or icon name, empty to clear
+    icon_upload_id: z.string().optional(), // Logo image uploaded to this workspace with create-upload. Send 00000000-0000-0000-0000-000000000000 to remove the logo.
     name: z.string().optional(), // New name
     slug: z.string().optional(), // New URL key; old links stop working
     workspace_id: z.string(), // The workspace to change
@@ -2700,6 +2703,7 @@ export const WorkspaceMembershipSchema = z
   .object({
     color: z.string(),
     icon: z.string(),
+    icon_url: z.string().nullable(), // Logo image, shown instead of icon when set
     id: z.string(),
     name: z.string(),
     role: WorkspaceRoleSchema,

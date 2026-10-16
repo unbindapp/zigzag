@@ -2,6 +2,7 @@ package workspace_service
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/common/errdefs"
 	"github.com/unbindapp/zigzag-api/internal/common/utils"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	user_repo "github.com/unbindapp/zigzag-api/internal/repositories/user"
 	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
 	"github.com/unbindapp/zigzag-api/internal/services"
@@ -76,14 +78,78 @@ func (suite *WorkspaceServiceSuite) TestCreateRejectsTakenSlug() {
 	suite.ErrorIs(err, errdefs.ErrConflict)
 }
 
-func (suite *WorkspaceServiceSuite) TestCreateMakesTheCreatorAdmin() {
+func (suite *WorkspaceServiceSuite) TestCreateMakesTheCreatorAdminOfTheWorkspaceAndItsDefaultTeam() {
 	suite.expectRespond()
 	suite.MockWorkspaceRepo.EXPECT().SlugExists(suite.Ctx, mock.Anything, "acme", (*uuid.UUID)(nil)).Return(false, nil).Once()
 	suite.MockWorkspaceRepo.EXPECT().Create(suite.Ctx, mock.Anything, &workspace_repo.CreateWorkspaceInput{Name: "Acme", Slug: "acme", CreatorID: suite.adminID}).Return(suite.workspace, nil).Once()
+	teamID := uuid.New()
+	suite.MockTeamRepo.EXPECT().Create(suite.Ctx, mock.Anything, &team_repo.CreateTeamInput{WorkspaceID: suite.workspaceID, Name: "Acme", Key: "ACM", CreatorID: suite.adminID}).
+		Return(&ent.Team{ID: teamID, WorkspaceID: suite.workspaceID}, nil).Once()
 	resp, err := suite.service.Create(suite.Ctx, suite.adminID, &CreateWorkspaceInput{Name: " Acme ", Slug: "acme"})
 	suite.Require().NoError(err)
 	suite.Equal(schema.WorkspaceRoleAdmin, resp.Role)
 	suite.Equal(2, resp.MemberCount)
+	suite.Equal(&teamID, resp.DefaultTeamID)
+}
+
+func (suite *WorkspaceServiceSuite) TestCreateFailsWhenTheDefaultTeamFails() {
+	suite.MockWorkspaceRepo.EXPECT().SlugExists(suite.Ctx, mock.Anything, "acme", (*uuid.UUID)(nil)).Return(false, nil).Once()
+	suite.MockWorkspaceRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(suite.workspace, nil).Once()
+	failure := errors.New("insert failed")
+	suite.MockTeamRepo.EXPECT().Create(suite.Ctx, mock.Anything, mock.Anything).Return(nil, failure).Once()
+	_, err := suite.service.Create(suite.Ctx, suite.adminID, &CreateWorkspaceInput{Name: "Acme", Slug: "acme"})
+	suite.ErrorIs(err, failure)
+}
+
+func (suite *WorkspaceServiceSuite) TestUpdateIconUpload() {
+	uploadID := uuid.New()
+	update := func(id uuid.UUID) error {
+		_, err := suite.service.Update(suite.Ctx, suite.adminID, &UpdateWorkspaceInput{WorkspaceID: suite.workspaceID, IconUploadID: &id})
+		return err
+	}
+	suite.allow(schema.WorkspaceRoleViewer)
+	suite.allow(schema.WorkspaceRoleAdmin)
+	suite.expectRespond()
+
+	suite.Run("unknown upload", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(nil, &ent.NotFoundError{}).Once()
+		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
+	})
+	suite.Run("upload of another workspace", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: uuid.New(), ContentType: "image/png", Width: utils.ToPtr(64)}, nil).Once()
+		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
+	})
+	suite.Run("not an image", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "application/pdf"}, nil).Once()
+		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
+	})
+	suite.Run("image type without decoded dimensions", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/svg+xml"}, nil).Once()
+		suite.ErrorIs(update(uploadID), errdefs.ErrInvalidInput)
+	})
+	suite.Run("image of this workspace", func() {
+		suite.MockUploadRepo.EXPECT().GetByID(suite.Ctx, uploadID).Return(&ent.Upload{ID: uploadID, WorkspaceID: suite.workspaceID, ContentType: "image/png", Width: utils.ToPtr(64)}, nil).Once()
+		suite.MockWorkspaceRepo.EXPECT().Update(suite.Ctx, suite.workspaceID, &workspace_repo.UpdateWorkspaceInput{IconUploadID: &uploadID}).
+			Return(&ent.Workspace{ID: suite.workspaceID, IconUploadID: &uploadID}, nil).Once()
+		resp, err := suite.service.Update(suite.Ctx, suite.adminID, &UpdateWorkspaceInput{WorkspaceID: suite.workspaceID, IconUploadID: &uploadID})
+		suite.Require().NoError(err)
+		suite.Equal(utils.ToPtr("/api/go/uploads/get?upload_id="+uploadID.String()), resp.IconURL)
+	})
+	suite.Run("nil uuid clears the logo", func() {
+		suite.MockWorkspaceRepo.EXPECT().Update(suite.Ctx, suite.workspaceID, &workspace_repo.UpdateWorkspaceInput{ClearIconUpload: true}).
+			Return(&ent.Workspace{ID: suite.workspaceID}, nil).Once()
+		resp, err := suite.service.Update(suite.Ctx, suite.adminID, &UpdateWorkspaceInput{WorkspaceID: suite.workspaceID, IconUploadID: &uuid.Nil})
+		suite.Require().NoError(err)
+		suite.Nil(resp.IconURL)
+	})
+}
+
+func (suite *WorkspaceServiceSuite) TestViewerCannotSetTheIconUpload() {
+	uploadID := uuid.New()
+	suite.allow(schema.WorkspaceRoleViewer)
+	suite.deny(schema.WorkspaceRoleAdmin)
+	_, err := suite.service.Update(suite.Ctx, suite.adminID, &UpdateWorkspaceInput{WorkspaceID: suite.workspaceID, IconUploadID: &uploadID})
+	suite.ErrorIs(err, errdefs.ErrUnauthorized)
 }
 
 func (suite *WorkspaceServiceSuite) TestNarrowedCredentialsCreateWorkspacesOnlyWithFullWriteAccess() {

@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/ent/team"
 	"github.com/unbindapp/zigzag-api/ent/teammember"
+	"github.com/unbindapp/zigzag-api/internal/common/names"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
@@ -43,6 +44,15 @@ type CreateTeamInput struct {
 	Timezone      string
 	TriageEnabled bool
 	CreatorID     uuid.UUID
+}
+
+func DefaultTeamInput(workspace *ent.Workspace, creatorID uuid.UUID) *CreateTeamInput {
+	return &CreateTeamInput{
+		WorkspaceID: workspace.ID,
+		Name:        workspace.Name,
+		Key:         names.TeamKeyFromName(workspace.Name),
+		CreatorID:   creatorID,
+	}
 }
 
 // Writes several tables: call it inside a transaction.

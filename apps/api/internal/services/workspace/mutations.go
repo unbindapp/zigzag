@@ -2,6 +2,7 @@ package workspace_service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -11,6 +12,7 @@ import (
 	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/zigzag-api/internal/repositories/permissions"
+	team_repo "github.com/unbindapp/zigzag-api/internal/repositories/team"
 	workspace_repo "github.com/unbindapp/zigzag-api/internal/repositories/workspace"
 )
 
@@ -39,6 +41,7 @@ func (self *WorkspaceService) Create(ctx context.Context, userID uuid.UUID, inpu
 	}
 
 	var created *ent.Workspace
+	var team *ent.Team
 	err = self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		taken, err := self.repo.Workspace().SlugExists(ctx, tx, slug, nil)
 		if err != nil {
@@ -50,20 +53,30 @@ func (self *WorkspaceService) Create(ctx context.Context, userID uuid.UUID, inpu
 		created, err = self.repo.Workspace().Create(ctx, tx, &workspace_repo.CreateWorkspaceInput{
 			Name: name, Slug: slug, Icon: input.Icon, Color: color, CreatorID: userID,
 		})
+		if err != nil {
+			return err
+		}
+		team, err = self.repo.Team().Create(ctx, tx, team_repo.DefaultTeamInput(created, userID))
 		return err
 	})
 	if err != nil {
 		return nil, err
 	}
-	return self.respond(ctx, userID, created)
+	resp, err := self.respond(ctx, userID, created)
+	if err != nil {
+		return nil, err
+	}
+	resp.DefaultTeamID = &team.ID
+	return resp, nil
 }
 
 type UpdateWorkspaceInput struct {
-	WorkspaceID uuid.UUID `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace to change"`
-	Name        *string   `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
-	Slug        *string   `json:"slug,omitempty" required:"false" maxLength:"32" doc:"New URL key; old links stop working"`
-	Icon        *string   `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
-	Color       *string   `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
+	WorkspaceID  uuid.UUID  `json:"workspace_id" required:"true" format:"uuid" doc:"The workspace to change"`
+	Name         *string    `json:"name,omitempty" required:"false" maxLength:"64" doc:"New name"`
+	Slug         *string    `json:"slug,omitempty" required:"false" maxLength:"32" doc:"New URL key; old links stop working"`
+	Icon         *string    `json:"icon,omitempty" required:"false" maxLength:"64" doc:"Emoji or icon name, empty to clear"`
+	Color        *string    `json:"color,omitempty" required:"false" maxLength:"7" pattern:"^(#[0-9a-fA-F]{6})?$" doc:"Hex color, empty to clear"`
+	IconUploadID *uuid.UUID `json:"icon_upload_id,omitempty" required:"false" format:"uuid" doc:"Logo image uploaded to this workspace with create-upload. Send 00000000-0000-0000-0000-000000000000 to remove the logo."`
 }
 
 func (self *WorkspaceService) Update(ctx context.Context, userID uuid.UUID, input *UpdateWorkspaceInput) (*models.WorkspaceResponse, error) {
@@ -99,11 +112,35 @@ func (self *WorkspaceService) Update(ctx context.Context, userID uuid.UUID, inpu
 		}
 		update.Slug = &slug
 	}
+	if input.IconUploadID != nil {
+		if err := self.applyIconUpload(ctx, input.WorkspaceID, *input.IconUploadID, update); err != nil {
+			return nil, err
+		}
+	}
 	updated, err := self.repo.Workspace().Update(ctx, input.WorkspaceID, update)
 	if err != nil {
 		return nil, err
 	}
 	return self.respond(ctx, userID, updated)
+}
+
+func (self *WorkspaceService) applyIconUpload(ctx context.Context, workspaceID, uploadID uuid.UUID, update *workspace_repo.UpdateWorkspaceInput) error {
+	if uploadID == uuid.Nil {
+		update.ClearIconUpload = true
+		return nil
+	}
+	upload, err := self.repo.Upload().GetByID(ctx, uploadID)
+	if ent.IsNotFound(err) || (err == nil && upload.WorkspaceID != workspaceID) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The logo must be an image uploaded to this workspace")
+	}
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(upload.ContentType, "image/") || upload.Width == nil {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "The logo must be a png, jpeg, gif or webp image")
+	}
+	update.IconUploadID = &uploadID
+	return nil
 }
 
 type DeleteWorkspaceInput struct {

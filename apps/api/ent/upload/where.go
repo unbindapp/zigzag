@@ -640,6 +640,29 @@ func HasAvatarUsersWith(preds ...predicate.User) predicate.Upload {
 	})
 }
 
+// HasIconWorkspaces applies the HasEdge predicate on the "icon_workspaces" edge.
+func HasIconWorkspaces() predicate.Upload {
+	return predicate.Upload(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IconWorkspacesTable, IconWorkspacesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIconWorkspacesWith applies the HasEdge predicate on the "icon_workspaces" edge with a given conditions (other predicates).
+func HasIconWorkspacesWith(preds ...predicate.Workspace) predicate.Upload {
+	return predicate.Upload(func(s *sql.Selector) {
+		step := newIconWorkspacesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAttachments applies the HasEdge predicate on the "attachments" edge.
 func HasAttachments() predicate.Upload {
 	return predicate.Upload(func(s *sql.Selector) {

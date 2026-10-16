@@ -21,7 +21,7 @@ type UserServiceInterface interface {
 	ResetPassword(ctx context.Context, input *ResetPasswordInput) error
 	CleanupPasswordResetTokens(ctx context.Context) error
 	Logout(ctx context.Context, refreshToken string) error
-	Bootstrap(ctx context.Context, input *BootstrapInput) (user *ent.User, workspace *ent.Workspace, err error)
+	Bootstrap(ctx context.Context, input *BootstrapInput) (*BootstrapResult, error)
 	Whoami(ctx context.Context, userID uuid.UUID) (*models.WhoamiResponse, error)
 	ListUsers(ctx context.Context, requesterUserID uuid.UUID, input *ListUsersInput) ([]*models.UserResponse, error)
 	GetNotificationSettings(ctx context.Context, userID uuid.UUID) (*models.NotificationSettingsResponse, error)

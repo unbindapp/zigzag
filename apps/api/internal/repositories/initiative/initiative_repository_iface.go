@@ -26,7 +26,6 @@ type InitiativeRepositoryInterface interface {
 	ResolveWorkspaceOfInitiative(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	MaxSortOrder(ctx context.Context, workspaceID uuid.UUID) (float64, error)
 	CountProjectsInWorkspace(ctx context.Context, workspaceID uuid.UUID, projectIDs []uuid.UUID) (int, error)
-	// LatestHealths maps each initiative that has updates to the health of its newest one.
 	LatestHealths(ctx context.Context, initiativeIDs []uuid.UUID) (map[uuid.UUID]schema.Health, error)
 	ListUpdates(ctx context.Context, initiativeID uuid.UUID) ([]*ent.InitiativePost, error)
 	GetUpdate(ctx context.Context, updateID uuid.UUID) (*ent.InitiativePost, error)

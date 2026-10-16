@@ -166,6 +166,21 @@ func (_c *UploadCreate) AddAvatarUsers(v ...*User) *UploadCreate {
 	return _c.AddAvatarUserIDs(ids...)
 }
 
+// AddIconWorkspaceIDs adds the "icon_workspaces" edge to the Workspace entity by IDs.
+func (_c *UploadCreate) AddIconWorkspaceIDs(ids ...uuid.UUID) *UploadCreate {
+	_c.mutation.AddIconWorkspaceIDs(ids...)
+	return _c
+}
+
+// AddIconWorkspaces adds the "icon_workspaces" edges to the Workspace entity.
+func (_c *UploadCreate) AddIconWorkspaces(v ...*Workspace) *UploadCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIconWorkspaceIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_c *UploadCreate) AddAttachmentIDs(ids ...uuid.UUID) *UploadCreate {
 	_c.mutation.AddAttachmentIDs(ids...)
@@ -367,6 +382,22 @@ func (_c *UploadCreate) createSpec() (*Upload, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IconWorkspacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   upload.IconWorkspacesTable,
+			Columns: []string{upload.IconWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

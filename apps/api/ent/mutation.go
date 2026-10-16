@@ -41464,34 +41464,37 @@ func (m *TemplateMutation) ResetEdge(name string) error {
 // UploadMutation represents an operation that mutates the Upload nodes in the graph.
 type UploadMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	created_at          *time.Time
-	updated_at          *time.Time
-	file_name           *string
-	content_type        *string
-	size_bytes          *int64
-	addsize_bytes       *int64
-	storage_key         *string
-	width               *int
-	addwidth            *int
-	height              *int
-	addheight           *int
-	clearedFields       map[string]struct{}
-	workspace           *uuid.UUID
-	clearedworkspace    bool
-	uploader            *uuid.UUID
-	cleareduploader     bool
-	avatar_users        map[uuid.UUID]struct{}
-	removedavatar_users map[uuid.UUID]struct{}
-	clearedavatar_users bool
-	attachments         map[uuid.UUID]struct{}
-	removedattachments  map[uuid.UUID]struct{}
-	clearedattachments  bool
-	done                bool
-	oldValue            func(context.Context) (*Upload, error)
-	predicates          []predicate.Upload
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	created_at             *time.Time
+	updated_at             *time.Time
+	file_name              *string
+	content_type           *string
+	size_bytes             *int64
+	addsize_bytes          *int64
+	storage_key            *string
+	width                  *int
+	addwidth               *int
+	height                 *int
+	addheight              *int
+	clearedFields          map[string]struct{}
+	workspace              *uuid.UUID
+	clearedworkspace       bool
+	uploader               *uuid.UUID
+	cleareduploader        bool
+	avatar_users           map[uuid.UUID]struct{}
+	removedavatar_users    map[uuid.UUID]struct{}
+	clearedavatar_users    bool
+	icon_workspaces        map[uuid.UUID]struct{}
+	removedicon_workspaces map[uuid.UUID]struct{}
+	clearedicon_workspaces bool
+	attachments            map[uuid.UUID]struct{}
+	removedattachments     map[uuid.UUID]struct{}
+	clearedattachments     bool
+	done                   bool
+	oldValue               func(context.Context) (*Upload, error)
+	predicates             []predicate.Upload
 }
 
 var _ ent.Mutation = (*UploadMutation)(nil)
@@ -42167,6 +42170,60 @@ func (m *UploadMutation) ResetAvatarUsers() {
 	m.removedavatar_users = nil
 }
 
+// AddIconWorkspaceIDs adds the "icon_workspaces" edge to the Workspace entity by ids.
+func (m *UploadMutation) AddIconWorkspaceIDs(ids ...uuid.UUID) {
+	if m.icon_workspaces == nil {
+		m.icon_workspaces = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.icon_workspaces[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIconWorkspaces clears the "icon_workspaces" edge to the Workspace entity.
+func (m *UploadMutation) ClearIconWorkspaces() {
+	m.clearedicon_workspaces = true
+}
+
+// IconWorkspacesCleared reports if the "icon_workspaces" edge to the Workspace entity was cleared.
+func (m *UploadMutation) IconWorkspacesCleared() bool {
+	return m.clearedicon_workspaces
+}
+
+// RemoveIconWorkspaceIDs removes the "icon_workspaces" edge to the Workspace entity by IDs.
+func (m *UploadMutation) RemoveIconWorkspaceIDs(ids ...uuid.UUID) {
+	if m.removedicon_workspaces == nil {
+		m.removedicon_workspaces = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.icon_workspaces, ids[i])
+		m.removedicon_workspaces[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIconWorkspaces returns the removed IDs of the "icon_workspaces" edge to the Workspace entity.
+func (m *UploadMutation) RemovedIconWorkspacesIDs() (ids []uuid.UUID) {
+	for id := range m.removedicon_workspaces {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IconWorkspacesIDs returns the "icon_workspaces" edge IDs in the mutation.
+func (m *UploadMutation) IconWorkspacesIDs() (ids []uuid.UUID) {
+	for id := range m.icon_workspaces {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIconWorkspaces resets all changes to the "icon_workspaces" edge.
+func (m *UploadMutation) ResetIconWorkspaces() {
+	m.icon_workspaces = nil
+	m.clearedicon_workspaces = false
+	m.removedicon_workspaces = nil
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
 func (m *UploadMutation) AddAttachmentIDs(ids ...uuid.UUID) {
 	if m.attachments == nil {
@@ -42567,7 +42624,7 @@ func (m *UploadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UploadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.workspace != nil {
 		edges = append(edges, upload.EdgeWorkspace)
 	}
@@ -42576,6 +42633,9 @@ func (m *UploadMutation) AddedEdges() []string {
 	}
 	if m.avatar_users != nil {
 		edges = append(edges, upload.EdgeAvatarUsers)
+	}
+	if m.icon_workspaces != nil {
+		edges = append(edges, upload.EdgeIconWorkspaces)
 	}
 	if m.attachments != nil {
 		edges = append(edges, upload.EdgeAttachments)
@@ -42601,6 +42661,12 @@ func (m *UploadMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case upload.EdgeIconWorkspaces:
+		ids := make([]ent.Value, 0, len(m.icon_workspaces))
+		for id := range m.icon_workspaces {
+			ids = append(ids, id)
+		}
+		return ids
 	case upload.EdgeAttachments:
 		ids := make([]ent.Value, 0, len(m.attachments))
 		for id := range m.attachments {
@@ -42613,9 +42679,12 @@ func (m *UploadMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UploadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedavatar_users != nil {
 		edges = append(edges, upload.EdgeAvatarUsers)
+	}
+	if m.removedicon_workspaces != nil {
+		edges = append(edges, upload.EdgeIconWorkspaces)
 	}
 	if m.removedattachments != nil {
 		edges = append(edges, upload.EdgeAttachments)
@@ -42633,6 +42702,12 @@ func (m *UploadMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case upload.EdgeIconWorkspaces:
+		ids := make([]ent.Value, 0, len(m.removedicon_workspaces))
+		for id := range m.removedicon_workspaces {
+			ids = append(ids, id)
+		}
+		return ids
 	case upload.EdgeAttachments:
 		ids := make([]ent.Value, 0, len(m.removedattachments))
 		for id := range m.removedattachments {
@@ -42645,7 +42720,7 @@ func (m *UploadMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UploadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedworkspace {
 		edges = append(edges, upload.EdgeWorkspace)
 	}
@@ -42654,6 +42729,9 @@ func (m *UploadMutation) ClearedEdges() []string {
 	}
 	if m.clearedavatar_users {
 		edges = append(edges, upload.EdgeAvatarUsers)
+	}
+	if m.clearedicon_workspaces {
+		edges = append(edges, upload.EdgeIconWorkspaces)
 	}
 	if m.clearedattachments {
 		edges = append(edges, upload.EdgeAttachments)
@@ -42671,6 +42749,8 @@ func (m *UploadMutation) EdgeCleared(name string) bool {
 		return m.cleareduploader
 	case upload.EdgeAvatarUsers:
 		return m.clearedavatar_users
+	case upload.EdgeIconWorkspaces:
+		return m.clearedicon_workspaces
 	case upload.EdgeAttachments:
 		return m.clearedattachments
 	}
@@ -42703,6 +42783,9 @@ func (m *UploadMutation) ResetEdge(name string) error {
 		return nil
 	case upload.EdgeAvatarUsers:
 		m.ResetAvatarUsers()
+		return nil
+	case upload.EdgeIconWorkspaces:
+		m.ResetIconWorkspaces()
 		return nil
 	case upload.EdgeAttachments:
 		m.ResetAttachments()
@@ -49710,6 +49793,8 @@ type WorkspaceMutation struct {
 	favorites               map[uuid.UUID]struct{}
 	removedfavorites        map[uuid.UUID]struct{}
 	clearedfavorites        bool
+	icon_upload             *uuid.UUID
+	clearedicon_upload      bool
 	done                    bool
 	oldValue                func(context.Context) (*Workspace, error)
 	predicates              []predicate.Workspace
@@ -50059,6 +50144,55 @@ func (m *WorkspaceMutation) ColorCleared() bool {
 func (m *WorkspaceMutation) ResetColor() {
 	m.color = nil
 	delete(m.clearedFields, workspace.FieldColor)
+}
+
+// SetIconUploadID sets the "icon_upload_id" field.
+func (m *WorkspaceMutation) SetIconUploadID(u uuid.UUID) {
+	m.icon_upload = &u
+}
+
+// IconUploadID returns the value of the "icon_upload_id" field in the mutation.
+func (m *WorkspaceMutation) IconUploadID() (r uuid.UUID, exists bool) {
+	v := m.icon_upload
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIconUploadID returns the old "icon_upload_id" field's value of the Workspace entity.
+// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceMutation) OldIconUploadID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIconUploadID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIconUploadID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIconUploadID: %w", err)
+	}
+	return oldValue.IconUploadID, nil
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (m *WorkspaceMutation) ClearIconUploadID() {
+	m.icon_upload = nil
+	m.clearedFields[workspace.FieldIconUploadID] = struct{}{}
+}
+
+// IconUploadIDCleared returns if the "icon_upload_id" field was cleared in this mutation.
+func (m *WorkspaceMutation) IconUploadIDCleared() bool {
+	_, ok := m.clearedFields[workspace.FieldIconUploadID]
+	return ok
+}
+
+// ResetIconUploadID resets all changes to the "icon_upload_id" field.
+func (m *WorkspaceMutation) ResetIconUploadID() {
+	m.icon_upload = nil
+	delete(m.clearedFields, workspace.FieldIconUploadID)
 }
 
 // SetArchivedAt sets the "archived_at" field.
@@ -50974,6 +51108,33 @@ func (m *WorkspaceMutation) ResetFavorites() {
 	m.removedfavorites = nil
 }
 
+// ClearIconUpload clears the "icon_upload" edge to the Upload entity.
+func (m *WorkspaceMutation) ClearIconUpload() {
+	m.clearedicon_upload = true
+	m.clearedFields[workspace.FieldIconUploadID] = struct{}{}
+}
+
+// IconUploadCleared reports if the "icon_upload" edge to the Upload entity was cleared.
+func (m *WorkspaceMutation) IconUploadCleared() bool {
+	return m.IconUploadIDCleared() || m.clearedicon_upload
+}
+
+// IconUploadIDs returns the "icon_upload" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IconUploadID instead. It exists only for internal usage by the builders.
+func (m *WorkspaceMutation) IconUploadIDs() (ids []uuid.UUID) {
+	if id := m.icon_upload; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIconUpload resets all changes to the "icon_upload" edge.
+func (m *WorkspaceMutation) ResetIconUpload() {
+	m.icon_upload = nil
+	m.clearedicon_upload = false
+}
+
 // Where appends a list predicates to the WorkspaceMutation builder.
 func (m *WorkspaceMutation) Where(ps ...predicate.Workspace) {
 	m.predicates = append(m.predicates, ps...)
@@ -51008,7 +51169,7 @@ func (m *WorkspaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkspaceMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, workspace.FieldCreatedAt)
 	}
@@ -51026,6 +51187,9 @@ func (m *WorkspaceMutation) Fields() []string {
 	}
 	if m.color != nil {
 		fields = append(fields, workspace.FieldColor)
+	}
+	if m.icon_upload != nil {
+		fields = append(fields, workspace.FieldIconUploadID)
 	}
 	if m.archived_at != nil {
 		fields = append(fields, workspace.FieldArchivedAt)
@@ -51050,6 +51214,8 @@ func (m *WorkspaceMutation) Field(name string) (ent.Value, bool) {
 		return m.Icon()
 	case workspace.FieldColor:
 		return m.Color()
+	case workspace.FieldIconUploadID:
+		return m.IconUploadID()
 	case workspace.FieldArchivedAt:
 		return m.ArchivedAt()
 	}
@@ -51073,6 +51239,8 @@ func (m *WorkspaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldIcon(ctx)
 	case workspace.FieldColor:
 		return m.OldColor(ctx)
+	case workspace.FieldIconUploadID:
+		return m.OldIconUploadID(ctx)
 	case workspace.FieldArchivedAt:
 		return m.OldArchivedAt(ctx)
 	}
@@ -51126,6 +51294,13 @@ func (m *WorkspaceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetColor(v)
 		return nil
+	case workspace.FieldIconUploadID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIconUploadID(v)
+		return nil
 	case workspace.FieldArchivedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -51169,6 +51344,9 @@ func (m *WorkspaceMutation) ClearedFields() []string {
 	if m.FieldCleared(workspace.FieldColor) {
 		fields = append(fields, workspace.FieldColor)
 	}
+	if m.FieldCleared(workspace.FieldIconUploadID) {
+		fields = append(fields, workspace.FieldIconUploadID)
+	}
 	if m.FieldCleared(workspace.FieldArchivedAt) {
 		fields = append(fields, workspace.FieldArchivedAt)
 	}
@@ -51191,6 +51369,9 @@ func (m *WorkspaceMutation) ClearField(name string) error {
 		return nil
 	case workspace.FieldColor:
 		m.ClearColor()
+		return nil
+	case workspace.FieldIconUploadID:
+		m.ClearIconUploadID()
 		return nil
 	case workspace.FieldArchivedAt:
 		m.ClearArchivedAt()
@@ -51221,6 +51402,9 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 	case workspace.FieldColor:
 		m.ResetColor()
 		return nil
+	case workspace.FieldIconUploadID:
+		m.ResetIconUploadID()
+		return nil
 	case workspace.FieldArchivedAt:
 		m.ResetArchivedAt()
 		return nil
@@ -51230,7 +51414,7 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkspaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.members != nil {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51278,6 +51462,9 @@ func (m *WorkspaceMutation) AddedEdges() []string {
 	}
 	if m.favorites != nil {
 		edges = append(edges, workspace.EdgeFavorites)
+	}
+	if m.icon_upload != nil {
+		edges = append(edges, workspace.EdgeIconUpload)
 	}
 	return edges
 }
@@ -51382,13 +51569,17 @@ func (m *WorkspaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case workspace.EdgeIconUpload:
+		if id := m.icon_upload; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkspaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.removedmembers != nil {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51546,7 +51737,7 @@ func (m *WorkspaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkspaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.clearedmembers {
 		edges = append(edges, workspace.EdgeMembers)
 	}
@@ -51595,6 +51786,9 @@ func (m *WorkspaceMutation) ClearedEdges() []string {
 	if m.clearedfavorites {
 		edges = append(edges, workspace.EdgeFavorites)
 	}
+	if m.clearedicon_upload {
+		edges = append(edges, workspace.EdgeIconUpload)
+	}
 	return edges
 }
 
@@ -51634,6 +51828,8 @@ func (m *WorkspaceMutation) EdgeCleared(name string) bool {
 		return m.clearednotifications
 	case workspace.EdgeFavorites:
 		return m.clearedfavorites
+	case workspace.EdgeIconUpload:
+		return m.clearedicon_upload
 	}
 	return false
 }
@@ -51642,6 +51838,9 @@ func (m *WorkspaceMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *WorkspaceMutation) ClearEdge(name string) error {
 	switch name {
+	case workspace.EdgeIconUpload:
+		m.ClearIconUpload()
+		return nil
 	}
 	return fmt.Errorf("unknown Workspace unique edge %s", name)
 }
@@ -51697,6 +51896,9 @@ func (m *WorkspaceMutation) ResetEdge(name string) error {
 		return nil
 	case workspace.EdgeFavorites:
 		m.ResetFavorites()
+		return nil
+	case workspace.EdgeIconUpload:
+		m.ResetIconUpload()
 		return nil
 	}
 	return fmt.Errorf("unknown Workspace edge %s", name)

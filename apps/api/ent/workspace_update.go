@@ -120,6 +120,26 @@ func (_u *WorkspaceUpdate) ClearColor() *WorkspaceUpdate {
 	return _u
 }
 
+// SetIconUploadID sets the "icon_upload_id" field.
+func (_u *WorkspaceUpdate) SetIconUploadID(v uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.SetIconUploadID(v)
+	return _u
+}
+
+// SetNillableIconUploadID sets the "icon_upload_id" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableIconUploadID(v *uuid.UUID) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetIconUploadID(*v)
+	}
+	return _u
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (_u *WorkspaceUpdate) ClearIconUploadID() *WorkspaceUpdate {
+	_u.mutation.ClearIconUploadID()
+	return _u
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (_u *WorkspaceUpdate) SetArchivedAt(v time.Time) *WorkspaceUpdate {
 	_u.mutation.SetArchivedAt(v)
@@ -378,6 +398,11 @@ func (_u *WorkspaceUpdate) AddFavorites(v ...*Favorite) *WorkspaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddFavoriteIDs(ids...)
+}
+
+// SetIconUpload sets the "icon_upload" edge to the Upload entity.
+func (_u *WorkspaceUpdate) SetIconUpload(v *Upload) *WorkspaceUpdate {
+	return _u.SetIconUploadID(v.ID)
 }
 
 // Mutation returns the WorkspaceMutation object of the builder.
@@ -719,6 +744,12 @@ func (_u *WorkspaceUpdate) RemoveFavorites(v ...*Favorite) *WorkspaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveFavoriteIDs(ids...)
+}
+
+// ClearIconUpload clears the "icon_upload" edge to the Upload entity.
+func (_u *WorkspaceUpdate) ClearIconUpload() *WorkspaceUpdate {
+	_u.mutation.ClearIconUpload()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1532,6 +1563,35 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.IconUploadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workspace.IconUploadTable,
+			Columns: []string{workspace.IconUploadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(upload.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconUploadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workspace.IconUploadTable,
+			Columns: []string{workspace.IconUploadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(upload.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1625,6 +1685,26 @@ func (_u *WorkspaceUpdateOne) SetNillableColor(v *string) *WorkspaceUpdateOne {
 // ClearColor clears the value of the "color" field.
 func (_u *WorkspaceUpdateOne) ClearColor() *WorkspaceUpdateOne {
 	_u.mutation.ClearColor()
+	return _u
+}
+
+// SetIconUploadID sets the "icon_upload_id" field.
+func (_u *WorkspaceUpdateOne) SetIconUploadID(v uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.SetIconUploadID(v)
+	return _u
+}
+
+// SetNillableIconUploadID sets the "icon_upload_id" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableIconUploadID(v *uuid.UUID) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetIconUploadID(*v)
+	}
+	return _u
+}
+
+// ClearIconUploadID clears the value of the "icon_upload_id" field.
+func (_u *WorkspaceUpdateOne) ClearIconUploadID() *WorkspaceUpdateOne {
+	_u.mutation.ClearIconUploadID()
 	return _u
 }
 
@@ -1886,6 +1966,11 @@ func (_u *WorkspaceUpdateOne) AddFavorites(v ...*Favorite) *WorkspaceUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddFavoriteIDs(ids...)
+}
+
+// SetIconUpload sets the "icon_upload" edge to the Upload entity.
+func (_u *WorkspaceUpdateOne) SetIconUpload(v *Upload) *WorkspaceUpdateOne {
+	return _u.SetIconUploadID(v.ID)
 }
 
 // Mutation returns the WorkspaceMutation object of the builder.
@@ -2227,6 +2312,12 @@ func (_u *WorkspaceUpdateOne) RemoveFavorites(v ...*Favorite) *WorkspaceUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveFavoriteIDs(ids...)
+}
+
+// ClearIconUpload clears the "icon_upload" edge to the Upload entity.
+func (_u *WorkspaceUpdateOne) ClearIconUpload() *WorkspaceUpdateOne {
+	_u.mutation.ClearIconUpload()
+	return _u
 }
 
 // Where appends a list predicates to the WorkspaceUpdate builder.
@@ -3063,6 +3154,35 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(favorite.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IconUploadCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workspace.IconUploadTable,
+			Columns: []string{workspace.IconUploadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(upload.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconUploadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workspace.IconUploadTable,
+			Columns: []string{workspace.IconUploadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(upload.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

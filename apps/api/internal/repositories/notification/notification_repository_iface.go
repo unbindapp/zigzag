@@ -24,7 +24,6 @@ type NotificationRepositoryInterface interface {
 	// List returns one row more than the limit when another page exists.
 	List(ctx context.Context, input *ListInput) ([]*ent.Notification, error)
 	CountUnread(ctx context.Context, userID, workspaceID uuid.UUID, now time.Time) (int, error)
-	// OwnedWorkspaces leaves out ids that belong to other users.
 	OwnedWorkspaces(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error)
 	SetRead(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, readAt *time.Time) error
 	SetArchived(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, archivedAt *time.Time) error

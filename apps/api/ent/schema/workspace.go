@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/schema/mixin"
 )
 
@@ -22,6 +23,7 @@ func (Workspace) Fields() []ent.Field {
 		field.String("slug").Unique().Comment("URL key, lowercase [a-z0-9-]{2,32}"),
 		field.String("icon").Optional(),
 		field.String("color").Optional(),
+		field.UUID("icon_upload_id", uuid.UUID{}).Optional().Nillable(),
 		field.Time("archived_at").Optional().Nillable(),
 	}
 }
@@ -44,6 +46,7 @@ func (Workspace) Edges() []ent.Edge {
 		edge.To("issues", Issue.Type).Annotations(cascade()),
 		edge.To("notifications", Notification.Type).Annotations(cascade()),
 		edge.To("favorites", Favorite.Type).Annotations(cascade()),
+		edge.From("icon_upload", Upload.Type).Ref("icon_workspaces").Field("icon_upload_id").Unique(),
 	}
 }
 

@@ -33,9 +33,7 @@ func (self *UserService) Whoami(ctx context.Context, userID uuid.UUID) (*models.
 	}
 	for _, workspace := range workspaces {
 		role, _ := set.WorkspaceRole(workspace.ID)
-		resp.Workspaces = append(resp.Workspaces, &models.WorkspaceMembership{
-			ID: workspace.ID, Name: workspace.Name, Slug: workspace.Slug, Icon: workspace.Icon, Color: workspace.Color, Role: role,
-		})
+		resp.Workspaces = append(resp.Workspaces, models.TransformWorkspaceMembership(workspace, role))
 	}
 
 	access, narrowed := permissions_repo.APIKeyAccessFromContext(ctx)
