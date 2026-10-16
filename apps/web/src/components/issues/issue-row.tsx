@@ -62,10 +62,10 @@ export function IssueRow({
       }}
       onMouseEnter={() => onFocus(issue)}
       onFocus={() => onFocus(issue)}
-      className="group/row has-hover:hover:bg-accent data-selected:bg-primary/1-10 data-active:bg-accent focus-visible:ring-primary/8-10 relative flex h-9 w-full cursor-default items-center gap-2 border-b pr-3 pl-7 text-sm outline-hidden focus-visible:ring-1 focus-visible:ring-inset"
+      className="group/row has-hover:hover:bg-accent data-selected:bg-primary/1-10 data-active:bg-accent focus-visible:ring-primary/8-10 relative flex h-9 w-full cursor-default items-center gap-2 border-b pr-3 pl-6 text-sm outline-hidden focus-visible:ring-1 focus-visible:ring-inset"
     >
       <span
-        className="absolute top-1/2 left-2 flex -translate-y-1/2 items-center"
+        className="absolute top-1/2 left-1.5 flex -translate-y-1/2 items-center"
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
