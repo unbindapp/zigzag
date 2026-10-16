@@ -18,8 +18,9 @@ const (
 )
 
 type Repository struct {
-	FullName string `json:"full_name"`
-	HTMLURL  string `json:"html_url"`
+	FullName      string `json:"full_name"`
+	HTMLURL       string `json:"html_url"`
+	DefaultBranch string `json:"default_branch"`
 }
 
 type Account struct {
@@ -80,11 +81,13 @@ type PullRequestEvent struct {
 }
 
 type PushEvent struct {
-	Ref        string     `json:"ref"`
-	After      string     `json:"after"`
-	Deleted    bool       `json:"deleted"`
-	Repository Repository `json:"repository"`
-	Sender     Account    `json:"sender"`
+	Ref        string       `json:"ref"`
+	After      string       `json:"after"`
+	Deleted    bool         `json:"deleted"`
+	Repository Repository   `json:"repository"`
+	Sender     Account      `json:"sender"`
+	Commits    []PushCommit `json:"commits"`
+	HeadCommit *PushCommit  `json:"head_commit"`
 }
 
 func (self PushEvent) Branch() (string, bool) {
@@ -93,6 +96,58 @@ func (self PushEvent) Branch() (string, bool) {
 		return "", false
 	}
 	return branch, true
+}
+
+func (self PushEvent) OnDefaultBranch() bool {
+	branch, ok := self.Branch()
+	return ok && self.Repository.DefaultBranch != "" && branch == self.Repository.DefaultBranch
+}
+
+const (
+	shortSHALength   = 7
+	maxSubjectLength = 72
+)
+
+type PushCommit struct {
+	ID        string `json:"id"`
+	Message   string `json:"message"`
+	URL       string `json:"url"`
+	Timestamp string `json:"timestamp"`
+	Author    struct {
+		Name     string `json:"name"`
+		Username string `json:"username"`
+	} `json:"author"`
+}
+
+func (self PushCommit) ShortSHA() string {
+	if len(self.ID) <= shortSHALength {
+		return self.ID
+	}
+	return self.ID[:shortSHALength]
+}
+
+func (self PushCommit) Subject() string {
+	subject, _, _ := strings.Cut(self.Message, "\n")
+	subject = strings.TrimSpace(subject)
+	runes := []rune(subject)
+	if len(runes) <= maxSubjectLength {
+		return subject
+	}
+	return strings.TrimSpace(string(runes[:maxSubjectLength]))
+}
+
+func (self PushCommit) AuthorName() string {
+	if self.Author.Username != "" {
+		return self.Author.Username
+	}
+	return self.Author.Name
+}
+
+func (self PushCommit) HTMLURL(repository Repository) string {
+	if self.URL != "" {
+		return self.URL
+	}
+	return strings.TrimRight(repository.HTMLURL, "/") + "/commit/" + self.ID
 }
 
 func BranchURL(repository Repository, branch string) string {

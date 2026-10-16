@@ -1,0 +1,110 @@
+{
+  "ref": "refs/heads/bbedward/websocket-frames",
+  "before": "7a9c1e3f5b7d9f1a3c5e7a9c1e3f5b7d9f1a3c5e",
+  "after": "b84d2a6e0c1f9e7d5b3a8c6e4f2d0b9a7c5e3f1d",
+  "repository": {
+    "id": 700000001,
+    "node_id": "R_kgDOKbUnbA",
+    "name": "unbind",
+    "full_name": "unbindapp/unbind",
+    "private": false,
+    "owner": {
+      "name": "unbindapp",
+      "login": "unbindapp",
+      "id": 7654321,
+      "type": "Organization"
+    },
+    "html_url": "https://github.com/unbindapp/unbind",
+    "url": "https://github.com/unbindapp/unbind",
+    "default_branch": "master",
+    "master_branch": "master",
+    "pushed_at": 1792156803
+  },
+  "pusher": {
+    "name": "bbedward",
+    "email": "bbedward@example.com"
+  },
+  "sender": {
+    "login": "bbedward",
+    "id": 1234567,
+    "type": "User"
+  },
+  "created": false,
+  "deleted": false,
+  "forced": false,
+  "base_ref": null,
+  "compare": "https://github.com/unbindapp/unbind/compare/7a9c1e3f5b7d...b84d2a6e0c1f",
+  "commits": [
+    {
+      "id": "3e1f0c9a7b5d2e8f4a6c1b9d0e7f3a5c8b2d4e6f",
+      "tree_id": "f2b6a0d8c4e1937b5a2f6e0d1c9b8a7f6e5d4c3b",
+      "distinct": true,
+      "message": "Cap websocket frames at 1 MiB\n\nThe reader rejected frames only after buffering them.\n\nfixes UNB-12, UNB-13",
+      "timestamp": "2026-10-16T09:12:44-04:00",
+      "url": "https://github.com/unbindapp/unbind/commit/3e1f0c9a7b5d2e8f4a6c1b9d0e7f3a5c8b2d4e6f",
+      "author": {
+        "name": "Brandon",
+        "email": "bbedward@example.com",
+        "username": "bbedward"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "username": "web-flow"
+      },
+      "added": [],
+      "removed": [],
+      "modified": [
+        "internal/ws/reader.go"
+      ]
+    },
+    {
+      "id": "b84d2a6e0c1f9e7d5b3a8c6e4f2d0b9a7c5e3f1d",
+      "tree_id": "f2b6a0d8c4e1937b5a2f6e0d1c9b8a7f6e5d4c3b",
+      "distinct": true,
+      "message": "Log dropped frames\n\nUseful while looking into UNB-14.",
+      "timestamp": "2026-10-16T09:20:03-04:00",
+      "url": "https://github.com/unbindapp/unbind/commit/b84d2a6e0c1f9e7d5b3a8c6e4f2d0b9a7c5e3f1d",
+      "author": {
+        "name": "Brandon",
+        "email": "bbedward@example.com",
+        "username": "bbedward"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "username": "web-flow"
+      },
+      "added": [],
+      "removed": [],
+      "modified": [
+        "internal/ws/reader.go",
+        "internal/ws/log.go"
+      ]
+    }
+  ],
+  "head_commit": {
+    "id": "b84d2a6e0c1f9e7d5b3a8c6e4f2d0b9a7c5e3f1d",
+    "tree_id": "f2b6a0d8c4e1937b5a2f6e0d1c9b8a7f6e5d4c3b",
+    "distinct": true,
+    "message": "Log dropped frames\n\nUseful while looking into UNB-14.",
+    "timestamp": "2026-10-16T09:20:03-04:00",
+    "url": "https://github.com/unbindapp/unbind/commit/b84d2a6e0c1f9e7d5b3a8c6e4f2d0b9a7c5e3f1d",
+    "author": {
+      "name": "Brandon",
+      "email": "bbedward@example.com",
+      "username": "bbedward"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "username": "web-flow"
+    },
+    "added": [],
+    "removed": [],
+    "modified": [
+      "internal/ws/reader.go",
+      "internal/ws/log.go"
+    ]
+  }
+}

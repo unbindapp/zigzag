@@ -19,6 +19,7 @@ import (
 const (
 	SourceTypePullRequest = "github"
 	SourceTypeBranch      = "github_branch"
+	SourceTypeCommit      = "github_commit"
 )
 
 var ErrInvalidSignature = errors.New("the X-Hub-Signature-256 header does not match the workspace's GitHub secret")
@@ -45,6 +46,7 @@ const (
 
 type linkPlan struct {
 	label      string
+	movedLabel string
 	attachment issue_repo.LinkedAttachmentInput
 	replaceURL string
 	move       move
@@ -182,8 +184,44 @@ func (self *GithubService) handlePush(ctx context.Context, workspaceID uuid.UUID
 				attachment.Metadata["repo"] == event.Repository.FullName && attachment.Metadata["branch"] == branch
 		},
 	}
-	refs := github.References(branch)
-	return true, self.link(ctx, workspaceID, refs, func(github.Reference) linkPlan { return plan })
+	failures := []error{self.link(ctx, workspaceID, github.References(branch), func(github.Reference) linkPlan { return plan })}
+	for _, commit := range event.Commits {
+		failures = append(failures, self.linkCommit(ctx, workspaceID, event, branch, commit))
+	}
+	return true, errors.Join(failures...)
+}
+
+func (self *GithubService) linkCommit(ctx context.Context, workspaceID uuid.UUID, event *github.PushEvent, branch string, commit github.PushCommit) error {
+	if commit.ID == "" {
+		return nil
+	}
+	refs := github.References("", commit.Message)
+	if len(refs) == 0 {
+		return nil
+	}
+	sha := commit.ShortSHA()
+	plan := linkPlan{
+		label: "Commit " + sha + " pushed to " + branch,
+		attachment: issue_repo.LinkedAttachmentInput{
+			Title:      sha + " " + commit.Subject(),
+			URL:        commit.HTMLURL(event.Repository),
+			SourceType: SourceTypeCommit,
+			Metadata: map[string]any{
+				"repo": event.Repository.FullName, "sha": commit.ID, "branch": branch, "author": commit.AuthorName(),
+			},
+		},
+		move: moveOpened,
+	}
+	closes := event.OnDefaultBranch()
+	return self.link(ctx, workspaceID, refs, func(ref github.Reference) linkPlan {
+		if !closes || !ref.Closes {
+			return plan
+		}
+		closing := plan
+		closing.move = moveMerged
+		closing.movedLabel = "Commit " + sha + " on " + branch + " closed the issue"
+		return closing
+	})
 }
 
 func (self *GithubService) link(ctx context.Context, workspaceID uuid.UUID, refs []github.Reference, planFor func(github.Reference) linkPlan) error {
@@ -242,7 +280,7 @@ func (self *GithubService) linkIssue(ctx context.Context, issueID uuid.UUID, pla
 			}
 		}
 	}
-	link := &issue_service.GithubLink{IssueID: issueID, Label: plan.label, Attachment: plan.attachment, ReplaceURL: plan.replaceURL}
+	link := &issue_service.GithubLink{IssueID: issueID, Label: plan.label, MovedLabel: plan.movedLabel, Attachment: plan.attachment, ReplaceURL: plan.replaceURL}
 	if plan.move != stay && issue.Edges.Team != nil {
 		state, err := self.targetState(ctx, issue.Edges.Team, plan.move)
 		if err != nil {

@@ -15,6 +15,7 @@ import (
 type GithubLink struct {
 	IssueID    uuid.UUID
 	Label      string
+	MovedLabel string
 	Attachment issue_repo.LinkedAttachmentInput
 	ReplaceURL string
 	State      *ent.WorkflowState
@@ -52,7 +53,11 @@ func (self *IssueService) applyGithubLink(ctx context.Context, tx repository.TxI
 	if !linked && !moves {
 		return outcome, nil
 	}
-	outcome.changes = append(outcome.changes, schema.FieldChange{Field: "github", To: link.Attachment.URL, ToLabel: link.Label})
+	label := link.Label
+	if moves && link.MovedLabel != "" {
+		label = link.MovedLabel
+	}
+	outcome.changes = append(outcome.changes, schema.FieldChange{Field: "github", To: link.Attachment.URL, ToLabel: label})
 	if moves {
 		if err := self.moveForGithub(ctx, tx, current, link.State, outcome); err != nil {
 			return nil, err

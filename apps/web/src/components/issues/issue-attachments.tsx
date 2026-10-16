@@ -130,11 +130,19 @@ function AttachmentRow({ attachment, canEdit }: { attachment: TAttachment; canEd
         className="flex min-w-0 flex-1 outline-hidden focus-visible:underline has-hover:hover:underline"
       >
         <ListRowText
-          primary={attachment.title}
+          primary={github?.kind === "commit" ? <CommitTitle commit={github} /> : attachment.title}
           secondary={github?.reference || attachment.subtitle || undefined}
         />
       </a>
     </ListRow>
+  );
+}
+
+function CommitTitle({ commit }: { commit: Extract<TGithubLink, { kind: "commit" }> }) {
+  return (
+    <>
+      <span className="text-muted-foreground font-mono text-xs">{commit.sha}</span> {commit.subject}
+    </>
   );
 }
 

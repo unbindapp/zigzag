@@ -23,7 +23,7 @@ const identifier = `([a-z][a-z0-9]{0,6})-([0-9]{1,9})`
 var (
 	branchIdentifier  = regexp.MustCompile(`(?i)(?:^|[/_-])` + identifier + `(?:$|[^a-z0-9])`)
 	textIdentifier    = regexp.MustCompile(`(?i)\b` + identifier + `\b`)
-	closingPhrase     = regexp.MustCompile(`(?i)\b(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\b:?((?:(?:\s*,\s*|\s+and\s+|\s+)\[?[a-z][a-z0-9]{0,6}-[0-9]{1,9}\]?)+)`)
+	closingPhrase     = regexp.MustCompile(`(?i)\b(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\b:?((?:(?:[ \t]*,[ \t]*|[ \t]+and[ \t]+|[ \t]+)\[?[a-z][a-z0-9]{0,6}-[0-9]{1,9}\]?)+)`)
 	closingIdentifier = regexp.MustCompile(`(?i)` + identifier)
 )
 

@@ -23,7 +23,7 @@ Workspaces, teams, issues, projects, cycles, labels, views, documents, inbox. On
 - Sign in with Google, set up by a system admin in the UI
 - An MCP server at `/mcp` where every API operation is a tool, scoped by the same roles
 - Import from Linear, archived issues included, idempotent and dry-runnable
-- GitHub webhooks: pull requests and branches that mention an issue link to it and move it from started to done
+- GitHub webhooks: pull requests, branches and commits that mention an issue link to it and move it from started to done; a commit that fixes an issue closes it when it lands on the default branch
 - GitHub Issues sync: issues, comments, labels, assignees and state of chosen repositories sync both ways, with an import of existing issues
 
 ## Run it

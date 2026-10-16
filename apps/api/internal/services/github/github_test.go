@@ -650,6 +650,141 @@ func (suite *GithubServiceSuite) TestMalformedPayloadsAreIgnored() {
 	suite.Empty(suite.history)
 }
 
+const (
+	closingSHA = "7f3d2a9c1e4b5f60718293a4b5c6d7e8f9012345"
+	mentionSHA = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+)
+
+func commitPayload(sha, message string) map[string]any {
+	author := map[string]any{"name": "Mona Lisa Octocat", "email": "mona@example.com", "username": "bbedward"}
+	return map[string]any{
+		"id": sha, "tree_id": "9d4d1fc2b5a3e7f6081a2b3c4d5e6f7081920a1b", "distinct": true,
+		"message": message, "timestamp": "2026-10-16T09:00:00-04:00",
+		"url":    repoURL + "/commit/" + sha,
+		"author": author, "committer": author,
+		"added": []string{}, "removed": []string{}, "modified": []string{"internal/ws/reader.go"},
+	}
+}
+
+func commitsPushPayload(branch string) map[string]any {
+	commits := []map[string]any{
+		commitPayload(closingSHA, "Cap websocket frames\n\nfixes UNB-12, UNB-13"),
+		commitPayload(mentionSHA, "Log dropped frames for UNB-14 and UNB-458"),
+	}
+	return map[string]any{
+		"ref": "refs/heads/" + branch, "before": "5c1e0b7d9f8a6e4c2b0a9f8e7d6c5b4a39281706", "after": mentionSHA,
+		"created": false, "deleted": false, "forced": false, "base_ref": nil,
+		"compare": repoURL + "/compare/5c1e0b7d9f8a...a1b2c3d4e5f6",
+		"commits": commits, "head_commit": commits[1],
+		"repository": map[string]any{
+			"id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "unbind", "full_name": repoName,
+			"private": false, "html_url": repoURL, "default_branch": "master", "master_branch": "master",
+		},
+		"pusher": map[string]any{"name": "bbedward", "email": "mona@example.com"},
+		"sender": map[string]any{"login": "bbedward", "id": 1, "type": "User"},
+	}
+}
+
+func (suite *GithubServiceSuite) addCommitIssues() {
+	for number, state := range map[int]string{12: "Todo", 13: "In Progress", 14: "Backlog"} {
+		issue := &ent.Issue{ID: uuid.New(), WorkspaceID: suite.workspaceID, TeamID: suite.team.ID, Number: number, Title: "Issue", StateID: suite.states[state].ID}
+		issue.Edges.Team = suite.team
+		issue.Edges.State = suite.states[state]
+		suite.issues["UNB-"+strconv.Itoa(number)] = issue
+	}
+}
+
+func (suite *GithubServiceSuite) TestCommitsOnTheDefaultBranchCloseWhatTheyFix() {
+	suite.addCommitIssues()
+	handled, err := suite.deliver(github.EventPush, commitsPushPayload("master"))
+	suite.Require().NoError(err)
+	suite.True(handled)
+
+	suite.Equal("Done", suite.stateOf("UNB-12"))
+	suite.Equal("Done", suite.stateOf("UNB-13"))
+	suite.Equal("In Progress", suite.stateOf("UNB-14"), "a bare mention starts an unstarted issue")
+	suite.Equal("Done", suite.stateOf("UNB-458"))
+
+	closing := suite.onlyAttachment("UNB-12")
+	suite.Equal("7f3d2a9 Cap websocket frames", closing.Title)
+	suite.Equal(repoURL+"/commit/"+closingSHA, closing.URL)
+	suite.Equal(SourceTypeCommit, closing.SourceType)
+	suite.Equal(map[string]any{"repo": repoName, "sha": closingSHA, "branch": "master", "author": "bbedward"}, closing.Metadata)
+	suite.Equal("a1b2c3d Log dropped frames for UNB-14 and UNB-458", suite.onlyAttachment("UNB-458").Title)
+
+	for _, identifier := range []string{"UNB-12", "UNB-13"} {
+		rows := suite.historyOf(identifier)
+		suite.Require().Len(rows, 1, identifier)
+		suite.Equal(schema.HistorySourceSystem, rows[0].source)
+		suite.Equal("Commit 7f3d2a9 on master closed the issue", rows[0].changes[0].ToLabel)
+		suite.Equal("Done", rows[0].changes[1].ToLabel)
+	}
+	mention := suite.historyOf("UNB-14")
+	suite.Require().Len(mention, 1)
+	suite.Equal("Commit a1b2c3d pushed to master", mention[0].changes[0].ToLabel)
+	suite.Equal("In Progress", mention[0].changes[1].ToLabel)
+	done := suite.historyOf("UNB-458")
+	suite.Require().Len(done, 1)
+	suite.Len(done[0].changes, 1, "a completed issue only gains the attachment")
+}
+
+func (suite *GithubServiceSuite) TestCommitsOnAFeatureBranchLinkWithoutClosing() {
+	suite.addCommitIssues()
+	_, err := suite.deliver(github.EventPush, commitsPushPayload("bbedward/frames"))
+	suite.Require().NoError(err)
+
+	suite.Equal("In Progress", suite.stateOf("UNB-12"))
+	suite.Equal("In Progress", suite.stateOf("UNB-13"))
+	suite.Equal("In Progress", suite.stateOf("UNB-14"))
+	suite.Equal("Done", suite.stateOf("UNB-458"))
+	suite.Equal("bbedward/frames", suite.onlyAttachment("UNB-12").Metadata["branch"])
+	suite.Equal("Commit 7f3d2a9 pushed to bbedward/frames", suite.historyOf("UNB-12")[0].changes[0].ToLabel)
+	suite.Len(suite.historyOf("UNB-13")[0].changes, 1, "a started issue stays where it is")
+
+	suite.history = nil
+	_, err = suite.deliver(github.EventPush, commitsPushPayload("master"))
+	suite.Require().NoError(err)
+	suite.Equal("Done", suite.stateOf("UNB-12"), "the same commit landing on the default branch closes")
+	suite.Equal("Done", suite.stateOf("UNB-13"))
+	suite.Equal("master", suite.onlyAttachment("UNB-12").Metadata["branch"])
+	suite.Equal("Commit 7f3d2a9 on master closed the issue", suite.historyOf("UNB-12")[0].changes[0].ToLabel)
+	suite.Empty(suite.historyOf("UNB-14"))
+	suite.Empty(suite.historyOf("UNB-458"))
+}
+
+func (suite *GithubServiceSuite) TestRedeliveredCommitPushChangesNothing() {
+	suite.addCommitIssues()
+	_, err := suite.deliver(github.EventPush, commitsPushPayload("master"))
+	suite.Require().NoError(err)
+	history, emitted := len(suite.history), len(suite.emitted)
+
+	_, err = suite.deliver(github.EventPush, commitsPushPayload("master"))
+	suite.Require().NoError(err)
+	for _, identifier := range []string{"UNB-12", "UNB-13", "UNB-14", "UNB-458"} {
+		suite.Len(suite.attachments[suite.issues[identifier].ID], 1, identifier)
+	}
+	suite.Len(suite.history, history)
+	suite.Len(suite.emitted, emitted)
+}
+
+func (suite *GithubServiceSuite) TestPushesLinkTheirBranchAndCommits() {
+	suite.addCommitIssues()
+	_, err := suite.deliver(github.EventPush, commitsPushPayload("bbedward/unb-455-frames"))
+	suite.Require().NoError(err)
+	suite.Equal(SourceTypeBranch, suite.onlyAttachment("UNB-455").SourceType)
+	suite.Equal(SourceTypeCommit, suite.onlyAttachment("UNB-12").SourceType)
+}
+
+func (suite *GithubServiceSuite) TestCommitsWithoutReferencesAreIgnored() {
+	payload := commitsPushPayload("master")
+	payload["commits"] = []map[string]any{commitPayload(closingSHA, "Cap websocket frames"), commitPayload("", "fixes UNB-455")}
+	handled, err := suite.deliver(github.EventPush, payload)
+	suite.Require().NoError(err)
+	suite.True(handled)
+	suite.Empty(suite.attachments)
+	suite.Empty(suite.history)
+}
+
 func TestGithubServiceSuite(t *testing.T) {
 	suite.Run(t, new(GithubServiceSuite))
 }

@@ -41,6 +41,10 @@ func TestReferences(t *testing.T) {
 		{name: "zero is not an issue number", texts: []string{"UNB-0"}},
 		{name: "key longer than seven characters", texts: []string{"ABCDEFGH-1"}},
 		{name: "branch and closing body merge into one reference", branch: "bbedward/unb-455-limit", texts: []string{"Limit reads", "fixes UNB-455"}, want: []Reference{ref("UNB", 455, true)}},
+		{name: "commit message with a trailer on the last line", texts: []string{"Limit websocket reads\n\nThe reader caps frames, see UNB-4.\n\nFixes UNB-5"}, want: []Reference{ref("UNB", 5, true), ref("UNB", 4, false)}},
+		{name: "commit message with trailers after the closing one", texts: []string{"Cap frames\n\nCloses UNB-5, UNB-6\nCo-authored-by: Brandon <b@example.com>\n"}, want: []Reference{ref("UNB", 5, true), ref("UNB", 6, true)}},
+		{name: "closing list stops at the end of its line", texts: []string{"Fixes UNB-5\nUNB-6 follows up"}, want: []Reference{ref("UNB", 5, true), ref("UNB", 6, false)}},
+		{name: "magic word on a later line of a commit message", texts: []string{"Refactor the reader for UNB-7\n\nresolved: UNB-8"}, want: []Reference{ref("UNB", 8, true), ref("UNB", 7, false)}},
 		{name: "mention then magic word keeps the first position", texts: []string{"UNB-2 then UNB-1", "closes unb-2"}, want: []Reference{ref("UNB", 2, true), ref("UNB", 1, false)}},
 	}
 	for _, tc := range cases {

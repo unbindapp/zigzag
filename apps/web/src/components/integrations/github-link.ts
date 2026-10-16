@@ -3,9 +3,12 @@ export type TPullRequestState = (typeof PULL_REQUEST_STATES)[number];
 
 export type TGithubLink =
   | { kind: "pull_request"; reference: string; state: TPullRequestState | null }
-  | { kind: "branch"; reference: string };
+  | { kind: "branch"; reference: string }
+  | { kind: "commit"; reference: string; sha: string; subject: string };
 
-type TLinkedAttachment = { source_type: string; metadata: Record<string, unknown> };
+type TLinkedAttachment = { source_type: string; title: string; metadata: Record<string, unknown> };
+
+const SHORT_SHA_LENGTH = 7;
 
 function text(value: unknown) {
   return typeof value === "string" ? value : "";
@@ -25,6 +28,13 @@ export function githubLinkOf(attachment: TLinkedAttachment): TGithubLink | null 
     }
     case "github_branch":
       return { kind: "branch", reference: repo };
+    case "github_commit": {
+      const sha = text(attachment.metadata.sha).slice(0, SHORT_SHA_LENGTH);
+      const subject = attachment.title.startsWith(`${sha} `)
+        ? attachment.title.slice(sha.length + 1)
+        : attachment.title;
+      return { kind: "commit", reference: repo, sha, subject };
+    }
     default:
       return null;
   }

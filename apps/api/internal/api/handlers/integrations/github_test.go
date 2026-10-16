@@ -18,6 +18,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent"
 	"github.com/zigzagapp-org/zigzag-api/ent/attachment"
 	"github.com/zigzagapp-org/zigzag-api/ent/enttest"
+	"github.com/zigzagapp-org/zigzag-api/ent/issuehistory"
 	"github.com/zigzagapp-org/zigzag-api/ent/workflowstate"
 	"github.com/zigzagapp-org/zigzag-api/internal/api/middleware"
 	"github.com/zigzagapp-org/zigzag-api/internal/api/router"
@@ -203,6 +204,62 @@ func (suite *GithubWebhookSuite) TestPushLinksTheBranch() {
 	suite.Equal("github_branch", attachments[0].SourceType)
 	suite.Equal("In Progress", suite.stateOf(456))
 	suite.Empty(suite.attachmentsOf(455))
+}
+
+func (suite *GithubWebhookSuite) addIssues(numbers ...int) {
+	backlog := suite.DB.WorkflowState.Query().Where(workflowstate.TeamID(suite.team.ID), workflowstate.Name("Backlog")).OnlyX(suite.Ctx)
+	for _, number := range numbers {
+		created, err := issue_repo.NewIssueRepository(suite.DB).Create(suite.Ctx, nil, &issue_repo.CreateIssueInput{
+			WorkspaceID: suite.workspace.ID, TeamID: suite.team.ID, Number: number, Title: "Issue", StateID: backlog.ID, CreatorID: &suite.user.ID,
+		})
+		suite.Require().NoError(err)
+		suite.issues[number] = created
+	}
+}
+
+func (suite *GithubWebhookSuite) historyLabels(number int) []string {
+	labels := []string{}
+	for _, row := range suite.DB.IssueHistory.Query().Where(issuehistory.IssueID(suite.issues[number].ID)).AllX(suite.Ctx) {
+		labels = append(labels, row.Changes[0].ToLabel)
+	}
+	return labels
+}
+
+func (suite *GithubWebhookSuite) TestCommitsPushedToTheDefaultBranchCloseWhatTheyFix() {
+	suite.addIssues(12, 13, 14)
+	result := suite.deliver(github.EventPush, "push_commits_master.json")
+	suite.Equal(http.StatusOK, result.status)
+	suite.Equal(map[string]any{"event": "push", "handled": true}, result.body["data"])
+
+	suite.Equal("Done", suite.stateOf(12))
+	suite.Equal("Done", suite.stateOf(13))
+	suite.Equal("In Progress", suite.stateOf(14))
+	attachments := suite.attachmentsOf(12)
+	suite.Require().Len(attachments, 1)
+	suite.Equal("3e1f0c9 Cap websocket frames at 1 MiB", attachments[0].Title)
+	suite.Equal("https://github.com/unbindapp/unbind/commit/3e1f0c9a7b5d2e8f4a6c1b9d0e7f3a5c8b2d4e6f", attachments[0].URL)
+	suite.Equal("github_commit", attachments[0].SourceType)
+	suite.Equal(map[string]any{"repo": "unbindapp/unbind", "sha": "3e1f0c9a7b5d2e8f4a6c1b9d0e7f3a5c8b2d4e6f", "branch": "master", "author": "bbedward"}, attachments[0].Metadata)
+	suite.Equal([]string{"Commit 3e1f0c9 on master closed the issue"}, suite.historyLabels(12))
+	suite.Equal([]string{"Commit b84d2a6 pushed to master"}, suite.historyLabels(14))
+
+	redelivered := suite.deliver(github.EventPush, "push_commits_master.json")
+	suite.Equal(http.StatusOK, redelivered.status)
+	for _, number := range []int{12, 13, 14} {
+		suite.Len(suite.attachmentsOf(number), 1, number)
+		suite.Len(suite.historyLabels(number), 1, number)
+	}
+}
+
+func (suite *GithubWebhookSuite) TestCommitsPushedToAFeatureBranchOnlyStartIssues() {
+	suite.addIssues(12, 13, 14)
+	result := suite.deliver(github.EventPush, "push_commits_feature.json")
+	suite.Equal(http.StatusOK, result.status)
+	for _, number := range []int{12, 13, 14} {
+		suite.Equal("In Progress", suite.stateOf(number), number)
+		suite.Len(suite.attachmentsOf(number), 1, number)
+	}
+	suite.Equal([]string{"Commit 3e1f0c9 pushed to bbedward/websocket-frames"}, suite.historyLabels(12))
 }
 
 func (suite *GithubWebhookSuite) TestOtherEventsAreAcknowledged() {

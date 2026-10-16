@@ -205,7 +205,7 @@ export const AttachmentResponseSchema = z
     issue_id: z.string(),
     metadata: z.record(z.any()),
     sort_order: z.number(),
-    source_type: z.string(), // upload, link, github (a pull request), github_branch or import
+    source_type: z.string(), // upload, link, github (a pull request), github_branch, github_commit or import
     subtitle: z.string(),
     title: z.string(),
     updated_at: z.string().datetime({ offset: true }),
