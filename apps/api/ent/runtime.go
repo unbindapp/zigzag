@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/attachment"
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
@@ -157,6 +158,27 @@ func init() {
 	cycleDescID := cycleMixinFields0[0].Descriptor()
 	// cycle.DefaultID holds the default value on creation for the id field.
 	cycle.DefaultID = cycleDescID.Default.(func() uuid.UUID)
+	cyclescopehistoryMixin := schema.CycleScopeHistory{}.Mixin()
+	cyclescopehistoryMixinFields0 := cyclescopehistoryMixin[0].Fields()
+	_ = cyclescopehistoryMixinFields0
+	cyclescopehistoryMixinFields1 := cyclescopehistoryMixin[1].Fields()
+	_ = cyclescopehistoryMixinFields1
+	cyclescopehistoryFields := schema.CycleScopeHistory{}.Fields()
+	_ = cyclescopehistoryFields
+	// cyclescopehistoryDescCreatedAt is the schema descriptor for created_at field.
+	cyclescopehistoryDescCreatedAt := cyclescopehistoryMixinFields1[0].Descriptor()
+	// cyclescopehistory.DefaultCreatedAt holds the default value on creation for the created_at field.
+	cyclescopehistory.DefaultCreatedAt = cyclescopehistoryDescCreatedAt.Default.(func() time.Time)
+	// cyclescopehistoryDescUpdatedAt is the schema descriptor for updated_at field.
+	cyclescopehistoryDescUpdatedAt := cyclescopehistoryMixinFields1[1].Descriptor()
+	// cyclescopehistory.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	cyclescopehistory.DefaultUpdatedAt = cyclescopehistoryDescUpdatedAt.Default.(func() time.Time)
+	// cyclescopehistory.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	cyclescopehistory.UpdateDefaultUpdatedAt = cyclescopehistoryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// cyclescopehistoryDescID is the schema descriptor for id field.
+	cyclescopehistoryDescID := cyclescopehistoryMixinFields0[0].Descriptor()
+	// cyclescopehistory.DefaultID holds the default value on creation for the id field.
+	cyclescopehistory.DefaultID = cyclescopehistoryDescID.Default.(func() uuid.UUID)
 	documentMixin := schema.Document{}.Mixin()
 	documentMixinFields0 := documentMixin[0].Fields()
 	_ = documentMixinFields0
@@ -446,6 +468,10 @@ func init() {
 	labelDescGroupSingleSelect := labelFields[7].Descriptor()
 	// label.DefaultGroupSingleSelect holds the default value on creation for the group_single_select field.
 	label.DefaultGroupSingleSelect = labelDescGroupSingleSelect.Default.(bool)
+	// labelDescSortOrder is the schema descriptor for sort_order field.
+	labelDescSortOrder := labelFields[8].Descriptor()
+	// label.DefaultSortOrder holds the default value on creation for the sort_order field.
+	label.DefaultSortOrder = labelDescSortOrder.Default.(float64)
 	// labelDescID is the schema descriptor for id field.
 	labelDescID := labelMixinFields0[0].Descriptor()
 	// label.DefaultID holds the default value on creation for the id field.

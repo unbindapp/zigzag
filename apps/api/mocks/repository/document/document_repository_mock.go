@@ -6,6 +6,7 @@ package mocks_repository_document
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -124,6 +125,63 @@ func (_c *DocumentRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// Delete provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// DocumentRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type DocumentRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *DocumentRepositoryMock_Expecter) Delete(ctx any, id any) *DocumentRepositoryMock_Delete_Call {
+	return &DocumentRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *DocumentRepositoryMock_Delete_Call) Run(run func(ctx context.Context, id uuid.UUID)) *DocumentRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Delete_Call) Return(err error) *DocumentRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *DocumentRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type DocumentRepositoryMock
 func (_mock *DocumentRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Document, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +250,148 @@ func (_c *DocumentRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// GetBySlug provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Document, error) {
+	ret := _mock.Called(ctx, workspaceID, slug)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetBySlug")
+	}
+
+	var r0 *ent.Document
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) (*ent.Document, error)); ok {
+		return returnFunc(ctx, workspaceID, slug)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) *ent.Document); ok {
+		r0 = returnFunc(ctx, workspaceID, slug)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Document)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string) error); ok {
+		r1 = returnFunc(ctx, workspaceID, slug)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DocumentRepositoryMock_GetBySlug_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBySlug'
+type DocumentRepositoryMock_GetBySlug_Call struct {
+	*mock.Call
+}
+
+// GetBySlug is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - slug string
+func (_e *DocumentRepositoryMock_Expecter) GetBySlug(ctx any, workspaceID any, slug any) *DocumentRepositoryMock_GetBySlug_Call {
+	return &DocumentRepositoryMock_GetBySlug_Call{Call: _e.mock.On("GetBySlug", ctx, workspaceID, slug)}
+}
+
+func (_c *DocumentRepositoryMock_GetBySlug_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, slug string)) *DocumentRepositoryMock_GetBySlug_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_GetBySlug_Call) Return(document *ent.Document, err error) *DocumentRepositoryMock_GetBySlug_Call {
+	_c.Call.Return(document, err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_GetBySlug_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Document, error)) *DocumentRepositoryMock_GetBySlug_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) List(ctx context.Context, filter *document_repo.ListDocumentsFilter) ([]*ent.Document, error) {
+	ret := _mock.Called(ctx, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*ent.Document
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *document_repo.ListDocumentsFilter) ([]*ent.Document, error)); ok {
+		return returnFunc(ctx, filter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *document_repo.ListDocumentsFilter) []*ent.Document); ok {
+		r0 = returnFunc(ctx, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Document)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *document_repo.ListDocumentsFilter) error); ok {
+		r1 = returnFunc(ctx, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DocumentRepositoryMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type DocumentRepositoryMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter *document_repo.ListDocumentsFilter
+func (_e *DocumentRepositoryMock_Expecter) List(ctx any, filter any) *DocumentRepositoryMock_List_Call {
+	return &DocumentRepositoryMock_List_Call{Call: _e.mock.On("List", ctx, filter)}
+}
+
+func (_c *DocumentRepositoryMock_List_Call) Run(run func(ctx context.Context, filter *document_repo.ListDocumentsFilter)) *DocumentRepositoryMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *document_repo.ListDocumentsFilter
+		if args[1] != nil {
+			arg1 = args[1].(*document_repo.ListDocumentsFilter)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_List_Call) Return(documents []*ent.Document, err error) *DocumentRepositoryMock_List_Call {
+	_c.Call.Return(documents, err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_List_Call) RunAndReturn(run func(ctx context.Context, filter *document_repo.ListDocumentsFilter) ([]*ent.Document, error)) *DocumentRepositoryMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfDocument provides a mock function for the type DocumentRepositoryMock
 func (_mock *DocumentRepositoryMock) ResolveWorkspaceOfDocument(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +456,275 @@ func (_c *DocumentRepositoryMock_ResolveWorkspaceOfDocument_Call) Return(uUID uu
 }
 
 func (_c *DocumentRepositoryMock_ResolveWorkspaceOfDocument_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *DocumentRepositoryMock_ResolveWorkspaceOfDocument_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Search provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error) {
+	ret := _mock.Called(ctx, workspaceIDs, query, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Search")
+	}
+
+	var r0 []*ent.Document
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, string, int) ([]*ent.Document, error)); ok {
+		return returnFunc(ctx, workspaceIDs, query, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, string, int) []*ent.Document); ok {
+		r0 = returnFunc(ctx, workspaceIDs, query, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Document)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, string, int) error); ok {
+		r1 = returnFunc(ctx, workspaceIDs, query, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DocumentRepositoryMock_Search_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Search'
+type DocumentRepositoryMock_Search_Call struct {
+	*mock.Call
+}
+
+// Search is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceIDs []uuid.UUID
+//   - query string
+//   - limit int
+func (_e *DocumentRepositoryMock_Expecter) Search(ctx any, workspaceIDs any, query any, limit any) *DocumentRepositoryMock_Search_Call {
+	return &DocumentRepositoryMock_Search_Call{Call: _e.mock.On("Search", ctx, workspaceIDs, query, limit)}
+}
+
+func (_c *DocumentRepositoryMock_Search_Call) Run(run func(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int)) *DocumentRepositoryMock_Search_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Search_Call) Return(documents []*ent.Document, err error) *DocumentRepositoryMock_Search_Call {
+	_c.Call.Return(documents, err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Search_Call) RunAndReturn(run func(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)) *DocumentRepositoryMock_Search_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetArchivedAt provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error {
+	ret := _mock.Called(ctx, id, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetArchivedAt")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *time.Time) error); ok {
+		r0 = returnFunc(ctx, id, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// DocumentRepositoryMock_SetArchivedAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetArchivedAt'
+type DocumentRepositoryMock_SetArchivedAt_Call struct {
+	*mock.Call
+}
+
+// SetArchivedAt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - at *time.Time
+func (_e *DocumentRepositoryMock_Expecter) SetArchivedAt(ctx any, id any, at any) *DocumentRepositoryMock_SetArchivedAt_Call {
+	return &DocumentRepositoryMock_SetArchivedAt_Call{Call: _e.mock.On("SetArchivedAt", ctx, id, at)}
+}
+
+func (_c *DocumentRepositoryMock_SetArchivedAt_Call) Run(run func(ctx context.Context, id uuid.UUID, at *time.Time)) *DocumentRepositoryMock_SetArchivedAt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *time.Time
+		if args[2] != nil {
+			arg2 = args[2].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_SetArchivedAt_Call) Return(err error) *DocumentRepositoryMock_SetArchivedAt_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_SetArchivedAt_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, at *time.Time) error) *DocumentRepositoryMock_SetArchivedAt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetTrashedAt provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) SetTrashedAt(ctx context.Context, id uuid.UUID, at *time.Time) error {
+	ret := _mock.Called(ctx, id, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetTrashedAt")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *time.Time) error); ok {
+		r0 = returnFunc(ctx, id, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// DocumentRepositoryMock_SetTrashedAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetTrashedAt'
+type DocumentRepositoryMock_SetTrashedAt_Call struct {
+	*mock.Call
+}
+
+// SetTrashedAt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - at *time.Time
+func (_e *DocumentRepositoryMock_Expecter) SetTrashedAt(ctx any, id any, at any) *DocumentRepositoryMock_SetTrashedAt_Call {
+	return &DocumentRepositoryMock_SetTrashedAt_Call{Call: _e.mock.On("SetTrashedAt", ctx, id, at)}
+}
+
+func (_c *DocumentRepositoryMock_SetTrashedAt_Call) Run(run func(ctx context.Context, id uuid.UUID, at *time.Time)) *DocumentRepositoryMock_SetTrashedAt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *time.Time
+		if args[2] != nil {
+			arg2 = args[2].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_SetTrashedAt_Call) Return(err error) *DocumentRepositoryMock_SetTrashedAt_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_SetTrashedAt_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, at *time.Time) error) *DocumentRepositoryMock_SetTrashedAt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type DocumentRepositoryMock
+func (_mock *DocumentRepositoryMock) Update(ctx context.Context, id uuid.UUID, input *document_repo.UpdateDocumentInput) error {
+	ret := _mock.Called(ctx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *document_repo.UpdateDocumentInput) error); ok {
+		r0 = returnFunc(ctx, id, input)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// DocumentRepositoryMock_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type DocumentRepositoryMock_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - input *document_repo.UpdateDocumentInput
+func (_e *DocumentRepositoryMock_Expecter) Update(ctx any, id any, input any) *DocumentRepositoryMock_Update_Call {
+	return &DocumentRepositoryMock_Update_Call{Call: _e.mock.On("Update", ctx, id, input)}
+}
+
+func (_c *DocumentRepositoryMock_Update_Call) Run(run func(ctx context.Context, id uuid.UUID, input *document_repo.UpdateDocumentInput)) *DocumentRepositoryMock_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *document_repo.UpdateDocumentInput
+		if args[2] != nil {
+			arg2 = args[2].(*document_repo.UpdateDocumentInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Update_Call) Return(err error) *DocumentRepositoryMock_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *DocumentRepositoryMock_Update_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, input *document_repo.UpdateDocumentInput) error) *DocumentRepositoryMock_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

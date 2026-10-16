@@ -6,6 +6,7 @@ package mocks_repository_comment
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -124,6 +125,63 @@ func (_c *CommentRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
+// Delete provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CommentRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type CommentRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *CommentRepositoryMock_Expecter) Delete(ctx any, id any) *CommentRepositoryMock_Delete_Call {
+	return &CommentRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *CommentRepositoryMock_Delete_Call) Run(run func(ctx context.Context, id uuid.UUID)) *CommentRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_Delete_Call) Return(err error) *CommentRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *CommentRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type CommentRepositoryMock
 func (_mock *CommentRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Comment, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +250,297 @@ func (_c *CommentRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// GetWithEdges provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) GetWithEdges(ctx context.Context, id uuid.UUID) (*ent.Comment, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetWithEdges")
+	}
+
+	var r0 *ent.Comment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Comment, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Comment); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Comment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CommentRepositoryMock_GetWithEdges_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWithEdges'
+type CommentRepositoryMock_GetWithEdges_Call struct {
+	*mock.Call
+}
+
+// GetWithEdges is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *CommentRepositoryMock_Expecter) GetWithEdges(ctx any, id any) *CommentRepositoryMock_GetWithEdges_Call {
+	return &CommentRepositoryMock_GetWithEdges_Call{Call: _e.mock.On("GetWithEdges", ctx, id)}
+}
+
+func (_c *CommentRepositoryMock_GetWithEdges_Call) Run(run func(ctx context.Context, id uuid.UUID)) *CommentRepositoryMock_GetWithEdges_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_GetWithEdges_Call) Return(comment *ent.Comment, err error) *CommentRepositoryMock_GetWithEdges_Call {
+	_c.Call.Return(comment, err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_GetWithEdges_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.Comment, error)) *CommentRepositoryMock_GetWithEdges_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ImportComments provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) ImportComments(ctx context.Context, tx repository.TxInterface, source string, comments []comment_repo.ImportedComment) error {
+	ret := _mock.Called(ctx, tx, source, comments)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ImportComments")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, []comment_repo.ImportedComment) error); ok {
+		r0 = returnFunc(ctx, tx, source, comments)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CommentRepositoryMock_ImportComments_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ImportComments'
+type CommentRepositoryMock_ImportComments_Call struct {
+	*mock.Call
+}
+
+// ImportComments is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - source string
+//   - comments []comment_repo.ImportedComment
+func (_e *CommentRepositoryMock_Expecter) ImportComments(ctx any, tx any, source any, comments any) *CommentRepositoryMock_ImportComments_Call {
+	return &CommentRepositoryMock_ImportComments_Call{Call: _e.mock.On("ImportComments", ctx, tx, source, comments)}
+}
+
+func (_c *CommentRepositoryMock_ImportComments_Call) Run(run func(ctx context.Context, tx repository.TxInterface, source string, comments []comment_repo.ImportedComment)) *CommentRepositoryMock_ImportComments_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 []comment_repo.ImportedComment
+		if args[3] != nil {
+			arg3 = args[3].([]comment_repo.ImportedComment)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ImportComments_Call) Return(err error) *CommentRepositoryMock_ImportComments_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ImportComments_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, source string, comments []comment_repo.ImportedComment) error) *CommentRepositoryMock_ImportComments_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ImportedComments provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) ImportedComments(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.Comment, error) {
+	ret := _mock.Called(ctx, workspaceID, source)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ImportedComments")
+	}
+
+	var r0 []*ent.Comment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) ([]*ent.Comment, error)); ok {
+		return returnFunc(ctx, workspaceID, source)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) []*ent.Comment); ok {
+		r0 = returnFunc(ctx, workspaceID, source)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Comment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string) error); ok {
+		r1 = returnFunc(ctx, workspaceID, source)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CommentRepositoryMock_ImportedComments_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ImportedComments'
+type CommentRepositoryMock_ImportedComments_Call struct {
+	*mock.Call
+}
+
+// ImportedComments is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - source string
+func (_e *CommentRepositoryMock_Expecter) ImportedComments(ctx any, workspaceID any, source any) *CommentRepositoryMock_ImportedComments_Call {
+	return &CommentRepositoryMock_ImportedComments_Call{Call: _e.mock.On("ImportedComments", ctx, workspaceID, source)}
+}
+
+func (_c *CommentRepositoryMock_ImportedComments_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, source string)) *CommentRepositoryMock_ImportedComments_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ImportedComments_Call) Return(comments []*ent.Comment, err error) *CommentRepositoryMock_ImportedComments_Call {
+	_c.Call.Return(comments, err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ImportedComments_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.Comment, error)) *CommentRepositoryMock_ImportedComments_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListThreads provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) ListThreads(ctx context.Context, issueID uuid.UUID, offset int, limit int) ([]*ent.Comment, error) {
+	ret := _mock.Called(ctx, issueID, offset, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListThreads")
+	}
+
+	var r0 []*ent.Comment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int, int) ([]*ent.Comment, error)); ok {
+		return returnFunc(ctx, issueID, offset, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int, int) []*ent.Comment); ok {
+		r0 = returnFunc(ctx, issueID, offset, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Comment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, int, int) error); ok {
+		r1 = returnFunc(ctx, issueID, offset, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CommentRepositoryMock_ListThreads_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListThreads'
+type CommentRepositoryMock_ListThreads_Call struct {
+	*mock.Call
+}
+
+// ListThreads is a helper method to define mock.On call
+//   - ctx context.Context
+//   - issueID uuid.UUID
+//   - offset int
+//   - limit int
+func (_e *CommentRepositoryMock_Expecter) ListThreads(ctx any, issueID any, offset any, limit any) *CommentRepositoryMock_ListThreads_Call {
+	return &CommentRepositoryMock_ListThreads_Call{Call: _e.mock.On("ListThreads", ctx, issueID, offset, limit)}
+}
+
+func (_c *CommentRepositoryMock_ListThreads_Call) Run(run func(ctx context.Context, issueID uuid.UUID, offset int, limit int)) *CommentRepositoryMock_ListThreads_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ListThreads_Call) Return(comments []*ent.Comment, err error) *CommentRepositoryMock_ListThreads_Call {
+	_c.Call.Return(comments, err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_ListThreads_Call) RunAndReturn(run func(ctx context.Context, issueID uuid.UUID, offset int, limit int) ([]*ent.Comment, error)) *CommentRepositoryMock_ListThreads_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfComment provides a mock function for the type CommentRepositoryMock
 func (_mock *CommentRepositoryMock) ResolveWorkspaceOfComment(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +605,144 @@ func (_c *CommentRepositoryMock_ResolveWorkspaceOfComment_Call) Return(uUID uuid
 }
 
 func (_c *CommentRepositoryMock_ResolveWorkspaceOfComment_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *CommentRepositoryMock_ResolveWorkspaceOfComment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetResolved provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) SetResolved(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time) error {
+	ret := _mock.Called(ctx, id, resolvedBy, resolvedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetResolved")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *uuid.UUID, *time.Time) error); ok {
+		r0 = returnFunc(ctx, id, resolvedBy, resolvedAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CommentRepositoryMock_SetResolved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetResolved'
+type CommentRepositoryMock_SetResolved_Call struct {
+	*mock.Call
+}
+
+// SetResolved is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - resolvedBy *uuid.UUID
+//   - resolvedAt *time.Time
+func (_e *CommentRepositoryMock_Expecter) SetResolved(ctx any, id any, resolvedBy any, resolvedAt any) *CommentRepositoryMock_SetResolved_Call {
+	return &CommentRepositoryMock_SetResolved_Call{Call: _e.mock.On("SetResolved", ctx, id, resolvedBy, resolvedAt)}
+}
+
+func (_c *CommentRepositoryMock_SetResolved_Call) Run(run func(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time)) *CommentRepositoryMock_SetResolved_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(*uuid.UUID)
+		}
+		var arg3 *time.Time
+		if args[3] != nil {
+			arg3 = args[3].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_SetResolved_Call) Return(err error) *CommentRepositoryMock_SetResolved_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_SetResolved_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time) error) *CommentRepositoryMock_SetResolved_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateBody provides a mock function for the type CommentRepositoryMock
+func (_mock *CommentRepositoryMock) UpdateBody(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error {
+	ret := _mock.Called(ctx, id, body, editedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateBody")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, time.Time) error); ok {
+		r0 = returnFunc(ctx, id, body, editedAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CommentRepositoryMock_UpdateBody_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateBody'
+type CommentRepositoryMock_UpdateBody_Call struct {
+	*mock.Call
+}
+
+// UpdateBody is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - body string
+//   - editedAt time.Time
+func (_e *CommentRepositoryMock_Expecter) UpdateBody(ctx any, id any, body any, editedAt any) *CommentRepositoryMock_UpdateBody_Call {
+	return &CommentRepositoryMock_UpdateBody_Call{Call: _e.mock.On("UpdateBody", ctx, id, body, editedAt)}
+}
+
+func (_c *CommentRepositoryMock_UpdateBody_Call) Run(run func(ctx context.Context, id uuid.UUID, body string, editedAt time.Time)) *CommentRepositoryMock_UpdateBody_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CommentRepositoryMock_UpdateBody_Call) Return(err error) *CommentRepositoryMock_UpdateBody_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CommentRepositoryMock_UpdateBody_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error) *CommentRepositoryMock_UpdateBody_Call {
 	_c.Call.Return(run)
 	return _c
 }

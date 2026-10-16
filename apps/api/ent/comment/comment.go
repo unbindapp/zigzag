@@ -33,6 +33,10 @@ const (
 	FieldResolvedAt = "resolved_at"
 	// FieldResolvedByID holds the string denoting the resolved_by_id field in the database.
 	FieldResolvedByID = "resolved_by_id"
+	// FieldImportSource holds the string denoting the import_source field in the database.
+	FieldImportSource = "import_source"
+	// FieldImportExternalID holds the string denoting the import_external_id field in the database.
+	FieldImportExternalID = "import_external_id"
 	// EdgeIssue holds the string denoting the issue edge name in mutations.
 	EdgeIssue = "issue"
 	// EdgeAuthor holds the string denoting the author edge name in mutations.
@@ -106,6 +110,8 @@ var Columns = []string{
 	FieldEditedAt,
 	FieldResolvedAt,
 	FieldResolvedByID,
+	FieldImportSource,
+	FieldImportExternalID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -180,6 +186,16 @@ func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByResolvedByID orders the results by the resolved_by_id field.
 func ByResolvedByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldResolvedByID, opts...).ToFunc()
+}
+
+// ByImportSource orders the results by the import_source field.
+func ByImportSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImportSource, opts...).ToFunc()
+}
+
+// ByImportExternalID orders the results by the import_external_id field.
+func ByImportExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImportExternalID, opts...).ToFunc()
 }
 
 // ByIssueField orders the results by issue field.

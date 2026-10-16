@@ -4,9 +4,41 @@ package issue_service
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/models"
 )
 
 // IssueServiceInterface ...
 type IssueServiceInterface interface {
 	PurgeTrashed(ctx context.Context) error
+	AutoCloseStaleIssues(ctx context.Context) error
+	AutoArchiveDoneIssues(ctx context.Context) error
+	Create(ctx context.Context, userID uuid.UUID, input *CreateIssueInput) (*models.IssueResponse, error)
+	// VisibleTeams expects the caller to hold viewer on the workspace already.
+	VisibleTeams(ctx context.Context, userID, workspaceID uuid.UUID) (*VisibleTeams, error)
+	ReadableIssue(ctx context.Context, userID, issueID uuid.UUID) (*ent.Issue, error)
+	WritableIssue(ctx context.Context, userID, issueID uuid.UUID, role schema.WorkspaceRole) (*ent.Issue, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *IssueRefInput) error
+	Trash(ctx context.Context, userID uuid.UUID, input *IssueRefInput) (*models.IssueResponse, error)
+	Restore(ctx context.Context, userID uuid.UUID, input *IssueRefInput) (*models.IssueResponse, error)
+	Archive(ctx context.Context, userID uuid.UUID, input *IssueRefInput) (*models.IssueResponse, error)
+	Unarchive(ctx context.Context, userID uuid.UUID, input *IssueRefInput) (*models.IssueResponse, error)
+	List(ctx context.Context, userID uuid.UUID, input *ListIssuesInput) (*IssueListResult, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetIssueInput) (*models.IssueDetailResponse, error)
+	ListHistory(ctx context.Context, userID uuid.UUID, input *ListIssueHistoryInput) ([]*models.HistoryResponse, *string, error)
+	Search(ctx context.Context, userID uuid.UUID, input *SearchIssuesInput) ([]*models.IssueResponse, error)
+	CreateRelation(ctx context.Context, userID uuid.UUID, input *CreateRelationInput) (*models.RelationResponse, error)
+	DeleteRelation(ctx context.Context, userID uuid.UUID, input *RelationRefInput) error
+	CreateAttachment(ctx context.Context, userID uuid.UUID, input *CreateAttachmentInput) (*models.AttachmentResponse, error)
+	UpdateAttachment(ctx context.Context, userID uuid.UUID, input *UpdateAttachmentInput) (*models.AttachmentResponse, error)
+	DeleteAttachment(ctx context.Context, userID uuid.UUID, input *AttachmentRefInput) error
+	Subscribe(ctx context.Context, userID uuid.UUID, input *SubscriptionInput) (*models.IssueDetailResponse, error)
+	Unsubscribe(ctx context.Context, userID uuid.UUID, input *SubscriptionInput) (*models.IssueDetailResponse, error)
+	AddReaction(ctx context.Context, userID uuid.UUID, input *ReactionInput) ([]*models.ReactionGroup, error)
+	RemoveReaction(ctx context.Context, userID uuid.UUID, input *ReactionInput) ([]*models.ReactionGroup, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateIssueInput) (*models.IssueResponse, error)
+	BulkUpdate(ctx context.Context, userID uuid.UUID, input *BulkUpdateIssuesInput) ([]*models.IssueResponse, error)
 }

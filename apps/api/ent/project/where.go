@@ -162,6 +162,16 @@ func CreatorID(v uuid.UUID) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatorID, v))
 }
 
+// ImportSource applies equality check predicate on the "import_source" field. It's identical to ImportSourceEQ.
+func ImportSource(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldImportSource, v))
+}
+
+// ImportExternalID applies equality check predicate on the "import_external_id" field. It's identical to ImportExternalIDEQ.
+func ImportExternalID(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldImportExternalID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
@@ -1300,6 +1310,156 @@ func CreatorIDIsNil() predicate.Project {
 // CreatorIDNotNil applies the NotNil predicate on the "creator_id" field.
 func CreatorIDNotNil() predicate.Project {
 	return predicate.Project(sql.FieldNotNull(FieldCreatorID))
+}
+
+// ImportSourceEQ applies the EQ predicate on the "import_source" field.
+func ImportSourceEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldImportSource, v))
+}
+
+// ImportSourceNEQ applies the NEQ predicate on the "import_source" field.
+func ImportSourceNEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldImportSource, v))
+}
+
+// ImportSourceIn applies the In predicate on the "import_source" field.
+func ImportSourceIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldImportSource, vs...))
+}
+
+// ImportSourceNotIn applies the NotIn predicate on the "import_source" field.
+func ImportSourceNotIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldImportSource, vs...))
+}
+
+// ImportSourceGT applies the GT predicate on the "import_source" field.
+func ImportSourceGT(v string) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldImportSource, v))
+}
+
+// ImportSourceGTE applies the GTE predicate on the "import_source" field.
+func ImportSourceGTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldImportSource, v))
+}
+
+// ImportSourceLT applies the LT predicate on the "import_source" field.
+func ImportSourceLT(v string) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldImportSource, v))
+}
+
+// ImportSourceLTE applies the LTE predicate on the "import_source" field.
+func ImportSourceLTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldImportSource, v))
+}
+
+// ImportSourceContains applies the Contains predicate on the "import_source" field.
+func ImportSourceContains(v string) predicate.Project {
+	return predicate.Project(sql.FieldContains(FieldImportSource, v))
+}
+
+// ImportSourceHasPrefix applies the HasPrefix predicate on the "import_source" field.
+func ImportSourceHasPrefix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasPrefix(FieldImportSource, v))
+}
+
+// ImportSourceHasSuffix applies the HasSuffix predicate on the "import_source" field.
+func ImportSourceHasSuffix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasSuffix(FieldImportSource, v))
+}
+
+// ImportSourceIsNil applies the IsNil predicate on the "import_source" field.
+func ImportSourceIsNil() predicate.Project {
+	return predicate.Project(sql.FieldIsNull(FieldImportSource))
+}
+
+// ImportSourceNotNil applies the NotNil predicate on the "import_source" field.
+func ImportSourceNotNil() predicate.Project {
+	return predicate.Project(sql.FieldNotNull(FieldImportSource))
+}
+
+// ImportSourceEqualFold applies the EqualFold predicate on the "import_source" field.
+func ImportSourceEqualFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldEqualFold(FieldImportSource, v))
+}
+
+// ImportSourceContainsFold applies the ContainsFold predicate on the "import_source" field.
+func ImportSourceContainsFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldContainsFold(FieldImportSource, v))
+}
+
+// ImportExternalIDEQ applies the EQ predicate on the "import_external_id" field.
+func ImportExternalIDEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldImportExternalID, v))
+}
+
+// ImportExternalIDNEQ applies the NEQ predicate on the "import_external_id" field.
+func ImportExternalIDNEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldImportExternalID, v))
+}
+
+// ImportExternalIDIn applies the In predicate on the "import_external_id" field.
+func ImportExternalIDIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldImportExternalID, vs...))
+}
+
+// ImportExternalIDNotIn applies the NotIn predicate on the "import_external_id" field.
+func ImportExternalIDNotIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldImportExternalID, vs...))
+}
+
+// ImportExternalIDGT applies the GT predicate on the "import_external_id" field.
+func ImportExternalIDGT(v string) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldImportExternalID, v))
+}
+
+// ImportExternalIDGTE applies the GTE predicate on the "import_external_id" field.
+func ImportExternalIDGTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldImportExternalID, v))
+}
+
+// ImportExternalIDLT applies the LT predicate on the "import_external_id" field.
+func ImportExternalIDLT(v string) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldImportExternalID, v))
+}
+
+// ImportExternalIDLTE applies the LTE predicate on the "import_external_id" field.
+func ImportExternalIDLTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldImportExternalID, v))
+}
+
+// ImportExternalIDContains applies the Contains predicate on the "import_external_id" field.
+func ImportExternalIDContains(v string) predicate.Project {
+	return predicate.Project(sql.FieldContains(FieldImportExternalID, v))
+}
+
+// ImportExternalIDHasPrefix applies the HasPrefix predicate on the "import_external_id" field.
+func ImportExternalIDHasPrefix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasPrefix(FieldImportExternalID, v))
+}
+
+// ImportExternalIDHasSuffix applies the HasSuffix predicate on the "import_external_id" field.
+func ImportExternalIDHasSuffix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasSuffix(FieldImportExternalID, v))
+}
+
+// ImportExternalIDIsNil applies the IsNil predicate on the "import_external_id" field.
+func ImportExternalIDIsNil() predicate.Project {
+	return predicate.Project(sql.FieldIsNull(FieldImportExternalID))
+}
+
+// ImportExternalIDNotNil applies the NotNil predicate on the "import_external_id" field.
+func ImportExternalIDNotNil() predicate.Project {
+	return predicate.Project(sql.FieldNotNull(FieldImportExternalID))
+}
+
+// ImportExternalIDEqualFold applies the EqualFold predicate on the "import_external_id" field.
+func ImportExternalIDEqualFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldEqualFold(FieldImportExternalID, v))
+}
+
+// ImportExternalIDContainsFold applies the ContainsFold predicate on the "import_external_id" field.
+func ImportExternalIDContainsFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldContainsFold(FieldImportExternalID, v))
 }
 
 // HasWorkspace applies the HasEdge predicate on the "workspace" edge.

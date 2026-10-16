@@ -4,6 +4,7 @@ package label_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -12,7 +13,19 @@ import (
 
 // LabelRepositoryInterface ...
 type LabelRepositoryInterface interface {
+	// ImportLabels expects every group before its children.
+	ImportLabels(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, labels []ImportedLabel) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateLabelInput) (*ent.Label, error)
+	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *UpdateLabelInput) (*ent.Label, error)
+	SetArchived(ctx context.Context, id uuid.UUID, archivedAt *time.Time) (*ent.Label, error)
+	Delete(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) error
+	RecordHistory(ctx context.Context, tx repository.TxInterface, entries []HistoryEntry) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Label, error)
 	ResolveWorkspaceOfLabel(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	List(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, includeArchived bool) ([]*ent.Label, error)
+	GetMany(ctx context.Context, ids []uuid.UUID) ([]*ent.Label, error)
+	Children(ctx context.Context, parentID uuid.UUID) ([]*ent.Label, error)
+	NameTaken(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID, parentID *uuid.UUID, name string, except *uuid.UUID) (bool, error)
+	NextSortOrder(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID, parentID *uuid.UUID) (float64, error)
+	IssuesWithLabels(ctx context.Context, tx repository.TxInterface, labelIDs []uuid.UUID) (map[uuid.UUID][]*ent.Label, error)
 }

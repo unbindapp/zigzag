@@ -2,6 +2,18 @@
 
 package template_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // TemplateServiceInterface ...
 type TemplateServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateTemplateInput) (*models.TemplateResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateTemplateInput) (*models.TemplateResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *DeleteTemplateInput) error
+	List(ctx context.Context, userID uuid.UUID, input *ListTemplatesInput) ([]*models.TemplateResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetTemplateInput) (*models.TemplateResponse, error)
 }

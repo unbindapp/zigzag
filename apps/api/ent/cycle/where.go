@@ -622,6 +622,29 @@ func HasIssuesWith(preds ...predicate.Issue) predicate.Cycle {
 	})
 }
 
+// HasScopeHistory applies the HasEdge predicate on the "scope_history" edge.
+func HasScopeHistory() predicate.Cycle {
+	return predicate.Cycle(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScopeHistoryTable, ScopeHistoryColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScopeHistoryWith applies the HasEdge predicate on the "scope_history" edge with a given conditions (other predicates).
+func HasScopeHistoryWith(preds ...predicate.CycleScopeHistory) predicate.Cycle {
+	return predicate.Cycle(func(s *sql.Selector) {
+		step := newScopeHistoryStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Cycle) predicate.Cycle {
 	return predicate.Cycle(sql.AndPredicates(predicates...))

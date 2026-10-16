@@ -65,6 +65,10 @@ const (
 	FieldHealth = "health"
 	// FieldCreatorID holds the string denoting the creator_id field in the database.
 	FieldCreatorID = "creator_id"
+	// FieldImportSource holds the string denoting the import_source field in the database.
+	FieldImportSource = "import_source"
+	// FieldImportExternalID holds the string denoting the import_external_id field in the database.
+	FieldImportExternalID = "import_external_id"
 	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
 	EdgeWorkspace = "workspace"
 	// EdgeStatus holds the string denoting the status edge name in mutations.
@@ -214,6 +218,8 @@ var Columns = []string{
 	FieldTrashedAt,
 	FieldHealth,
 	FieldCreatorID,
+	FieldImportSource,
+	FieldImportExternalID,
 }
 
 var (
@@ -418,6 +424,16 @@ func ByHealth(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatorID orders the results by the creator_id field.
 func ByCreatorID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatorID, opts...).ToFunc()
+}
+
+// ByImportSource orders the results by the import_source field.
+func ByImportSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImportSource, opts...).ToFunc()
+}
+
+// ByImportExternalID orders the results by the import_external_id field.
+func ByImportExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImportExternalID, opts...).ToFunc()
 }
 
 // ByWorkspaceField orders the results by workspace field.

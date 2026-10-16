@@ -35,6 +35,8 @@ const (
 	FieldIsGroup = "is_group"
 	// FieldGroupSingleSelect holds the string denoting the group_single_select field in the database.
 	FieldGroupSingleSelect = "group_single_select"
+	// FieldSortOrder holds the string denoting the sort_order field in the database.
+	FieldSortOrder = "sort_order"
 	// FieldArchivedAt holds the string denoting the archived_at field in the database.
 	FieldArchivedAt = "archived_at"
 	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
@@ -98,6 +100,7 @@ var Columns = []string{
 	FieldParentID,
 	FieldIsGroup,
 	FieldGroupSingleSelect,
+	FieldSortOrder,
 	FieldArchivedAt,
 }
 
@@ -133,6 +136,8 @@ var (
 	DefaultIsGroup bool
 	// DefaultGroupSingleSelect holds the default value on creation for the "group_single_select" field.
 	DefaultGroupSingleSelect bool
+	// DefaultSortOrder holds the default value on creation for the "sort_order" field.
+	DefaultSortOrder float64
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -193,6 +198,11 @@ func ByIsGroup(opts ...sql.OrderTermOption) OrderOption {
 // ByGroupSingleSelect orders the results by the group_single_select field.
 func ByGroupSingleSelect(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGroupSingleSelect, opts...).ToFunc()
+}
+
+// BySortOrder orders the results by the sort_order field.
+func BySortOrder(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSortOrder, opts...).ToFunc()
 }
 
 // ByArchivedAt orders the results by the archived_at field.

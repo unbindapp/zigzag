@@ -2,6 +2,18 @@
 
 package view_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // ViewServiceInterface ...
 type ViewServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateViewInput) (*models.ViewResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateViewInput) (*models.ViewResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *DeleteViewInput) error
+	List(ctx context.Context, userID uuid.UUID, input *ListViewsInput) ([]*models.ViewResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetViewInput) (*models.ViewResponse, error)
 }

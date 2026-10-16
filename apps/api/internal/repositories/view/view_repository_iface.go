@@ -15,4 +15,7 @@ type ViewRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateViewInput) (*ent.View, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.View, error)
 	ResolveWorkspaceOfView(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	ListVisible(ctx context.Context, filter ListViewsFilter) ([]*ent.View, error)
+	Update(ctx context.Context, id uuid.UUID, input *UpdateViewInput) (*ent.View, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }

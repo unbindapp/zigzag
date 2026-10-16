@@ -217,7 +217,7 @@ function CommandPanelContent({ onDone }: { onDone: () => void }) {
                 <CommandItem
                   key={item.id}
                   value={`search-${item.id}`}
-                  keywords={[item.label, item.description ?? ""]}
+                  keywords={[item.label, item.description ?? "", query]}
                   onSelect={() => go(item.link)}
                 >
                   {item.icon ?? <CircleDotIcon className="size-4" />}

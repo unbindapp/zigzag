@@ -1,6 +1,8 @@
 import type { LinkProps } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { useSearch } from "@/components/search/use-search";
+
 export type TCommandSearchItem = {
   id: string;
   label: string;
@@ -19,9 +21,6 @@ export type TCommandPanelSearch = {
   isPending: boolean;
 };
 
-const emptySearch: TCommandPanelSearch = { groups: [], isPending: false };
-
 export function useCommandPanelSearch(query: string): TCommandPanelSearch {
-  void query;
-  return emptySearch;
+  return useSearch(query);
 }

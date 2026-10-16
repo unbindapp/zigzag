@@ -2,6 +2,25 @@
 
 package initiative_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // InitiativeServiceInterface ...
 type InitiativeServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateInitiativeInput) (*models.InitiativeResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateInitiativeInput) (*models.InitiativeResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *InitiativeRefInput) error
+	Archive(ctx context.Context, userID uuid.UUID, input *InitiativeRefInput) (*models.InitiativeResponse, error)
+	Unarchive(ctx context.Context, userID uuid.UUID, input *InitiativeRefInput) (*models.InitiativeResponse, error)
+	AddProject(ctx context.Context, userID uuid.UUID, input *InitiativeProjectInput) (*models.InitiativeResponse, error)
+	RemoveProject(ctx context.Context, userID uuid.UUID, input *InitiativeProjectInput) (*models.InitiativeResponse, error)
+	List(ctx context.Context, userID uuid.UUID, input *ListInitiativesInput) ([]*models.InitiativeResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetInitiativeInput) (*models.InitiativeResponse, error)
+	ListUpdates(ctx context.Context, userID uuid.UUID, input *InitiativeQueryInput) ([]*models.InitiativeUpdateResponse, error)
+	CreateUpdate(ctx context.Context, userID uuid.UUID, input *CreateInitiativeUpdateInput) (*models.InitiativeUpdateResponse, error)
+	DeleteUpdate(ctx context.Context, userID uuid.UUID, input *InitiativeUpdateRefInput) error
 }

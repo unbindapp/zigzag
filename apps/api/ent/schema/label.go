@@ -28,6 +28,7 @@ func (Label) Fields() []ent.Field {
 		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable().Comment("Label group"),
 		field.Bool("is_group").Default(false),
 		field.Bool("group_single_select").Default(false),
+		field.Float("sort_order").Default(0),
 		field.Time("archived_at").Optional().Nillable(),
 	}
 }

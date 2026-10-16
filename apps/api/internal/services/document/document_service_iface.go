@@ -2,6 +2,22 @@
 
 package document_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // DocumentServiceInterface ...
 type DocumentServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateDocumentInput) (*models.DocumentResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateDocumentInput) (*models.DocumentResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *DocumentRefInput) error
+	Archive(ctx context.Context, userID uuid.UUID, input *DocumentRefInput) (*models.DocumentResponse, error)
+	Unarchive(ctx context.Context, userID uuid.UUID, input *DocumentRefInput) (*models.DocumentResponse, error)
+	Trash(ctx context.Context, userID uuid.UUID, input *DocumentRefInput) (*models.DocumentResponse, error)
+	Restore(ctx context.Context, userID uuid.UUID, input *DocumentRefInput) (*models.DocumentResponse, error)
+	List(ctx context.Context, userID uuid.UUID, input *ListDocumentsInput) ([]*models.DocumentResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetDocumentInput) (*models.DocumentResponse, error)
 }

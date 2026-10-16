@@ -4,9 +4,18 @@ package cycle_service
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
 )
 
 // CycleServiceInterface ...
 type CycleServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateCycleInput) (*models.CycleResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateCycleInput) (*models.CycleResponse, error)
+	Archive(ctx context.Context, userID uuid.UUID, input *CycleRefInput) (*models.CycleResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *CycleRefInput) error
+	List(ctx context.Context, userID uuid.UUID, input *ListCyclesInput) ([]*models.CycleResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetCycleInput) (*models.CycleResponse, error)
 	ProcessCycles(ctx context.Context) error
 }

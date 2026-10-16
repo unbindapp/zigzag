@@ -2,6 +2,19 @@
 
 package comment_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // CommentServiceInterface ...
 type CommentServiceInterface interface {
+	List(ctx context.Context, userID uuid.UUID, input *ListCommentsInput) ([]*models.CommentResponse, *string, error)
+	Create(ctx context.Context, userID uuid.UUID, input *CreateCommentInput) (*models.CommentResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateCommentInput) (*models.CommentResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *CommentRefInput) error
+	Resolve(ctx context.Context, userID uuid.UUID, input *CommentRefInput) (*models.CommentResponse, error)
+	Unresolve(ctx context.Context, userID uuid.UUID, input *CommentRefInput) (*models.CommentResponse, error)
 }

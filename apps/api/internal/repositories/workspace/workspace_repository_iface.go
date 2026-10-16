@@ -14,6 +14,8 @@ import (
 
 // WorkspaceRepositoryInterface ...
 type WorkspaceRepositoryInterface interface {
+	// AddMembers keeps the role of users who are members already.
+	AddMembers(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, members []ImportedMember) error
 	// CreateInvitation replaces any earlier invitation for the same address in the workspace.
 	CreateInvitation(ctx context.Context, input *CreateInvitationInput) (created *ent.Invitation, err error)
 	GetInvitationByTokenHash(ctx context.Context, tokenHash string) (*ent.Invitation, error)

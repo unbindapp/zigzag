@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/team"
@@ -201,6 +202,21 @@ func (_u *CycleUpdate) AddIssues(v ...*Issue) *CycleUpdate {
 	return _u.AddIssueIDs(ids...)
 }
 
+// AddScopeHistoryIDs adds the "scope_history" edge to the CycleScopeHistory entity by IDs.
+func (_u *CycleUpdate) AddScopeHistoryIDs(ids ...uuid.UUID) *CycleUpdate {
+	_u.mutation.AddScopeHistoryIDs(ids...)
+	return _u
+}
+
+// AddScopeHistory adds the "scope_history" edges to the CycleScopeHistory entity.
+func (_u *CycleUpdate) AddScopeHistory(v ...*CycleScopeHistory) *CycleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddScopeHistoryIDs(ids...)
+}
+
 // Mutation returns the CycleMutation object of the builder.
 func (_u *CycleUpdate) Mutation() *CycleMutation {
 	return _u.mutation
@@ -231,6 +247,27 @@ func (_u *CycleUpdate) RemoveIssues(v ...*Issue) *CycleUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIssueIDs(ids...)
+}
+
+// ClearScopeHistory clears all "scope_history" edges to the CycleScopeHistory entity.
+func (_u *CycleUpdate) ClearScopeHistory() *CycleUpdate {
+	_u.mutation.ClearScopeHistory()
+	return _u
+}
+
+// RemoveScopeHistoryIDs removes the "scope_history" edge to CycleScopeHistory entities by IDs.
+func (_u *CycleUpdate) RemoveScopeHistoryIDs(ids ...uuid.UUID) *CycleUpdate {
+	_u.mutation.RemoveScopeHistoryIDs(ids...)
+	return _u
+}
+
+// RemoveScopeHistory removes "scope_history" edges to CycleScopeHistory entities.
+func (_u *CycleUpdate) RemoveScopeHistory(v ...*CycleScopeHistory) *CycleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveScopeHistoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -401,6 +438,51 @@ func (_u *CycleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ScopeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedScopeHistoryIDs(); len(nodes) > 0 && !_u.mutation.ScopeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ScopeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -599,6 +681,21 @@ func (_u *CycleUpdateOne) AddIssues(v ...*Issue) *CycleUpdateOne {
 	return _u.AddIssueIDs(ids...)
 }
 
+// AddScopeHistoryIDs adds the "scope_history" edge to the CycleScopeHistory entity by IDs.
+func (_u *CycleUpdateOne) AddScopeHistoryIDs(ids ...uuid.UUID) *CycleUpdateOne {
+	_u.mutation.AddScopeHistoryIDs(ids...)
+	return _u
+}
+
+// AddScopeHistory adds the "scope_history" edges to the CycleScopeHistory entity.
+func (_u *CycleUpdateOne) AddScopeHistory(v ...*CycleScopeHistory) *CycleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddScopeHistoryIDs(ids...)
+}
+
 // Mutation returns the CycleMutation object of the builder.
 func (_u *CycleUpdateOne) Mutation() *CycleMutation {
 	return _u.mutation
@@ -629,6 +726,27 @@ func (_u *CycleUpdateOne) RemoveIssues(v ...*Issue) *CycleUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIssueIDs(ids...)
+}
+
+// ClearScopeHistory clears all "scope_history" edges to the CycleScopeHistory entity.
+func (_u *CycleUpdateOne) ClearScopeHistory() *CycleUpdateOne {
+	_u.mutation.ClearScopeHistory()
+	return _u
+}
+
+// RemoveScopeHistoryIDs removes the "scope_history" edge to CycleScopeHistory entities by IDs.
+func (_u *CycleUpdateOne) RemoveScopeHistoryIDs(ids ...uuid.UUID) *CycleUpdateOne {
+	_u.mutation.RemoveScopeHistoryIDs(ids...)
+	return _u
+}
+
+// RemoveScopeHistory removes "scope_history" edges to CycleScopeHistory entities.
+func (_u *CycleUpdateOne) RemoveScopeHistory(v ...*CycleScopeHistory) *CycleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveScopeHistoryIDs(ids...)
 }
 
 // Where appends a list predicates to the CycleUpdate builder.
@@ -829,6 +947,51 @@ func (_u *CycleUpdateOne) sqlSave(ctx context.Context) (_node *Cycle, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ScopeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedScopeHistoryIDs(); len(nodes) > 0 && !_u.mutation.ScopeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ScopeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

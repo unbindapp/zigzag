@@ -4,6 +4,7 @@ package comment_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -12,7 +13,15 @@ import (
 
 // CommentRepositoryInterface ...
 type CommentRepositoryInterface interface {
+	ImportedComments(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.Comment, error)
+	// ImportComments expects every thread root before its replies.
+	ImportComments(ctx context.Context, tx repository.TxInterface, source string, comments []ImportedComment) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateCommentInput) (*ent.Comment, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Comment, error)
+	GetWithEdges(ctx context.Context, id uuid.UUID) (*ent.Comment, error)
 	ResolveWorkspaceOfComment(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	ListThreads(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.Comment, error)
+	UpdateBody(ctx context.Context, id uuid.UUID, body string, editedAt time.Time) error
+	SetResolved(ctx context.Context, id uuid.UUID, resolvedBy *uuid.UUID, resolvedAt *time.Time) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }

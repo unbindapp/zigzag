@@ -109,8 +109,10 @@ No Redis. Rate limiting (`middleware.RateLimiter`, same `Limit(name, n, window)`
 
 - every 10 minutes: close cycles whose `ends_at` passed, create the next cycle for teams with cycles enabled, move unfinished issues to the next cycle when `cycle_auto_move` is on
 - every hour: oauth cleanup (expired codes, tokens), expired invitations and password reset tokens
-- every 5 minutes: email notifications not yet sent, batched per user (one email per user per batch)
+- every 5 minutes: email notifications not yet sent, batched per user (one email per user per batch). A notification is emailed when it is still unread, not archived, not snoozed, older than 2 minutes and younger than 24 hours, and the user is active with `email_enabled`; the batch marks `emailed_at` on what it sent and on what it skipped for settings, and leaves the rest pending when SMTP fails. Nothing is read while mail is not configured.
+- every 24 hours: `issue_due_soon` to the assignee of open, unarchived issues due today or tomorrow (UTC dates within the next 24 hours), at most once per issue and user in 48 hours
 - every hour: hard delete issues trashed more than 30 days ago (`issue_service.PurgeTrashed`)
+- every hour: auto close (`issue_service.AutoCloseStaleIssues`) moves triage, backlog and unstarted issues not updated for the team's `auto_close_months` to its Canceled state (else its first canceled state) and sets `auto_closed_at`; auto archive (`issue_service.AutoArchiveDoneIssues`) archives completed and canceled issues closed more than `auto_archive_months` ago and sets `auto_archived_at`; both record system history
 - jobs run with `permissions_repo.WithSystemCaller` and in singleton mode, so a slow run is never overlapped
 
 ## Dev environment

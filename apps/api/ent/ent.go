@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/attachment"
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
@@ -117,6 +118,7 @@ func checkColumn(t, c string) error {
 			attachment.Table:             attachment.ValidColumn,
 			comment.Table:                comment.ValidColumn,
 			cycle.Table:                  cycle.ValidColumn,
+			cyclescopehistory.Table:      cyclescopehistory.ValidColumn,
 			document.Table:               document.ValidColumn,
 			favorite.Table:               favorite.ValidColumn,
 			importjob.Table:              importjob.ValidColumn,

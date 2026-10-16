@@ -29,6 +29,27 @@ Response `data`: an `ImportReport`:
 
 A dry run runs the whole import inside a transaction and rolls it back, so the report is exact. A real import is one transaction per entity group (users, teams and states, labels, projects, cycles, issues, comments and relations) and is idempotent: rows carry `import_source="linear"` and `import_external_id=<linear uuid>`, and a second run updates instead of duplicating. Issues keep their Linear numbers; the team's `issue_counter` is raised to the highest imported number.
 
+Both kinds of run are recorded as an `imports` row and listed by `list-imports`. The import reads what the workspace holds once up front and writes in batches, so the run time grows with the export, not with lookups per row. It writes no notifications and sends no webhooks.
+
+How a second run finds what the first created (`updated` in the report, or `skipped` when nothing is rewritten):
+
+| Entity | Matched by | On a match |
+| --- | --- | --- |
+| user | email, case insensitive | `updated` (the account is left as is; membership is added if missing) |
+| team | key | `updated` (only `issue_counter` can change) |
+| workflow state | name within the team, same type first | `skipped`; a name taken by another type maps there with a warning |
+| label | name among siblings (same team and group), case insensitive | `skipped` |
+| project | `import_external_id` | `updated` |
+| milestone | name within the project | `updated` |
+| cycle | number within the team | `skipped` |
+| issue | `import_external_id` | `updated`, except an issue moved to another team in Zigzag, which is `skipped` with a warning |
+| comment | `import_external_id` within the issue | `updated` |
+| attachment | url within the issue | `updated` |
+| relation | the same pair and type (`related` in either direction) | `skipped` |
+| history | the issue already has `source=import` history | `skipped` |
+
+An issue number taken by another issue of the team is replaced by the next free number, with a warning. Names longer than the API allows are cut to its limits (team, state and label names 64 characters, project and milestone names 80, titles 255). The state history becomes one row per span: the first carries an `imported` change (to the Linear url, labeled with the Linear identifier) and the state it started in, each later one a `state` change from the previous span. A reply to a reply joins the root of its thread.
+
 ## Mapping
 
 | Linear | Zigzag |
@@ -64,7 +85,7 @@ LinearExport {
   "cycles": [ { "id", "teamId", "number", "name", "description", "startsAt", "endsAt", "completedAt" } ],
   "issues": [ {
     "id", "identifier", "number", "teamId", "title", "description", "priority", "estimate", "url", "gitBranchName",
-    "createdAt", "updatedAt", "archivedAt", "completedAt", "startedAt", "canceledAt", "triagedAt", "dueDate",
+    "createdAt", "updatedAt", "archivedAt", "completedAt", "startedAt", "canceledAt", "triagedAt", "trashed", "dueDate",
     "stateId", "stateName", "stateType", "labelIds", "labelNames", "creatorId", "assigneeId", "projectId", "milestoneId", "parentId", "cycleId", "sortOrder",
     "attachments": [ { "id", "title", "subtitle", "url", "createdAt" } ],
     "relations": { "blocks": [issue ids], "blockedBy": [issue ids], "relatedTo": [issue ids], "duplicateOf": issue id | null },
@@ -74,7 +95,7 @@ LinearExport {
 }
 ```
 
-Issue ids in `parentId`, `relations` and `comments.parentId` are Linear uuids. `priority` is the integer 0..4.
+Issue ids in `parentId`, `relations` and `comments.parentId` are Linear uuids. `priority` is the integer 0..4. `trashed` on an issue is optional (GraphQL exports carry it); a trashed issue gets `trashed_at = updatedAt` unless `restore_trashed`, like a project.
 
 ## Known limits of the MCP source
 

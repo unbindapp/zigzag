@@ -4,15 +4,32 @@ package initiative_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // InitiativeRepositoryInterface ...
 type InitiativeRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateInitiativeInput) (*ent.Initiative, error)
+	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *UpdateInitiativeInput) error
+	SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
+	AddProject(ctx context.Context, id, projectID uuid.UUID) error
+	RemoveProject(ctx context.Context, id, projectID uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	List(ctx context.Context, filter *ListInitiativesFilter) ([]*ent.Initiative, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Initiative, error)
+	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Initiative, error)
 	ResolveWorkspaceOfInitiative(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	MaxSortOrder(ctx context.Context, workspaceID uuid.UUID) (float64, error)
+	CountProjectsInWorkspace(ctx context.Context, workspaceID uuid.UUID, projectIDs []uuid.UUID) (int, error)
+	// LatestHealths maps each initiative that has updates to the health of its newest one.
+	LatestHealths(ctx context.Context, initiativeIDs []uuid.UUID) (map[uuid.UUID]schema.Health, error)
+	ListUpdates(ctx context.Context, initiativeID uuid.UUID) ([]*ent.InitiativePost, error)
+	GetUpdate(ctx context.Context, updateID uuid.UUID) (*ent.InitiativePost, error)
+	CreateUpdate(ctx context.Context, input *CreateUpdateInput) (*ent.InitiativePost, error)
+	DeleteUpdate(ctx context.Context, updateID uuid.UUID) error
 }

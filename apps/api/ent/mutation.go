@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/attachment"
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
@@ -70,6 +71,7 @@ const (
 	TypeAttachment             = "Attachment"
 	TypeComment                = "Comment"
 	TypeCycle                  = "Cycle"
+	TypeCycleScopeHistory      = "CycleScopeHistory"
 	TypeDocument               = "Document"
 	TypeFavorite               = "Favorite"
 	TypeImportJob              = "ImportJob"
@@ -2325,6 +2327,8 @@ type CommentMutation struct {
 	body                 *string
 	edited_at            *time.Time
 	resolved_at          *time.Time
+	import_source        *string
+	import_external_id   *string
 	clearedFields        map[string]struct{}
 	issue                *uuid.UUID
 	clearedissue         bool
@@ -2841,6 +2845,104 @@ func (m *CommentMutation) ResetResolvedByID() {
 	delete(m.clearedFields, comment.FieldResolvedByID)
 }
 
+// SetImportSource sets the "import_source" field.
+func (m *CommentMutation) SetImportSource(s string) {
+	m.import_source = &s
+}
+
+// ImportSource returns the value of the "import_source" field in the mutation.
+func (m *CommentMutation) ImportSource() (r string, exists bool) {
+	v := m.import_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImportSource returns the old "import_source" field's value of the Comment entity.
+// If the Comment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommentMutation) OldImportSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImportSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImportSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImportSource: %w", err)
+	}
+	return oldValue.ImportSource, nil
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (m *CommentMutation) ClearImportSource() {
+	m.import_source = nil
+	m.clearedFields[comment.FieldImportSource] = struct{}{}
+}
+
+// ImportSourceCleared returns if the "import_source" field was cleared in this mutation.
+func (m *CommentMutation) ImportSourceCleared() bool {
+	_, ok := m.clearedFields[comment.FieldImportSource]
+	return ok
+}
+
+// ResetImportSource resets all changes to the "import_source" field.
+func (m *CommentMutation) ResetImportSource() {
+	m.import_source = nil
+	delete(m.clearedFields, comment.FieldImportSource)
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (m *CommentMutation) SetImportExternalID(s string) {
+	m.import_external_id = &s
+}
+
+// ImportExternalID returns the value of the "import_external_id" field in the mutation.
+func (m *CommentMutation) ImportExternalID() (r string, exists bool) {
+	v := m.import_external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImportExternalID returns the old "import_external_id" field's value of the Comment entity.
+// If the Comment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommentMutation) OldImportExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImportExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImportExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImportExternalID: %w", err)
+	}
+	return oldValue.ImportExternalID, nil
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (m *CommentMutation) ClearImportExternalID() {
+	m.import_external_id = nil
+	m.clearedFields[comment.FieldImportExternalID] = struct{}{}
+}
+
+// ImportExternalIDCleared returns if the "import_external_id" field was cleared in this mutation.
+func (m *CommentMutation) ImportExternalIDCleared() bool {
+	_, ok := m.clearedFields[comment.FieldImportExternalID]
+	return ok
+}
+
+// ResetImportExternalID resets all changes to the "import_external_id" field.
+func (m *CommentMutation) ResetImportExternalID() {
+	m.import_external_id = nil
+	delete(m.clearedFields, comment.FieldImportExternalID)
+}
+
 // ClearIssue clears the "issue" edge to the Issue entity.
 func (m *CommentMutation) ClearIssue() {
 	m.clearedissue = true
@@ -3145,7 +3247,7 @@ func (m *CommentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CommentMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, comment.FieldCreatedAt)
 	}
@@ -3173,6 +3275,12 @@ func (m *CommentMutation) Fields() []string {
 	if m.resolved_by != nil {
 		fields = append(fields, comment.FieldResolvedByID)
 	}
+	if m.import_source != nil {
+		fields = append(fields, comment.FieldImportSource)
+	}
+	if m.import_external_id != nil {
+		fields = append(fields, comment.FieldImportExternalID)
+	}
 	return fields
 }
 
@@ -3199,6 +3307,10 @@ func (m *CommentMutation) Field(name string) (ent.Value, bool) {
 		return m.ResolvedAt()
 	case comment.FieldResolvedByID:
 		return m.ResolvedByID()
+	case comment.FieldImportSource:
+		return m.ImportSource()
+	case comment.FieldImportExternalID:
+		return m.ImportExternalID()
 	}
 	return nil, false
 }
@@ -3226,6 +3338,10 @@ func (m *CommentMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldResolvedAt(ctx)
 	case comment.FieldResolvedByID:
 		return m.OldResolvedByID(ctx)
+	case comment.FieldImportSource:
+		return m.OldImportSource(ctx)
+	case comment.FieldImportExternalID:
+		return m.OldImportExternalID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Comment field %s", name)
 }
@@ -3298,6 +3414,20 @@ func (m *CommentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetResolvedByID(v)
 		return nil
+	case comment.FieldImportSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImportSource(v)
+		return nil
+	case comment.FieldImportExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImportExternalID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Comment field %s", name)
 }
@@ -3343,6 +3473,12 @@ func (m *CommentMutation) ClearedFields() []string {
 	if m.FieldCleared(comment.FieldResolvedByID) {
 		fields = append(fields, comment.FieldResolvedByID)
 	}
+	if m.FieldCleared(comment.FieldImportSource) {
+		fields = append(fields, comment.FieldImportSource)
+	}
+	if m.FieldCleared(comment.FieldImportExternalID) {
+		fields = append(fields, comment.FieldImportExternalID)
+	}
 	return fields
 }
 
@@ -3371,6 +3507,12 @@ func (m *CommentMutation) ClearField(name string) error {
 		return nil
 	case comment.FieldResolvedByID:
 		m.ClearResolvedByID()
+		return nil
+	case comment.FieldImportSource:
+		m.ClearImportSource()
+		return nil
+	case comment.FieldImportExternalID:
+		m.ClearImportExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown Comment nullable field %s", name)
@@ -3406,6 +3548,12 @@ func (m *CommentMutation) ResetField(name string) error {
 		return nil
 	case comment.FieldResolvedByID:
 		m.ResetResolvedByID()
+		return nil
+	case comment.FieldImportSource:
+		m.ResetImportSource()
+		return nil
+	case comment.FieldImportExternalID:
+		m.ResetImportExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown Comment field %s", name)
@@ -3622,28 +3770,31 @@ func (m *CommentMutation) ResetEdge(name string) error {
 // CycleMutation represents an operation that mutates the Cycle nodes in the graph.
 type CycleMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	created_at    *time.Time
-	updated_at    *time.Time
-	number        *int
-	addnumber     *int
-	name          *string
-	description   *string
-	starts_at     *time.Time
-	ends_at       *time.Time
-	completed_at  *time.Time
-	archived_at   *time.Time
-	clearedFields map[string]struct{}
-	team          *uuid.UUID
-	clearedteam   bool
-	issues        map[uuid.UUID]struct{}
-	removedissues map[uuid.UUID]struct{}
-	clearedissues bool
-	done          bool
-	oldValue      func(context.Context) (*Cycle, error)
-	predicates    []predicate.Cycle
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	number               *int
+	addnumber            *int
+	name                 *string
+	description          *string
+	starts_at            *time.Time
+	ends_at              *time.Time
+	completed_at         *time.Time
+	archived_at          *time.Time
+	clearedFields        map[string]struct{}
+	team                 *uuid.UUID
+	clearedteam          bool
+	issues               map[uuid.UUID]struct{}
+	removedissues        map[uuid.UUID]struct{}
+	clearedissues        bool
+	scope_history        map[uuid.UUID]struct{}
+	removedscope_history map[uuid.UUID]struct{}
+	clearedscope_history bool
+	done                 bool
+	oldValue             func(context.Context) (*Cycle, error)
+	predicates           []predicate.Cycle
 }
 
 var _ ent.Mutation = (*CycleMutation)(nil)
@@ -4263,6 +4414,60 @@ func (m *CycleMutation) ResetIssues() {
 	m.removedissues = nil
 }
 
+// AddScopeHistoryIDs adds the "scope_history" edge to the CycleScopeHistory entity by ids.
+func (m *CycleMutation) AddScopeHistoryIDs(ids ...uuid.UUID) {
+	if m.scope_history == nil {
+		m.scope_history = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.scope_history[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScopeHistory clears the "scope_history" edge to the CycleScopeHistory entity.
+func (m *CycleMutation) ClearScopeHistory() {
+	m.clearedscope_history = true
+}
+
+// ScopeHistoryCleared reports if the "scope_history" edge to the CycleScopeHistory entity was cleared.
+func (m *CycleMutation) ScopeHistoryCleared() bool {
+	return m.clearedscope_history
+}
+
+// RemoveScopeHistoryIDs removes the "scope_history" edge to the CycleScopeHistory entity by IDs.
+func (m *CycleMutation) RemoveScopeHistoryIDs(ids ...uuid.UUID) {
+	if m.removedscope_history == nil {
+		m.removedscope_history = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.scope_history, ids[i])
+		m.removedscope_history[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScopeHistory returns the removed IDs of the "scope_history" edge to the CycleScopeHistory entity.
+func (m *CycleMutation) RemovedScopeHistoryIDs() (ids []uuid.UUID) {
+	for id := range m.removedscope_history {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScopeHistoryIDs returns the "scope_history" edge IDs in the mutation.
+func (m *CycleMutation) ScopeHistoryIDs() (ids []uuid.UUID) {
+	for id := range m.scope_history {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScopeHistory resets all changes to the "scope_history" edge.
+func (m *CycleMutation) ResetScopeHistory() {
+	m.scope_history = nil
+	m.clearedscope_history = false
+	m.removedscope_history = nil
+}
+
 // Where appends a list predicates to the CycleMutation builder.
 func (m *CycleMutation) Where(ps ...predicate.Cycle) {
 	m.predicates = append(m.predicates, ps...)
@@ -4591,12 +4796,15 @@ func (m *CycleMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CycleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.team != nil {
 		edges = append(edges, cycle.EdgeTeam)
 	}
 	if m.issues != nil {
 		edges = append(edges, cycle.EdgeIssues)
+	}
+	if m.scope_history != nil {
+		edges = append(edges, cycle.EdgeScopeHistory)
 	}
 	return edges
 }
@@ -4615,15 +4823,24 @@ func (m *CycleMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case cycle.EdgeScopeHistory:
+		ids := make([]ent.Value, 0, len(m.scope_history))
+		for id := range m.scope_history {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CycleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedissues != nil {
 		edges = append(edges, cycle.EdgeIssues)
+	}
+	if m.removedscope_history != nil {
+		edges = append(edges, cycle.EdgeScopeHistory)
 	}
 	return edges
 }
@@ -4638,18 +4855,27 @@ func (m *CycleMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case cycle.EdgeScopeHistory:
+		ids := make([]ent.Value, 0, len(m.removedscope_history))
+		for id := range m.removedscope_history {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CycleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedteam {
 		edges = append(edges, cycle.EdgeTeam)
 	}
 	if m.clearedissues {
 		edges = append(edges, cycle.EdgeIssues)
+	}
+	if m.clearedscope_history {
+		edges = append(edges, cycle.EdgeScopeHistory)
 	}
 	return edges
 }
@@ -4662,6 +4888,8 @@ func (m *CycleMutation) EdgeCleared(name string) bool {
 		return m.clearedteam
 	case cycle.EdgeIssues:
 		return m.clearedissues
+	case cycle.EdgeScopeHistory:
+		return m.clearedscope_history
 	}
 	return false
 }
@@ -4687,8 +4915,823 @@ func (m *CycleMutation) ResetEdge(name string) error {
 	case cycle.EdgeIssues:
 		m.ResetIssues()
 		return nil
+	case cycle.EdgeScopeHistory:
+		m.ResetScopeHistory()
+		return nil
 	}
 	return fmt.Errorf("unknown Cycle edge %s", name)
+}
+
+// CycleScopeHistoryMutation represents an operation that mutates the CycleScopeHistory nodes in the graph.
+type CycleScopeHistoryMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
+	date          *time.Time
+	scope         *float64
+	addscope      *float64
+	completed     *float64
+	addcompleted  *float64
+	started       *float64
+	addstarted    *float64
+	clearedFields map[string]struct{}
+	cycle         *uuid.UUID
+	clearedcycle  bool
+	done          bool
+	oldValue      func(context.Context) (*CycleScopeHistory, error)
+	predicates    []predicate.CycleScopeHistory
+}
+
+var _ ent.Mutation = (*CycleScopeHistoryMutation)(nil)
+
+// cyclescopehistoryOption allows management of the mutation configuration using functional options.
+type cyclescopehistoryOption func(*CycleScopeHistoryMutation)
+
+// newCycleScopeHistoryMutation creates new mutation for the CycleScopeHistory entity.
+func newCycleScopeHistoryMutation(c config, op Op, opts ...cyclescopehistoryOption) *CycleScopeHistoryMutation {
+	m := &CycleScopeHistoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCycleScopeHistory,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCycleScopeHistoryID sets the ID field of the mutation.
+func withCycleScopeHistoryID(id uuid.UUID) cyclescopehistoryOption {
+	return func(m *CycleScopeHistoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CycleScopeHistory
+		)
+		m.oldValue = func(ctx context.Context) (*CycleScopeHistory, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CycleScopeHistory.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCycleScopeHistory sets the old CycleScopeHistory of the mutation.
+func withCycleScopeHistory(node *CycleScopeHistory) cyclescopehistoryOption {
+	return func(m *CycleScopeHistoryMutation) {
+		m.oldValue = func(context.Context) (*CycleScopeHistory, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CycleScopeHistoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CycleScopeHistoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of CycleScopeHistory entities.
+func (m *CycleScopeHistoryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CycleScopeHistoryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CycleScopeHistoryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CycleScopeHistory.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CycleScopeHistoryMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CycleScopeHistoryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CycleScopeHistoryMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *CycleScopeHistoryMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *CycleScopeHistoryMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *CycleScopeHistoryMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetCycleID sets the "cycle_id" field.
+func (m *CycleScopeHistoryMutation) SetCycleID(u uuid.UUID) {
+	m.cycle = &u
+}
+
+// CycleID returns the value of the "cycle_id" field in the mutation.
+func (m *CycleScopeHistoryMutation) CycleID() (r uuid.UUID, exists bool) {
+	v := m.cycle
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCycleID returns the old "cycle_id" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldCycleID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCycleID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCycleID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCycleID: %w", err)
+	}
+	return oldValue.CycleID, nil
+}
+
+// ResetCycleID resets all changes to the "cycle_id" field.
+func (m *CycleScopeHistoryMutation) ResetCycleID() {
+	m.cycle = nil
+}
+
+// SetDate sets the "date" field.
+func (m *CycleScopeHistoryMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *CycleScopeHistoryMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *CycleScopeHistoryMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetScope sets the "scope" field.
+func (m *CycleScopeHistoryMutation) SetScope(f float64) {
+	m.scope = &f
+	m.addscope = nil
+}
+
+// Scope returns the value of the "scope" field in the mutation.
+func (m *CycleScopeHistoryMutation) Scope() (r float64, exists bool) {
+	v := m.scope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScope returns the old "scope" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldScope(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScope is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScope requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScope: %w", err)
+	}
+	return oldValue.Scope, nil
+}
+
+// AddScope adds f to the "scope" field.
+func (m *CycleScopeHistoryMutation) AddScope(f float64) {
+	if m.addscope != nil {
+		*m.addscope += f
+	} else {
+		m.addscope = &f
+	}
+}
+
+// AddedScope returns the value that was added to the "scope" field in this mutation.
+func (m *CycleScopeHistoryMutation) AddedScope() (r float64, exists bool) {
+	v := m.addscope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetScope resets all changes to the "scope" field.
+func (m *CycleScopeHistoryMutation) ResetScope() {
+	m.scope = nil
+	m.addscope = nil
+}
+
+// SetCompleted sets the "completed" field.
+func (m *CycleScopeHistoryMutation) SetCompleted(f float64) {
+	m.completed = &f
+	m.addcompleted = nil
+}
+
+// Completed returns the value of the "completed" field in the mutation.
+func (m *CycleScopeHistoryMutation) Completed() (r float64, exists bool) {
+	v := m.completed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompleted returns the old "completed" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldCompleted(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompleted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompleted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompleted: %w", err)
+	}
+	return oldValue.Completed, nil
+}
+
+// AddCompleted adds f to the "completed" field.
+func (m *CycleScopeHistoryMutation) AddCompleted(f float64) {
+	if m.addcompleted != nil {
+		*m.addcompleted += f
+	} else {
+		m.addcompleted = &f
+	}
+}
+
+// AddedCompleted returns the value that was added to the "completed" field in this mutation.
+func (m *CycleScopeHistoryMutation) AddedCompleted() (r float64, exists bool) {
+	v := m.addcompleted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCompleted resets all changes to the "completed" field.
+func (m *CycleScopeHistoryMutation) ResetCompleted() {
+	m.completed = nil
+	m.addcompleted = nil
+}
+
+// SetStarted sets the "started" field.
+func (m *CycleScopeHistoryMutation) SetStarted(f float64) {
+	m.started = &f
+	m.addstarted = nil
+}
+
+// Started returns the value of the "started" field in the mutation.
+func (m *CycleScopeHistoryMutation) Started() (r float64, exists bool) {
+	v := m.started
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStarted returns the old "started" field's value of the CycleScopeHistory entity.
+// If the CycleScopeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CycleScopeHistoryMutation) OldStarted(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStarted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStarted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStarted: %w", err)
+	}
+	return oldValue.Started, nil
+}
+
+// AddStarted adds f to the "started" field.
+func (m *CycleScopeHistoryMutation) AddStarted(f float64) {
+	if m.addstarted != nil {
+		*m.addstarted += f
+	} else {
+		m.addstarted = &f
+	}
+}
+
+// AddedStarted returns the value that was added to the "started" field in this mutation.
+func (m *CycleScopeHistoryMutation) AddedStarted() (r float64, exists bool) {
+	v := m.addstarted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStarted resets all changes to the "started" field.
+func (m *CycleScopeHistoryMutation) ResetStarted() {
+	m.started = nil
+	m.addstarted = nil
+}
+
+// ClearCycle clears the "cycle" edge to the Cycle entity.
+func (m *CycleScopeHistoryMutation) ClearCycle() {
+	m.clearedcycle = true
+	m.clearedFields[cyclescopehistory.FieldCycleID] = struct{}{}
+}
+
+// CycleCleared reports if the "cycle" edge to the Cycle entity was cleared.
+func (m *CycleScopeHistoryMutation) CycleCleared() bool {
+	return m.clearedcycle
+}
+
+// CycleIDs returns the "cycle" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CycleID instead. It exists only for internal usage by the builders.
+func (m *CycleScopeHistoryMutation) CycleIDs() (ids []uuid.UUID) {
+	if id := m.cycle; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCycle resets all changes to the "cycle" edge.
+func (m *CycleScopeHistoryMutation) ResetCycle() {
+	m.cycle = nil
+	m.clearedcycle = false
+}
+
+// Where appends a list predicates to the CycleScopeHistoryMutation builder.
+func (m *CycleScopeHistoryMutation) Where(ps ...predicate.CycleScopeHistory) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CycleScopeHistoryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CycleScopeHistoryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CycleScopeHistory, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CycleScopeHistoryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CycleScopeHistoryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CycleScopeHistory).
+func (m *CycleScopeHistoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CycleScopeHistoryMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.created_at != nil {
+		fields = append(fields, cyclescopehistory.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, cyclescopehistory.FieldUpdatedAt)
+	}
+	if m.cycle != nil {
+		fields = append(fields, cyclescopehistory.FieldCycleID)
+	}
+	if m.date != nil {
+		fields = append(fields, cyclescopehistory.FieldDate)
+	}
+	if m.scope != nil {
+		fields = append(fields, cyclescopehistory.FieldScope)
+	}
+	if m.completed != nil {
+		fields = append(fields, cyclescopehistory.FieldCompleted)
+	}
+	if m.started != nil {
+		fields = append(fields, cyclescopehistory.FieldStarted)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CycleScopeHistoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case cyclescopehistory.FieldCreatedAt:
+		return m.CreatedAt()
+	case cyclescopehistory.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case cyclescopehistory.FieldCycleID:
+		return m.CycleID()
+	case cyclescopehistory.FieldDate:
+		return m.Date()
+	case cyclescopehistory.FieldScope:
+		return m.Scope()
+	case cyclescopehistory.FieldCompleted:
+		return m.Completed()
+	case cyclescopehistory.FieldStarted:
+		return m.Started()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CycleScopeHistoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case cyclescopehistory.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case cyclescopehistory.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case cyclescopehistory.FieldCycleID:
+		return m.OldCycleID(ctx)
+	case cyclescopehistory.FieldDate:
+		return m.OldDate(ctx)
+	case cyclescopehistory.FieldScope:
+		return m.OldScope(ctx)
+	case cyclescopehistory.FieldCompleted:
+		return m.OldCompleted(ctx)
+	case cyclescopehistory.FieldStarted:
+		return m.OldStarted(ctx)
+	}
+	return nil, fmt.Errorf("unknown CycleScopeHistory field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CycleScopeHistoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case cyclescopehistory.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case cyclescopehistory.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case cyclescopehistory.FieldCycleID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCycleID(v)
+		return nil
+	case cyclescopehistory.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case cyclescopehistory.FieldScope:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScope(v)
+		return nil
+	case cyclescopehistory.FieldCompleted:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompleted(v)
+		return nil
+	case cyclescopehistory.FieldStarted:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStarted(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CycleScopeHistory field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CycleScopeHistoryMutation) AddedFields() []string {
+	var fields []string
+	if m.addscope != nil {
+		fields = append(fields, cyclescopehistory.FieldScope)
+	}
+	if m.addcompleted != nil {
+		fields = append(fields, cyclescopehistory.FieldCompleted)
+	}
+	if m.addstarted != nil {
+		fields = append(fields, cyclescopehistory.FieldStarted)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CycleScopeHistoryMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case cyclescopehistory.FieldScope:
+		return m.AddedScope()
+	case cyclescopehistory.FieldCompleted:
+		return m.AddedCompleted()
+	case cyclescopehistory.FieldStarted:
+		return m.AddedStarted()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CycleScopeHistoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case cyclescopehistory.FieldScope:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddScope(v)
+		return nil
+	case cyclescopehistory.FieldCompleted:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCompleted(v)
+		return nil
+	case cyclescopehistory.FieldStarted:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStarted(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CycleScopeHistory numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CycleScopeHistoryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CycleScopeHistoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CycleScopeHistoryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CycleScopeHistory nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CycleScopeHistoryMutation) ResetField(name string) error {
+	switch name {
+	case cyclescopehistory.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case cyclescopehistory.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case cyclescopehistory.FieldCycleID:
+		m.ResetCycleID()
+		return nil
+	case cyclescopehistory.FieldDate:
+		m.ResetDate()
+		return nil
+	case cyclescopehistory.FieldScope:
+		m.ResetScope()
+		return nil
+	case cyclescopehistory.FieldCompleted:
+		m.ResetCompleted()
+		return nil
+	case cyclescopehistory.FieldStarted:
+		m.ResetStarted()
+		return nil
+	}
+	return fmt.Errorf("unknown CycleScopeHistory field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CycleScopeHistoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cycle != nil {
+		edges = append(edges, cyclescopehistory.EdgeCycle)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CycleScopeHistoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case cyclescopehistory.EdgeCycle:
+		if id := m.cycle; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CycleScopeHistoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CycleScopeHistoryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CycleScopeHistoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedcycle {
+		edges = append(edges, cyclescopehistory.EdgeCycle)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CycleScopeHistoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case cyclescopehistory.EdgeCycle:
+		return m.clearedcycle
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CycleScopeHistoryMutation) ClearEdge(name string) error {
+	switch name {
+	case cyclescopehistory.EdgeCycle:
+		m.ClearCycle()
+		return nil
+	}
+	return fmt.Errorf("unknown CycleScopeHistory unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CycleScopeHistoryMutation) ResetEdge(name string) error {
+	switch name {
+	case cyclescopehistory.EdgeCycle:
+		m.ResetCycle()
+		return nil
+	}
+	return fmt.Errorf("unknown CycleScopeHistory edge %s", name)
 }
 
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
@@ -17649,6 +18692,8 @@ type LabelMutation struct {
 	description         *string
 	is_group            *bool
 	group_single_select *bool
+	sort_order          *float64
+	addsort_order       *float64
 	archived_at         *time.Time
 	clearedFields       map[string]struct{}
 	workspace           *uuid.UUID
@@ -18174,6 +19219,62 @@ func (m *LabelMutation) ResetGroupSingleSelect() {
 	m.group_single_select = nil
 }
 
+// SetSortOrder sets the "sort_order" field.
+func (m *LabelMutation) SetSortOrder(f float64) {
+	m.sort_order = &f
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *LabelMutation) SortOrder() (r float64, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the Label entity.
+// If the Label object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LabelMutation) OldSortOrder(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds f to the "sort_order" field.
+func (m *LabelMutation) AddSortOrder(f float64) {
+	if m.addsort_order != nil {
+		*m.addsort_order += f
+	} else {
+		m.addsort_order = &f
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *LabelMutation) AddedSortOrder() (r float64, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *LabelMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (m *LabelMutation) SetArchivedAt(t time.Time) {
 	m.archived_at = &t
@@ -18500,7 +19601,7 @@ func (m *LabelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LabelMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, label.FieldCreatedAt)
 	}
@@ -18530,6 +19631,9 @@ func (m *LabelMutation) Fields() []string {
 	}
 	if m.group_single_select != nil {
 		fields = append(fields, label.FieldGroupSingleSelect)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, label.FieldSortOrder)
 	}
 	if m.archived_at != nil {
 		fields = append(fields, label.FieldArchivedAt)
@@ -18562,6 +19666,8 @@ func (m *LabelMutation) Field(name string) (ent.Value, bool) {
 		return m.IsGroup()
 	case label.FieldGroupSingleSelect:
 		return m.GroupSingleSelect()
+	case label.FieldSortOrder:
+		return m.SortOrder()
 	case label.FieldArchivedAt:
 		return m.ArchivedAt()
 	}
@@ -18593,6 +19699,8 @@ func (m *LabelMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldIsGroup(ctx)
 	case label.FieldGroupSingleSelect:
 		return m.OldGroupSingleSelect(ctx)
+	case label.FieldSortOrder:
+		return m.OldSortOrder(ctx)
 	case label.FieldArchivedAt:
 		return m.OldArchivedAt(ctx)
 	}
@@ -18674,6 +19782,13 @@ func (m *LabelMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetGroupSingleSelect(v)
 		return nil
+	case label.FieldSortOrder:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
 	case label.FieldArchivedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -18688,13 +19803,21 @@ func (m *LabelMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *LabelMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addsort_order != nil {
+		fields = append(fields, label.FieldSortOrder)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *LabelMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case label.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
 	return nil, false
 }
 
@@ -18703,6 +19826,13 @@ func (m *LabelMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *LabelMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case label.FieldSortOrder:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Label numeric field %s", name)
 }
@@ -18786,6 +19916,9 @@ func (m *LabelMutation) ResetField(name string) error {
 		return nil
 	case label.FieldGroupSingleSelect:
 		m.ResetGroupSingleSelect()
+		return nil
+	case label.FieldSortOrder:
+		m.ResetSortOrder()
 		return nil
 	case label.FieldArchivedAt:
 		m.ResetArchivedAt()
@@ -27386,6 +28519,8 @@ type ProjectMutation struct {
 	archived_at            *time.Time
 	trashed_at             *time.Time
 	health                 *schema.Health
+	import_source          *string
+	import_external_id     *string
 	clearedFields          map[string]struct{}
 	workspace              *uuid.UUID
 	clearedworkspace       bool
@@ -28620,6 +29755,104 @@ func (m *ProjectMutation) ResetCreatorID() {
 	delete(m.clearedFields, project.FieldCreatorID)
 }
 
+// SetImportSource sets the "import_source" field.
+func (m *ProjectMutation) SetImportSource(s string) {
+	m.import_source = &s
+}
+
+// ImportSource returns the value of the "import_source" field in the mutation.
+func (m *ProjectMutation) ImportSource() (r string, exists bool) {
+	v := m.import_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImportSource returns the old "import_source" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldImportSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImportSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImportSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImportSource: %w", err)
+	}
+	return oldValue.ImportSource, nil
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (m *ProjectMutation) ClearImportSource() {
+	m.import_source = nil
+	m.clearedFields[project.FieldImportSource] = struct{}{}
+}
+
+// ImportSourceCleared returns if the "import_source" field was cleared in this mutation.
+func (m *ProjectMutation) ImportSourceCleared() bool {
+	_, ok := m.clearedFields[project.FieldImportSource]
+	return ok
+}
+
+// ResetImportSource resets all changes to the "import_source" field.
+func (m *ProjectMutation) ResetImportSource() {
+	m.import_source = nil
+	delete(m.clearedFields, project.FieldImportSource)
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (m *ProjectMutation) SetImportExternalID(s string) {
+	m.import_external_id = &s
+}
+
+// ImportExternalID returns the value of the "import_external_id" field in the mutation.
+func (m *ProjectMutation) ImportExternalID() (r string, exists bool) {
+	v := m.import_external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImportExternalID returns the old "import_external_id" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldImportExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImportExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImportExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImportExternalID: %w", err)
+	}
+	return oldValue.ImportExternalID, nil
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (m *ProjectMutation) ClearImportExternalID() {
+	m.import_external_id = nil
+	m.clearedFields[project.FieldImportExternalID] = struct{}{}
+}
+
+// ImportExternalIDCleared returns if the "import_external_id" field was cleared in this mutation.
+func (m *ProjectMutation) ImportExternalIDCleared() bool {
+	_, ok := m.clearedFields[project.FieldImportExternalID]
+	return ok
+}
+
+// ResetImportExternalID resets all changes to the "import_external_id" field.
+func (m *ProjectMutation) ResetImportExternalID() {
+	m.import_external_id = nil
+	delete(m.clearedFields, project.FieldImportExternalID)
+}
+
 // ClearWorkspace clears the "workspace" edge to the Workspace entity.
 func (m *ProjectMutation) ClearWorkspace() {
 	m.clearedworkspace = true
@@ -29302,7 +30535,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 24)
+	fields := make([]string, 0, 26)
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
 	}
@@ -29375,6 +30608,12 @@ func (m *ProjectMutation) Fields() []string {
 	if m.creator != nil {
 		fields = append(fields, project.FieldCreatorID)
 	}
+	if m.import_source != nil {
+		fields = append(fields, project.FieldImportSource)
+	}
+	if m.import_external_id != nil {
+		fields = append(fields, project.FieldImportExternalID)
+	}
 	return fields
 }
 
@@ -29431,6 +30670,10 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.Health()
 	case project.FieldCreatorID:
 		return m.CreatorID()
+	case project.FieldImportSource:
+		return m.ImportSource()
+	case project.FieldImportExternalID:
+		return m.ImportExternalID()
 	}
 	return nil, false
 }
@@ -29488,6 +30731,10 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldHealth(ctx)
 	case project.FieldCreatorID:
 		return m.OldCreatorID(ctx)
+	case project.FieldImportSource:
+		return m.OldImportSource(ctx)
+	case project.FieldImportExternalID:
+		return m.OldImportExternalID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Project field %s", name)
 }
@@ -29665,6 +30912,20 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatorID(v)
 		return nil
+	case project.FieldImportSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImportSource(v)
+		return nil
+	case project.FieldImportExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImportExternalID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)
 }
@@ -29764,6 +31025,12 @@ func (m *ProjectMutation) ClearedFields() []string {
 	if m.FieldCleared(project.FieldCreatorID) {
 		fields = append(fields, project.FieldCreatorID)
 	}
+	if m.FieldCleared(project.FieldImportSource) {
+		fields = append(fields, project.FieldImportSource)
+	}
+	if m.FieldCleared(project.FieldImportExternalID) {
+		fields = append(fields, project.FieldImportExternalID)
+	}
 	return fields
 }
 
@@ -29819,6 +31086,12 @@ func (m *ProjectMutation) ClearField(name string) error {
 		return nil
 	case project.FieldCreatorID:
 		m.ClearCreatorID()
+		return nil
+	case project.FieldImportSource:
+		m.ClearImportSource()
+		return nil
+	case project.FieldImportExternalID:
+		m.ClearImportExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown Project nullable field %s", name)
@@ -29899,6 +31172,12 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldCreatorID:
 		m.ResetCreatorID()
+		return nil
+	case project.FieldImportSource:
+		m.ResetImportSource()
+		return nil
+	case project.FieldImportExternalID:
+		m.ResetImportExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)

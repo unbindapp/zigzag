@@ -134,6 +134,8 @@ func startAPI(cfg *config.Config) {
 	emailService := email_service.NewEmailService(cfg, repo, encryptor, mail.SMTPSender{})
 	metadataFetcher := oauthserver.NewMetadataFetcher(oauthserver.DefaultIPPolicy, cache.NewMemoryCache[oauthserver.ClientMetadata]())
 	oauthServerService := oauthserver_service.NewOAuthServerService(repo, metadataFetcher, issuer)
+	notificationService := notification_service.NewNotificationService(cfg, repo, emailService)
+	webhookService := webhook_service.NewWebhookService(cfg, repo)
 
 	srvImpl := &server.Server{
 		Cfg:                 cfg,
@@ -148,21 +150,21 @@ func startAPI(cfg *config.Config) {
 		OAuthServerService:  oauthServerService,
 		SystemService:       system_service.NewSystemService(repo),
 		UploadService:       upload_service.NewUploadService(cfg, repo, store),
-		IssueService:        issue_service.NewIssueService(cfg, repo),
-		ProjectService:      project_service.NewProjectService(cfg, repo),
+		IssueService:        issue_service.NewIssueService(cfg, repo, notificationService, webhookService),
+		ProjectService:      project_service.NewProjectService(cfg, repo, notificationService, webhookService),
 		LabelService:        label_service.NewLabelService(cfg, repo),
 		CycleService:        cycle_service.NewCycleService(cfg, repo),
 		InitiativeService:   initiative_service.NewInitiativeService(cfg, repo),
-		CommentService:      comment_service.NewCommentService(cfg, repo),
-		NotificationService: notification_service.NewNotificationService(cfg, repo, emailService),
+		NotificationService: notificationService,
 		DocumentService:     document_service.NewDocumentService(cfg, repo),
 		ViewService:         view_service.NewViewService(cfg, repo),
 		TemplateService:     template_service.NewTemplateService(cfg, repo),
 		FavoriteService:     favorite_service.NewFavoriteService(cfg, repo),
-		WebhookService:      webhook_service.NewWebhookService(cfg, repo),
+		WebhookService:      webhookService,
 		ImportService:       import_service.NewImportService(cfg, repo),
-		SearchService:       search_service.NewSearchService(cfg, repo),
 	}
+	srvImpl.SearchService = search_service.NewSearchService(cfg, repo, srvImpl.IssueService)
+	srvImpl.CommentService = comment_service.NewCommentService(cfg, repo, srvImpl.IssueService, notificationService, webhookService)
 
 	allowedOrigins := []string{cfg.ExternalUIUrl}
 	if cfg.InjectDevOrigins {
@@ -238,6 +240,7 @@ func startAPI(cfg *config.Config) {
 		Invitations:    srvImpl.WorkspaceService,
 		PasswordResets: srvImpl.UserService,
 		Trash:          srvImpl.IssueService,
+		Automation:     srvImpl.IssueService,
 		Notifications:  srvImpl.NotificationService,
 	}))
 	if err != nil {

@@ -1,0 +1,461 @@
+{
+  "exported_at": "2026-10-16T04:02:58Z",
+  "workspace": {
+    "id": "e902ded5-e0f7-4e49-b22e-4159a860164e",
+    "name": "Unbind",
+    "url": "https://linear.app/unbind"
+  },
+  "users": [
+    {
+      "id": "7d3bac49-cdba-4cb7-b369-d7da86195e96",
+      "name": "Brandon Berhent",
+      "email": "bbedward@gmail.com",
+      "displayName": "bbedward",
+      "avatarUrl": "https://public.linear.app/7d3bac49-cdba-4cb7-b369-d7da86195e96/20034338-3c26-4a95-a61e-47992ceee9bc",
+      "isAdmin": true,
+      "isGuest": false,
+      "isActive": true,
+      "createdAt": "2025-02-09T08:00:33.452Z"
+    },
+    {
+      "id": "d3e1259a-7881-4de0-be16-a0770308c537",
+      "name": "Linear",
+      "email": "linear-e902ded5-e0f7-4e49-b22e-4159a860164e@linear.linear.app",
+      "displayName": "linear",
+      "avatarUrl": "https://static.linear.app/assets/avatar/avatar_512.png",
+      "isAdmin": false,
+      "isGuest": false,
+      "isActive": true,
+      "createdAt": "2026-03-24T22:36:23.708Z"
+    },
+    {
+      "id": "13aa72f9-56a2-4d25-b9ac-30a9ee690111",
+      "name": "unbindapp@gmail.com",
+      "email": "unbindapp@gmail.com",
+      "displayName": "unbind",
+      "avatarUrl": "https://public.linear.app/e902ded5-e0f7-4e49-b22e-4159a860164e/ecc06691-c2ad-4662-aafe-081f950d5b62/bcfe061c-f79f-4e53-b376-44216ec7d115",
+      "isAdmin": true,
+      "isGuest": false,
+      "isActive": true,
+      "createdAt": "2025-02-09T08:00:01.380Z"
+    },
+    {
+      "id": "f29bad86-2fec-473c-bf1c-01667ff62f86",
+      "name": "ngyekta@gmail.com",
+      "email": "ngyekta@gmail.com",
+      "displayName": "ngyekta",
+      "avatarUrl": null,
+      "isAdmin": true,
+      "isGuest": false,
+      "isActive": true,
+      "createdAt": "2025-02-09T08:00:32.920Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "key": "UNB",
+      "name": "Unbind",
+      "description": null,
+      "icon": "Chip",
+      "color": null,
+      "createdAt": "2025-02-09T08:00:01.380Z",
+      "cyclesEnabled": null,
+      "timezone": null
+    }
+  ],
+  "workflow_states": [
+    {
+      "id": "d35ceda0-661c-4bcd-b672-a904d3144a91",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "Backlog",
+      "type": "backlog",
+      "color": "#95a2b3",
+      "position": 0
+    },
+    {
+      "id": "2f77862c-e979-4913-a251-23d0344e7b53",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "Todo",
+      "type": "unstarted",
+      "color": "#e2e2e2",
+      "position": 0
+    },
+    {
+      "id": "07a2d2ff-37af-4117-8edb-4ee2ec6cec8f",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "In Progress",
+      "type": "started",
+      "color": "#f2c94c",
+      "position": 0
+    },
+    {
+      "id": "7be74958-60e5-4f84-96d3-e4d961242de2",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "In Review",
+      "type": "started",
+      "color": "#0f783c",
+      "position": 1
+    },
+    {
+      "id": "0631950b-41c1-4a0b-9a3c-60928c8e2db7",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "Done",
+      "type": "completed",
+      "color": "#5e6ad2",
+      "position": 0
+    },
+    {
+      "id": "0c15806b-8c8e-41ea-91e1-64f462ac1ef8",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "Canceled",
+      "type": "canceled",
+      "color": "#95a2b3",
+      "position": 0
+    },
+    {
+      "id": "739fd57d-0eb1-4202-82ea-cebfced0a595",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "name": "Duplicate",
+      "type": "canceled",
+      "color": "#95a2b3",
+      "position": 1
+    }
+  ],
+  "labels": [
+    {
+      "id": "d2f97b09-7297-4bb9-b0bf-ce383f030f48",
+      "name": "sec-low",
+      "color": "#F2C94C",
+      "description": null,
+      "parentId": "5ec25a54-3d3d-4564-ad06-9eed353e9e21",
+      "isGroup": false,
+      "groupType": null,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "c0c03964-c628-4872-a21d-15a6ba27ae66",
+      "name": "sec-medium",
+      "color": "#F2994A",
+      "description": null,
+      "parentId": "5ec25a54-3d3d-4564-ad06-9eed353e9e21",
+      "isGroup": false,
+      "groupType": null,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "94de2039-6bdd-4515-9f32-778a4b19ea68",
+      "name": "sec-high",
+      "color": "#EB5757",
+      "description": null,
+      "parentId": "5ec25a54-3d3d-4564-ad06-9eed353e9e21",
+      "isGroup": false,
+      "groupType": null,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "5ec25a54-3d3d-4564-ad06-9eed353e9e21",
+      "name": "Security",
+      "color": "#EB5757",
+      "description": null,
+      "parentId": null,
+      "isGroup": true,
+      "groupType": "singleSelect",
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "64b8bb9b-872f-4617-a27a-b6ce52d58237",
+      "name": "alpha",
+      "color": "#5e6ad2",
+      "description": null,
+      "parentId": null,
+      "isGroup": false,
+      "groupType": null,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "0500f424-72ec-4f82-9150-5821d34596f2",
+      "name": "frontend",
+      "color": "#4cb782",
+      "description": null,
+      "parentId": null,
+      "isGroup": false,
+      "groupType": null,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "archivedAt": null
+    },
+    {
+      "id": "9986e65d-74d7-4b5c-ab3d-f71c06568503",
+      "name": "Feature",
+      "color": "#BB87FC",
+      "description": null,
+      "parentId": null,
+      "isGroup": false,
+      "groupType": null,
+      "teamId": null,
+      "archivedAt": null
+    },
+    {
+      "id": "88e1d41a-435f-4efc-bb1e-995c2b006b08",
+      "name": "Bug",
+      "color": "#EB5757",
+      "description": null,
+      "parentId": null,
+      "isGroup": false,
+      "groupType": null,
+      "teamId": null,
+      "archivedAt": null
+    },
+    {
+      "id": "2e21e8d2-80a9-4a8c-b19b-2f605ce5ded0",
+      "name": "Improvement",
+      "color": "#4EA7FC",
+      "description": null,
+      "parentId": null,
+      "isGroup": false,
+      "groupType": null,
+      "teamId": null,
+      "archivedAt": null
+    }
+  ],
+  "projects": [
+    {
+      "id": "7b05243d-507e-4b13-8734-85a502f28603",
+      "identifier": "P-UNB-1",
+      "name": "Security scan 2026-10-15",
+      "summary": "Findings from the 2026-10-15 security scan of commit fb0061a2. Each issue is one verified finding. The scan did not cover apps/web, apps/operator, deploy charts, CI or docs.",
+      "description": "",
+      "url": "https://linear.app/unbind/project/security-scan-2026-10-15-1e0e8889abfa",
+      "status": {
+        "id": "a7ad4318-bbf7-4910-b329-fb3ab1119fc3",
+        "name": "Backlog",
+        "type": "backlog"
+      },
+      "leadId": null,
+      "priority": 0,
+      "startDate": null,
+      "targetDate": null,
+      "sortOrder": 82,
+      "createdAt": "2026-10-15T18:15:37.108Z",
+      "updatedAt": "2026-10-15T18:15:37.108Z",
+      "startedAt": null,
+      "completedAt": null,
+      "canceledAt": null,
+      "archivedAt": null,
+      "trashed": false,
+      "teamIds": [
+        "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8"
+      ],
+      "memberIds": [],
+      "labelIds": []
+    }
+  ],
+  "milestones": [],
+  "cycles": [],
+  "issues": [
+    {
+      "id": "02ce9c9d-b848-42ea-90f1-00da6a98b8e4",
+      "identifier": "UNB-259",
+      "number": 259,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "title": "Old container images/layer snapshots accumulate on nodes and fill up disk",
+      "description": "On a single-node Unbind install, `/var/lib/rancher/k3s/agent/containerd` had grown to **80G** (out of 205G total disk usage on a 301G disk). Every git-based deployment builds and pushes a new image, and old images/layer snapshots pile up in containerd's cache indefinitely \u2014 nothing in Unbind prunes them.\n\n:This eventually causes disk pressure. In this case it likely contributed to a Longhorn volume getting remounted read-only, which put a Meilisearch service into a crash loop (`Read-only file system (os error 30)`).\n\nManual workaround today: `k3s crictl rmi --prune` on the node, which is not something users should have to know about.\n\nPossible directions:\n\n* Ensure kubelet image GC is configured/working with sane thresholds on Unbind installs\n* Periodic prune job (old build images, buildkit cache) shipped by Unbind\n* Retention policy for old deployment images in the self-hosted registry as well, since it grows unboundedly for the same reason\n\n---\n\n**Related: Longhorn expansion snapshots are never cleaned up either.**\n\nWhen a volume is expanded through Unbind, Longhorn automatically takes a system snapshot (`volume-snap-expand-<size>.img`) before resizing \u2014 and nothing ever deletes it. The snapshot pins the entire pre-expansion state, so every block the app rewrites afterward goes into the volume head instead of being overwritten in place.\n\nReal case from the same node: a Meilisearch volume expanded to 55Gi had an `expand-59055800320` snapshot pinning a full 55Gi of dead history \u2014 the replica directory was **86G of actual disk for a 55Gi volume** (worst case ~2x volume size). For write-heavy workloads (databases, search indexes) this invisibly doubles the disk cost of any volume that has ever been resized.\n\nFix: after a successful expansion, the operator should delete the expansion system snapshot (Longhorn snapshot CRD/API) once the volume is healthy, and ideally run a filesystem trim afterward.\n\n**Implementation gotcha for the snapshot cleanup:** deleting the `snapshots.longhorn.io` CR alone does NOT reclaim the space \u2014 it only marks the snapshot as removed, and the engine's purge never fires (`purgeStatus` stays `isPurging: false`). The actual reclaim had to be kicked by creating and immediately deleting a throwaway Snapshot CR on the volume, which triggers a purge cycle that prunes the removed expand-snapshot. Whatever the operator does here needs to trigger the purge explicitly (or use the Longhorn API's SnapshotPurge call) rather than just deleting the CR.\n\nAlso worth evaluating the Longhorn global setting `remove-snapshots-during-filesystem-trim` \u2014 with it enabled, a filesystem trim also removes snapshots marked as removed (dropping their stale blocks), so the cleanup could be: mark expansion snapshot removed, trigger trim, done in one pass. Unbind could enable this setting by default at install time.",
+      "priority": 0,
+      "estimate": null,
+      "url": "https://linear.app/unbind/issue/UNB-259/old-container-imageslayer-snapshots-accumulate-on-nodes-and-fill-up",
+      "gitBranchName": "bbedward/unb-259-old-container-imageslayer-snapshots-accumulate-on-nodes-and",
+      "createdAt": "2026-09-02T09:06:21.825Z",
+      "updatedAt": "2026-09-09T21:16:49.898Z",
+      "archivedAt": null,
+      "completedAt": "2026-09-09T21:16:49.877Z",
+      "startedAt": "2026-09-02T14:55:12.664Z",
+      "canceledAt": null,
+      "triagedAt": null,
+      "dueDate": null,
+      "stateId": "0631950b-41c1-4a0b-9a3c-60928c8e2db7",
+      "stateName": "Done",
+      "stateType": "completed",
+      "labelIds": [],
+      "labelNames": [],
+      "creatorId": "f29bad86-2fec-473c-bf1c-01667ff62f86",
+      "assigneeId": "7d3bac49-cdba-4cb7-b369-d7da86195e96",
+      "projectId": null,
+      "milestoneId": null,
+      "parentId": null,
+      "cycleId": null,
+      "sortOrder": null,
+      "attachments": [
+        {
+          "id": "7e7db246-99e5-4cc2-9e39-bae2133618ea",
+          "title": "installer,charts: fix disk pressure cleanup on nodes",
+          "subtitle": "master",
+          "url": "https://github.com/unbindapp/unbind/commit/8ddcf3a2b26e29b19ba4156db581a027d03b1e35",
+          "createdAt": null
+        },
+        {
+          "id": "0764c1e4-42bd-4410-b40b-261665ce3c9b",
+          "title": "installer: expire unused container images after 72h",
+          "subtitle": "master",
+          "url": "https://github.com/unbindapp/unbind/commit/d7cb695f759a44938ee093b0f8488a5abbe76720",
+          "createdAt": null
+        }
+      ],
+      "relations": {
+        "blocks": [],
+        "blockedBy": [],
+        "relatedTo": [],
+        "duplicateOf": null
+      },
+      "stateHistory": [
+        {
+          "stateId": "2f77862c-e979-4913-a251-23d0344e7b53",
+          "stateName": "Todo",
+          "stateType": "unstarted",
+          "startedAt": "2026-09-02T09:06:21.825Z",
+          "endedAt": "2026-09-02T14:55:12.677Z"
+        },
+        {
+          "stateId": "07a2d2ff-37af-4117-8edb-4ee2ec6cec8f",
+          "stateName": "In Progress",
+          "stateType": "started",
+          "startedAt": "2026-09-02T14:55:12.677Z",
+          "endedAt": "2026-09-09T21:16:49.892Z"
+        },
+        {
+          "stateId": "0631950b-41c1-4a0b-9a3c-60928c8e2db7",
+          "stateName": "Done",
+          "stateType": "completed",
+          "startedAt": "2026-09-09T21:16:49.892Z",
+          "endedAt": null
+        }
+      ],
+      "comments": []
+    },
+    {
+      "id": "8f628963-618c-4ebe-b5f1-3b3c8b4dedfd",
+      "identifier": "UNB-289",
+      "number": 289,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "title": "Database CPU tuning is hard-coded, and MySQL runs with crash safety off",
+      "description": "The memory half of this issue was done in [UNB-318](https://linear.app/unbind/issue/UNB-318/figure-out-the-shared-buffers-situation-on-postgres-i-dont-think-we). This issue now tracks what is left.\n\n## What remains\n\n### 1. CPU tuning ignores the CPU limit\n\n* **Postgres:** `max_parallel_workers` and `max_parallel_workers_per_gather` are pinned to 0, so parallel query is off at any size. Derive them from the CPU limit (for example workers = cores, per gather = cores / 2, capped at 4). Every parallel worker can use `work_mem` again, so check the memory math from [UNB-318](https://linear.app/unbind/issue/UNB-318/figure-out-the-shared-buffers-situation-on-postgres-i-dont-think-we) still holds before raising them. At the default 1 CPU limit nothing should change.\n* **ClickHouse:** `config.d/99-low-resources.xml` pins `max_threads` to 1, so a 4 core ClickHouse runs every query on one thread. `max_block_size` 4096 and `max_download_threads` 1 are part of the same low resource profile. Derive `max_threads` from the CPU limit and revisit the rest of the profile for databases that have real resources.\n\nSame rule as [UNB-318](https://linear.app/unbind/issue/UNB-318/figure-out-the-shared-buffers-situation-on-postgres-i-dont-think-we): with no CPU limit set, keep today's values. Never size from the whole server.\n\n### 2. MySQL durability decision\n\n`mysql/definition.yaml` sets `innodb_doublewrite: OFF`, `sync_binlog: 0` and `innodb_flush_log_at_trx_commit: 2`. A power loss or OOM kill can leave torn pages or lose the last second of commits, and users cannot see or change this. Decide: restore the safe defaults, or make it an explicit opt in.\n\n### 3. Small MySQL leftovers\n\n* `innodb_redo_log_capacity` is 64MB. It gets tight under heavy writes now that the buffer pool can be 1GB or more. It lives on the data volume, so it should follow the volume size, not memory. The operator already reads the real volume size for Postgres (`dataVolumeCapacity` in `apps/operator/internal/controller/database_volume.go`, works for MySQL claims too), reuse that and do not read the size recorded in the spec, it is frozen at creation.\n* `table_open_cache` and `table_definition_cache` are 64. Apps with many tables will thrash.\n\n## Done in [UNB-318](https://linear.app/unbind/issue/UNB-318/figure-out-the-shared-buffers-situation-on-postgres-i-dont-think-we)\n\nMemory settings are now sized from the service's memory limit by one function in the operator (`apps/operator/internal/resourcebuilder/database_tuning.go`). With no memory limit nothing is set and the old values apply.\n\n| Engine | Setting | Value |\n| -- | -- | -- |\n| Postgres | shared_buffers | 25% of the limit |\n| Postgres | effective_cache_size | 75% of the limit |\n| Postgres | maintenance_work_mem | 5%, floor 64MB, cap 1GB |\n| Postgres | wal_buffers | shared_buffers / 32, floor 4MB, cap 16MB |\n| Postgres | work_mem | (limit - shared_buffers) / (max_connections x 3), floor 4MB, cap 64MB |\n| Postgres | max_wal_size | 10% of the real volume size, floor 256MB, cap 8GB |\n| MySQL | innodb_buffer_pool_size | 50% of the limit, rounded down to whole chunks, instances pinned |\n| MySQL | max_connections | limit MB / 20, floor 50, cap 1000 |\n| MongoDB | wiredTigerCacheSizeGB | 50% of (limit - 1GB), floor 0.25 |\n| MongoDB | maxConns | limit MB / 10, floor 100, cap 5000 |\n| Redis | maxmemory | 75% of the limit, policy stays noeviction |\n\nTwo validated override fields on `DatabaseConfig`, available through the API and MCP (no UI yet): `sharedBuffersMb` (Postgres, at most 50% of the limit) and `innodbBufferPoolSizeMb` (MySQL, at most 75%). Lowering the memory limit under an existing override is rejected.\n\n`max_wal_size` follows the real disk, not the size recorded in the spec (that one is frozen at creation, resizes land on the claims). The operator reads the smallest `status.capacity` of the database's claims and watches claims, so a resize is picked up about 20 seconds after the expansion finishes, with a config reload and no restart. Checked on the dev cluster: 1GB to 30GB to 50GB gave 256MB, 3GB, 5GB with the same Postgres start time.\n\nVerified on the dev cluster for all four engines: values render, the databases restart on their own and pick them up, overrides apply and clear, and a limit change is followed.\n\n## Suggestions from the original issue that were decided against\n\n* **Derive in the template.** The template gets the limit as a string like `2048M`. Doing that math in Go templates is fragile and untestable, so it lives in the operator with table tests. The limit is decimal megabytes while Postgres and MySQL count in 1024 based units, so the function works in bytes.\n* **Plumb the whole** `postgresql` **block through the API.** Free form strings with no validation make it easy to create a database that cannot boot. Two named, validated fields instead. More can be added the same way if someone needs them.\n* **Scale max_wal_size with memory.** WAL lives on the data volume and default volumes are 1GB. It follows the volume size instead.\n* **MySQL buffer pool at 50 to 70%.** 50%, because max_connections is raised at the same time and every connection has its own buffers. Also: MySQL 8.4 picks the buffer pool instance count from the host CPU count and rounds the pool up to 128MB x instances, so on a big server the pool lands well above the requested value. The instance count is now pinned from the pool size so the result is exact.\n* **MongoDB: drop the cache flag.** Mongo sizes itself from the container limit, but with no limit it sizes from the whole server. Deriving the value keeps both cases safe.\n* **Redis: evict by default.** People run queues and sessions on it. BullMQ and Sidekiq require noeviction, evicted keys silently corrupt a queue. Redis now rejects writes when full instead of being OOM killed, and keeps its data.\n* **ClickHouse caches from the memory limit.** Not needed, ClickHouse caps its own memory from the container limit and the 500MB mark cache is only a ceiling.\n* **Same sizing for Unbind's own database chart.** It is a small control plane database with a fixed 1GB limit. 128MB fits it, and changing it would restart Unbind's own database on upgrade for no real gain.\n\n## Notes for whoever picks this up\n\n* Values set with `ALTER SYSTEM` still win over what Unbind renders (checked on the dev cluster). `ALTER SYSTEM RESET <name>` plus a restart hands control back.\n* Shipping [UNB-318](https://linear.app/unbind/issue/UNB-318/figure-out-the-shared-buffers-situation-on-postgres-i-dont-think-we) restarts every Postgres, MySQL, MongoDB and Redis that has a memory limit, once, on upgrade. CPU derived settings will do the same for databases whose values change, so try to ship them in one release.",
+      "priority": 0,
+      "estimate": null,
+      "url": "https://linear.app/unbind/issue/UNB-289/database-cpu-tuning-is-hard-coded-and-mysql-runs-with-crash-safety-off",
+      "gitBranchName": "bbedward/unb-289-database-cpu-tuning-is-hard-coded-and-mysql-runs-with-crash",
+      "createdAt": "2026-09-11T02:02:22.138Z",
+      "updatedAt": "2026-09-21T14:27:01.592Z",
+      "archivedAt": null,
+      "completedAt": "2026-09-21T14:27:01.242Z",
+      "startedAt": null,
+      "canceledAt": null,
+      "triagedAt": null,
+      "dueDate": null,
+      "stateId": "0631950b-41c1-4a0b-9a3c-60928c8e2db7",
+      "stateName": "Done",
+      "stateType": "completed",
+      "labelIds": [],
+      "labelNames": [],
+      "creatorId": "f29bad86-2fec-473c-bf1c-01667ff62f86",
+      "assigneeId": "7d3bac49-cdba-4cb7-b369-d7da86195e96",
+      "projectId": null,
+      "milestoneId": null,
+      "parentId": null,
+      "cycleId": null,
+      "sortOrder": null,
+      "attachments": [
+        {
+          "id": "3ad25998-92b4-40d2-96b0-a5d6cc187105",
+          "title": "api,operator: Derive database cpu tuning and restore mysql durability",
+          "subtitle": "master",
+          "url": "https://github.com/unbindapp/unbind/commit/ed8776f2daa0a249c858e19ab423ccb636ca750d",
+          "createdAt": null
+        }
+      ],
+      "relations": {
+        "blocks": [],
+        "blockedBy": [],
+        "relatedTo": [
+          "cfedcdb2-dc5f-4a6e-a3ed-0e0b4dbbace6"
+        ],
+        "duplicateOf": null
+      },
+      "stateHistory": [
+        {
+          "stateId": "2f77862c-e979-4913-a251-23d0344e7b53",
+          "stateName": "Todo",
+          "stateType": "unstarted",
+          "startedAt": "2026-09-11T02:02:22.138Z",
+          "endedAt": "2026-09-21T14:27:01.425Z"
+        },
+        {
+          "stateId": "0631950b-41c1-4a0b-9a3c-60928c8e2db7",
+          "stateName": "Done",
+          "stateType": "completed",
+          "startedAt": "2026-09-21T14:27:01.425Z",
+          "endedAt": null
+        }
+      ],
+      "comments": []
+    },
+    {
+      "id": "fa1ebadd-1a9a-40d7-ac60-c599c1bb1a30",
+      "identifier": "UNB-455",
+      "number": 455,
+      "teamId": "24bb1e37-a03f-43d3-8186-6abdfb1ea6a8",
+      "title": "[F83] Terminal websocket reads whole messages with no size limit (SetReadLimit never called)",
+      "description": "**Severity:** LOW (confidence medium), CWE-770\n**Where:** `apps/api/internal/services/terminal/exec.go:118` in `readPump`\n\n## Impact\n\nThe shared API process can run out of memory and crash, a denial of service for all tenants. This is limited by the attacker's upload bandwidth: memory grows roughly in step with the bytes sent.\n\n## What\n\nThe client sends the websocket frames, and readPump reads them with gorilla's ReadMessage, which does io.ReadAll on the full message. The upgrader and conn never call SetReadLimit, so readLimit stays 0, which means no limit. Gorilla's Upgrade also clears the HTTP server deadlines (server.go:265), so one huge or endlessly fragmented message is buffered in the API process without bound.\n\n## Exploit scenario\n\nA user with editor on a service that has a running pod opens /exec from a non-browser client and sets an allowed Origin header. They then send one binary websocket message, or a chain of continuation frames, totalling several gigabytes, across one or more connections. The API buffers each message in full before it writes anything to stdin, so its memory grows until the pod is OOM-killed.\n\n## Preconditions\n\n* Attacker is authenticated with editor on a service (Resolve permission check)\n* The service has at least one pod\n* Attacker can upload several GB to the API\n\n## Fix\n\nCall ws.SetReadLimit with a small bound (for example 64 KiB) right after Upgrade, and add a read deadline that the pong handler refreshes.\n\n---\n\nSource: security scan of fb0061a2 on 2026-10-15, finding F83, confirmed 3/3 by the review panel. Found by reading code, not by running an exploit.",
+      "priority": 4,
+      "estimate": null,
+      "url": "https://linear.app/unbind/issue/UNB-455/f83-terminal-websocket-reads-whole-messages-with-no-size-limit",
+      "gitBranchName": "bbedward/unb-455-f83-terminal-websocket-reads-whole-messages-with-no-size",
+      "createdAt": "2026-10-15T18:20:19.197Z",
+      "updatedAt": "2026-10-15T18:20:19.197Z",
+      "archivedAt": null,
+      "completedAt": null,
+      "startedAt": null,
+      "canceledAt": null,
+      "triagedAt": null,
+      "dueDate": null,
+      "stateId": "d35ceda0-661c-4bcd-b672-a904d3144a91",
+      "stateName": "Backlog",
+      "stateType": "backlog",
+      "labelIds": [
+        "88e1d41a-435f-4efc-bb1e-995c2b006b08",
+        "d2f97b09-7297-4bb9-b0bf-ce383f030f48"
+      ],
+      "labelNames": [
+        "Bug",
+        "sec-low"
+      ],
+      "creatorId": "7d3bac49-cdba-4cb7-b369-d7da86195e96",
+      "assigneeId": null,
+      "projectId": "7b05243d-507e-4b13-8734-85a502f28603",
+      "milestoneId": null,
+      "parentId": null,
+      "cycleId": null,
+      "sortOrder": null,
+      "attachments": [],
+      "relations": {
+        "blocks": [],
+        "blockedBy": [],
+        "relatedTo": [],
+        "duplicateOf": null
+      },
+      "stateHistory": [
+        {
+          "stateId": "d35ceda0-661c-4bcd-b672-a904d3144a91",
+          "stateName": "Backlog",
+          "stateType": "backlog",
+          "startedAt": "2026-10-15T18:20:19.197Z",
+          "endedAt": null
+        }
+      ],
+      "comments": []
+    }
+  ]
+}

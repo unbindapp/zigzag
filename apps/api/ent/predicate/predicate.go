@@ -18,6 +18,9 @@ type Comment func(*sql.Selector)
 // Cycle is the predicate function for cycle builders.
 type Cycle func(*sql.Selector)
 
+// CycleScopeHistory is the predicate function for cyclescopehistory builders.
+type CycleScopeHistory func(*sql.Selector)
+
 // Document is the predicate function for document builders.
 type Document func(*sql.Selector)
 

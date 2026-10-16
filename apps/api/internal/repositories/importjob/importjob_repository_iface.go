@@ -4,9 +4,11 @@ package importjob_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
@@ -15,4 +17,6 @@ type ImportJobRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateImportJobInput) (*ent.ImportJob, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.ImportJob, error)
 	ResolveWorkspaceOfImportJob(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	Finish(ctx context.Context, id uuid.UUID, status schema.ImportStatus, report *schema.ImportReport, finishedAt time.Time) (*ent.ImportJob, error)
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, limit int) ([]*ent.ImportJob, error)
 }

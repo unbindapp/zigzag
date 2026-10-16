@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -42,6 +43,8 @@ func (Project) Fields() []ent.Field {
 		field.Time("trashed_at").Optional().Nillable(),
 		field.Enum("health").GoType(Health("")).Optional().Nillable(),
 		field.UUID("creator_id", uuid.UUID{}).Optional().Nillable(),
+		field.String("import_source").Optional(),
+		field.String("import_external_id").Optional(),
 	}
 }
 
@@ -68,6 +71,9 @@ func (Project) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("workspace_id", "slug").Unique(),
 		index.Fields("status_id"),
+		index.Fields("workspace_id", "import_source", "import_external_id").
+			Unique().
+			Annotations(entsql.IndexWhere("import_source IS NOT NULL AND import_external_id IS NOT NULL")),
 	}
 }
 

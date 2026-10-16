@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/predicate"
 	"github.com/unbindapp/zigzag-api/ent/team"
@@ -22,13 +23,14 @@ import (
 // CycleQuery is the builder for querying Cycle entities.
 type CycleQuery struct {
 	config
-	ctx        *QueryContext
-	order      []cycle.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Cycle
-	withTeam   *TeamQuery
-	withIssues *IssueQuery
-	modifiers  []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []cycle.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Cycle
+	withTeam         *TeamQuery
+	withIssues       *IssueQuery
+	withScopeHistory *CycleScopeHistoryQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +104,28 @@ func (_q *CycleQuery) QueryIssues() *IssueQuery {
 			sqlgraph.From(cycle.Table, cycle.FieldID, selector),
 			sqlgraph.To(issue.Table, issue.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, cycle.IssuesTable, cycle.IssuesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryScopeHistory chains the current query on the "scope_history" edge.
+func (_q *CycleQuery) QueryScopeHistory() *CycleScopeHistoryQuery {
+	query := (&CycleScopeHistoryClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cycle.Table, cycle.FieldID, selector),
+			sqlgraph.To(cyclescopehistory.Table, cyclescopehistory.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, cycle.ScopeHistoryTable, cycle.ScopeHistoryColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -296,13 +320,14 @@ func (_q *CycleQuery) Clone() *CycleQuery {
 		return nil
 	}
 	return &CycleQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]cycle.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Cycle{}, _q.predicates...),
-		withTeam:   _q.withTeam.Clone(),
-		withIssues: _q.withIssues.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]cycle.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.Cycle{}, _q.predicates...),
+		withTeam:         _q.withTeam.Clone(),
+		withIssues:       _q.withIssues.Clone(),
+		withScopeHistory: _q.withScopeHistory.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -329,6 +354,17 @@ func (_q *CycleQuery) WithIssues(opts ...func(*IssueQuery)) *CycleQuery {
 		opt(query)
 	}
 	_q.withIssues = query
+	return _q
+}
+
+// WithScopeHistory tells the query-builder to eager-load the nodes that are connected to
+// the "scope_history" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *CycleQuery) WithScopeHistory(opts ...func(*CycleScopeHistoryQuery)) *CycleQuery {
+	query := (&CycleScopeHistoryClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withScopeHistory = query
 	return _q
 }
 
@@ -410,9 +446,10 @@ func (_q *CycleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cycle,
 	var (
 		nodes       = []*Cycle{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTeam != nil,
 			_q.withIssues != nil,
+			_q.withScopeHistory != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -446,6 +483,13 @@ func (_q *CycleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cycle,
 		if err := _q.loadIssues(ctx, query, nodes,
 			func(n *Cycle) { n.Edges.Issues = []*Issue{} },
 			func(n *Cycle, e *Issue) { n.Edges.Issues = append(n.Edges.Issues, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withScopeHistory; query != nil {
+		if err := _q.loadScopeHistory(ctx, query, nodes,
+			func(n *Cycle) { n.Edges.ScopeHistory = []*CycleScopeHistory{} },
+			func(n *Cycle, e *CycleScopeHistory) { n.Edges.ScopeHistory = append(n.Edges.ScopeHistory, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -509,6 +553,36 @@ func (_q *CycleQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes [
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "cycle_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *CycleQuery) loadScopeHistory(ctx context.Context, query *CycleScopeHistoryQuery, nodes []*Cycle, init func(*Cycle), assign func(*Cycle, *CycleScopeHistory)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Cycle)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(cyclescopehistory.FieldCycleID)
+	}
+	query.Where(predicate.CycleScopeHistory(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(cycle.ScopeHistoryColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CycleID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "cycle_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

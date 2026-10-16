@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/cycle"
 )
@@ -125,6 +126,289 @@ func (_c *CycleRepositoryMock_ActiveCycleIDs_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// ActiveCycles provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) ActiveCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error) {
+	ret := _mock.Called(ctx, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ActiveCycles")
+	}
+
+	var r0 []*ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) ([]*ent.Cycle, error)); ok {
+		return returnFunc(ctx, now)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) []*ent.Cycle); ok {
+		r0 = returnFunc(ctx, now)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time) error); ok {
+		r1 = returnFunc(ctx, now)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_ActiveCycles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ActiveCycles'
+type CycleRepositoryMock_ActiveCycles_Call struct {
+	*mock.Call
+}
+
+// ActiveCycles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - now time.Time
+func (_e *CycleRepositoryMock_Expecter) ActiveCycles(ctx any, now any) *CycleRepositoryMock_ActiveCycles_Call {
+	return &CycleRepositoryMock_ActiveCycles_Call{Call: _e.mock.On("ActiveCycles", ctx, now)}
+}
+
+func (_c *CycleRepositoryMock_ActiveCycles_Call) Run(run func(ctx context.Context, now time.Time)) *CycleRepositoryMock_ActiveCycles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ActiveCycles_Call) Return(cycles []*ent.Cycle, err error) *CycleRepositoryMock_ActiveCycles_Call {
+	_c.Call.Return(cycles, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ActiveCycles_Call) RunAndReturn(run func(ctx context.Context, now time.Time) ([]*ent.Cycle, error)) *CycleRepositoryMock_ActiveCycles_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Archive provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Archive(ctx context.Context, id uuid.UUID, at time.Time) (*ent.Cycle, error) {
+	ret := _mock.Called(ctx, id, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Archive")
+	}
+
+	var r0 *ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) (*ent.Cycle, error)); ok {
+		return returnFunc(ctx, id, at)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) *ent.Cycle); ok {
+		r0 = returnFunc(ctx, id, at)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, time.Time) error); ok {
+		r1 = returnFunc(ctx, id, at)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_Archive_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Archive'
+type CycleRepositoryMock_Archive_Call struct {
+	*mock.Call
+}
+
+// Archive is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - at time.Time
+func (_e *CycleRepositoryMock_Expecter) Archive(ctx any, id any, at any) *CycleRepositoryMock_Archive_Call {
+	return &CycleRepositoryMock_Archive_Call{Call: _e.mock.On("Archive", ctx, id, at)}
+}
+
+func (_c *CycleRepositoryMock_Archive_Call) Run(run func(ctx context.Context, id uuid.UUID, at time.Time)) *CycleRepositoryMock_Archive_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Archive_Call) Return(cycle *ent.Cycle, err error) *CycleRepositoryMock_Archive_Call {
+	_c.Call.Return(cycle, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Archive_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, at time.Time) (*ent.Cycle, error)) *CycleRepositoryMock_Archive_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Complete provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Complete(ctx context.Context, tx repository.TxInterface, id uuid.UUID, at time.Time) error {
+	ret := _mock.Called(ctx, tx, id, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Complete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time) error); ok {
+		r0 = returnFunc(ctx, tx, id, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_Complete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Complete'
+type CycleRepositoryMock_Complete_Call struct {
+	*mock.Call
+}
+
+// Complete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - id uuid.UUID
+//   - at time.Time
+func (_e *CycleRepositoryMock_Expecter) Complete(ctx any, tx any, id any, at any) *CycleRepositoryMock_Complete_Call {
+	return &CycleRepositoryMock_Complete_Call{Call: _e.mock.On("Complete", ctx, tx, id, at)}
+}
+
+func (_c *CycleRepositoryMock_Complete_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, at time.Time)) *CycleRepositoryMock_Complete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Complete_Call) Return(err error) *CycleRepositoryMock_Complete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Complete_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, at time.Time) error) *CycleRepositoryMock_Complete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountEndingAfter provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) CountEndingAfter(ctx context.Context, teamID uuid.UUID, at time.Time) (int, error) {
+	ret := _mock.Called(ctx, teamID, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountEndingAfter")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) (int, error)); ok {
+		return returnFunc(ctx, teamID, at)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) int); ok {
+		r0 = returnFunc(ctx, teamID, at)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, time.Time) error); ok {
+		r1 = returnFunc(ctx, teamID, at)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_CountEndingAfter_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountEndingAfter'
+type CycleRepositoryMock_CountEndingAfter_Call struct {
+	*mock.Call
+}
+
+// CountEndingAfter is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+//   - at time.Time
+func (_e *CycleRepositoryMock_Expecter) CountEndingAfter(ctx any, teamID any, at any) *CycleRepositoryMock_CountEndingAfter_Call {
+	return &CycleRepositoryMock_CountEndingAfter_Call{Call: _e.mock.On("CountEndingAfter", ctx, teamID, at)}
+}
+
+func (_c *CycleRepositoryMock_CountEndingAfter_Call) Run(run func(ctx context.Context, teamID uuid.UUID, at time.Time)) *CycleRepositoryMock_CountEndingAfter_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_CountEndingAfter_Call) Return(n int, err error) *CycleRepositoryMock_CountEndingAfter_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_CountEndingAfter_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, at time.Time) (int, error)) *CycleRepositoryMock_CountEndingAfter_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Create provides a mock function for the type CycleRepositoryMock
 func (_mock *CycleRepositoryMock) Create(ctx context.Context, tx repository.TxInterface, input *cycle_repo.CreateCycleInput) (*ent.Cycle, error) {
 	ret := _mock.Called(ctx, tx, input)
@@ -199,6 +483,205 @@ func (_c *CycleRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// CyclesOfWorkspace provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) CyclesOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Cycle, error) {
+	ret := _mock.Called(ctx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CyclesOfWorkspace")
+	}
+
+	var r0 []*ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Cycle, error)); ok {
+		return returnFunc(ctx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Cycle); ok {
+		r0 = returnFunc(ctx, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_CyclesOfWorkspace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CyclesOfWorkspace'
+type CycleRepositoryMock_CyclesOfWorkspace_Call struct {
+	*mock.Call
+}
+
+// CyclesOfWorkspace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) CyclesOfWorkspace(ctx any, workspaceID any) *CycleRepositoryMock_CyclesOfWorkspace_Call {
+	return &CycleRepositoryMock_CyclesOfWorkspace_Call{Call: _e.mock.On("CyclesOfWorkspace", ctx, workspaceID)}
+}
+
+func (_c *CycleRepositoryMock_CyclesOfWorkspace_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID)) *CycleRepositoryMock_CyclesOfWorkspace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_CyclesOfWorkspace_Call) Return(cycles []*ent.Cycle, err error) *CycleRepositoryMock_CyclesOfWorkspace_Call {
+	_c.Call.Return(cycles, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_CyclesOfWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Cycle, error)) *CycleRepositoryMock_CyclesOfWorkspace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type CycleRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - id uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) Delete(ctx any, tx any, id any) *CycleRepositoryMock_Delete_Call {
+	return &CycleRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, tx, id)}
+}
+
+func (_c *CycleRepositoryMock_Delete_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID)) *CycleRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Delete_Call) Return(err error) *CycleRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error) *CycleRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// EndedOpenCycles provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) EndedOpenCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error) {
+	ret := _mock.Called(ctx, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EndedOpenCycles")
+	}
+
+	var r0 []*ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) ([]*ent.Cycle, error)); ok {
+		return returnFunc(ctx, now)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) []*ent.Cycle); ok {
+		r0 = returnFunc(ctx, now)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time) error); ok {
+		r1 = returnFunc(ctx, now)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_EndedOpenCycles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EndedOpenCycles'
+type CycleRepositoryMock_EndedOpenCycles_Call struct {
+	*mock.Call
+}
+
+// EndedOpenCycles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - now time.Time
+func (_e *CycleRepositoryMock_Expecter) EndedOpenCycles(ctx any, now any) *CycleRepositoryMock_EndedOpenCycles_Call {
+	return &CycleRepositoryMock_EndedOpenCycles_Call{Call: _e.mock.On("EndedOpenCycles", ctx, now)}
+}
+
+func (_c *CycleRepositoryMock_EndedOpenCycles_Call) Run(run func(ctx context.Context, now time.Time)) *CycleRepositoryMock_EndedOpenCycles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_EndedOpenCycles_Call) Return(cycles []*ent.Cycle, err error) *CycleRepositoryMock_EndedOpenCycles_Call {
+	_c.Call.Return(cycles, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_EndedOpenCycles_Call) RunAndReturn(run func(ctx context.Context, now time.Time) ([]*ent.Cycle, error)) *CycleRepositoryMock_EndedOpenCycles_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type CycleRepositoryMock
 func (_mock *CycleRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Cycle, error) {
 	ret := _mock.Called(ctx, id)
@@ -267,6 +750,733 @@ func (_c *CycleRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// GetByNumber provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) GetByNumber(ctx context.Context, teamID uuid.UUID, number int) (*ent.Cycle, error) {
+	ret := _mock.Called(ctx, teamID, number)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByNumber")
+	}
+
+	var r0 *ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int) (*ent.Cycle, error)); ok {
+		return returnFunc(ctx, teamID, number)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int) *ent.Cycle); ok {
+		r0 = returnFunc(ctx, teamID, number)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, int) error); ok {
+		r1 = returnFunc(ctx, teamID, number)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_GetByNumber_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByNumber'
+type CycleRepositoryMock_GetByNumber_Call struct {
+	*mock.Call
+}
+
+// GetByNumber is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+//   - number int
+func (_e *CycleRepositoryMock_Expecter) GetByNumber(ctx any, teamID any, number any) *CycleRepositoryMock_GetByNumber_Call {
+	return &CycleRepositoryMock_GetByNumber_Call{Call: _e.mock.On("GetByNumber", ctx, teamID, number)}
+}
+
+func (_c *CycleRepositoryMock_GetByNumber_Call) Run(run func(ctx context.Context, teamID uuid.UUID, number int)) *CycleRepositoryMock_GetByNumber_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_GetByNumber_Call) Return(cycle *ent.Cycle, err error) *CycleRepositoryMock_GetByNumber_Call {
+	_c.Call.Return(cycle, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_GetByNumber_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, number int) (*ent.Cycle, error)) *CycleRepositoryMock_GetByNumber_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ImportCycles provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) ImportCycles(ctx context.Context, tx repository.TxInterface, cycles []cycle_repo.ImportedCycle) error {
+	ret := _mock.Called(ctx, tx, cycles)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ImportCycles")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []cycle_repo.ImportedCycle) error); ok {
+		r0 = returnFunc(ctx, tx, cycles)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_ImportCycles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ImportCycles'
+type CycleRepositoryMock_ImportCycles_Call struct {
+	*mock.Call
+}
+
+// ImportCycles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - cycles []cycle_repo.ImportedCycle
+func (_e *CycleRepositoryMock_Expecter) ImportCycles(ctx any, tx any, cycles any) *CycleRepositoryMock_ImportCycles_Call {
+	return &CycleRepositoryMock_ImportCycles_Call{Call: _e.mock.On("ImportCycles", ctx, tx, cycles)}
+}
+
+func (_c *CycleRepositoryMock_ImportCycles_Call) Run(run func(ctx context.Context, tx repository.TxInterface, cycles []cycle_repo.ImportedCycle)) *CycleRepositoryMock_ImportCycles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []cycle_repo.ImportedCycle
+		if args[2] != nil {
+			arg2 = args[2].([]cycle_repo.ImportedCycle)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ImportCycles_Call) Return(err error) *CycleRepositoryMock_ImportCycles_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ImportCycles_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, cycles []cycle_repo.ImportedCycle) error) *CycleRepositoryMock_ImportCycles_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssueIDsInCycle provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) IssueIDsInCycle(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, tx, cycleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssueIDsInCycle")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, tx, cycleID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, tx, cycleID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, cycleID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_IssueIDsInCycle_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssueIDsInCycle'
+type CycleRepositoryMock_IssueIDsInCycle_Call struct {
+	*mock.Call
+}
+
+// IssueIDsInCycle is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - cycleID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) IssueIDsInCycle(ctx any, tx any, cycleID any) *CycleRepositoryMock_IssueIDsInCycle_Call {
+	return &CycleRepositoryMock_IssueIDsInCycle_Call{Call: _e.mock.On("IssueIDsInCycle", ctx, tx, cycleID)}
+}
+
+func (_c *CycleRepositoryMock_IssueIDsInCycle_Call) Run(run func(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID)) *CycleRepositoryMock_IssueIDsInCycle_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_IssueIDsInCycle_Call) Return(uUIDs []uuid.UUID, err error) *CycleRepositoryMock_IssueIDsInCycle_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_IssueIDsInCycle_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)) *CycleRepositoryMock_IssueIDsInCycle_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LatestCycle provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) LatestCycle(ctx context.Context, teamID uuid.UUID) (*ent.Cycle, error) {
+	ret := _mock.Called(ctx, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LatestCycle")
+	}
+
+	var r0 *ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Cycle, error)); ok {
+		return returnFunc(ctx, teamID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Cycle); ok {
+		r0 = returnFunc(ctx, teamID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, teamID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_LatestCycle_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LatestCycle'
+type CycleRepositoryMock_LatestCycle_Call struct {
+	*mock.Call
+}
+
+// LatestCycle is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) LatestCycle(ctx any, teamID any) *CycleRepositoryMock_LatestCycle_Call {
+	return &CycleRepositoryMock_LatestCycle_Call{Call: _e.mock.On("LatestCycle", ctx, teamID)}
+}
+
+func (_c *CycleRepositoryMock_LatestCycle_Call) Run(run func(ctx context.Context, teamID uuid.UUID)) *CycleRepositoryMock_LatestCycle_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_LatestCycle_Call) Return(cycle *ent.Cycle, err error) *CycleRepositoryMock_LatestCycle_Call {
+	_c.Call.Return(cycle, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_LatestCycle_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID) (*ent.Cycle, error)) *CycleRepositoryMock_LatestCycle_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByTeam provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) ListByTeam(ctx context.Context, teamID uuid.UUID, includeArchived bool) ([]*ent.Cycle, error) {
+	ret := _mock.Called(ctx, teamID, includeArchived)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByTeam")
+	}
+
+	var r0 []*ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, bool) ([]*ent.Cycle, error)); ok {
+		return returnFunc(ctx, teamID, includeArchived)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, bool) []*ent.Cycle); ok {
+		r0 = returnFunc(ctx, teamID, includeArchived)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, bool) error); ok {
+		r1 = returnFunc(ctx, teamID, includeArchived)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_ListByTeam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByTeam'
+type CycleRepositoryMock_ListByTeam_Call struct {
+	*mock.Call
+}
+
+// ListByTeam is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+//   - includeArchived bool
+func (_e *CycleRepositoryMock_Expecter) ListByTeam(ctx any, teamID any, includeArchived any) *CycleRepositoryMock_ListByTeam_Call {
+	return &CycleRepositoryMock_ListByTeam_Call{Call: _e.mock.On("ListByTeam", ctx, teamID, includeArchived)}
+}
+
+func (_c *CycleRepositoryMock_ListByTeam_Call) Run(run func(ctx context.Context, teamID uuid.UUID, includeArchived bool)) *CycleRepositoryMock_ListByTeam_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ListByTeam_Call) Return(cycles []*ent.Cycle, err error) *CycleRepositoryMock_ListByTeam_Call {
+	_c.Call.Return(cycles, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ListByTeam_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, includeArchived bool) ([]*ent.Cycle, error)) *CycleRepositoryMock_ListByTeam_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MoveIssues provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) MoveIssues(ctx context.Context, tx repository.TxInterface, issueIDs []uuid.UUID, cycleID uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, issueIDs, cycleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MoveIssues")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, issueIDs, cycleID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_MoveIssues_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MoveIssues'
+type CycleRepositoryMock_MoveIssues_Call struct {
+	*mock.Call
+}
+
+// MoveIssues is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - issueIDs []uuid.UUID
+//   - cycleID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) MoveIssues(ctx any, tx any, issueIDs any, cycleID any) *CycleRepositoryMock_MoveIssues_Call {
+	return &CycleRepositoryMock_MoveIssues_Call{Call: _e.mock.On("MoveIssues", ctx, tx, issueIDs, cycleID)}
+}
+
+func (_c *CycleRepositoryMock_MoveIssues_Call) Run(run func(ctx context.Context, tx repository.TxInterface, issueIDs []uuid.UUID, cycleID uuid.UUID)) *CycleRepositoryMock_MoveIssues_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_MoveIssues_Call) Return(err error) *CycleRepositoryMock_MoveIssues_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_MoveIssues_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, issueIDs []uuid.UUID, cycleID uuid.UUID) error) *CycleRepositoryMock_MoveIssues_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NextNumber provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) NextNumber(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error) {
+	ret := _mock.Called(ctx, tx, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NextNumber")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) (int, error)); ok {
+		return returnFunc(ctx, tx, teamID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) int); ok {
+		r0 = returnFunc(ctx, tx, teamID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, teamID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_NextNumber_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NextNumber'
+type CycleRepositoryMock_NextNumber_Call struct {
+	*mock.Call
+}
+
+// NextNumber is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - teamID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) NextNumber(ctx any, tx any, teamID any) *CycleRepositoryMock_NextNumber_Call {
+	return &CycleRepositoryMock_NextNumber_Call{Call: _e.mock.On("NextNumber", ctx, tx, teamID)}
+}
+
+func (_c *CycleRepositoryMock_NextNumber_Call) Run(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID)) *CycleRepositoryMock_NextNumber_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_NextNumber_Call) Return(n int, err error) *CycleRepositoryMock_NextNumber_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_NextNumber_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error)) *CycleRepositoryMock_NextNumber_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NextOpenCycle provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) NextOpenCycle(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, after time.Time) (*ent.Cycle, error) {
+	ret := _mock.Called(ctx, tx, teamID, after)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NextOpenCycle")
+	}
+
+	var r0 *ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time) (*ent.Cycle, error)); ok {
+		return returnFunc(ctx, tx, teamID, after)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time) *ent.Cycle); ok {
+		r0 = returnFunc(ctx, tx, teamID, after)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time) error); ok {
+		r1 = returnFunc(ctx, tx, teamID, after)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_NextOpenCycle_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NextOpenCycle'
+type CycleRepositoryMock_NextOpenCycle_Call struct {
+	*mock.Call
+}
+
+// NextOpenCycle is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - teamID uuid.UUID
+//   - after time.Time
+func (_e *CycleRepositoryMock_Expecter) NextOpenCycle(ctx any, tx any, teamID any, after any) *CycleRepositoryMock_NextOpenCycle_Call {
+	return &CycleRepositoryMock_NextOpenCycle_Call{Call: _e.mock.On("NextOpenCycle", ctx, tx, teamID, after)}
+}
+
+func (_c *CycleRepositoryMock_NextOpenCycle_Call) Run(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, after time.Time)) *CycleRepositoryMock_NextOpenCycle_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_NextOpenCycle_Call) Return(cycle *ent.Cycle, err error) *CycleRepositoryMock_NextOpenCycle_Call {
+	_c.Call.Return(cycle, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_NextOpenCycle_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, after time.Time) (*ent.Cycle, error)) *CycleRepositoryMock_NextOpenCycle_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Overlaps provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Overlaps(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt time.Time, endsAt time.Time, except *uuid.UUID) (bool, error) {
+	ret := _mock.Called(ctx, tx, teamID, startsAt, endsAt, except)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Overlaps")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time, time.Time, *uuid.UUID) (bool, error)); ok {
+		return returnFunc(ctx, tx, teamID, startsAt, endsAt, except)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time, time.Time, *uuid.UUID) bool); ok {
+		r0 = returnFunc(ctx, tx, teamID, startsAt, endsAt, except)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, time.Time, time.Time, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, teamID, startsAt, endsAt, except)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_Overlaps_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Overlaps'
+type CycleRepositoryMock_Overlaps_Call struct {
+	*mock.Call
+}
+
+// Overlaps is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - teamID uuid.UUID
+//   - startsAt time.Time
+//   - endsAt time.Time
+//   - except *uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) Overlaps(ctx any, tx any, teamID any, startsAt any, endsAt any, except any) *CycleRepositoryMock_Overlaps_Call {
+	return &CycleRepositoryMock_Overlaps_Call{Call: _e.mock.On("Overlaps", ctx, tx, teamID, startsAt, endsAt, except)}
+}
+
+func (_c *CycleRepositoryMock_Overlaps_Call) Run(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt time.Time, endsAt time.Time, except *uuid.UUID)) *CycleRepositoryMock_Overlaps_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		var arg4 time.Time
+		if args[4] != nil {
+			arg4 = args[4].(time.Time)
+		}
+		var arg5 *uuid.UUID
+		if args[5] != nil {
+			arg5 = args[5].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Overlaps_Call) Return(b bool, err error) *CycleRepositoryMock_Overlaps_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Overlaps_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt time.Time, endsAt time.Time, except *uuid.UUID) (bool, error)) *CycleRepositoryMock_Overlaps_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordHistory provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) RecordHistory(ctx context.Context, tx repository.TxInterface, entries []cycle_repo.HistoryEntry) error {
+	ret := _mock.Called(ctx, tx, entries)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordHistory")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []cycle_repo.HistoryEntry) error); ok {
+		r0 = returnFunc(ctx, tx, entries)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_RecordHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordHistory'
+type CycleRepositoryMock_RecordHistory_Call struct {
+	*mock.Call
+}
+
+// RecordHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - entries []cycle_repo.HistoryEntry
+func (_e *CycleRepositoryMock_Expecter) RecordHistory(ctx any, tx any, entries any) *CycleRepositoryMock_RecordHistory_Call {
+	return &CycleRepositoryMock_RecordHistory_Call{Call: _e.mock.On("RecordHistory", ctx, tx, entries)}
+}
+
+func (_c *CycleRepositoryMock_RecordHistory_Call) Run(run func(ctx context.Context, tx repository.TxInterface, entries []cycle_repo.HistoryEntry)) *CycleRepositoryMock_RecordHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []cycle_repo.HistoryEntry
+		if args[2] != nil {
+			arg2 = args[2].([]cycle_repo.HistoryEntry)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_RecordHistory_Call) Return(err error) *CycleRepositoryMock_RecordHistory_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_RecordHistory_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, entries []cycle_repo.HistoryEntry) error) *CycleRepositoryMock_RecordHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfCycle provides a mock function for the type CycleRepositoryMock
 func (_mock *CycleRepositoryMock) ResolveWorkspaceOfCycle(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -331,6 +1541,427 @@ func (_c *CycleRepositoryMock_ResolveWorkspaceOfCycle_Call) Return(uUID uuid.UUI
 }
 
 func (_c *CycleRepositoryMock_ResolveWorkspaceOfCycle_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *CycleRepositoryMock_ResolveWorkspaceOfCycle_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ScopeHistory provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) ScopeHistory(ctx context.Context, cycleID uuid.UUID) ([]*ent.CycleScopeHistory, error) {
+	ret := _mock.Called(ctx, cycleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ScopeHistory")
+	}
+
+	var r0 []*ent.CycleScopeHistory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.CycleScopeHistory, error)); ok {
+		return returnFunc(ctx, cycleID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.CycleScopeHistory); ok {
+		r0 = returnFunc(ctx, cycleID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.CycleScopeHistory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, cycleID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_ScopeHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ScopeHistory'
+type CycleRepositoryMock_ScopeHistory_Call struct {
+	*mock.Call
+}
+
+// ScopeHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cycleID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) ScopeHistory(ctx any, cycleID any) *CycleRepositoryMock_ScopeHistory_Call {
+	return &CycleRepositoryMock_ScopeHistory_Call{Call: _e.mock.On("ScopeHistory", ctx, cycleID)}
+}
+
+func (_c *CycleRepositoryMock_ScopeHistory_Call) Run(run func(ctx context.Context, cycleID uuid.UUID)) *CycleRepositoryMock_ScopeHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ScopeHistory_Call) Return(cycleScopeHistorys []*ent.CycleScopeHistory, err error) *CycleRepositoryMock_ScopeHistory_Call {
+	_c.Call.Return(cycleScopeHistorys, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_ScopeHistory_Call) RunAndReturn(run func(ctx context.Context, cycleID uuid.UUID) ([]*ent.CycleScopeHistory, error)) *CycleRepositoryMock_ScopeHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Tally provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Tally(ctx context.Context, tx repository.TxInterface, cycleIDs []uuid.UUID) (map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally, error) {
+	ret := _mock.Called(ctx, tx, cycleIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Tally")
+	}
+
+	var r0 map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID) (map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally, error)); ok {
+		return returnFunc(ctx, tx, cycleIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID) map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally); ok {
+		r0 = returnFunc(ctx, tx, cycleIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, cycleIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_Tally_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Tally'
+type CycleRepositoryMock_Tally_Call struct {
+	*mock.Call
+}
+
+// Tally is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - cycleIDs []uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) Tally(ctx any, tx any, cycleIDs any) *CycleRepositoryMock_Tally_Call {
+	return &CycleRepositoryMock_Tally_Call{Call: _e.mock.On("Tally", ctx, tx, cycleIDs)}
+}
+
+func (_c *CycleRepositoryMock_Tally_Call) Run(run func(ctx context.Context, tx repository.TxInterface, cycleIDs []uuid.UUID)) *CycleRepositoryMock_Tally_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Tally_Call) Return(uUIDToStateTypeToStateTally map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally, err error) *CycleRepositoryMock_Tally_Call {
+	_c.Call.Return(uUIDToStateTypeToStateTally, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Tally_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, cycleIDs []uuid.UUID) (map[uuid.UUID]map[schema.StateType]cycle_repo.StateTally, error)) *CycleRepositoryMock_Tally_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// TeamsWithCyclesEnabled provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) TeamsWithCyclesEnabled(ctx context.Context) ([]*ent.Team, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TeamsWithCyclesEnabled")
+	}
+
+	var r0 []*ent.Team
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*ent.Team, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*ent.Team); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Team)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_TeamsWithCyclesEnabled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TeamsWithCyclesEnabled'
+type CycleRepositoryMock_TeamsWithCyclesEnabled_Call struct {
+	*mock.Call
+}
+
+// TeamsWithCyclesEnabled is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *CycleRepositoryMock_Expecter) TeamsWithCyclesEnabled(ctx any) *CycleRepositoryMock_TeamsWithCyclesEnabled_Call {
+	return &CycleRepositoryMock_TeamsWithCyclesEnabled_Call{Call: _e.mock.On("TeamsWithCyclesEnabled", ctx)}
+}
+
+func (_c *CycleRepositoryMock_TeamsWithCyclesEnabled_Call) Run(run func(ctx context.Context)) *CycleRepositoryMock_TeamsWithCyclesEnabled_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_TeamsWithCyclesEnabled_Call) Return(teams []*ent.Team, err error) *CycleRepositoryMock_TeamsWithCyclesEnabled_Call {
+	_c.Call.Return(teams, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_TeamsWithCyclesEnabled_Call) RunAndReturn(run func(ctx context.Context) ([]*ent.Team, error)) *CycleRepositoryMock_TeamsWithCyclesEnabled_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UnfinishedIssueIDs provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) UnfinishedIssueIDs(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, tx, cycleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UnfinishedIssueIDs")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, tx, cycleID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, tx, cycleID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, cycleID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_UnfinishedIssueIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UnfinishedIssueIDs'
+type CycleRepositoryMock_UnfinishedIssueIDs_Call struct {
+	*mock.Call
+}
+
+// UnfinishedIssueIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - cycleID uuid.UUID
+func (_e *CycleRepositoryMock_Expecter) UnfinishedIssueIDs(ctx any, tx any, cycleID any) *CycleRepositoryMock_UnfinishedIssueIDs_Call {
+	return &CycleRepositoryMock_UnfinishedIssueIDs_Call{Call: _e.mock.On("UnfinishedIssueIDs", ctx, tx, cycleID)}
+}
+
+func (_c *CycleRepositoryMock_UnfinishedIssueIDs_Call) Run(run func(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID)) *CycleRepositoryMock_UnfinishedIssueIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_UnfinishedIssueIDs_Call) Return(uUIDs []uuid.UUID, err error) *CycleRepositoryMock_UnfinishedIssueIDs_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_UnfinishedIssueIDs_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)) *CycleRepositoryMock_UnfinishedIssueIDs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *cycle_repo.UpdateCycleInput) (*ent.Cycle, error) {
+	ret := _mock.Called(ctx, tx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *ent.Cycle
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *cycle_repo.UpdateCycleInput) (*ent.Cycle, error)); ok {
+		return returnFunc(ctx, tx, id, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *cycle_repo.UpdateCycleInput) *ent.Cycle); ok {
+		r0 = returnFunc(ctx, tx, id, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Cycle)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *cycle_repo.UpdateCycleInput) error); ok {
+		r1 = returnFunc(ctx, tx, id, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// CycleRepositoryMock_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type CycleRepositoryMock_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - id uuid.UUID
+//   - input *cycle_repo.UpdateCycleInput
+func (_e *CycleRepositoryMock_Expecter) Update(ctx any, tx any, id any, input any) *CycleRepositoryMock_Update_Call {
+	return &CycleRepositoryMock_Update_Call{Call: _e.mock.On("Update", ctx, tx, id, input)}
+}
+
+func (_c *CycleRepositoryMock_Update_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *cycle_repo.UpdateCycleInput)) *CycleRepositoryMock_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *cycle_repo.UpdateCycleInput
+		if args[3] != nil {
+			arg3 = args[3].(*cycle_repo.UpdateCycleInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Update_Call) Return(cycle *ent.Cycle, err error) *CycleRepositoryMock_Update_Call {
+	_c.Call.Return(cycle, err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_Update_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *cycle_repo.UpdateCycleInput) (*ent.Cycle, error)) *CycleRepositoryMock_Update_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpsertScopeSnapshot provides a mock function for the type CycleRepositoryMock
+func (_mock *CycleRepositoryMock) UpsertScopeSnapshot(ctx context.Context, tx repository.TxInterface, snapshot cycle_repo.ScopeSnapshot) error {
+	ret := _mock.Called(ctx, tx, snapshot)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpsertScopeSnapshot")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, cycle_repo.ScopeSnapshot) error); ok {
+		r0 = returnFunc(ctx, tx, snapshot)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// CycleRepositoryMock_UpsertScopeSnapshot_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertScopeSnapshot'
+type CycleRepositoryMock_UpsertScopeSnapshot_Call struct {
+	*mock.Call
+}
+
+// UpsertScopeSnapshot is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - snapshot cycle_repo.ScopeSnapshot
+func (_e *CycleRepositoryMock_Expecter) UpsertScopeSnapshot(ctx any, tx any, snapshot any) *CycleRepositoryMock_UpsertScopeSnapshot_Call {
+	return &CycleRepositoryMock_UpsertScopeSnapshot_Call{Call: _e.mock.On("UpsertScopeSnapshot", ctx, tx, snapshot)}
+}
+
+func (_c *CycleRepositoryMock_UpsertScopeSnapshot_Call) Run(run func(ctx context.Context, tx repository.TxInterface, snapshot cycle_repo.ScopeSnapshot)) *CycleRepositoryMock_UpsertScopeSnapshot_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 cycle_repo.ScopeSnapshot
+		if args[2] != nil {
+			arg2 = args[2].(cycle_repo.ScopeSnapshot)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *CycleRepositoryMock_UpsertScopeSnapshot_Call) Return(err error) *CycleRepositoryMock_UpsertScopeSnapshot_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *CycleRepositoryMock_UpsertScopeSnapshot_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, snapshot cycle_repo.ScopeSnapshot) error) *CycleRepositoryMock_UpsertScopeSnapshot_Call {
 	_c.Call.Return(run)
 	return _c
 }

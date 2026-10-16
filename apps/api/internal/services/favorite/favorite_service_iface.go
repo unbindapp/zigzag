@@ -2,6 +2,17 @@
 
 package favorite_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // FavoriteServiceInterface ...
 type FavoriteServiceInterface interface {
+	List(ctx context.Context, userID uuid.UUID, input *ListFavoritesInput) ([]*models.FavoriteResponse, error)
+	Add(ctx context.Context, userID uuid.UUID, input *FavoriteTargetInput) (*models.FavoriteResponse, error)
+	Remove(ctx context.Context, userID uuid.UUID, input *FavoriteTargetInput) error
+	Reorder(ctx context.Context, userID uuid.UUID, input *ReorderFavoritesInput) ([]*models.FavoriteResponse, error)
 }

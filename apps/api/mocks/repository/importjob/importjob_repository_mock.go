@@ -6,10 +6,12 @@ package mocks_repository_importjob
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/importjob"
 )
@@ -124,6 +126,92 @@ func (_c *ImportJobRepositoryMock_Create_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// Finish provides a mock function for the type ImportJobRepositoryMock
+func (_mock *ImportJobRepositoryMock) Finish(ctx context.Context, id uuid.UUID, status schema.ImportStatus, report *schema.ImportReport, finishedAt time.Time) (*ent.ImportJob, error) {
+	ret := _mock.Called(ctx, id, status, report, finishedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Finish")
+	}
+
+	var r0 *ent.ImportJob
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.ImportStatus, *schema.ImportReport, time.Time) (*ent.ImportJob, error)); ok {
+		return returnFunc(ctx, id, status, report, finishedAt)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.ImportStatus, *schema.ImportReport, time.Time) *ent.ImportJob); ok {
+		r0 = returnFunc(ctx, id, status, report, finishedAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ImportJob)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, schema.ImportStatus, *schema.ImportReport, time.Time) error); ok {
+		r1 = returnFunc(ctx, id, status, report, finishedAt)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ImportJobRepositoryMock_Finish_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Finish'
+type ImportJobRepositoryMock_Finish_Call struct {
+	*mock.Call
+}
+
+// Finish is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - status schema.ImportStatus
+//   - report *schema.ImportReport
+//   - finishedAt time.Time
+func (_e *ImportJobRepositoryMock_Expecter) Finish(ctx any, id any, status any, report any, finishedAt any) *ImportJobRepositoryMock_Finish_Call {
+	return &ImportJobRepositoryMock_Finish_Call{Call: _e.mock.On("Finish", ctx, id, status, report, finishedAt)}
+}
+
+func (_c *ImportJobRepositoryMock_Finish_Call) Run(run func(ctx context.Context, id uuid.UUID, status schema.ImportStatus, report *schema.ImportReport, finishedAt time.Time)) *ImportJobRepositoryMock_Finish_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.ImportStatus
+		if args[2] != nil {
+			arg2 = args[2].(schema.ImportStatus)
+		}
+		var arg3 *schema.ImportReport
+		if args[3] != nil {
+			arg3 = args[3].(*schema.ImportReport)
+		}
+		var arg4 time.Time
+		if args[4] != nil {
+			arg4 = args[4].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *ImportJobRepositoryMock_Finish_Call) Return(importJob *ent.ImportJob, err error) *ImportJobRepositoryMock_Finish_Call {
+	_c.Call.Return(importJob, err)
+	return _c
+}
+
+func (_c *ImportJobRepositoryMock_Finish_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, status schema.ImportStatus, report *schema.ImportReport, finishedAt time.Time) (*ent.ImportJob, error)) *ImportJobRepositoryMock_Finish_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type ImportJobRepositoryMock
 func (_mock *ImportJobRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.ImportJob, error) {
 	ret := _mock.Called(ctx, id)
@@ -188,6 +276,80 @@ func (_c *ImportJobRepositoryMock_GetByID_Call) Return(importJob *ent.ImportJob,
 }
 
 func (_c *ImportJobRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.ImportJob, error)) *ImportJobRepositoryMock_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByWorkspace provides a mock function for the type ImportJobRepositoryMock
+func (_mock *ImportJobRepositoryMock) ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, limit int) ([]*ent.ImportJob, error) {
+	ret := _mock.Called(ctx, workspaceID, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByWorkspace")
+	}
+
+	var r0 []*ent.ImportJob
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int) ([]*ent.ImportJob, error)); ok {
+		return returnFunc(ctx, workspaceID, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, int) []*ent.ImportJob); ok {
+		r0 = returnFunc(ctx, workspaceID, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.ImportJob)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, int) error); ok {
+		r1 = returnFunc(ctx, workspaceID, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ImportJobRepositoryMock_ListByWorkspace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByWorkspace'
+type ImportJobRepositoryMock_ListByWorkspace_Call struct {
+	*mock.Call
+}
+
+// ListByWorkspace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - limit int
+func (_e *ImportJobRepositoryMock_Expecter) ListByWorkspace(ctx any, workspaceID any, limit any) *ImportJobRepositoryMock_ListByWorkspace_Call {
+	return &ImportJobRepositoryMock_ListByWorkspace_Call{Call: _e.mock.On("ListByWorkspace", ctx, workspaceID, limit)}
+}
+
+func (_c *ImportJobRepositoryMock_ListByWorkspace_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, limit int)) *ImportJobRepositoryMock_ListByWorkspace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *ImportJobRepositoryMock_ListByWorkspace_Call) Return(importJobs []*ent.ImportJob, err error) *ImportJobRepositoryMock_ListByWorkspace_Call {
+	_c.Call.Return(importJobs, err)
+	return _c
+}
+
+func (_c *ImportJobRepositoryMock_ListByWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, limit int) ([]*ent.ImportJob, error)) *ImportJobRepositoryMock_ListByWorkspace_Call {
 	_c.Call.Return(run)
 	return _c
 }

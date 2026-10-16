@@ -124,6 +124,63 @@ func (_c *WebhookRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
+// Delete provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// WebhookRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type WebhookRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *WebhookRepositoryMock_Expecter) Delete(ctx any, id any) *WebhookRepositoryMock_Delete_Call {
+	return &WebhookRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *WebhookRepositoryMock_Delete_Call) Run(run func(ctx context.Context, id uuid.UUID)) *WebhookRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_Delete_Call) Return(err error) *WebhookRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *WebhookRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type WebhookRepositoryMock
 func (_mock *WebhookRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Webhook, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +249,142 @@ func (_c *WebhookRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// List provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) List(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error) {
+	ret := _mock.Called(ctx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*ent.Webhook
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Webhook, error)); ok {
+		return returnFunc(ctx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Webhook); ok {
+		r0 = returnFunc(ctx, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Webhook)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WebhookRepositoryMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type WebhookRepositoryMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+func (_e *WebhookRepositoryMock_Expecter) List(ctx any, workspaceID any) *WebhookRepositoryMock_List_Call {
+	return &WebhookRepositoryMock_List_Call{Call: _e.mock.On("List", ctx, workspaceID)}
+}
+
+func (_c *WebhookRepositoryMock_List_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID)) *WebhookRepositoryMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_List_Call) Return(webhooks []*ent.Webhook, err error) *WebhookRepositoryMock_List_Call {
+	_c.Call.Return(webhooks, err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_List_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error)) *WebhookRepositoryMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListEnabled provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) ListEnabled(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error) {
+	ret := _mock.Called(ctx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListEnabled")
+	}
+
+	var r0 []*ent.Webhook
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Webhook, error)); ok {
+		return returnFunc(ctx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Webhook); ok {
+		r0 = returnFunc(ctx, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Webhook)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WebhookRepositoryMock_ListEnabled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListEnabled'
+type WebhookRepositoryMock_ListEnabled_Call struct {
+	*mock.Call
+}
+
+// ListEnabled is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+func (_e *WebhookRepositoryMock_Expecter) ListEnabled(ctx any, workspaceID any) *WebhookRepositoryMock_ListEnabled_Call {
+	return &WebhookRepositoryMock_ListEnabled_Call{Call: _e.mock.On("ListEnabled", ctx, workspaceID)}
+}
+
+func (_c *WebhookRepositoryMock_ListEnabled_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID)) *WebhookRepositoryMock_ListEnabled_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_ListEnabled_Call) Return(webhooks []*ent.Webhook, err error) *WebhookRepositoryMock_ListEnabled_Call {
+	_c.Call.Return(webhooks, err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_ListEnabled_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error)) *WebhookRepositoryMock_ListEnabled_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfWebhook provides a mock function for the type WebhookRepositoryMock
 func (_mock *WebhookRepositoryMock) ResolveWorkspaceOfWebhook(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +449,148 @@ func (_c *WebhookRepositoryMock_ResolveWorkspaceOfWebhook_Call) Return(uUID uuid
 }
 
 func (_c *WebhookRepositoryMock_ResolveWorkspaceOfWebhook_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *WebhookRepositoryMock_ResolveWorkspaceOfWebhook_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// TeamOfIssue provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) TeamOfIssue(ctx context.Context, issueID uuid.UUID) (uuid.UUID, error) {
+	ret := _mock.Called(ctx, issueID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TeamOfIssue")
+	}
+
+	var r0 uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (uuid.UUID, error)); ok {
+		return returnFunc(ctx, issueID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) uuid.UUID); ok {
+		r0 = returnFunc(ctx, issueID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, issueID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WebhookRepositoryMock_TeamOfIssue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TeamOfIssue'
+type WebhookRepositoryMock_TeamOfIssue_Call struct {
+	*mock.Call
+}
+
+// TeamOfIssue is a helper method to define mock.On call
+//   - ctx context.Context
+//   - issueID uuid.UUID
+func (_e *WebhookRepositoryMock_Expecter) TeamOfIssue(ctx any, issueID any) *WebhookRepositoryMock_TeamOfIssue_Call {
+	return &WebhookRepositoryMock_TeamOfIssue_Call{Call: _e.mock.On("TeamOfIssue", ctx, issueID)}
+}
+
+func (_c *WebhookRepositoryMock_TeamOfIssue_Call) Run(run func(ctx context.Context, issueID uuid.UUID)) *WebhookRepositoryMock_TeamOfIssue_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_TeamOfIssue_Call) Return(uUID uuid.UUID, err error) *WebhookRepositoryMock_TeamOfIssue_Call {
+	_c.Call.Return(uUID, err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_TeamOfIssue_Call) RunAndReturn(run func(ctx context.Context, issueID uuid.UUID) (uuid.UUID, error)) *WebhookRepositoryMock_TeamOfIssue_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) Update(ctx context.Context, id uuid.UUID, input *webhook_repo.UpdateWebhookInput) (*ent.Webhook, error) {
+	ret := _mock.Called(ctx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *ent.Webhook
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *webhook_repo.UpdateWebhookInput) (*ent.Webhook, error)); ok {
+		return returnFunc(ctx, id, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *webhook_repo.UpdateWebhookInput) *ent.Webhook); ok {
+		r0 = returnFunc(ctx, id, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Webhook)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *webhook_repo.UpdateWebhookInput) error); ok {
+		r1 = returnFunc(ctx, id, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WebhookRepositoryMock_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type WebhookRepositoryMock_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - input *webhook_repo.UpdateWebhookInput
+func (_e *WebhookRepositoryMock_Expecter) Update(ctx any, id any, input any) *WebhookRepositoryMock_Update_Call {
+	return &WebhookRepositoryMock_Update_Call{Call: _e.mock.On("Update", ctx, id, input)}
+}
+
+func (_c *WebhookRepositoryMock_Update_Call) Run(run func(ctx context.Context, id uuid.UUID, input *webhook_repo.UpdateWebhookInput)) *WebhookRepositoryMock_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *webhook_repo.UpdateWebhookInput
+		if args[2] != nil {
+			arg2 = args[2].(*webhook_repo.UpdateWebhookInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_Update_Call) Return(webhook *ent.Webhook, err error) *WebhookRepositoryMock_Update_Call {
+	_c.Call.Return(webhook, err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_Update_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, input *webhook_repo.UpdateWebhookInput) (*ent.Webhook, error)) *WebhookRepositoryMock_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

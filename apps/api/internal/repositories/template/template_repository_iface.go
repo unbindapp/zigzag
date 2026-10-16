@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
@@ -15,4 +16,9 @@ type TemplateRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateTemplateInput) (*ent.Template, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Template, error)
 	ResolveWorkspaceOfTemplate(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	List(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, kind *schema.TemplateKind) ([]*ent.Template, error)
+	NextSortOrder(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID) (float64, error)
+	ProjectInWorkspace(ctx context.Context, workspaceID, projectID uuid.UUID) (bool, error)
+	Update(ctx context.Context, id uuid.UUID, input *UpdateTemplateInput) (*ent.Template, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }

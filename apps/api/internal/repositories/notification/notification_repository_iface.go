@@ -4,14 +4,33 @@ package notification_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // NotificationRepositoryInterface ...
 type NotificationRepositoryInterface interface {
+	CreateMany(ctx context.Context, tx repository.TxInterface, inputs []*CreateNotificationInput) ([]*ent.Notification, error)
+	ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error)
+	// Settings has no entry for users who kept the defaults.
+	Settings(ctx context.Context, userIDs []uuid.UUID) (map[uuid.UUID]*ent.NotificationSetting, error)
+	PendingEmail(ctx context.Context, createdBefore, createdAfter time.Time) ([]*ent.Notification, error)
+	MarkEmailed(ctx context.Context, ids []uuid.UUID, at time.Time) error
+	DueBetween(ctx context.Context, from, to time.Time) ([]*ent.Issue, error)
+	// List returns one row more than the limit when another page exists.
+	List(ctx context.Context, input *ListInput) ([]*ent.Notification, error)
+	CountUnread(ctx context.Context, userID, workspaceID uuid.UUID, now time.Time) (int, error)
+	// OwnedWorkspaces leaves out ids that belong to other users.
+	OwnedWorkspaces(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error)
+	SetRead(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, readAt *time.Time) error
+	SetArchived(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, archivedAt *time.Time) error
+	Snooze(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, until time.Time) error
+	MarkAllRead(ctx context.Context, userID, workspaceID uuid.UUID, now time.Time) error
+	HasRecent(ctx context.Context, userID, issueID uuid.UUID, kind schema.NotificationType, since time.Time) (bool, error)
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateNotificationInput) (*ent.Notification, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Notification, error)
 	ResolveWorkspaceOfNotification(ctx context.Context, id uuid.UUID) (uuid.UUID, error)

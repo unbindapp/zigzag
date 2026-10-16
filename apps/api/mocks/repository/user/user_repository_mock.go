@@ -503,6 +503,69 @@ func (_c *UserRepositoryMock_CreatePasswordResetToken_Call) RunAndReturn(run fun
 	return _c
 }
 
+// CreatePlaceholders provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) CreatePlaceholders(ctx context.Context, tx repository.TxInterface, users []user_repo.ImportedUser) error {
+	ret := _mock.Called(ctx, tx, users)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreatePlaceholders")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []user_repo.ImportedUser) error); ok {
+		r0 = returnFunc(ctx, tx, users)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserRepositoryMock_CreatePlaceholders_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreatePlaceholders'
+type UserRepositoryMock_CreatePlaceholders_Call struct {
+	*mock.Call
+}
+
+// CreatePlaceholders is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - users []user_repo.ImportedUser
+func (_e *UserRepositoryMock_Expecter) CreatePlaceholders(ctx any, tx any, users any) *UserRepositoryMock_CreatePlaceholders_Call {
+	return &UserRepositoryMock_CreatePlaceholders_Call{Call: _e.mock.On("CreatePlaceholders", ctx, tx, users)}
+}
+
+func (_c *UserRepositoryMock_CreatePlaceholders_Call) Run(run func(ctx context.Context, tx repository.TxInterface, users []user_repo.ImportedUser)) *UserRepositoryMock_CreatePlaceholders_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []user_repo.ImportedUser
+		if args[2] != nil {
+			arg2 = args[2].([]user_repo.ImportedUser)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_CreatePlaceholders_Call) Return(err error) *UserRepositoryMock_CreatePlaceholders_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_CreatePlaceholders_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, users []user_repo.ImportedUser) error) *UserRepositoryMock_CreatePlaceholders_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Delete provides a mock function for the type UserRepositoryMock
 func (_mock *UserRepositoryMock) Delete(ctx context.Context, userID uuid.UUID) error {
 	ret := _mock.Called(ctx, userID)
@@ -622,6 +685,74 @@ func (_c *UserRepositoryMock_DeletePasswordResetTokensBefore_Call) Return(n int,
 }
 
 func (_c *UserRepositoryMock_DeletePasswordResetTokensBefore_Call) RunAndReturn(run func(ctx context.Context, before time.Time) (int, error)) *UserRepositoryMock_DeletePasswordResetTokensBefore_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DisplayNamesWithPrefixes provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) DisplayNamesWithPrefixes(ctx context.Context, prefixes []string) ([]string, error) {
+	ret := _mock.Called(ctx, prefixes)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DisplayNamesWithPrefixes")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []string) ([]string, error)); ok {
+		return returnFunc(ctx, prefixes)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []string) []string); ok {
+		r0 = returnFunc(ctx, prefixes)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []string) error); ok {
+		r1 = returnFunc(ctx, prefixes)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepositoryMock_DisplayNamesWithPrefixes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DisplayNamesWithPrefixes'
+type UserRepositoryMock_DisplayNamesWithPrefixes_Call struct {
+	*mock.Call
+}
+
+// DisplayNamesWithPrefixes is a helper method to define mock.On call
+//   - ctx context.Context
+//   - prefixes []string
+func (_e *UserRepositoryMock_Expecter) DisplayNamesWithPrefixes(ctx any, prefixes any) *UserRepositoryMock_DisplayNamesWithPrefixes_Call {
+	return &UserRepositoryMock_DisplayNamesWithPrefixes_Call{Call: _e.mock.On("DisplayNamesWithPrefixes", ctx, prefixes)}
+}
+
+func (_c *UserRepositoryMock_DisplayNamesWithPrefixes_Call) Run(run func(ctx context.Context, prefixes []string)) *UserRepositoryMock_DisplayNamesWithPrefixes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []string
+		if args[1] != nil {
+			arg1 = args[1].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_DisplayNamesWithPrefixes_Call) Return(strings []string, err error) *UserRepositoryMock_DisplayNamesWithPrefixes_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_DisplayNamesWithPrefixes_Call) RunAndReturn(run func(ctx context.Context, prefixes []string) ([]string, error)) *UserRepositoryMock_DisplayNamesWithPrefixes_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -764,6 +895,74 @@ func (_c *UserRepositoryMock_GetByEmail_Call) Return(user *ent.User, err error) 
 }
 
 func (_c *UserRepositoryMock_GetByEmail_Call) RunAndReturn(run func(ctx context.Context, email string) (*ent.User, error)) *UserRepositoryMock_GetByEmail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByEmails provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) GetByEmails(ctx context.Context, emails []string) ([]*ent.User, error) {
+	ret := _mock.Called(ctx, emails)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByEmails")
+	}
+
+	var r0 []*ent.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []string) ([]*ent.User, error)); ok {
+		return returnFunc(ctx, emails)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []string) []*ent.User); ok {
+		r0 = returnFunc(ctx, emails)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []string) error); ok {
+		r1 = returnFunc(ctx, emails)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepositoryMock_GetByEmails_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByEmails'
+type UserRepositoryMock_GetByEmails_Call struct {
+	*mock.Call
+}
+
+// GetByEmails is a helper method to define mock.On call
+//   - ctx context.Context
+//   - emails []string
+func (_e *UserRepositoryMock_Expecter) GetByEmails(ctx any, emails any) *UserRepositoryMock_GetByEmails_Call {
+	return &UserRepositoryMock_GetByEmails_Call{Call: _e.mock.On("GetByEmails", ctx, emails)}
+}
+
+func (_c *UserRepositoryMock_GetByEmails_Call) Run(run func(ctx context.Context, emails []string)) *UserRepositoryMock_GetByEmails_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []string
+		if args[1] != nil {
+			arg1 = args[1].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetByEmails_Call) Return(users []*ent.User, err error) *UserRepositoryMock_GetByEmails_Call {
+	_c.Call.Return(users, err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetByEmails_Call) RunAndReturn(run func(ctx context.Context, emails []string) ([]*ent.User, error)) *UserRepositoryMock_GetByEmails_Call {
 	_c.Call.Return(run)
 	return _c
 }

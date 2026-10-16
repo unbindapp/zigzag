@@ -35,6 +35,7 @@ func (Cycle) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("team", Team.Type).Ref("cycles").Field("team_id").Unique().Required(),
 		edge.To("issues", Issue.Type).Annotations(setNull()),
+		edge.To("scope_history", CycleScopeHistory.Type).Annotations(cascade()),
 	}
 }
 

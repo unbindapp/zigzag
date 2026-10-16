@@ -4,6 +4,7 @@ package document_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -13,6 +14,13 @@ import (
 // DocumentRepositoryInterface ...
 type DocumentRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateDocumentInput) (*ent.Document, error)
+	Update(ctx context.Context, id uuid.UUID, input *UpdateDocumentInput) error
+	SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
+	SetTrashedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	List(ctx context.Context, filter *ListDocumentsFilter) ([]*ent.Document, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Document, error)
+	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Document, error)
 	ResolveWorkspaceOfDocument(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Document, error)
 }

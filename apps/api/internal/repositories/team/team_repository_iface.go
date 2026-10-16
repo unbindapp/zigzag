@@ -13,6 +13,11 @@ import (
 
 // TeamRepositoryInterface ...
 type TeamRepositoryInterface interface {
+	StatesOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.WorkflowState, error)
+	MembersOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.TeamMember, error)
+	ImportTeams(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teams []ImportedTeam, states []ImportedState) error
+	AddMembers(ctx context.Context, tx repository.TxInterface, members []ImportedTeamMember) error
+	RaiseIssueCounters(ctx context.Context, tx repository.TxInterface, counters map[uuid.UUID]int) error
 	// Writes several tables: call it inside a transaction.
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateTeamInput) (*ent.Team, error)
 	Update(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, input *UpdateTeamInput) (*ent.Team, error)

@@ -6,6 +6,7 @@ package mocks_repository_label
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -48,6 +49,74 @@ type LabelRepositoryMock_Expecter struct {
 
 func (_m *LabelRepositoryMock) EXPECT() *LabelRepositoryMock_Expecter {
 	return &LabelRepositoryMock_Expecter{mock: &_m.Mock}
+}
+
+// Children provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) Children(ctx context.Context, parentID uuid.UUID) ([]*ent.Label, error) {
+	ret := _mock.Called(ctx, parentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Children")
+	}
+
+	var r0 []*ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Label, error)); ok {
+		return returnFunc(ctx, parentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Label); ok {
+		r0 = returnFunc(ctx, parentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, parentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_Children_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Children'
+type LabelRepositoryMock_Children_Call struct {
+	*mock.Call
+}
+
+// Children is a helper method to define mock.On call
+//   - ctx context.Context
+//   - parentID uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) Children(ctx any, parentID any) *LabelRepositoryMock_Children_Call {
+	return &LabelRepositoryMock_Children_Call{Call: _e.mock.On("Children", ctx, parentID)}
+}
+
+func (_c *LabelRepositoryMock_Children_Call) Run(run func(ctx context.Context, parentID uuid.UUID)) *LabelRepositoryMock_Children_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Children_Call) Return(labels []*ent.Label, err error) *LabelRepositoryMock_Children_Call {
+	_c.Call.Return(labels, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Children_Call) RunAndReturn(run func(ctx context.Context, parentID uuid.UUID) ([]*ent.Label, error)) *LabelRepositoryMock_Children_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Create provides a mock function for the type LabelRepositoryMock
@@ -124,6 +193,69 @@ func (_c *LabelRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// Delete provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) Delete(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, ids)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// LabelRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type LabelRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - ids []uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) Delete(ctx any, tx any, ids any) *LabelRepositoryMock_Delete_Call {
+	return &LabelRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, tx, ids)}
+}
+
+func (_c *LabelRepositoryMock_Delete_Call) Run(run func(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID)) *LabelRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Delete_Call) Return(err error) *LabelRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) error) *LabelRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type LabelRepositoryMock
 func (_mock *LabelRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Label, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +324,540 @@ func (_c *LabelRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// GetMany provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) GetMany(ctx context.Context, ids []uuid.UUID) ([]*ent.Label, error) {
+	ret := _mock.Called(ctx, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMany")
+	}
+
+	var r0 []*ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) ([]*ent.Label, error)); ok {
+		return returnFunc(ctx, ids)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) []*ent.Label); ok {
+		r0 = returnFunc(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_GetMany_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMany'
+type LabelRepositoryMock_GetMany_Call struct {
+	*mock.Call
+}
+
+// GetMany is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ids []uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) GetMany(ctx any, ids any) *LabelRepositoryMock_GetMany_Call {
+	return &LabelRepositoryMock_GetMany_Call{Call: _e.mock.On("GetMany", ctx, ids)}
+}
+
+func (_c *LabelRepositoryMock_GetMany_Call) Run(run func(ctx context.Context, ids []uuid.UUID)) *LabelRepositoryMock_GetMany_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_GetMany_Call) Return(labels []*ent.Label, err error) *LabelRepositoryMock_GetMany_Call {
+	_c.Call.Return(labels, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_GetMany_Call) RunAndReturn(run func(ctx context.Context, ids []uuid.UUID) ([]*ent.Label, error)) *LabelRepositoryMock_GetMany_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ImportLabels provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) ImportLabels(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, labels []label_repo.ImportedLabel) error {
+	ret := _mock.Called(ctx, tx, workspaceID, labels)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ImportLabels")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []label_repo.ImportedLabel) error); ok {
+		r0 = returnFunc(ctx, tx, workspaceID, labels)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// LabelRepositoryMock_ImportLabels_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ImportLabels'
+type LabelRepositoryMock_ImportLabels_Call struct {
+	*mock.Call
+}
+
+// ImportLabels is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - workspaceID uuid.UUID
+//   - labels []label_repo.ImportedLabel
+func (_e *LabelRepositoryMock_Expecter) ImportLabels(ctx any, tx any, workspaceID any, labels any) *LabelRepositoryMock_ImportLabels_Call {
+	return &LabelRepositoryMock_ImportLabels_Call{Call: _e.mock.On("ImportLabels", ctx, tx, workspaceID, labels)}
+}
+
+func (_c *LabelRepositoryMock_ImportLabels_Call) Run(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, labels []label_repo.ImportedLabel)) *LabelRepositoryMock_ImportLabels_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []label_repo.ImportedLabel
+		if args[3] != nil {
+			arg3 = args[3].([]label_repo.ImportedLabel)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_ImportLabels_Call) Return(err error) *LabelRepositoryMock_ImportLabels_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_ImportLabels_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, labels []label_repo.ImportedLabel) error) *LabelRepositoryMock_ImportLabels_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssuesWithLabels provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) IssuesWithLabels(ctx context.Context, tx repository.TxInterface, labelIDs []uuid.UUID) (map[uuid.UUID][]*ent.Label, error) {
+	ret := _mock.Called(ctx, tx, labelIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssuesWithLabels")
+	}
+
+	var r0 map[uuid.UUID][]*ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID) (map[uuid.UUID][]*ent.Label, error)); ok {
+		return returnFunc(ctx, tx, labelIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []uuid.UUID) map[uuid.UUID][]*ent.Label); ok {
+		r0 = returnFunc(ctx, tx, labelIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID][]*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, labelIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_IssuesWithLabels_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssuesWithLabels'
+type LabelRepositoryMock_IssuesWithLabels_Call struct {
+	*mock.Call
+}
+
+// IssuesWithLabels is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - labelIDs []uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) IssuesWithLabels(ctx any, tx any, labelIDs any) *LabelRepositoryMock_IssuesWithLabels_Call {
+	return &LabelRepositoryMock_IssuesWithLabels_Call{Call: _e.mock.On("IssuesWithLabels", ctx, tx, labelIDs)}
+}
+
+func (_c *LabelRepositoryMock_IssuesWithLabels_Call) Run(run func(ctx context.Context, tx repository.TxInterface, labelIDs []uuid.UUID)) *LabelRepositoryMock_IssuesWithLabels_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_IssuesWithLabels_Call) Return(uUIDToLabels map[uuid.UUID][]*ent.Label, err error) *LabelRepositoryMock_IssuesWithLabels_Call {
+	_c.Call.Return(uUIDToLabels, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_IssuesWithLabels_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, labelIDs []uuid.UUID) (map[uuid.UUID][]*ent.Label, error)) *LabelRepositoryMock_IssuesWithLabels_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) List(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, includeArchived bool) ([]*ent.Label, error) {
+	ret := _mock.Called(ctx, workspaceID, teamIDs, includeArchived)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, bool) ([]*ent.Label, error)); ok {
+		return returnFunc(ctx, workspaceID, teamIDs, includeArchived)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, bool) []*ent.Label); ok {
+		r0 = returnFunc(ctx, workspaceID, teamIDs, includeArchived)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID, bool) error); ok {
+		r1 = returnFunc(ctx, workspaceID, teamIDs, includeArchived)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type LabelRepositoryMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - teamIDs []uuid.UUID
+//   - includeArchived bool
+func (_e *LabelRepositoryMock_Expecter) List(ctx any, workspaceID any, teamIDs any, includeArchived any) *LabelRepositoryMock_List_Call {
+	return &LabelRepositoryMock_List_Call{Call: _e.mock.On("List", ctx, workspaceID, teamIDs, includeArchived)}
+}
+
+func (_c *LabelRepositoryMock_List_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, includeArchived bool)) *LabelRepositoryMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 bool
+		if args[3] != nil {
+			arg3 = args[3].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_List_Call) Return(labels []*ent.Label, err error) *LabelRepositoryMock_List_Call {
+	_c.Call.Return(labels, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_List_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, includeArchived bool) ([]*ent.Label, error)) *LabelRepositoryMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NameTaken provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) NameTaken(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID, name string, except *uuid.UUID) (bool, error) {
+	ret := _mock.Called(ctx, tx, workspaceID, teamID, parentID, name, except)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NameTaken")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID, string, *uuid.UUID) (bool, error)); ok {
+		return returnFunc(ctx, tx, workspaceID, teamID, parentID, name, except)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID, string, *uuid.UUID) bool); ok {
+		r0 = returnFunc(ctx, tx, workspaceID, teamID, parentID, name, except)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID, string, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, workspaceID, teamID, parentID, name, except)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_NameTaken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NameTaken'
+type LabelRepositoryMock_NameTaken_Call struct {
+	*mock.Call
+}
+
+// NameTaken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - workspaceID uuid.UUID
+//   - teamID *uuid.UUID
+//   - parentID *uuid.UUID
+//   - name string
+//   - except *uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) NameTaken(ctx any, tx any, workspaceID any, teamID any, parentID any, name any, except any) *LabelRepositoryMock_NameTaken_Call {
+	return &LabelRepositoryMock_NameTaken_Call{Call: _e.mock.On("NameTaken", ctx, tx, workspaceID, teamID, parentID, name, except)}
+}
+
+func (_c *LabelRepositoryMock_NameTaken_Call) Run(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID, name string, except *uuid.UUID)) *LabelRepositoryMock_NameTaken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(*uuid.UUID)
+		}
+		var arg4 *uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(*uuid.UUID)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
+		var arg6 *uuid.UUID
+		if args[6] != nil {
+			arg6 = args[6].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+			arg6,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_NameTaken_Call) Return(b bool, err error) *LabelRepositoryMock_NameTaken_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_NameTaken_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID, name string, except *uuid.UUID) (bool, error)) *LabelRepositoryMock_NameTaken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NextSortOrder provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) NextSortOrder(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID) (float64, error) {
+	ret := _mock.Called(ctx, tx, workspaceID, teamID, parentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NextSortOrder")
+	}
+
+	var r0 float64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID) (float64, error)); ok {
+		return returnFunc(ctx, tx, workspaceID, teamID, parentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID) float64); ok {
+		r0 = returnFunc(ctx, tx, workspaceID, teamID, parentID)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, workspaceID, teamID, parentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_NextSortOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NextSortOrder'
+type LabelRepositoryMock_NextSortOrder_Call struct {
+	*mock.Call
+}
+
+// NextSortOrder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - workspaceID uuid.UUID
+//   - teamID *uuid.UUID
+//   - parentID *uuid.UUID
+func (_e *LabelRepositoryMock_Expecter) NextSortOrder(ctx any, tx any, workspaceID any, teamID any, parentID any) *LabelRepositoryMock_NextSortOrder_Call {
+	return &LabelRepositoryMock_NextSortOrder_Call{Call: _e.mock.On("NextSortOrder", ctx, tx, workspaceID, teamID, parentID)}
+}
+
+func (_c *LabelRepositoryMock_NextSortOrder_Call) Run(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID)) *LabelRepositoryMock_NextSortOrder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(*uuid.UUID)
+		}
+		var arg4 *uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_NextSortOrder_Call) Return(f float64, err error) *LabelRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(f, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_NextSortOrder_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teamID *uuid.UUID, parentID *uuid.UUID) (float64, error)) *LabelRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordHistory provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) RecordHistory(ctx context.Context, tx repository.TxInterface, entries []label_repo.HistoryEntry) error {
+	ret := _mock.Called(ctx, tx, entries)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordHistory")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []label_repo.HistoryEntry) error); ok {
+		r0 = returnFunc(ctx, tx, entries)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// LabelRepositoryMock_RecordHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordHistory'
+type LabelRepositoryMock_RecordHistory_Call struct {
+	*mock.Call
+}
+
+// RecordHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - entries []label_repo.HistoryEntry
+func (_e *LabelRepositoryMock_Expecter) RecordHistory(ctx any, tx any, entries any) *LabelRepositoryMock_RecordHistory_Call {
+	return &LabelRepositoryMock_RecordHistory_Call{Call: _e.mock.On("RecordHistory", ctx, tx, entries)}
+}
+
+func (_c *LabelRepositoryMock_RecordHistory_Call) Run(run func(ctx context.Context, tx repository.TxInterface, entries []label_repo.HistoryEntry)) *LabelRepositoryMock_RecordHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []label_repo.HistoryEntry
+		if args[2] != nil {
+			arg2 = args[2].([]label_repo.HistoryEntry)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_RecordHistory_Call) Return(err error) *LabelRepositoryMock_RecordHistory_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_RecordHistory_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, entries []label_repo.HistoryEntry) error) *LabelRepositoryMock_RecordHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfLabel provides a mock function for the type LabelRepositoryMock
 func (_mock *LabelRepositoryMock) ResolveWorkspaceOfLabel(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +922,160 @@ func (_c *LabelRepositoryMock_ResolveWorkspaceOfLabel_Call) Return(uUID uuid.UUI
 }
 
 func (_c *LabelRepositoryMock_ResolveWorkspaceOfLabel_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *LabelRepositoryMock_ResolveWorkspaceOfLabel_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetArchived provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) SetArchived(ctx context.Context, id uuid.UUID, archivedAt *time.Time) (*ent.Label, error) {
+	ret := _mock.Called(ctx, id, archivedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetArchived")
+	}
+
+	var r0 *ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *time.Time) (*ent.Label, error)); ok {
+		return returnFunc(ctx, id, archivedAt)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *time.Time) *ent.Label); ok {
+		r0 = returnFunc(ctx, id, archivedAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *time.Time) error); ok {
+		r1 = returnFunc(ctx, id, archivedAt)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_SetArchived_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetArchived'
+type LabelRepositoryMock_SetArchived_Call struct {
+	*mock.Call
+}
+
+// SetArchived is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - archivedAt *time.Time
+func (_e *LabelRepositoryMock_Expecter) SetArchived(ctx any, id any, archivedAt any) *LabelRepositoryMock_SetArchived_Call {
+	return &LabelRepositoryMock_SetArchived_Call{Call: _e.mock.On("SetArchived", ctx, id, archivedAt)}
+}
+
+func (_c *LabelRepositoryMock_SetArchived_Call) Run(run func(ctx context.Context, id uuid.UUID, archivedAt *time.Time)) *LabelRepositoryMock_SetArchived_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *time.Time
+		if args[2] != nil {
+			arg2 = args[2].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_SetArchived_Call) Return(label *ent.Label, err error) *LabelRepositoryMock_SetArchived_Call {
+	_c.Call.Return(label, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_SetArchived_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, archivedAt *time.Time) (*ent.Label, error)) *LabelRepositoryMock_SetArchived_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type LabelRepositoryMock
+func (_mock *LabelRepositoryMock) Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *label_repo.UpdateLabelInput) (*ent.Label, error) {
+	ret := _mock.Called(ctx, tx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *ent.Label
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *label_repo.UpdateLabelInput) (*ent.Label, error)); ok {
+		return returnFunc(ctx, tx, id, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *label_repo.UpdateLabelInput) *ent.Label); ok {
+		r0 = returnFunc(ctx, tx, id, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Label)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *label_repo.UpdateLabelInput) error); ok {
+		r1 = returnFunc(ctx, tx, id, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// LabelRepositoryMock_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type LabelRepositoryMock_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - id uuid.UUID
+//   - input *label_repo.UpdateLabelInput
+func (_e *LabelRepositoryMock_Expecter) Update(ctx any, tx any, id any, input any) *LabelRepositoryMock_Update_Call {
+	return &LabelRepositoryMock_Update_Call{Call: _e.mock.On("Update", ctx, tx, id, input)}
+}
+
+func (_c *LabelRepositoryMock_Update_Call) Run(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *label_repo.UpdateLabelInput)) *LabelRepositoryMock_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *label_repo.UpdateLabelInput
+		if args[3] != nil {
+			arg3 = args[3].(*label_repo.UpdateLabelInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Update_Call) Return(label *ent.Label, err error) *LabelRepositoryMock_Update_Call {
+	_c.Call.Return(label, err)
+	return _c
+}
+
+func (_c *LabelRepositoryMock_Update_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *label_repo.UpdateLabelInput) (*ent.Label, error)) *LabelRepositoryMock_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { NotBuiltYet } from "@/components/layout/not-built-yet";
+import { LinearImport } from "@/components/import/linear-import";
 import { SettingsPage } from "@/components/layout/settings-page";
 
 export const Route = createFileRoute("/$workspace/_workspace/settings/_admin/import")({
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/$workspace/_workspace/settings/_admin/imp
 function ImportSettingsPage() {
   return (
     <SettingsPage title="Import" description="Import a Linear export into this workspace.">
-      <NotBuiltYet />
+      <LinearImport />
     </SettingsPage>
   );
 }

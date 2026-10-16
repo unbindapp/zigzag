@@ -102,6 +102,8 @@ var (
 		{Name: "body", Type: field.TypeString},
 		{Name: "edited_at", Type: field.TypeTime, Nullable: true},
 		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "import_source", Type: field.TypeString, Nullable: true},
+		{Name: "import_external_id", Type: field.TypeString, Nullable: true},
 		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "issue_id", Type: field.TypeUUID},
 		{Name: "author_id", Type: field.TypeUUID, Nullable: true},
@@ -115,25 +117,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "comments_comments_replies",
-				Columns:    []*schema.Column{CommentsColumns[6]},
+				Columns:    []*schema.Column{CommentsColumns[8]},
 				RefColumns: []*schema.Column{CommentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "comments_issues_comments",
-				Columns:    []*schema.Column{CommentsColumns[7]},
+				Columns:    []*schema.Column{CommentsColumns[9]},
 				RefColumns: []*schema.Column{IssuesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "comments_users_comments",
-				Columns:    []*schema.Column{CommentsColumns[8]},
+				Columns:    []*schema.Column{CommentsColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "comments_users_resolved_comments",
-				Columns:    []*schema.Column{CommentsColumns[9]},
+				Columns:    []*schema.Column{CommentsColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -142,7 +144,15 @@ var (
 			{
 				Name:    "comment_issue_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{CommentsColumns[7], CommentsColumns[1]},
+				Columns: []*schema.Column{CommentsColumns[9], CommentsColumns[1]},
+			},
+			{
+				Name:    "comment_issue_id_import_source_import_external_id",
+				Unique:  true,
+				Columns: []*schema.Column{CommentsColumns[9], CommentsColumns[6], CommentsColumns[7]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "import_source IS NOT NULL AND import_external_id IS NOT NULL",
+				},
 			},
 		},
 	}
@@ -183,6 +193,38 @@ var (
 				Name:    "cycle_ends_at",
 				Unique:  false,
 				Columns: []*schema.Column{CyclesColumns[7]},
+			},
+		},
+	}
+	// CycleScopeHistoryColumns holds the columns for the "cycle_scope_history" table.
+	CycleScopeHistoryColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "date", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "scope", Type: field.TypeFloat64},
+		{Name: "completed", Type: field.TypeFloat64},
+		{Name: "started", Type: field.TypeFloat64},
+		{Name: "cycle_id", Type: field.TypeUUID},
+	}
+	// CycleScopeHistoryTable holds the schema information for the "cycle_scope_history" table.
+	CycleScopeHistoryTable = &schema.Table{
+		Name:       "cycle_scope_history",
+		Columns:    CycleScopeHistoryColumns,
+		PrimaryKey: []*schema.Column{CycleScopeHistoryColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cycle_scope_history_cycles_scope_history",
+				Columns:    []*schema.Column{CycleScopeHistoryColumns[7]},
+				RefColumns: []*schema.Column{CyclesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cyclescopehistory_cycle_id_date",
+				Unique:  true,
+				Columns: []*schema.Column{CycleScopeHistoryColumns[7], CycleScopeHistoryColumns[3]},
 			},
 		},
 	}
@@ -755,6 +797,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "is_group", Type: field.TypeBool, Default: false},
 		{Name: "group_single_select", Type: field.TypeBool, Default: false},
+		{Name: "sort_order", Type: field.TypeFloat64, Default: 0},
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
@@ -768,19 +811,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "labels_labels_children",
-				Columns:    []*schema.Column{LabelsColumns[9]},
+				Columns:    []*schema.Column{LabelsColumns[10]},
 				RefColumns: []*schema.Column{LabelsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "labels_teams_labels",
-				Columns:    []*schema.Column{LabelsColumns[10]},
+				Columns:    []*schema.Column{LabelsColumns[11]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "labels_workspaces_labels",
-				Columns:    []*schema.Column{LabelsColumns[11]},
+				Columns:    []*schema.Column{LabelsColumns[12]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -789,12 +832,12 @@ var (
 			{
 				Name:    "label_workspace_id_team_id",
 				Unique:  false,
-				Columns: []*schema.Column{LabelsColumns[11], LabelsColumns[10]},
+				Columns: []*schema.Column{LabelsColumns[12], LabelsColumns[11]},
 			},
 			{
 				Name:    "label_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{LabelsColumns[9]},
+				Columns: []*schema.Column{LabelsColumns[10]},
 			},
 		},
 	}
@@ -1141,6 +1184,8 @@ var (
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "trashed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "health", Type: field.TypeEnum, Nullable: true, Enums: []string{"on_track", "at_risk", "off_track"}},
+		{Name: "import_source", Type: field.TypeString, Nullable: true},
+		{Name: "import_external_id", Type: field.TypeString, Nullable: true},
 		{Name: "status_id", Type: field.TypeUUID},
 		{Name: "lead_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "creator_id", Type: field.TypeUUID, Nullable: true},
@@ -1154,25 +1199,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "projects_project_statuses_projects",
-				Columns:    []*schema.Column{ProjectsColumns[21]},
+				Columns:    []*schema.Column{ProjectsColumns[23]},
 				RefColumns: []*schema.Column{ProjectStatusesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "projects_users_led_projects",
-				Columns:    []*schema.Column{ProjectsColumns[22]},
+				Columns:    []*schema.Column{ProjectsColumns[24]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "projects_users_created_projects",
-				Columns:    []*schema.Column{ProjectsColumns[23]},
+				Columns:    []*schema.Column{ProjectsColumns[25]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "projects_workspaces_projects",
-				Columns:    []*schema.Column{ProjectsColumns[24]},
+				Columns:    []*schema.Column{ProjectsColumns[26]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1181,12 +1226,20 @@ var (
 			{
 				Name:    "project_workspace_id_slug",
 				Unique:  true,
-				Columns: []*schema.Column{ProjectsColumns[24], ProjectsColumns[4]},
+				Columns: []*schema.Column{ProjectsColumns[26], ProjectsColumns[4]},
 			},
 			{
 				Name:    "project_status_id",
 				Unique:  false,
-				Columns: []*schema.Column{ProjectsColumns[21]},
+				Columns: []*schema.Column{ProjectsColumns[23]},
+			},
+			{
+				Name:    "project_workspace_id_import_source_import_external_id",
+				Unique:  true,
+				Columns: []*schema.Column{ProjectsColumns[26], ProjectsColumns[21], ProjectsColumns[22]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "import_source IS NOT NULL AND import_external_id IS NOT NULL",
+				},
 			},
 		},
 	}
@@ -1952,6 +2005,7 @@ var (
 		AttachmentsTable,
 		CommentsTable,
 		CyclesTable,
+		CycleScopeHistoryTable,
 		DocumentsTable,
 		FavoritesTable,
 		ImportsTable,
@@ -2019,6 +2073,10 @@ func init() {
 	CyclesTable.ForeignKeys[0].RefTable = TeamsTable
 	CyclesTable.Annotation = &entsql.Annotation{
 		Table: "cycles",
+	}
+	CycleScopeHistoryTable.ForeignKeys[0].RefTable = CyclesTable
+	CycleScopeHistoryTable.Annotation = &entsql.Annotation{
+		Table: "cycle_scope_history",
 	}
 	DocumentsTable.ForeignKeys[0].RefTable = InitiativesTable
 	DocumentsTable.ForeignKeys[1].RefTable = IssuesTable

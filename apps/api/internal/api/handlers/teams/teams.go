@@ -42,7 +42,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-team",
 		Summary:     "Update Team",
-		Description: "Change a team's name, key, settings, cycles, estimates, triage or defaults. Omitted fields keep their value. Needs admin.",
+		Description: "Change a team's name, key, settings, cycles, estimates, triage or defaults. Omitted fields keep their value. Returns the team. Needs admin.",
 		Path:        "/update",
 		Method:      http.MethodPut,
 	}, handlers.Update, oapi.MCP)
@@ -66,7 +66,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "add-team-member",
 		Summary:     "Add Team Member",
-		Description: "Add a workspace member to a team. Admins add anyone; members may add themselves to a team that is not private.",
+		Description: "Add a workspace member to a team. Admins add anyone; members may add themselves to a team that is not private. Returns the membership.",
 		Path:        "/members/add",
 		Method:      http.MethodPost,
 	}, handlers.AddMember, oapi.MCP)
@@ -90,7 +90,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-workflow-state",
 		Summary:     "Create Workflow State",
-		Description: "Add a workflow state to a team. Needs admin.",
+		Description: "Add a workflow state to a team from team_id, name, type and color. Returns the state. Needs admin.",
 		Path:        "/states/create",
 		Method:      http.MethodPost,
 	}, handlers.CreateState, oapi.MCP)
@@ -98,7 +98,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-workflow-state",
 		Summary:     "Update Workflow State",
-		Description: "Rename, recolor, describe or reorder a workflow state. Its type cannot change. Needs admin.",
+		Description: "Rename, recolor, describe or reorder a workflow state. Its type cannot change. Returns the state. Needs admin.",
 		Path:        "/states/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdateState, oapi.MCP)

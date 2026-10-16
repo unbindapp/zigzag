@@ -144,6 +144,20 @@ func (_c *LabelCreate) SetNillableGroupSingleSelect(v *bool) *LabelCreate {
 	return _c
 }
 
+// SetSortOrder sets the "sort_order" field.
+func (_c *LabelCreate) SetSortOrder(v float64) *LabelCreate {
+	_c.mutation.SetSortOrder(v)
+	return _c
+}
+
+// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
+func (_c *LabelCreate) SetNillableSortOrder(v *float64) *LabelCreate {
+	if v != nil {
+		_c.SetSortOrder(*v)
+	}
+	return _c
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (_c *LabelCreate) SetArchivedAt(v time.Time) *LabelCreate {
 	_c.mutation.SetArchivedAt(v)
@@ -283,6 +297,10 @@ func (_c *LabelCreate) defaults() {
 		v := label.DefaultGroupSingleSelect
 		_c.mutation.SetGroupSingleSelect(v)
 	}
+	if _, ok := _c.mutation.SortOrder(); !ok {
+		v := label.DefaultSortOrder
+		_c.mutation.SetSortOrder(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := label.DefaultID()
 		_c.mutation.SetID(v)
@@ -316,6 +334,9 @@ func (_c *LabelCreate) check() error {
 	}
 	if _, ok := _c.mutation.GroupSingleSelect(); !ok {
 		return &ValidationError{Name: "group_single_select", err: errors.New(`ent: missing required field "Label.group_single_select"`)}
+	}
+	if _, ok := _c.mutation.SortOrder(); !ok {
+		return &ValidationError{Name: "sort_order", err: errors.New(`ent: missing required field "Label.sort_order"`)}
 	}
 	if len(_c.mutation.WorkspaceIDs()) == 0 {
 		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "Label.workspace"`)}
@@ -383,6 +404,10 @@ func (_c *LabelCreate) createSpec() (*Label, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.GroupSingleSelect(); ok {
 		_spec.SetField(label.FieldGroupSingleSelect, field.TypeBool, value)
 		_node.GroupSingleSelect = value
+	}
+	if value, ok := _c.mutation.SortOrder(); ok {
+		_spec.SetField(label.FieldSortOrder, field.TypeFloat64, value)
+		_node.SortOrder = value
 	}
 	if value, ok := _c.mutation.ArchivedAt(); ok {
 		_spec.SetField(label.FieldArchivedAt, field.TypeTime, value)
@@ -665,6 +690,24 @@ func (u *LabelUpsert) UpdateGroupSingleSelect() *LabelUpsert {
 	return u
 }
 
+// SetSortOrder sets the "sort_order" field.
+func (u *LabelUpsert) SetSortOrder(v float64) *LabelUpsert {
+	u.Set(label.FieldSortOrder, v)
+	return u
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LabelUpsert) UpdateSortOrder() *LabelUpsert {
+	u.SetExcluded(label.FieldSortOrder)
+	return u
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LabelUpsert) AddSortOrder(v float64) *LabelUpsert {
+	u.Add(label.FieldSortOrder, v)
+	return u
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (u *LabelUpsert) SetArchivedAt(v time.Time) *LabelUpsert {
 	u.Set(label.FieldArchivedAt, v)
@@ -878,6 +921,27 @@ func (u *LabelUpsertOne) SetGroupSingleSelect(v bool) *LabelUpsertOne {
 func (u *LabelUpsertOne) UpdateGroupSingleSelect() *LabelUpsertOne {
 	return u.Update(func(s *LabelUpsert) {
 		s.UpdateGroupSingleSelect()
+	})
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (u *LabelUpsertOne) SetSortOrder(v float64) *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.SetSortOrder(v)
+	})
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LabelUpsertOne) AddSortOrder(v float64) *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.AddSortOrder(v)
+	})
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LabelUpsertOne) UpdateSortOrder() *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.UpdateSortOrder()
 	})
 }
 
@@ -1264,6 +1328,27 @@ func (u *LabelUpsertBulk) SetGroupSingleSelect(v bool) *LabelUpsertBulk {
 func (u *LabelUpsertBulk) UpdateGroupSingleSelect() *LabelUpsertBulk {
 	return u.Update(func(s *LabelUpsert) {
 		s.UpdateGroupSingleSelect()
+	})
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (u *LabelUpsertBulk) SetSortOrder(v float64) *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.SetSortOrder(v)
+	})
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LabelUpsertBulk) AddSortOrder(v float64) *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.AddSortOrder(v)
+	})
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LabelUpsertBulk) UpdateSortOrder() *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.UpdateSortOrder()
 	})
 }
 

@@ -113,9 +113,30 @@ Toasts: `toast` from `components/ui/toast` for every mutation failure, and for s
 
 `IssueDetail`: header (breadcrumb team > identifier, actions: copy link, copy branch name, subscribe, archive, trash, open in full page), title (inline editable), description editor (autosave with 800ms debounce, saved indicator), sub-issues list with "Add sub-issue", attachments, activity feed (history entries and comments interleaved by time; comments are threaded, each with reactions, edit, delete, resolve), comment composer at the bottom (`cmd+enter`), properties column on the right.
 
+Issue slice notes (decisions the paragraphs above do not cover):
+
+- Rows carry a selection checkbox in a left gutter, visible on hover and while a selection exists; shift+click on a row extends the selection from the last toggled row, `x` toggles the hovered row, `Escape` clears.
+- The side peek is driven by a `peek=<identifier>` search param through `IssuePeekHost` (`components/issues/issue-peek.tsx`); lists rendered outside a host navigate to the full page instead. Embedders wrap their page in `IssuePeekHost` to get the peek.
+- Filter chips show `is` / `is any of` without a picker for list fields, because `list-issues` has no negation; the due date chip has an operator picker (`before`, `after`).
+- `show_completed: past_week` is applied client side on the fetched pages; `none` narrows `state_types` in the request.
+- Team issues page fixes `state_types` to unstarted, started, completed and canceled; backlog to backlog; triage to triage.
+- The detail title is an inline editable `Textarea` with the page title style (`text-xl font-semibold leading-tight`), the one place that style is used outside `PageHeader`, because the title must be editable in place.
+- In the detail, the sub-issues and attachments sections show only their header and add actions when empty, not an `EmptyState`, which would dominate the page.
+- `PopoverContent` is layered `z-[1000]` like `Select` and `DropdownMenu`, so pickers open above dialogs.
+
 Projects: `ProjectList` (grouped by status; columns: name, status, lead, members, target date, progress bar, priority), `ProjectBoard`, `ProjectDetail` with Overview (summary, description editor, properties: status, lead, members, teams, dates, priority, labels, links; milestones with progress; updates timeline with health badges and composer) and Issues tabs (reuses `IssueList` with `project_ids` fixed).
 
-Cycles: `CycleList` (upcoming, active, past), `CycleDetail` (header with dates, progress bar and scope numbers, issue list filtered by cycle).
+Projects slice notes (decisions the paragraph above does not cover):
+
+- `ProjectList` and `ProjectBoard` (`components/projects`) take `{workspaceId, filters, emptyState?}` with `filters` named like `list-projects`; the projects page, the team projects page and the initiative page all render them. The group header and the board column copy the issue list's header and column styles.
+- Project, initiative and document pages share one detail layout: a breadcrumb row with icon actions (favorite, copy link, archive, trash, delete), the `LifecycleBanner` from `components/documents/lifecycle-banner.tsx`, an `IconPicker` next to the inline editable name (`InlineText` from `components/projects/inline-text.tsx`, the same `Textarea` style as the issue title), the description through `AutosaveMarkdown` (`components/projects/autosave-markdown.tsx`, which skips a save when the markdown did not change), and for projects and initiatives the properties column at `lg:w-72`. The project's Overview and Issues tabs sit under the breadcrumb row; the Issues tab is `IssuesView` with `project_ids` fixed, so its new issue button defaults the project.
+- Project and initiative status updates share `StatusUpdateComposer` and `StatusUpdateCard` (`components/projects`), with `HealthBadge`; project updates add the issue `ReactionBar`.
+- Project dates show at their resolution (`Oct 16, 2026`, `Oct 2026`, `Q4 2026`, `H2 2026`, `2026`); picking a coarser resolution moves the date to the last day of its period.
+- Project statuses use `ProjectStatusIcon`, which maps backlog, planned, started, paused, completed and canceled onto the `StateIcon` shapes.
+
+Cycles: `CycleList` (active, upcoming, past), `CycleDetail` (header with dates, progress bar and scope numbers, burn-up bars from `scope_history` drawn as plain SVG since no chart library is listed, issue list filtered by cycle).
+
+Favorites: `FavoriteButton({kind, entityId})` in page headers; the sidebar Favorites section is `components/favorites/sidebar-favorites.tsx`, drag to reorder. Saved views: `useSaveViewDialog({filters, display, teamId?})` from `components/views/save-view-dialog.tsx` returns `{openSaveView, saveViewDialog}`; a view stores `show_completed` as a bool, so `past_week` is saved as shown.
 
 Inbox: `NotificationList` (tabs: Inbox, Read, Archived, Snoozed; rows: actor avatar, title, issue identifier, time; unread dot) with the selected notification's issue in the `SplitView` right pane. Keyboard: `j/k` move, `e` archive, `u` unread, `h` snooze.
 

@@ -90,7 +90,12 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 - `name` string optional, `description` string optional
 - `starts_at`, `ends_at` time; `completed_at` nillable
 - `archived_at` nillable
-- Computed in responses: `progress` (completed scope / total scope), `issue_count`, `completed_issue_count`, `scope` (sum of estimates or count), `is_active`, `is_past`, `is_future`.
+- Computed in responses: `progress` (completed scope / total scope), `issue_count`, `completed_issue_count`, `scope` (sum of estimates or count), `is_active`, `is_past`, `is_future`. Scope counts issues when the team's `estimate_type` is `none`, else sums estimates with an unestimated issue counting 1. Trashed and canceled issues are left out of scope and counts.
+- `cycle_service.ProcessCycles` (scheduler, every 10 minutes): for teams with cycles on, keeps two unfinished cycles ending in the future (the first starts at local midnight of the latest `cycle_start_day` in the team time zone, later ones chain after the previous end plus `cycle_cooldown_weeks`); completes cycles whose `ends_at` passed and, with `cycle_auto_move`, moves their issues not in a completed or canceled state to the next open cycle, recording a `cycle` history entry with source `system`; upserts today's `cycle_scope_history` row for every active cycle and a last one when a cycle closes.
+
+**CycleScopeHistory** `cycle_scope_history`
+- `cycle_id` uuid (cascade), `date` date (day in the team time zone), `scope`, `completed`, `started` float64 (same measure as the cycle's progress)
+- unique `(cycle_id, date)`; one row per cycle per day, overwritten during the day
 
 ## Labels
 
@@ -99,6 +104,7 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 - `name` string, `color` string, `description` string optional
 - `parent_id` uuid nillable (label group), `is_group` bool default false
 - `group_single_select` bool default false (only one child of the group may be applied to an issue)
+- `sort_order` float64 default 0 (order among siblings, set by drag and drop)
 - `archived_at` nillable
 - unique `(workspace_id, team_id, parent_id, name)` enforced in the service (null-safe)
 - A group cannot be applied to issues. Applying a child of a single-select group replaces a sibling already on the issue.
@@ -119,6 +125,7 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 - `started_at`, `completed_at`, `canceled_at`, `archived_at`, `trashed_at` nillable
 - `health` enum `on_track|at_risk|off_track` nillable (last update's health)
 - `creator_id` uuid nillable
+- `import_source` string optional, `import_external_id` string optional; unique `(workspace_id, import_source, import_external_id)` when both set
 - edges: `teams` M2M (`project_teams`), `members` M2M (`project_members`), `milestones`, `issues`, `updates`, `labels` M2M (`project_labels`, uses workspace labels), `initiatives` M2M (`initiative_projects`), `documents`, `links`
 - Computed in responses: `progress`, `scope`, `completed_scope`, `started_scope`, `issue_counts_by_state_type`.
 
@@ -160,6 +167,7 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 
 **Comment** `comments`
 - `issue_id`, `author_id` nillable (SetNull), `body` markdown, `parent_id` nillable (reply thread, one level), `edited_at`, `resolved_at` nillable, `resolved_by_id` nillable
+- `import_source` string optional, `import_external_id` string optional; unique `(issue_id, import_source, import_external_id)` when both set
 - edges: `reactions`
 
 **Reaction** `reactions`: `emoji` string, `user_id`, exactly one of `issue_id`, `comment_id`, `project_update_id`. Unique `(user_id, emoji, issue_id)`, `(user_id, emoji, comment_id)`, `(user_id, emoji, project_update_id)`.
@@ -180,7 +188,7 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 - `read_at`, `archived_at`, `snoozed_until`, `emailed_at` nillable
 - Index `(user_id, archived_at, read_at)`
 
-**NotificationSetting** `notification_settings`: `user_id` unique, `email_enabled` bool default true, per type bools `assigned`, `mentioned`, `commented`, `state_changed`, `due_soon`, `project_updates` default true.
+**NotificationSetting** `notification_settings`: `user_id` unique, `email_enabled` bool default true, per type bools `assigned`, `mentioned`, `commented`, `state_changed`, `due_soon`, `project_updates` default true. A user without a row gets the defaults. The type bools decide whether `notification_service.Notify` writes the row at all: `assigned` covers `issue_assigned|issue_unassigned`, `mentioned` covers `issue_mentioned|comment_mentioned`, `commented` covers `issue_commented`, `state_changed` covers `issue_state_changed|issue_priority_changed|issue_blocking`, `due_soon` covers `issue_due_soon`, `project_updates` covers `project_update`; `project_added_as_member`, `project_lead` and `reaction` are always written. `Notify` skips the actor and anyone who is not an active member of the workspace. `email_enabled` only gates the email digest.
 
 ## Documents, views, templates, favorites
 
@@ -197,7 +205,7 @@ Soft deletion: entities with `archived_at` are hidden by default from lists and 
 
 **Favorite** `favorites`: `user_id`, `workspace_id`, `kind` enum `issue|project|cycle|view|document|label|team|initiative`, `entity_id` uuid, `sort_order`. Unique `(user_id, kind, entity_id)`.
 
-**Webhook** `webhooks`: `workspace_id`, `team_id` nillable, `url`, `secret` sensitive, `enabled` bool, `events` JSON `[]string` (`issue.created|issue.updated|issue.deleted|comment.created|project.updated|cycle.updated`), `label` string. Deliveries are fire and forget with an HMAC-SHA256 `X-Zigzag-Signature` header, 3 retries.
+**Webhook** `webhooks`: `workspace_id`, `team_id` nillable, `url`, `secret` sensitive, `enabled` bool, `events` JSON `[]string` (`issue.created|issue.updated|issue.deleted|comment.created|project.updated|cycle.updated`), `label` string. Deliveries are fire and forget: a JSON POST of `{id, event, workspace_id, created_at, data}` with headers `X-Zigzag-Event`, `X-Zigzag-Delivery` (the envelope id, the same on every retry) and `X-Zigzag-Signature: sha256=<hex HMAC-SHA256 of the body keyed with the secret>`; any non-2xx answer or network error is retried 3 times (after 2s, 10s, 30s); redirects are not followed. A team-scoped webhook receives an event when its payload's `team_id`, one of `teams[].id`, or the team of its `issue_id` matches. Secrets are `whsec_` plus 48 hex chars.
 
 **Import** `imports` (Go `ImportJob`): `workspace_id`, `source` enum `linear`, `started_by_id` nillable (SetNull), `dry_run` bool, `status` enum `running|completed|failed`, `report` JSON, `finished_at` nillable.
 

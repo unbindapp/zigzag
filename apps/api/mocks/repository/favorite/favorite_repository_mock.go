@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/favorite"
 )
@@ -124,6 +125,170 @@ func (_c *FavoriteRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// Delete provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) Delete(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error) {
+	ret := _mock.Called(ctx, userID, kind, entityID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) (int, error)); ok {
+		return returnFunc(ctx, userID, kind, entityID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) int); ok {
+		r0 = returnFunc(ctx, userID, kind, entityID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, schema.FavoriteKind, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userID, kind, entityID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FavoriteRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type FavoriteRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - kind schema.FavoriteKind
+//   - entityID uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) Delete(ctx any, userID any, kind any, entityID any) *FavoriteRepositoryMock_Delete_Call {
+	return &FavoriteRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, kind, entityID)}
+}
+
+func (_c *FavoriteRepositoryMock_Delete_Call) Run(run func(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID)) *FavoriteRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.FavoriteKind
+		if args[2] != nil {
+			arg2 = args[2].(schema.FavoriteKind)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Delete_Call) Return(n int, err error) *FavoriteRepositoryMock_Delete_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)) *FavoriteRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Find provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) Find(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (*ent.Favorite, error) {
+	ret := _mock.Called(ctx, tx, userID, kind, entityID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Find")
+	}
+
+	var r0 *ent.Favorite
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, schema.FavoriteKind, uuid.UUID) (*ent.Favorite, error)); ok {
+		return returnFunc(ctx, tx, userID, kind, entityID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, schema.FavoriteKind, uuid.UUID) *ent.Favorite); ok {
+		r0 = returnFunc(ctx, tx, userID, kind, entityID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Favorite)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, schema.FavoriteKind, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, userID, kind, entityID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FavoriteRepositoryMock_Find_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Find'
+type FavoriteRepositoryMock_Find_Call struct {
+	*mock.Call
+}
+
+// Find is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - userID uuid.UUID
+//   - kind schema.FavoriteKind
+//   - entityID uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) Find(ctx any, tx any, userID any, kind any, entityID any) *FavoriteRepositoryMock_Find_Call {
+	return &FavoriteRepositoryMock_Find_Call{Call: _e.mock.On("Find", ctx, tx, userID, kind, entityID)}
+}
+
+func (_c *FavoriteRepositoryMock_Find_Call) Run(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID)) *FavoriteRepositoryMock_Find_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 schema.FavoriteKind
+		if args[3] != nil {
+			arg3 = args[3].(schema.FavoriteKind)
+		}
+		var arg4 uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Find_Call) Return(favorite *ent.Favorite, err error) *FavoriteRepositoryMock_Find_Call {
+	_c.Call.Return(favorite, err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Find_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (*ent.Favorite, error)) *FavoriteRepositoryMock_Find_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type FavoriteRepositoryMock
 func (_mock *FavoriteRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Favorite, error) {
 	ret := _mock.Called(ctx, id)
@@ -188,6 +353,295 @@ func (_c *FavoriteRepositoryMock_GetByID_Call) Return(favorite *ent.Favorite, er
 }
 
 func (_c *FavoriteRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.Favorite, error)) *FavoriteRepositoryMock_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUser provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) ListByUser(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID) ([]*ent.Favorite, error) {
+	ret := _mock.Called(ctx, userID, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*ent.Favorite
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) ([]*ent.Favorite, error)); ok {
+		return returnFunc(ctx, userID, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) []*ent.Favorite); ok {
+		r0 = returnFunc(ctx, userID, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Favorite)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userID, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FavoriteRepositoryMock_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type FavoriteRepositoryMock_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - workspaceID uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) ListByUser(ctx any, userID any, workspaceID any) *FavoriteRepositoryMock_ListByUser_Call {
+	return &FavoriteRepositoryMock_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, workspaceID)}
+}
+
+func (_c *FavoriteRepositoryMock_ListByUser_Call) Run(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID)) *FavoriteRepositoryMock_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_ListByUser_Call) Return(favorites []*ent.Favorite, err error) *FavoriteRepositoryMock_ListByUser_Call {
+	_c.Call.Return(favorites, err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID) ([]*ent.Favorite, error)) *FavoriteRepositoryMock_ListByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NextSortOrder provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) NextSortOrder(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, workspaceID uuid.UUID) (float64, error) {
+	ret := _mock.Called(ctx, tx, userID, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NextSortOrder")
+	}
+
+	var r0 float64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, uuid.UUID) (float64, error)); ok {
+		return returnFunc(ctx, tx, userID, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, uuid.UUID) float64); ok {
+		r0 = returnFunc(ctx, tx, userID, workspaceID)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, userID, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FavoriteRepositoryMock_NextSortOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NextSortOrder'
+type FavoriteRepositoryMock_NextSortOrder_Call struct {
+	*mock.Call
+}
+
+// NextSortOrder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - userID uuid.UUID
+//   - workspaceID uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) NextSortOrder(ctx any, tx any, userID any, workspaceID any) *FavoriteRepositoryMock_NextSortOrder_Call {
+	return &FavoriteRepositoryMock_NextSortOrder_Call{Call: _e.mock.On("NextSortOrder", ctx, tx, userID, workspaceID)}
+}
+
+func (_c *FavoriteRepositoryMock_NextSortOrder_Call) Run(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, workspaceID uuid.UUID)) *FavoriteRepositoryMock_NextSortOrder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_NextSortOrder_Call) Return(f float64, err error) *FavoriteRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(f, err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_NextSortOrder_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, workspaceID uuid.UUID) (float64, error)) *FavoriteRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Reorder provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) Reorder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
+	ret := _mock.Called(ctx, userID, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Reorder")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, userID, ids)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// FavoriteRepositoryMock_Reorder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Reorder'
+type FavoriteRepositoryMock_Reorder_Call struct {
+	*mock.Call
+}
+
+// Reorder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - ids []uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) Reorder(ctx any, userID any, ids any) *FavoriteRepositoryMock_Reorder_Call {
+	return &FavoriteRepositoryMock_Reorder_Call{Call: _e.mock.On("Reorder", ctx, userID, ids)}
+}
+
+func (_c *FavoriteRepositoryMock_Reorder_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID)) *FavoriteRepositoryMock_Reorder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Reorder_Call) Return(err error) *FavoriteRepositoryMock_Reorder_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Reorder_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error) *FavoriteRepositoryMock_Reorder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Resolve provides a mock function for the type FavoriteRepositoryMock
+func (_mock *FavoriteRepositoryMock) Resolve(ctx context.Context, kind schema.FavoriteKind, ids []uuid.UUID) (map[uuid.UUID]favorite_repo.ResolvedEntity, error) {
+	ret := _mock.Called(ctx, kind, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Resolve")
+	}
+
+	var r0 map[uuid.UUID]favorite_repo.ResolvedEntity
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.FavoriteKind, []uuid.UUID) (map[uuid.UUID]favorite_repo.ResolvedEntity, error)); ok {
+		return returnFunc(ctx, kind, ids)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.FavoriteKind, []uuid.UUID) map[uuid.UUID]favorite_repo.ResolvedEntity); ok {
+		r0 = returnFunc(ctx, kind, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]favorite_repo.ResolvedEntity)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, schema.FavoriteKind, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, kind, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FavoriteRepositoryMock_Resolve_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Resolve'
+type FavoriteRepositoryMock_Resolve_Call struct {
+	*mock.Call
+}
+
+// Resolve is a helper method to define mock.On call
+//   - ctx context.Context
+//   - kind schema.FavoriteKind
+//   - ids []uuid.UUID
+func (_e *FavoriteRepositoryMock_Expecter) Resolve(ctx any, kind any, ids any) *FavoriteRepositoryMock_Resolve_Call {
+	return &FavoriteRepositoryMock_Resolve_Call{Call: _e.mock.On("Resolve", ctx, kind, ids)}
+}
+
+func (_c *FavoriteRepositoryMock_Resolve_Call) Run(run func(ctx context.Context, kind schema.FavoriteKind, ids []uuid.UUID)) *FavoriteRepositoryMock_Resolve_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 schema.FavoriteKind
+		if args[1] != nil {
+			arg1 = args[1].(schema.FavoriteKind)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Resolve_Call) Return(uUIDToResolvedEntity map[uuid.UUID]favorite_repo.ResolvedEntity, err error) *FavoriteRepositoryMock_Resolve_Call {
+	_c.Call.Return(uUIDToResolvedEntity, err)
+	return _c
+}
+
+func (_c *FavoriteRepositoryMock_Resolve_Call) RunAndReturn(run func(ctx context.Context, kind schema.FavoriteKind, ids []uuid.UUID) (map[uuid.UUID]favorite_repo.ResolvedEntity, error)) *FavoriteRepositoryMock_Resolve_Call {
 	_c.Call.Return(run)
 	return _c
 }

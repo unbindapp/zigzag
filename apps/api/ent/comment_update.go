@@ -168,6 +168,46 @@ func (_u *CommentUpdate) ClearResolvedByID() *CommentUpdate {
 	return _u
 }
 
+// SetImportSource sets the "import_source" field.
+func (_u *CommentUpdate) SetImportSource(v string) *CommentUpdate {
+	_u.mutation.SetImportSource(v)
+	return _u
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_u *CommentUpdate) SetNillableImportSource(v *string) *CommentUpdate {
+	if v != nil {
+		_u.SetImportSource(*v)
+	}
+	return _u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (_u *CommentUpdate) ClearImportSource() *CommentUpdate {
+	_u.mutation.ClearImportSource()
+	return _u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_u *CommentUpdate) SetImportExternalID(v string) *CommentUpdate {
+	_u.mutation.SetImportExternalID(v)
+	return _u
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_u *CommentUpdate) SetNillableImportExternalID(v *string) *CommentUpdate {
+	if v != nil {
+		_u.SetImportExternalID(*v)
+	}
+	return _u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (_u *CommentUpdate) ClearImportExternalID() *CommentUpdate {
+	_u.mutation.ClearImportExternalID()
+	return _u
+}
+
 // SetIssue sets the "issue" edge to the Issue entity.
 func (_u *CommentUpdate) SetIssue(v *Issue) *CommentUpdate {
 	return _u.SetIssueID(v.ID)
@@ -404,6 +444,18 @@ func (_u *CommentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ResolvedAtCleared() {
 		_spec.ClearField(comment.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ImportSource(); ok {
+		_spec.SetField(comment.FieldImportSource, field.TypeString, value)
+	}
+	if _u.mutation.ImportSourceCleared() {
+		_spec.ClearField(comment.FieldImportSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImportExternalID(); ok {
+		_spec.SetField(comment.FieldImportExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ImportExternalIDCleared() {
+		_spec.ClearField(comment.FieldImportExternalID, field.TypeString)
 	}
 	if _u.mutation.IssueCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -812,6 +864,46 @@ func (_u *CommentUpdateOne) ClearResolvedByID() *CommentUpdateOne {
 	return _u
 }
 
+// SetImportSource sets the "import_source" field.
+func (_u *CommentUpdateOne) SetImportSource(v string) *CommentUpdateOne {
+	_u.mutation.SetImportSource(v)
+	return _u
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_u *CommentUpdateOne) SetNillableImportSource(v *string) *CommentUpdateOne {
+	if v != nil {
+		_u.SetImportSource(*v)
+	}
+	return _u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (_u *CommentUpdateOne) ClearImportSource() *CommentUpdateOne {
+	_u.mutation.ClearImportSource()
+	return _u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_u *CommentUpdateOne) SetImportExternalID(v string) *CommentUpdateOne {
+	_u.mutation.SetImportExternalID(v)
+	return _u
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_u *CommentUpdateOne) SetNillableImportExternalID(v *string) *CommentUpdateOne {
+	if v != nil {
+		_u.SetImportExternalID(*v)
+	}
+	return _u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (_u *CommentUpdateOne) ClearImportExternalID() *CommentUpdateOne {
+	_u.mutation.ClearImportExternalID()
+	return _u
+}
+
 // SetIssue sets the "issue" edge to the Issue entity.
 func (_u *CommentUpdateOne) SetIssue(v *Issue) *CommentUpdateOne {
 	return _u.SetIssueID(v.ID)
@@ -1078,6 +1170,18 @@ func (_u *CommentUpdateOne) sqlSave(ctx context.Context) (_node *Comment, err er
 	}
 	if _u.mutation.ResolvedAtCleared() {
 		_spec.ClearField(comment.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ImportSource(); ok {
+		_spec.SetField(comment.FieldImportSource, field.TypeString, value)
+	}
+	if _u.mutation.ImportSourceCleared() {
+		_spec.ClearField(comment.FieldImportSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImportExternalID(); ok {
+		_spec.SetField(comment.FieldImportExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ImportExternalIDCleared() {
+		_spec.ClearField(comment.FieldImportExternalID, field.TypeString)
 	}
 	if _u.mutation.IssueCleared() {
 		edge := &sqlgraph.EdgeSpec{

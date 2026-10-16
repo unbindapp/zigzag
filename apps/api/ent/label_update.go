@@ -170,6 +170,27 @@ func (_u *LabelUpdate) SetNillableGroupSingleSelect(v *bool) *LabelUpdate {
 	return _u
 }
 
+// SetSortOrder sets the "sort_order" field.
+func (_u *LabelUpdate) SetSortOrder(v float64) *LabelUpdate {
+	_u.mutation.ResetSortOrder()
+	_u.mutation.SetSortOrder(v)
+	return _u
+}
+
+// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
+func (_u *LabelUpdate) SetNillableSortOrder(v *float64) *LabelUpdate {
+	if v != nil {
+		_u.SetSortOrder(*v)
+	}
+	return _u
+}
+
+// AddSortOrder adds value to the "sort_order" field.
+func (_u *LabelUpdate) AddSortOrder(v float64) *LabelUpdate {
+	_u.mutation.AddSortOrder(v)
+	return _u
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (_u *LabelUpdate) SetArchivedAt(v time.Time) *LabelUpdate {
 	_u.mutation.SetArchivedAt(v)
@@ -423,6 +444,12 @@ func (_u *LabelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.GroupSingleSelect(); ok {
 		_spec.SetField(label.FieldGroupSingleSelect, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SortOrder(); ok {
+		_spec.SetField(label.FieldSortOrder, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSortOrder(); ok {
+		_spec.AddField(label.FieldSortOrder, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.ArchivedAt(); ok {
 		_spec.SetField(label.FieldArchivedAt, field.TypeTime, value)
@@ -810,6 +837,27 @@ func (_u *LabelUpdateOne) SetNillableGroupSingleSelect(v *bool) *LabelUpdateOne 
 	return _u
 }
 
+// SetSortOrder sets the "sort_order" field.
+func (_u *LabelUpdateOne) SetSortOrder(v float64) *LabelUpdateOne {
+	_u.mutation.ResetSortOrder()
+	_u.mutation.SetSortOrder(v)
+	return _u
+}
+
+// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
+func (_u *LabelUpdateOne) SetNillableSortOrder(v *float64) *LabelUpdateOne {
+	if v != nil {
+		_u.SetSortOrder(*v)
+	}
+	return _u
+}
+
+// AddSortOrder adds value to the "sort_order" field.
+func (_u *LabelUpdateOne) AddSortOrder(v float64) *LabelUpdateOne {
+	_u.mutation.AddSortOrder(v)
+	return _u
+}
+
 // SetArchivedAt sets the "archived_at" field.
 func (_u *LabelUpdateOne) SetArchivedAt(v time.Time) *LabelUpdateOne {
 	_u.mutation.SetArchivedAt(v)
@@ -1093,6 +1141,12 @@ func (_u *LabelUpdateOne) sqlSave(ctx context.Context) (_node *Label, err error)
 	}
 	if value, ok := _u.mutation.GroupSingleSelect(); ok {
 		_spec.SetField(label.FieldGroupSingleSelect, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SortOrder(); ok {
+		_spec.SetField(label.FieldSortOrder, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSortOrder(); ok {
+		_spec.AddField(label.FieldSortOrder, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.ArchivedAt(); ok {
 		_spec.SetField(label.FieldArchivedAt, field.TypeTime, value)

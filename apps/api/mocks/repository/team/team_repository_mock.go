@@ -126,6 +126,69 @@ func (_c *TeamRepositoryMock_AddMember_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
+// AddMembers provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) AddMembers(ctx context.Context, tx repository.TxInterface, members []team_repo.ImportedTeamMember) error {
+	ret := _mock.Called(ctx, tx, members)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddMembers")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []team_repo.ImportedTeamMember) error); ok {
+		r0 = returnFunc(ctx, tx, members)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TeamRepositoryMock_AddMembers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddMembers'
+type TeamRepositoryMock_AddMembers_Call struct {
+	*mock.Call
+}
+
+// AddMembers is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - members []team_repo.ImportedTeamMember
+func (_e *TeamRepositoryMock_Expecter) AddMembers(ctx any, tx any, members any) *TeamRepositoryMock_AddMembers_Call {
+	return &TeamRepositoryMock_AddMembers_Call{Call: _e.mock.On("AddMembers", ctx, tx, members)}
+}
+
+func (_c *TeamRepositoryMock_AddMembers_Call) Run(run func(ctx context.Context, tx repository.TxInterface, members []team_repo.ImportedTeamMember)) *TeamRepositoryMock_AddMembers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []team_repo.ImportedTeamMember
+		if args[2] != nil {
+			arg2 = args[2].([]team_repo.ImportedTeamMember)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_AddMembers_Call) Return(err error) *TeamRepositoryMock_AddMembers_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_AddMembers_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, members []team_repo.ImportedTeamMember) error) *TeamRepositoryMock_AddMembers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountStates provides a mock function for the type TeamRepositoryMock
 func (_mock *TeamRepositoryMock) CountStates(ctx context.Context, teamID uuid.UUID) (int, error) {
 	ret := _mock.Called(ctx, teamID)
@@ -738,6 +801,81 @@ func (_c *TeamRepositoryMock_GetState_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// ImportTeams provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) ImportTeams(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teams []team_repo.ImportedTeam, states []team_repo.ImportedState) error {
+	ret := _mock.Called(ctx, tx, workspaceID, teams, states)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ImportTeams")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []team_repo.ImportedTeam, []team_repo.ImportedState) error); ok {
+		r0 = returnFunc(ctx, tx, workspaceID, teams, states)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TeamRepositoryMock_ImportTeams_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ImportTeams'
+type TeamRepositoryMock_ImportTeams_Call struct {
+	*mock.Call
+}
+
+// ImportTeams is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - workspaceID uuid.UUID
+//   - teams []team_repo.ImportedTeam
+//   - states []team_repo.ImportedState
+func (_e *TeamRepositoryMock_Expecter) ImportTeams(ctx any, tx any, workspaceID any, teams any, states any) *TeamRepositoryMock_ImportTeams_Call {
+	return &TeamRepositoryMock_ImportTeams_Call{Call: _e.mock.On("ImportTeams", ctx, tx, workspaceID, teams, states)}
+}
+
+func (_c *TeamRepositoryMock_ImportTeams_Call) Run(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teams []team_repo.ImportedTeam, states []team_repo.ImportedState)) *TeamRepositoryMock_ImportTeams_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []team_repo.ImportedTeam
+		if args[3] != nil {
+			arg3 = args[3].([]team_repo.ImportedTeam)
+		}
+		var arg4 []team_repo.ImportedState
+		if args[4] != nil {
+			arg4 = args[4].([]team_repo.ImportedState)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_ImportTeams_Call) Return(err error) *TeamRepositoryMock_ImportTeams_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_ImportTeams_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, teams []team_repo.ImportedTeam, states []team_repo.ImportedState) error) *TeamRepositoryMock_ImportTeams_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // IsMember provides a mock function for the type TeamRepositoryMock
 func (_mock *TeamRepositoryMock) IsMember(ctx context.Context, teamID uuid.UUID, userID uuid.UUID) (bool, error) {
 	ret := _mock.Called(ctx, teamID, userID)
@@ -1184,6 +1322,74 @@ func (_c *TeamRepositoryMock_MemberCounts_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// MembersOfWorkspace provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) MembersOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.TeamMember, error) {
+	ret := _mock.Called(ctx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MembersOfWorkspace")
+	}
+
+	var r0 []*ent.TeamMember
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.TeamMember, error)); ok {
+		return returnFunc(ctx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.TeamMember); ok {
+		r0 = returnFunc(ctx, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.TeamMember)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_MembersOfWorkspace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MembersOfWorkspace'
+type TeamRepositoryMock_MembersOfWorkspace_Call struct {
+	*mock.Call
+}
+
+// MembersOfWorkspace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) MembersOfWorkspace(ctx any, workspaceID any) *TeamRepositoryMock_MembersOfWorkspace_Call {
+	return &TeamRepositoryMock_MembersOfWorkspace_Call{Call: _e.mock.On("MembersOfWorkspace", ctx, workspaceID)}
+}
+
+func (_c *TeamRepositoryMock_MembersOfWorkspace_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID)) *TeamRepositoryMock_MembersOfWorkspace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_MembersOfWorkspace_Call) Return(teamMembers []*ent.TeamMember, err error) *TeamRepositoryMock_MembersOfWorkspace_Call {
+	_c.Call.Return(teamMembers, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_MembersOfWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) ([]*ent.TeamMember, error)) *TeamRepositoryMock_MembersOfWorkspace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NextIssueNumber provides a mock function for the type TeamRepositoryMock
 func (_mock *TeamRepositoryMock) NextIssueNumber(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error) {
 	ret := _mock.Called(ctx, tx, teamID)
@@ -1324,6 +1530,69 @@ func (_c *TeamRepositoryMock_NextStatePosition_Call) Return(f float64, err error
 }
 
 func (_c *TeamRepositoryMock_NextStatePosition_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, stateType schema.StateType) (float64, error)) *TeamRepositoryMock_NextStatePosition_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RaiseIssueCounters provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) RaiseIssueCounters(ctx context.Context, tx repository.TxInterface, counters map[uuid.UUID]int) error {
+	ret := _mock.Called(ctx, tx, counters)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RaiseIssueCounters")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, map[uuid.UUID]int) error); ok {
+		r0 = returnFunc(ctx, tx, counters)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TeamRepositoryMock_RaiseIssueCounters_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RaiseIssueCounters'
+type TeamRepositoryMock_RaiseIssueCounters_Call struct {
+	*mock.Call
+}
+
+// RaiseIssueCounters is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - counters map[uuid.UUID]int
+func (_e *TeamRepositoryMock_Expecter) RaiseIssueCounters(ctx any, tx any, counters any) *TeamRepositoryMock_RaiseIssueCounters_Call {
+	return &TeamRepositoryMock_RaiseIssueCounters_Call{Call: _e.mock.On("RaiseIssueCounters", ctx, tx, counters)}
+}
+
+func (_c *TeamRepositoryMock_RaiseIssueCounters_Call) Run(run func(ctx context.Context, tx repository.TxInterface, counters map[uuid.UUID]int)) *TeamRepositoryMock_RaiseIssueCounters_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 map[uuid.UUID]int
+		if args[2] != nil {
+			arg2 = args[2].(map[uuid.UUID]int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_RaiseIssueCounters_Call) Return(err error) *TeamRepositoryMock_RaiseIssueCounters_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_RaiseIssueCounters_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, counters map[uuid.UUID]int) error) *TeamRepositoryMock_RaiseIssueCounters_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1533,6 +1802,74 @@ func (_c *TeamRepositoryMock_StateNameTaken_Call) Return(b bool, err error) *Tea
 }
 
 func (_c *TeamRepositoryMock_StateNameTaken_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, name string, except *uuid.UUID) (bool, error)) *TeamRepositoryMock_StateNameTaken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StatesOfWorkspace provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) StatesOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.WorkflowState, error) {
+	ret := _mock.Called(ctx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StatesOfWorkspace")
+	}
+
+	var r0 []*ent.WorkflowState
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.WorkflowState, error)); ok {
+		return returnFunc(ctx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.WorkflowState); ok {
+		r0 = returnFunc(ctx, workspaceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.WorkflowState)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_StatesOfWorkspace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StatesOfWorkspace'
+type TeamRepositoryMock_StatesOfWorkspace_Call struct {
+	*mock.Call
+}
+
+// StatesOfWorkspace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) StatesOfWorkspace(ctx any, workspaceID any) *TeamRepositoryMock_StatesOfWorkspace_Call {
+	return &TeamRepositoryMock_StatesOfWorkspace_Call{Call: _e.mock.On("StatesOfWorkspace", ctx, workspaceID)}
+}
+
+func (_c *TeamRepositoryMock_StatesOfWorkspace_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID)) *TeamRepositoryMock_StatesOfWorkspace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_StatesOfWorkspace_Call) Return(workflowStates []*ent.WorkflowState, err error) *TeamRepositoryMock_StatesOfWorkspace_Call {
+	_c.Call.Return(workflowStates, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_StatesOfWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID) ([]*ent.WorkflowState, error)) *TeamRepositoryMock_StatesOfWorkspace_Call {
 	_c.Call.Return(run)
 	return _c
 }

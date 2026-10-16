@@ -341,6 +341,34 @@ func (_c *ProjectCreate) SetNillableCreatorID(v *uuid.UUID) *ProjectCreate {
 	return _c
 }
 
+// SetImportSource sets the "import_source" field.
+func (_c *ProjectCreate) SetImportSource(v string) *ProjectCreate {
+	_c.mutation.SetImportSource(v)
+	return _c
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillableImportSource(v *string) *ProjectCreate {
+	if v != nil {
+		_c.SetImportSource(*v)
+	}
+	return _c
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_c *ProjectCreate) SetImportExternalID(v string) *ProjectCreate {
+	_c.mutation.SetImportExternalID(v)
+	return _c
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillableImportExternalID(v *string) *ProjectCreate {
+	if v != nil {
+		_c.SetImportExternalID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ProjectCreate) SetID(v uuid.UUID) *ProjectCreate {
 	_c.mutation.SetID(v)
@@ -763,6 +791,14 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Health(); ok {
 		_spec.SetField(project.FieldHealth, field.TypeEnum, value)
 		_node.Health = &value
+	}
+	if value, ok := _c.mutation.ImportSource(); ok {
+		_spec.SetField(project.FieldImportSource, field.TypeString, value)
+		_node.ImportSource = value
+	}
+	if value, ok := _c.mutation.ImportExternalID(); ok {
+		_spec.SetField(project.FieldImportExternalID, field.TypeString, value)
+		_node.ImportExternalID = value
 	}
 	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1416,6 +1452,42 @@ func (u *ProjectUpsert) ClearCreatorID() *ProjectUpsert {
 	return u
 }
 
+// SetImportSource sets the "import_source" field.
+func (u *ProjectUpsert) SetImportSource(v string) *ProjectUpsert {
+	u.Set(project.FieldImportSource, v)
+	return u
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdateImportSource() *ProjectUpsert {
+	u.SetExcluded(project.FieldImportSource)
+	return u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *ProjectUpsert) ClearImportSource() *ProjectUpsert {
+	u.SetNull(project.FieldImportSource)
+	return u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *ProjectUpsert) SetImportExternalID(v string) *ProjectUpsert {
+	u.Set(project.FieldImportExternalID, v)
+	return u
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdateImportExternalID() *ProjectUpsert {
+	u.SetExcluded(project.FieldImportExternalID)
+	return u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *ProjectUpsert) ClearImportExternalID() *ProjectUpsert {
+	u.SetNull(project.FieldImportExternalID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1898,6 +1970,48 @@ func (u *ProjectUpsertOne) UpdateCreatorID() *ProjectUpsertOne {
 func (u *ProjectUpsertOne) ClearCreatorID() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.ClearCreatorID()
+	})
+}
+
+// SetImportSource sets the "import_source" field.
+func (u *ProjectUpsertOne) SetImportSource(v string) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetImportSource(v)
+	})
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdateImportSource() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateImportSource()
+	})
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *ProjectUpsertOne) ClearImportSource() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearImportSource()
+	})
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *ProjectUpsertOne) SetImportExternalID(v string) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetImportExternalID(v)
+	})
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdateImportExternalID() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateImportExternalID()
+	})
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *ProjectUpsertOne) ClearImportExternalID() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearImportExternalID()
 	})
 }
 
@@ -2550,6 +2664,48 @@ func (u *ProjectUpsertBulk) UpdateCreatorID() *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) ClearCreatorID() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.ClearCreatorID()
+	})
+}
+
+// SetImportSource sets the "import_source" field.
+func (u *ProjectUpsertBulk) SetImportSource(v string) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetImportSource(v)
+	})
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdateImportSource() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateImportSource()
+	})
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *ProjectUpsertBulk) ClearImportSource() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearImportSource()
+	})
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *ProjectUpsertBulk) SetImportExternalID(v string) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetImportExternalID(v)
+	})
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdateImportExternalID() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateImportExternalID()
+	})
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *ProjectUpsertBulk) ClearImportExternalID() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearImportExternalID()
 	})
 }
 

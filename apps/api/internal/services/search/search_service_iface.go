@@ -2,6 +2,14 @@
 
 package search_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // SearchServiceInterface ...
 type SearchServiceInterface interface {
+	Search(ctx context.Context, userID uuid.UUID, input *SearchInput) (*models.SearchResponse, error)
 }

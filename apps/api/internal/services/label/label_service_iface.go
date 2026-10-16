@@ -2,6 +2,19 @@
 
 package label_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // LabelServiceInterface ...
 type LabelServiceInterface interface {
+	Create(ctx context.Context, userID uuid.UUID, input *CreateLabelInput) (*models.LabelResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateLabelInput) (*models.LabelResponse, error)
+	Archive(ctx context.Context, userID uuid.UUID, input *LabelRefInput) (*models.LabelResponse, error)
+	Unarchive(ctx context.Context, userID uuid.UUID, input *LabelRefInput) (*models.LabelResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *LabelRefInput) error
+	List(ctx context.Context, userID uuid.UUID, input *ListLabelsInput) ([]*models.LabelTreeResponse, error)
 }

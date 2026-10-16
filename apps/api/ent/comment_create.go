@@ -138,6 +138,34 @@ func (_c *CommentCreate) SetNillableResolvedByID(v *uuid.UUID) *CommentCreate {
 	return _c
 }
 
+// SetImportSource sets the "import_source" field.
+func (_c *CommentCreate) SetImportSource(v string) *CommentCreate {
+	_c.mutation.SetImportSource(v)
+	return _c
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_c *CommentCreate) SetNillableImportSource(v *string) *CommentCreate {
+	if v != nil {
+		_c.SetImportSource(*v)
+	}
+	return _c
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_c *CommentCreate) SetImportExternalID(v string) *CommentCreate {
+	_c.mutation.SetImportExternalID(v)
+	return _c
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_c *CommentCreate) SetNillableImportExternalID(v *string) *CommentCreate {
+	if v != nil {
+		_c.SetImportExternalID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *CommentCreate) SetID(v uuid.UUID) *CommentCreate {
 	_c.mutation.SetID(v)
@@ -338,6 +366,14 @@ func (_c *CommentCreate) createSpec() (*Comment, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ResolvedAt(); ok {
 		_spec.SetField(comment.FieldResolvedAt, field.TypeTime, value)
 		_node.ResolvedAt = &value
+	}
+	if value, ok := _c.mutation.ImportSource(); ok {
+		_spec.SetField(comment.FieldImportSource, field.TypeString, value)
+		_node.ImportSource = value
+	}
+	if value, ok := _c.mutation.ImportExternalID(); ok {
+		_spec.SetField(comment.FieldImportExternalID, field.TypeString, value)
+		_node.ImportExternalID = value
 	}
 	if nodes := _c.mutation.IssueIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -633,6 +669,42 @@ func (u *CommentUpsert) ClearResolvedByID() *CommentUpsert {
 	return u
 }
 
+// SetImportSource sets the "import_source" field.
+func (u *CommentUpsert) SetImportSource(v string) *CommentUpsert {
+	u.Set(comment.FieldImportSource, v)
+	return u
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *CommentUpsert) UpdateImportSource() *CommentUpsert {
+	u.SetExcluded(comment.FieldImportSource)
+	return u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *CommentUpsert) ClearImportSource() *CommentUpsert {
+	u.SetNull(comment.FieldImportSource)
+	return u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *CommentUpsert) SetImportExternalID(v string) *CommentUpsert {
+	u.Set(comment.FieldImportExternalID, v)
+	return u
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *CommentUpsert) UpdateImportExternalID() *CommentUpsert {
+	u.SetExcluded(comment.FieldImportExternalID)
+	return u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *CommentUpsert) ClearImportExternalID() *CommentUpsert {
+	u.SetNull(comment.FieldImportExternalID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -828,6 +900,48 @@ func (u *CommentUpsertOne) UpdateResolvedByID() *CommentUpsertOne {
 func (u *CommentUpsertOne) ClearResolvedByID() *CommentUpsertOne {
 	return u.Update(func(s *CommentUpsert) {
 		s.ClearResolvedByID()
+	})
+}
+
+// SetImportSource sets the "import_source" field.
+func (u *CommentUpsertOne) SetImportSource(v string) *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.SetImportSource(v)
+	})
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *CommentUpsertOne) UpdateImportSource() *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.UpdateImportSource()
+	})
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *CommentUpsertOne) ClearImportSource() *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.ClearImportSource()
+	})
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *CommentUpsertOne) SetImportExternalID(v string) *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.SetImportExternalID(v)
+	})
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *CommentUpsertOne) UpdateImportExternalID() *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.UpdateImportExternalID()
+	})
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *CommentUpsertOne) ClearImportExternalID() *CommentUpsertOne {
+	return u.Update(func(s *CommentUpsert) {
+		s.ClearImportExternalID()
 	})
 }
 
@@ -1193,6 +1307,48 @@ func (u *CommentUpsertBulk) UpdateResolvedByID() *CommentUpsertBulk {
 func (u *CommentUpsertBulk) ClearResolvedByID() *CommentUpsertBulk {
 	return u.Update(func(s *CommentUpsert) {
 		s.ClearResolvedByID()
+	})
+}
+
+// SetImportSource sets the "import_source" field.
+func (u *CommentUpsertBulk) SetImportSource(v string) *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.SetImportSource(v)
+	})
+}
+
+// UpdateImportSource sets the "import_source" field to the value that was provided on create.
+func (u *CommentUpsertBulk) UpdateImportSource() *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.UpdateImportSource()
+	})
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (u *CommentUpsertBulk) ClearImportSource() *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.ClearImportSource()
+	})
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (u *CommentUpsertBulk) SetImportExternalID(v string) *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.SetImportExternalID(v)
+	})
+}
+
+// UpdateImportExternalID sets the "import_external_id" field to the value that was provided on create.
+func (u *CommentUpsertBulk) UpdateImportExternalID() *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.UpdateImportExternalID()
+	})
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (u *CommentUpsertBulk) ClearImportExternalID() *CommentUpsertBulk {
+	return u.Update(func(s *CommentUpsert) {
+		s.ClearImportExternalID()
 	})
 }
 

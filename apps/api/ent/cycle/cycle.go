@@ -39,6 +39,8 @@ const (
 	EdgeTeam = "team"
 	// EdgeIssues holds the string denoting the issues edge name in mutations.
 	EdgeIssues = "issues"
+	// EdgeScopeHistory holds the string denoting the scope_history edge name in mutations.
+	EdgeScopeHistory = "scope_history"
 	// Table holds the table name of the cycle in the database.
 	Table = "cycles"
 	// TeamTable is the table that holds the team relation/edge.
@@ -55,6 +57,13 @@ const (
 	IssuesInverseTable = "issues"
 	// IssuesColumn is the table column denoting the issues relation/edge.
 	IssuesColumn = "cycle_id"
+	// ScopeHistoryTable is the table that holds the scope_history relation/edge.
+	ScopeHistoryTable = "cycle_scope_history"
+	// ScopeHistoryInverseTable is the table name for the CycleScopeHistory entity.
+	// It exists in this package in order to avoid circular dependency with the "cyclescopehistory" package.
+	ScopeHistoryInverseTable = "cycle_scope_history"
+	// ScopeHistoryColumn is the table column denoting the scope_history relation/edge.
+	ScopeHistoryColumn = "cycle_id"
 )
 
 // Columns holds all SQL columns for cycle fields.
@@ -171,6 +180,20 @@ func ByIssues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIssuesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByScopeHistoryCount orders the results by scope_history count.
+func ByScopeHistoryCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScopeHistoryStep(), opts...)
+	}
+}
+
+// ByScopeHistory orders the results by scope_history terms.
+func ByScopeHistory(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScopeHistoryStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTeamStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -183,5 +206,12 @@ func newIssuesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IssuesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, IssuesTable, IssuesColumn),
+	)
+}
+func newScopeHistoryStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScopeHistoryInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ScopeHistoryTable, ScopeHistoryColumn),
 	)
 }

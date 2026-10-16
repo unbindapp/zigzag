@@ -4,9 +4,22 @@ package notification_service
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
 )
 
 // NotificationServiceInterface ...
 type NotificationServiceInterface interface {
+	NotifyDueSoon(ctx context.Context) error
 	SendEmailBatch(ctx context.Context) error
+	List(ctx context.Context, userID uuid.UUID, input *ListNotificationsInput) ([]*models.NotificationResponse, *string, error)
+	Counts(ctx context.Context, userID uuid.UUID, input *WorkspaceInput) (*models.NotificationCountsResponse, error)
+	MarkRead(ctx context.Context, userID uuid.UUID, input *NotificationIDsInput) error
+	MarkUnread(ctx context.Context, userID uuid.UUID, input *NotificationIDsInput) error
+	Archive(ctx context.Context, userID uuid.UUID, input *NotificationIDsInput) error
+	Unarchive(ctx context.Context, userID uuid.UUID, input *NotificationIDsInput) error
+	Snooze(ctx context.Context, userID uuid.UUID, input *SnoozeNotificationsInput) error
+	MarkAllRead(ctx context.Context, userID uuid.UUID, input *MarkAllReadInput) error
+	Notify(ctx context.Context, event models.NotificationEvent) error
 }

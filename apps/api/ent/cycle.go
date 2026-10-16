@@ -52,9 +52,11 @@ type CycleEdges struct {
 	Team *Team `json:"team,omitempty"`
 	// Issues holds the value of the issues edge.
 	Issues []*Issue `json:"issues,omitempty"`
+	// ScopeHistory holds the value of the scope_history edge.
+	ScopeHistory []*CycleScopeHistory `json:"scope_history,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TeamOrErr returns the Team value or an error if the edge
@@ -75,6 +77,15 @@ func (e CycleEdges) IssuesOrErr() ([]*Issue, error) {
 		return e.Issues, nil
 	}
 	return nil, &NotLoadedError{edge: "issues"}
+}
+
+// ScopeHistoryOrErr returns the ScopeHistory value or an error if the edge
+// was not loaded in eager-loading.
+func (e CycleEdges) ScopeHistoryOrErr() ([]*CycleScopeHistory, error) {
+	if e.loadedTypes[2] {
+		return e.ScopeHistory, nil
+	}
+	return nil, &NotLoadedError{edge: "scope_history"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -194,6 +205,11 @@ func (_m *Cycle) QueryTeam() *TeamQuery {
 // QueryIssues queries the "issues" edge of the Cycle entity.
 func (_m *Cycle) QueryIssues() *IssueQuery {
 	return NewCycleClient(_m.config).QueryIssues(_m)
+}
+
+// QueryScopeHistory queries the "scope_history" edge of the Cycle entity.
+func (_m *Cycle) QueryScopeHistory() *CycleScopeHistoryQuery {
+	return NewCycleClient(_m.config).QueryScopeHistory(_m)
 }
 
 // Update returns a builder for updating this Cycle.

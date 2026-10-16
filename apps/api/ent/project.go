@@ -71,6 +71,10 @@ type Project struct {
 	Health *schema.Health `json:"health,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID *uuid.UUID `json:"creator_id,omitempty"`
+	// ImportSource holds the value of the "import_source" field.
+	ImportSource string `json:"import_source,omitempty"`
+	// ImportExternalID holds the value of the "import_external_id" field.
+	ImportExternalID string `json:"import_external_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`
@@ -257,7 +261,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case project.FieldPriority:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldSlug, project.FieldSummary, project.FieldDescription, project.FieldIcon, project.FieldColor, project.FieldStartDateResolution, project.FieldTargetDateResolution, project.FieldHealth:
+		case project.FieldName, project.FieldSlug, project.FieldSummary, project.FieldDescription, project.FieldIcon, project.FieldColor, project.FieldStartDateResolution, project.FieldTargetDateResolution, project.FieldHealth, project.FieldImportSource, project.FieldImportExternalID:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt, project.FieldUpdatedAt, project.FieldStartDate, project.FieldTargetDate, project.FieldStartedAt, project.FieldCompletedAt, project.FieldCanceledAt, project.FieldArchivedAt, project.FieldTrashedAt:
 			values[i] = new(sql.NullTime)
@@ -437,6 +441,18 @@ func (_m *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CreatorID = new(uuid.UUID)
 				*_m.CreatorID = *value.S.(*uuid.UUID)
+			}
+		case project.FieldImportSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field import_source", values[i])
+			} else if value.Valid {
+				_m.ImportSource = value.String
+			}
+		case project.FieldImportExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field import_external_id", values[i])
+			} else if value.Valid {
+				_m.ImportExternalID = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -635,6 +651,12 @@ func (_m *Project) String() string {
 		builder.WriteString("creator_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("import_source=")
+	builder.WriteString(_m.ImportSource)
+	builder.WriteString(", ")
+	builder.WriteString("import_external_id=")
+	builder.WriteString(_m.ImportExternalID)
 	builder.WriteByte(')')
 	return builder.String()
 }

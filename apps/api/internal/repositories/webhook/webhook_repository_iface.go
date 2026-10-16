@@ -15,4 +15,9 @@ type WebhookRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateWebhookInput) (*ent.Webhook, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Webhook, error)
 	ResolveWorkspaceOfWebhook(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	List(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error)
+	ListEnabled(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Webhook, error)
+	Update(ctx context.Context, id uuid.UUID, input *UpdateWebhookInput) (*ent.Webhook, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	TeamOfIssue(ctx context.Context, issueID uuid.UUID) (uuid.UUID, error)
 }

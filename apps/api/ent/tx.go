@@ -22,6 +22,8 @@ type Tx struct {
 	Comment *CommentClient
 	// Cycle is the client for interacting with the Cycle builders.
 	Cycle *CycleClient
+	// CycleScopeHistory is the client for interacting with the CycleScopeHistory builders.
+	CycleScopeHistory *CycleScopeHistoryClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
@@ -231,6 +233,7 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Comment = NewCommentClient(tx.config)
 	tx.Cycle = NewCycleClient(tx.config)
+	tx.CycleScopeHistory = NewCycleScopeHistoryClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.Favorite = NewFavoriteClient(tx.config)
 	tx.ImportJob = NewImportJobClient(tx.config)

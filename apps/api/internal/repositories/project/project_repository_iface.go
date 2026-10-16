@@ -4,15 +4,68 @@ package project_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // ProjectRepositoryInterface ...
 type ProjectRepositoryInterface interface {
+	ImportedProjects(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.Project, error)
+	MilestonesOfImportedProjects(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.ProjectMilestone, error)
+	ImportProjects(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, source string, projects []ImportedProject) error
+	ImportMilestones(ctx context.Context, tx repository.TxInterface, milestones []ImportedMilestone) error
+	GetLink(ctx context.Context, linkID uuid.UUID) (*ent.ProjectLink, error)
+	NextLinkSortOrder(ctx context.Context, projectID uuid.UUID) (float64, error)
+	CreateLink(ctx context.Context, input *CreateLinkInput) (*ent.ProjectLink, error)
+	UpdateLink(ctx context.Context, linkID uuid.UUID, input *UpdateLinkInput) (*ent.ProjectLink, error)
+	DeleteLink(ctx context.Context, linkID uuid.UUID) error
+	ListMilestones(ctx context.Context, projectID uuid.UUID) ([]*ent.ProjectMilestone, error)
+	GetMilestone(ctx context.Context, milestoneID uuid.UUID) (*ent.ProjectMilestone, error)
+	NextMilestoneSortOrder(ctx context.Context, projectID uuid.UUID) (float64, error)
+	CreateMilestone(ctx context.Context, input *CreateMilestoneInput) (*ent.ProjectMilestone, error)
+	UpdateMilestone(ctx context.Context, milestoneID uuid.UUID, input *UpdateMilestoneInput) (*ent.ProjectMilestone, error)
+	DeleteMilestone(ctx context.Context, milestoneID uuid.UUID) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateProjectInput) (*ent.Project, error)
+	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *UpdateProjectInput) error
+	SetArchivedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
+	SetTrashedAt(ctx context.Context, id uuid.UUID, at *time.Time) error
+	SetHealth(ctx context.Context, tx repository.TxInterface, id uuid.UUID, health *schema.Health) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	List(ctx context.Context, filter *ListProjectsFilter) ([]*ent.Project, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Project, error)
+	GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Project, error)
 	ResolveWorkspaceOfProject(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	// AudienceIDs is the lead and the members, the people who follow a project.
+	AudienceIDs(ctx context.Context, projectID uuid.UUID) ([]uuid.UUID, error)
+	MaxSortOrder(ctx context.Context, workspaceID uuid.UUID) (float64, error)
+	LatestUpdate(ctx context.Context, projectID uuid.UUID) (*ent.ProjectPost, error)
+	Search(ctx context.Context, workspaceIDs []uuid.UUID, query string, limit int) ([]*ent.Project, error)
+	ListStatuses(ctx context.Context, workspaceID uuid.UUID) ([]*ent.ProjectStatus, error)
+	GetStatus(ctx context.Context, statusID uuid.UUID) (*ent.ProjectStatus, error)
+	// DefaultStatus is the first backlog status, or the first status of any type when there is none.
+	DefaultStatus(ctx context.Context, workspaceID uuid.UUID) (*ent.ProjectStatus, error)
+	StatusNameTaken(ctx context.Context, workspaceID uuid.UUID, name string, except *uuid.UUID) (bool, error)
+	NextStatusPosition(ctx context.Context, workspaceID uuid.UUID, statusType schema.ProjectStatusType) (float64, error)
+	CreateStatus(ctx context.Context, input *CreateStatusInput) (*ent.ProjectStatus, error)
+	UpdateStatus(ctx context.Context, statusID uuid.UUID, input *UpdateStatusInput) (*ent.ProjectStatus, error)
+	DeleteStatus(ctx context.Context, tx repository.TxInterface, statusID, moveToStatusID uuid.UUID) error
+	IssueTotals(ctx context.Context, projectIDs []uuid.UUID) (map[uuid.UUID]*models.IssueTotals, error)
+	MilestoneIssueTotals(ctx context.Context, milestoneIDs []uuid.UUID) (map[uuid.UUID]*models.IssueTotals, error)
+	ListUpdates(ctx context.Context, projectID uuid.UUID) ([]*ent.ProjectPost, error)
+	GetUpdate(ctx context.Context, updateID uuid.UUID) (*ent.ProjectPost, error)
+	CreateUpdate(ctx context.Context, tx repository.TxInterface, input *CreateUpdateInput) (*ent.ProjectPost, error)
+	EditUpdate(ctx context.Context, tx repository.TxInterface, updateID uuid.UUID, input *EditUpdateInput) error
+	DeleteUpdate(ctx context.Context, tx repository.TxInterface, updateID uuid.UUID) error
+	// LatestHealth is the health of the newest update, nil when the project has none.
+	LatestHealth(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) (*schema.Health, error)
+	CountTeamsInWorkspace(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID) (int, error)
+	CountWorkspaceMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) (int, error)
+	// CountApplicableLabels counts workspace labels (not team labels, not groups) among labelIDs.
+	CountApplicableLabels(ctx context.Context, workspaceID uuid.UUID, labelIDs []uuid.UUID) (int, error)
+	CountInitiativesInWorkspace(ctx context.Context, workspaceID uuid.UUID, initiativeIDs []uuid.UUID) (int, error)
 }

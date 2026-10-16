@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   BoxIcon,
   CircleDotIcon,
@@ -16,8 +17,10 @@ import {
 } from "lucide-react";
 
 import { useCommandPanelStore } from "@/components/command-panel/command-panel-store";
+import { SidebarFavorites } from "@/components/favorites/sidebar-favorites";
 import { useNewIssueStore } from "@/components/issues/new-issue-store";
 import { TeamIcon } from "@/components/shared/team-icon";
+import { Badge } from "@/components/ui/badge";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -31,6 +34,7 @@ import {
 import { useTeams } from "@/components/workspace/teams-provider";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { WorkspaceSwitcher } from "@/components/workspace/workspace-switcher";
+import { notificationCountsQuery } from "@/lib/queries/notifications";
 import { type TTeam } from "@/lib/queries/teams";
 
 type TProps = {
@@ -121,7 +125,7 @@ export function Sidebar({ onNavigate }: TProps) {
             />
           </SidebarSection>
           <SidebarSection title="Favorites">
-            <p className="text-muted-foreground px-2.5 text-xs">Favorites you add show up here.</p>
+            <SidebarFavorites onNavigate={onNavigate} />
           </SidebarSection>
           <SidebarSection title="Your teams">
             <TeamsNav onNavigate={onNavigate} />
@@ -134,7 +138,15 @@ export function Sidebar({ onNavigate }: TProps) {
 }
 
 function InboxUnreadBadge() {
-  return null;
+  const { workspace } = useWorkspace();
+  const { data } = useQuery(notificationCountsQuery(workspace.id));
+  const unread = data?.unread ?? 0;
+  if (unread === 0) return null;
+  return (
+    <Badge variant="muted" aria-label={`${unread} unread`}>
+      {unread > 99 ? "99+" : unread}
+    </Badge>
+  );
 }
 
 function TeamsNav({ onNavigate }: TProps) {

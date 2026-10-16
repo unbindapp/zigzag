@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/template"
 )
@@ -124,6 +125,63 @@ func (_c *TemplateRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// Delete provides a mock function for the type TemplateRepositoryMock
+func (_mock *TemplateRepositoryMock) Delete(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TemplateRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type TemplateRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *TemplateRepositoryMock_Expecter) Delete(ctx any, id any) *TemplateRepositoryMock_Delete_Call {
+	return &TemplateRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *TemplateRepositoryMock_Delete_Call) Run(run func(ctx context.Context, id uuid.UUID)) *TemplateRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_Delete_Call) Return(err error) *TemplateRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *TemplateRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type TemplateRepositoryMock
 func (_mock *TemplateRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Template, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +250,230 @@ func (_c *TemplateRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// List provides a mock function for the type TemplateRepositoryMock
+func (_mock *TemplateRepositoryMock) List(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, kind *schema.TemplateKind) ([]*ent.Template, error) {
+	ret := _mock.Called(ctx, workspaceID, teamIDs, kind)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*ent.Template
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *schema.TemplateKind) ([]*ent.Template, error)); ok {
+		return returnFunc(ctx, workspaceID, teamIDs, kind)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *schema.TemplateKind) []*ent.Template); ok {
+		r0 = returnFunc(ctx, workspaceID, teamIDs, kind)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Template)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID, *schema.TemplateKind) error); ok {
+		r1 = returnFunc(ctx, workspaceID, teamIDs, kind)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TemplateRepositoryMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type TemplateRepositoryMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - teamIDs []uuid.UUID
+//   - kind *schema.TemplateKind
+func (_e *TemplateRepositoryMock_Expecter) List(ctx any, workspaceID any, teamIDs any, kind any) *TemplateRepositoryMock_List_Call {
+	return &TemplateRepositoryMock_List_Call{Call: _e.mock.On("List", ctx, workspaceID, teamIDs, kind)}
+}
+
+func (_c *TemplateRepositoryMock_List_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, kind *schema.TemplateKind)) *TemplateRepositoryMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 *schema.TemplateKind
+		if args[3] != nil {
+			arg3 = args[3].(*schema.TemplateKind)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_List_Call) Return(templates []*ent.Template, err error) *TemplateRepositoryMock_List_Call {
+	_c.Call.Return(templates, err)
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_List_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, kind *schema.TemplateKind) ([]*ent.Template, error)) *TemplateRepositoryMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NextSortOrder provides a mock function for the type TemplateRepositoryMock
+func (_mock *TemplateRepositoryMock) NextSortOrder(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID) (float64, error) {
+	ret := _mock.Called(ctx, tx, workspaceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NextSortOrder")
+	}
+
+	var r0 float64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) (float64, error)); ok {
+		return returnFunc(ctx, tx, workspaceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) float64); ok {
+		r0 = returnFunc(ctx, tx, workspaceID)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, workspaceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TemplateRepositoryMock_NextSortOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NextSortOrder'
+type TemplateRepositoryMock_NextSortOrder_Call struct {
+	*mock.Call
+}
+
+// NextSortOrder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - workspaceID uuid.UUID
+func (_e *TemplateRepositoryMock_Expecter) NextSortOrder(ctx any, tx any, workspaceID any) *TemplateRepositoryMock_NextSortOrder_Call {
+	return &TemplateRepositoryMock_NextSortOrder_Call{Call: _e.mock.On("NextSortOrder", ctx, tx, workspaceID)}
+}
+
+func (_c *TemplateRepositoryMock_NextSortOrder_Call) Run(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID)) *TemplateRepositoryMock_NextSortOrder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_NextSortOrder_Call) Return(f float64, err error) *TemplateRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(f, err)
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_NextSortOrder_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID) (float64, error)) *TemplateRepositoryMock_NextSortOrder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ProjectInWorkspace provides a mock function for the type TemplateRepositoryMock
+func (_mock *TemplateRepositoryMock) ProjectInWorkspace(ctx context.Context, workspaceID uuid.UUID, projectID uuid.UUID) (bool, error) {
+	ret := _mock.Called(ctx, workspaceID, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ProjectInWorkspace")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (bool, error)); ok {
+		return returnFunc(ctx, workspaceID, projectID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) bool); ok {
+		r0 = returnFunc(ctx, workspaceID, projectID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TemplateRepositoryMock_ProjectInWorkspace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ProjectInWorkspace'
+type TemplateRepositoryMock_ProjectInWorkspace_Call struct {
+	*mock.Call
+}
+
+// ProjectInWorkspace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - projectID uuid.UUID
+func (_e *TemplateRepositoryMock_Expecter) ProjectInWorkspace(ctx any, workspaceID any, projectID any) *TemplateRepositoryMock_ProjectInWorkspace_Call {
+	return &TemplateRepositoryMock_ProjectInWorkspace_Call{Call: _e.mock.On("ProjectInWorkspace", ctx, workspaceID, projectID)}
+}
+
+func (_c *TemplateRepositoryMock_ProjectInWorkspace_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, projectID uuid.UUID)) *TemplateRepositoryMock_ProjectInWorkspace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_ProjectInWorkspace_Call) Return(b bool, err error) *TemplateRepositoryMock_ProjectInWorkspace_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_ProjectInWorkspace_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, projectID uuid.UUID) (bool, error)) *TemplateRepositoryMock_ProjectInWorkspace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfTemplate provides a mock function for the type TemplateRepositoryMock
 func (_mock *TemplateRepositoryMock) ResolveWorkspaceOfTemplate(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +538,80 @@ func (_c *TemplateRepositoryMock_ResolveWorkspaceOfTemplate_Call) Return(uUID uu
 }
 
 func (_c *TemplateRepositoryMock_ResolveWorkspaceOfTemplate_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *TemplateRepositoryMock_ResolveWorkspaceOfTemplate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type TemplateRepositoryMock
+func (_mock *TemplateRepositoryMock) Update(ctx context.Context, id uuid.UUID, input *template_repo.UpdateTemplateInput) (*ent.Template, error) {
+	ret := _mock.Called(ctx, id, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *ent.Template
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *template_repo.UpdateTemplateInput) (*ent.Template, error)); ok {
+		return returnFunc(ctx, id, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *template_repo.UpdateTemplateInput) *ent.Template); ok {
+		r0 = returnFunc(ctx, id, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Template)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *template_repo.UpdateTemplateInput) error); ok {
+		r1 = returnFunc(ctx, id, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TemplateRepositoryMock_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type TemplateRepositoryMock_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - input *template_repo.UpdateTemplateInput
+func (_e *TemplateRepositoryMock_Expecter) Update(ctx any, id any, input any) *TemplateRepositoryMock_Update_Call {
+	return &TemplateRepositoryMock_Update_Call{Call: _e.mock.On("Update", ctx, id, input)}
+}
+
+func (_c *TemplateRepositoryMock_Update_Call) Run(run func(ctx context.Context, id uuid.UUID, input *template_repo.UpdateTemplateInput)) *TemplateRepositoryMock_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *template_repo.UpdateTemplateInput
+		if args[2] != nil {
+			arg2 = args[2].(*template_repo.UpdateTemplateInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_Update_Call) Return(template *ent.Template, err error) *TemplateRepositoryMock_Update_Call {
+	_c.Call.Return(template, err)
+	return _c
+}
+
+func (_c *TemplateRepositoryMock_Update_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, input *template_repo.UpdateTemplateInput) (*ent.Template, error)) *TemplateRepositoryMock_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

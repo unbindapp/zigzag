@@ -455,6 +455,46 @@ func (_u *ProjectUpdate) ClearCreatorID() *ProjectUpdate {
 	return _u
 }
 
+// SetImportSource sets the "import_source" field.
+func (_u *ProjectUpdate) SetImportSource(v string) *ProjectUpdate {
+	_u.mutation.SetImportSource(v)
+	return _u
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_u *ProjectUpdate) SetNillableImportSource(v *string) *ProjectUpdate {
+	if v != nil {
+		_u.SetImportSource(*v)
+	}
+	return _u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (_u *ProjectUpdate) ClearImportSource() *ProjectUpdate {
+	_u.mutation.ClearImportSource()
+	return _u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_u *ProjectUpdate) SetImportExternalID(v string) *ProjectUpdate {
+	_u.mutation.SetImportExternalID(v)
+	return _u
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_u *ProjectUpdate) SetNillableImportExternalID(v *string) *ProjectUpdate {
+	if v != nil {
+		_u.SetImportExternalID(*v)
+	}
+	return _u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (_u *ProjectUpdate) ClearImportExternalID() *ProjectUpdate {
+	_u.mutation.ClearImportExternalID()
+	return _u
+}
+
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *ProjectUpdate) SetWorkspace(v *Workspace) *ProjectUpdate {
 	return _u.SetWorkspaceID(v.ID)
@@ -1047,6 +1087,18 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.HealthCleared() {
 		_spec.ClearField(project.FieldHealth, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ImportSource(); ok {
+		_spec.SetField(project.FieldImportSource, field.TypeString, value)
+	}
+	if _u.mutation.ImportSourceCleared() {
+		_spec.ClearField(project.FieldImportSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImportExternalID(); ok {
+		_spec.SetField(project.FieldImportExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ImportExternalIDCleared() {
+		_spec.ClearField(project.FieldImportExternalID, field.TypeString)
 	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2048,6 +2100,46 @@ func (_u *ProjectUpdateOne) ClearCreatorID() *ProjectUpdateOne {
 	return _u
 }
 
+// SetImportSource sets the "import_source" field.
+func (_u *ProjectUpdateOne) SetImportSource(v string) *ProjectUpdateOne {
+	_u.mutation.SetImportSource(v)
+	return _u
+}
+
+// SetNillableImportSource sets the "import_source" field if the given value is not nil.
+func (_u *ProjectUpdateOne) SetNillableImportSource(v *string) *ProjectUpdateOne {
+	if v != nil {
+		_u.SetImportSource(*v)
+	}
+	return _u
+}
+
+// ClearImportSource clears the value of the "import_source" field.
+func (_u *ProjectUpdateOne) ClearImportSource() *ProjectUpdateOne {
+	_u.mutation.ClearImportSource()
+	return _u
+}
+
+// SetImportExternalID sets the "import_external_id" field.
+func (_u *ProjectUpdateOne) SetImportExternalID(v string) *ProjectUpdateOne {
+	_u.mutation.SetImportExternalID(v)
+	return _u
+}
+
+// SetNillableImportExternalID sets the "import_external_id" field if the given value is not nil.
+func (_u *ProjectUpdateOne) SetNillableImportExternalID(v *string) *ProjectUpdateOne {
+	if v != nil {
+		_u.SetImportExternalID(*v)
+	}
+	return _u
+}
+
+// ClearImportExternalID clears the value of the "import_external_id" field.
+func (_u *ProjectUpdateOne) ClearImportExternalID() *ProjectUpdateOne {
+	_u.mutation.ClearImportExternalID()
+	return _u
+}
+
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *ProjectUpdateOne) SetWorkspace(v *Workspace) *ProjectUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
@@ -2670,6 +2762,18 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	}
 	if _u.mutation.HealthCleared() {
 		_spec.ClearField(project.FieldHealth, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ImportSource(); ok {
+		_spec.SetField(project.FieldImportSource, field.TypeString, value)
+	}
+	if _u.mutation.ImportSourceCleared() {
+		_spec.ClearField(project.FieldImportSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImportExternalID(); ok {
+		_spec.SetField(project.FieldImportExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ImportExternalIDCleared() {
+		_spec.ClearField(project.FieldImportExternalID, field.TypeString)
 	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -243,3 +243,21 @@ packages:
           filename: email_service_mock.go
           structname: EmailServiceMock
           pkgname: mocks_services_email
+  github.com/unbindapp/zigzag-api/internal/services/notification:
+    config:
+      dir: ./mocks/services/notification
+    interfaces:
+      NotificationServiceInterface:
+        config:
+          filename: notification_service_mock.go
+          structname: NotificationServiceMock
+          pkgname: mocks_services_notification
+  github.com/unbindapp/zigzag-api/internal/services/webhook:
+    config:
+      dir: ./mocks/services/webhook
+    interfaces:
+      WebhookServiceInterface:
+        config:
+          filename: webhook_service_mock.go
+          structname: WebhookServiceMock
+          pkgname: mocks_services_webhook

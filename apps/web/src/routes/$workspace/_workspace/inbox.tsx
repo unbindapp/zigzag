@@ -1,19 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { InboxIcon } from "lucide-react";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { z } from "zod";
 
-import { NotBuiltYet } from "@/components/layout/not-built-yet";
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
+import { INBOX_TABS, InboxView } from "@/components/inbox/inbox-view";
+
+const searchSchema = z.object({
+  tab: z.enum(INBOX_TABS).optional(),
+  id: z.string().optional(),
+});
 
 export const Route = createFileRoute("/$workspace/_workspace/inbox")({
+  validateSearch: zodValidator(searchSchema),
   component: InboxPage,
 });
 
 function InboxPage() {
+  const { tab, id } = Route.useSearch();
+  const navigate = Route.useNavigate();
   return (
-    <PageContainer>
-      <PageHeader title={"Inbox"} icon={<InboxIcon />} />
-      <NotBuiltYet />
-    </PageContainer>
+    <InboxView
+      tab={tab ?? "inbox"}
+      selectedId={id}
+      onTabChange={(next) =>
+        void navigate({ search: { tab: next === "inbox" ? undefined : next }, replace: true })
+      }
+      onSelect={(next) =>
+        void navigate({ search: (prev) => ({ ...prev, id: next }), replace: true })
+      }
+    />
   );
 }

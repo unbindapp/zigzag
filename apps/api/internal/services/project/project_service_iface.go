@@ -2,6 +2,37 @@
 
 package project_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // ProjectServiceInterface ...
 type ProjectServiceInterface interface {
+	CreateLink(ctx context.Context, userID uuid.UUID, input *CreateProjectLinkInput) (*models.ProjectLinkResponse, error)
+	UpdateLink(ctx context.Context, userID uuid.UUID, input *UpdateProjectLinkInput) (*models.ProjectLinkResponse, error)
+	DeleteLink(ctx context.Context, userID uuid.UUID, input *ProjectLinkRefInput) error
+	ListMilestones(ctx context.Context, userID uuid.UUID, input *ProjectQueryInput) ([]*models.MilestoneResponse, error)
+	CreateMilestone(ctx context.Context, userID uuid.UUID, input *CreateMilestoneInput) (*models.MilestoneResponse, error)
+	UpdateMilestone(ctx context.Context, userID uuid.UUID, input *UpdateMilestoneInput) (*models.MilestoneResponse, error)
+	DeleteMilestone(ctx context.Context, userID uuid.UUID, input *MilestoneRefInput) error
+	Create(ctx context.Context, userID uuid.UUID, input *CreateProjectInput) (*models.ProjectResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateProjectInput) (*models.ProjectResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) error
+	Archive(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) (*models.ProjectResponse, error)
+	Unarchive(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) (*models.ProjectResponse, error)
+	Trash(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) (*models.ProjectResponse, error)
+	Restore(ctx context.Context, userID uuid.UUID, input *ProjectRefInput) (*models.ProjectResponse, error)
+	List(ctx context.Context, userID uuid.UUID, input *ListProjectsInput) ([]*models.ProjectResponse, error)
+	Get(ctx context.Context, userID uuid.UUID, input *GetProjectInput) (*models.ProjectResponse, error)
+	ListStatuses(ctx context.Context, userID uuid.UUID, input *ListProjectStatusesInput) ([]*models.ProjectStatusResponse, error)
+	CreateStatus(ctx context.Context, userID uuid.UUID, input *CreateProjectStatusInput) (*models.ProjectStatusResponse, error)
+	UpdateStatus(ctx context.Context, userID uuid.UUID, input *UpdateProjectStatusInput) (*models.ProjectStatusResponse, error)
+	DeleteStatus(ctx context.Context, userID uuid.UUID, input *DeleteProjectStatusInput) error
+	ListUpdates(ctx context.Context, userID uuid.UUID, input *ProjectQueryInput) ([]*models.ProjectUpdateResponse, error)
+	CreateUpdate(ctx context.Context, userID uuid.UUID, input *CreateProjectUpdateInput) (*models.ProjectUpdateResponse, error)
+	EditUpdate(ctx context.Context, userID uuid.UUID, input *EditProjectUpdateInput) (*models.ProjectUpdateResponse, error)
+	DeleteUpdate(ctx context.Context, userID uuid.UUID, input *ProjectUpdateRefInput) error
 }

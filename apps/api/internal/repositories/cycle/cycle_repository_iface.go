@@ -8,13 +8,39 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // CycleRepositoryInterface ...
 type CycleRepositoryInterface interface {
+	CyclesOfWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Cycle, error)
+	ImportCycles(ctx context.Context, tx repository.TxInterface, cycles []ImportedCycle) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateCycleInput) (*ent.Cycle, error)
+	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, input *UpdateCycleInput) (*ent.Cycle, error)
+	Archive(ctx context.Context, id uuid.UUID, at time.Time) (*ent.Cycle, error)
+	Complete(ctx context.Context, tx repository.TxInterface, id uuid.UUID, at time.Time) error
+	Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
+	MoveIssues(ctx context.Context, tx repository.TxInterface, issueIDs []uuid.UUID, cycleID uuid.UUID) error
+	UpsertScopeSnapshot(ctx context.Context, tx repository.TxInterface, snapshot ScopeSnapshot) error
+	RecordHistory(ctx context.Context, tx repository.TxInterface, entries []HistoryEntry) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Cycle, error)
+	GetByNumber(ctx context.Context, teamID uuid.UUID, number int) (*ent.Cycle, error)
 	ResolveWorkspaceOfCycle(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	ActiveCycleIDs(ctx context.Context, teamIDs []uuid.UUID, now time.Time) (map[uuid.UUID]uuid.UUID, error)
+	ListByTeam(ctx context.Context, teamID uuid.UUID, includeArchived bool) ([]*ent.Cycle, error)
+	NextNumber(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) (int, error)
+	// Ranges are half open, so a cycle may start exactly when another ends.
+	Overlaps(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, startsAt, endsAt time.Time, except *uuid.UUID) (bool, error)
+	// An unestimated issue counts as 1 point.
+	Tally(ctx context.Context, tx repository.TxInterface, cycleIDs []uuid.UUID) (map[uuid.UUID]map[schema.StateType]StateTally, error)
+	ScopeHistory(ctx context.Context, cycleID uuid.UUID) ([]*ent.CycleScopeHistory, error)
+	IssueIDsInCycle(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)
+	UnfinishedIssueIDs(ctx context.Context, tx repository.TxInterface, cycleID uuid.UUID) ([]uuid.UUID, error)
+	TeamsWithCyclesEnabled(ctx context.Context) ([]*ent.Team, error)
+	LatestCycle(ctx context.Context, teamID uuid.UUID) (*ent.Cycle, error)
+	CountEndingAfter(ctx context.Context, teamID uuid.UUID, at time.Time) (int, error)
+	EndedOpenCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error)
+	ActiveCycles(ctx context.Context, now time.Time) ([]*ent.Cycle, error)
+	NextOpenCycle(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, after time.Time) (*ent.Cycle, error)
 }

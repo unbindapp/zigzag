@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
@@ -15,4 +16,10 @@ type FavoriteRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateFavoriteInput) (*ent.Favorite, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Favorite, error)
 	ResolveWorkspaceOfFavorite(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	ListByUser(ctx context.Context, userID, workspaceID uuid.UUID) ([]*ent.Favorite, error)
+	Find(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (*ent.Favorite, error)
+	NextSortOrder(ctx context.Context, tx repository.TxInterface, userID, workspaceID uuid.UUID) (float64, error)
+	Delete(ctx context.Context, userID uuid.UUID, kind schema.FavoriteKind, entityID uuid.UUID) (int, error)
+	Reorder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error
+	Resolve(ctx context.Context, kind schema.FavoriteKind, ids []uuid.UUID) (map[uuid.UUID]ResolvedEntity, error)
 }

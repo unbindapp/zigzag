@@ -6,10 +6,12 @@ package mocks_repository_notification
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
 	"github.com/unbindapp/zigzag-api/internal/repositories"
 	"github.com/unbindapp/zigzag-api/internal/repositories/notification"
 )
@@ -48,6 +50,158 @@ type NotificationRepositoryMock_Expecter struct {
 
 func (_m *NotificationRepositoryMock) EXPECT() *NotificationRepositoryMock_Expecter {
 	return &NotificationRepositoryMock_Expecter{mock: &_m.Mock}
+}
+
+// ActiveMembers provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) ActiveMembers(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, workspaceID, userIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ActiveMembers")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, workspaceID, userIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, workspaceID, userIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, workspaceID, userIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_ActiveMembers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ActiveMembers'
+type NotificationRepositoryMock_ActiveMembers_Call struct {
+	*mock.Call
+}
+
+// ActiveMembers is a helper method to define mock.On call
+//   - ctx context.Context
+//   - workspaceID uuid.UUID
+//   - userIDs []uuid.UUID
+func (_e *NotificationRepositoryMock_Expecter) ActiveMembers(ctx any, workspaceID any, userIDs any) *NotificationRepositoryMock_ActiveMembers_Call {
+	return &NotificationRepositoryMock_ActiveMembers_Call{Call: _e.mock.On("ActiveMembers", ctx, workspaceID, userIDs)}
+}
+
+func (_c *NotificationRepositoryMock_ActiveMembers_Call) Run(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID)) *NotificationRepositoryMock_ActiveMembers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_ActiveMembers_Call) Return(uUIDs []uuid.UUID, err error) *NotificationRepositoryMock_ActiveMembers_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_ActiveMembers_Call) RunAndReturn(run func(ctx context.Context, workspaceID uuid.UUID, userIDs []uuid.UUID) ([]uuid.UUID, error)) *NotificationRepositoryMock_ActiveMembers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountUnread provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) CountUnread(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time) (int, error) {
+	ret := _mock.Called(ctx, userID, workspaceID, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountUnread")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, time.Time) (int, error)); ok {
+		return returnFunc(ctx, userID, workspaceID, now)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, time.Time) int); ok {
+		r0 = returnFunc(ctx, userID, workspaceID, now)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, workspaceID, now)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_CountUnread_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountUnread'
+type NotificationRepositoryMock_CountUnread_Call struct {
+	*mock.Call
+}
+
+// CountUnread is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - workspaceID uuid.UUID
+//   - now time.Time
+func (_e *NotificationRepositoryMock_Expecter) CountUnread(ctx any, userID any, workspaceID any, now any) *NotificationRepositoryMock_CountUnread_Call {
+	return &NotificationRepositoryMock_CountUnread_Call{Call: _e.mock.On("CountUnread", ctx, userID, workspaceID, now)}
+}
+
+func (_c *NotificationRepositoryMock_CountUnread_Call) Run(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time)) *NotificationRepositoryMock_CountUnread_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_CountUnread_Call) Return(n int, err error) *NotificationRepositoryMock_CountUnread_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_CountUnread_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time) (int, error)) *NotificationRepositoryMock_CountUnread_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Create provides a mock function for the type NotificationRepositoryMock
@@ -124,6 +278,154 @@ func (_c *NotificationRepositoryMock_Create_Call) RunAndReturn(run func(ctx cont
 	return _c
 }
 
+// CreateMany provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) CreateMany(ctx context.Context, tx repository.TxInterface, inputs []*notification_repo.CreateNotificationInput) ([]*ent.Notification, error) {
+	ret := _mock.Called(ctx, tx, inputs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateMany")
+	}
+
+	var r0 []*ent.Notification
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []*notification_repo.CreateNotificationInput) ([]*ent.Notification, error)); ok {
+		return returnFunc(ctx, tx, inputs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, []*notification_repo.CreateNotificationInput) []*ent.Notification); ok {
+		r0 = returnFunc(ctx, tx, inputs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Notification)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, []*notification_repo.CreateNotificationInput) error); ok {
+		r1 = returnFunc(ctx, tx, inputs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_CreateMany_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateMany'
+type NotificationRepositoryMock_CreateMany_Call struct {
+	*mock.Call
+}
+
+// CreateMany is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - inputs []*notification_repo.CreateNotificationInput
+func (_e *NotificationRepositoryMock_Expecter) CreateMany(ctx any, tx any, inputs any) *NotificationRepositoryMock_CreateMany_Call {
+	return &NotificationRepositoryMock_CreateMany_Call{Call: _e.mock.On("CreateMany", ctx, tx, inputs)}
+}
+
+func (_c *NotificationRepositoryMock_CreateMany_Call) Run(run func(ctx context.Context, tx repository.TxInterface, inputs []*notification_repo.CreateNotificationInput)) *NotificationRepositoryMock_CreateMany_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 []*notification_repo.CreateNotificationInput
+		if args[2] != nil {
+			arg2 = args[2].([]*notification_repo.CreateNotificationInput)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_CreateMany_Call) Return(notifications []*ent.Notification, err error) *NotificationRepositoryMock_CreateMany_Call {
+	_c.Call.Return(notifications, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_CreateMany_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, inputs []*notification_repo.CreateNotificationInput) ([]*ent.Notification, error)) *NotificationRepositoryMock_CreateMany_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DueBetween provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) DueBetween(ctx context.Context, from time.Time, to time.Time) ([]*ent.Issue, error) {
+	ret := _mock.Called(ctx, from, to)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DueBetween")
+	}
+
+	var r0 []*ent.Issue
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) ([]*ent.Issue, error)); ok {
+		return returnFunc(ctx, from, to)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) []*ent.Issue); ok {
+		r0 = returnFunc(ctx, from, to)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Issue)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time, time.Time) error); ok {
+		r1 = returnFunc(ctx, from, to)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_DueBetween_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DueBetween'
+type NotificationRepositoryMock_DueBetween_Call struct {
+	*mock.Call
+}
+
+// DueBetween is a helper method to define mock.On call
+//   - ctx context.Context
+//   - from time.Time
+//   - to time.Time
+func (_e *NotificationRepositoryMock_Expecter) DueBetween(ctx any, from any, to any) *NotificationRepositoryMock_DueBetween_Call {
+	return &NotificationRepositoryMock_DueBetween_Call{Call: _e.mock.On("DueBetween", ctx, from, to)}
+}
+
+func (_c *NotificationRepositoryMock_DueBetween_Call) Run(run func(ctx context.Context, from time.Time, to time.Time)) *NotificationRepositoryMock_DueBetween_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_DueBetween_Call) Return(issues []*ent.Issue, err error) *NotificationRepositoryMock_DueBetween_Call {
+	_c.Call.Return(issues, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_DueBetween_Call) RunAndReturn(run func(ctx context.Context, from time.Time, to time.Time) ([]*ent.Issue, error)) *NotificationRepositoryMock_DueBetween_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type NotificationRepositoryMock
 func (_mock *NotificationRepositoryMock) GetByID(ctx context.Context, id uuid.UUID) (*ent.Notification, error) {
 	ret := _mock.Called(ctx, id)
@@ -192,6 +494,438 @@ func (_c *NotificationRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// HasRecent provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) HasRecent(ctx context.Context, userID uuid.UUID, issueID uuid.UUID, kind schema.NotificationType, since time.Time) (bool, error) {
+	ret := _mock.Called(ctx, userID, issueID, kind, since)
+
+	if len(ret) == 0 {
+		panic("no return value specified for HasRecent")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, schema.NotificationType, time.Time) (bool, error)); ok {
+		return returnFunc(ctx, userID, issueID, kind, since)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, schema.NotificationType, time.Time) bool); ok {
+		r0 = returnFunc(ctx, userID, issueID, kind, since)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, schema.NotificationType, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, issueID, kind, since)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_HasRecent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HasRecent'
+type NotificationRepositoryMock_HasRecent_Call struct {
+	*mock.Call
+}
+
+// HasRecent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - issueID uuid.UUID
+//   - kind schema.NotificationType
+//   - since time.Time
+func (_e *NotificationRepositoryMock_Expecter) HasRecent(ctx any, userID any, issueID any, kind any, since any) *NotificationRepositoryMock_HasRecent_Call {
+	return &NotificationRepositoryMock_HasRecent_Call{Call: _e.mock.On("HasRecent", ctx, userID, issueID, kind, since)}
+}
+
+func (_c *NotificationRepositoryMock_HasRecent_Call) Run(run func(ctx context.Context, userID uuid.UUID, issueID uuid.UUID, kind schema.NotificationType, since time.Time)) *NotificationRepositoryMock_HasRecent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 schema.NotificationType
+		if args[3] != nil {
+			arg3 = args[3].(schema.NotificationType)
+		}
+		var arg4 time.Time
+		if args[4] != nil {
+			arg4 = args[4].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_HasRecent_Call) Return(b bool, err error) *NotificationRepositoryMock_HasRecent_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_HasRecent_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, issueID uuid.UUID, kind schema.NotificationType, since time.Time) (bool, error)) *NotificationRepositoryMock_HasRecent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) List(ctx context.Context, input *notification_repo.ListInput) ([]*ent.Notification, error) {
+	ret := _mock.Called(ctx, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*ent.Notification
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *notification_repo.ListInput) ([]*ent.Notification, error)); ok {
+		return returnFunc(ctx, input)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *notification_repo.ListInput) []*ent.Notification); ok {
+		r0 = returnFunc(ctx, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Notification)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *notification_repo.ListInput) error); ok {
+		r1 = returnFunc(ctx, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type NotificationRepositoryMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - input *notification_repo.ListInput
+func (_e *NotificationRepositoryMock_Expecter) List(ctx any, input any) *NotificationRepositoryMock_List_Call {
+	return &NotificationRepositoryMock_List_Call{Call: _e.mock.On("List", ctx, input)}
+}
+
+func (_c *NotificationRepositoryMock_List_Call) Run(run func(ctx context.Context, input *notification_repo.ListInput)) *NotificationRepositoryMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *notification_repo.ListInput
+		if args[1] != nil {
+			arg1 = args[1].(*notification_repo.ListInput)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_List_Call) Return(notifications []*ent.Notification, err error) *NotificationRepositoryMock_List_Call {
+	_c.Call.Return(notifications, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_List_Call) RunAndReturn(run func(ctx context.Context, input *notification_repo.ListInput) ([]*ent.Notification, error)) *NotificationRepositoryMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MarkAllRead provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) MarkAllRead(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time) error {
+	ret := _mock.Called(ctx, userID, workspaceID, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkAllRead")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, time.Time) error); ok {
+		r0 = returnFunc(ctx, userID, workspaceID, now)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationRepositoryMock_MarkAllRead_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkAllRead'
+type NotificationRepositoryMock_MarkAllRead_Call struct {
+	*mock.Call
+}
+
+// MarkAllRead is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - workspaceID uuid.UUID
+//   - now time.Time
+func (_e *NotificationRepositoryMock_Expecter) MarkAllRead(ctx any, userID any, workspaceID any, now any) *NotificationRepositoryMock_MarkAllRead_Call {
+	return &NotificationRepositoryMock_MarkAllRead_Call{Call: _e.mock.On("MarkAllRead", ctx, userID, workspaceID, now)}
+}
+
+func (_c *NotificationRepositoryMock_MarkAllRead_Call) Run(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time)) *NotificationRepositoryMock_MarkAllRead_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_MarkAllRead_Call) Return(err error) *NotificationRepositoryMock_MarkAllRead_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_MarkAllRead_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, workspaceID uuid.UUID, now time.Time) error) *NotificationRepositoryMock_MarkAllRead_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MarkEmailed provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) MarkEmailed(ctx context.Context, ids []uuid.UUID, at time.Time) error {
+	ret := _mock.Called(ctx, ids, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkEmailed")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, time.Time) error); ok {
+		r0 = returnFunc(ctx, ids, at)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationRepositoryMock_MarkEmailed_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkEmailed'
+type NotificationRepositoryMock_MarkEmailed_Call struct {
+	*mock.Call
+}
+
+// MarkEmailed is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ids []uuid.UUID
+//   - at time.Time
+func (_e *NotificationRepositoryMock_Expecter) MarkEmailed(ctx any, ids any, at any) *NotificationRepositoryMock_MarkEmailed_Call {
+	return &NotificationRepositoryMock_MarkEmailed_Call{Call: _e.mock.On("MarkEmailed", ctx, ids, at)}
+}
+
+func (_c *NotificationRepositoryMock_MarkEmailed_Call) Run(run func(ctx context.Context, ids []uuid.UUID, at time.Time)) *NotificationRepositoryMock_MarkEmailed_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_MarkEmailed_Call) Return(err error) *NotificationRepositoryMock_MarkEmailed_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_MarkEmailed_Call) RunAndReturn(run func(ctx context.Context, ids []uuid.UUID, at time.Time) error) *NotificationRepositoryMock_MarkEmailed_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// OwnedWorkspaces provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) OwnedWorkspaces(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
+	ret := _mock.Called(ctx, userID, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for OwnedWorkspaces")
+	}
+
+	var r0 map[uuid.UUID]uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) (map[uuid.UUID]uuid.UUID, error)); ok {
+		return returnFunc(ctx, userID, ids)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID) map[uuid.UUID]uuid.UUID); ok {
+		r0 = returnFunc(ctx, userID, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userID, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_OwnedWorkspaces_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'OwnedWorkspaces'
+type NotificationRepositoryMock_OwnedWorkspaces_Call struct {
+	*mock.Call
+}
+
+// OwnedWorkspaces is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - ids []uuid.UUID
+func (_e *NotificationRepositoryMock_Expecter) OwnedWorkspaces(ctx any, userID any, ids any) *NotificationRepositoryMock_OwnedWorkspaces_Call {
+	return &NotificationRepositoryMock_OwnedWorkspaces_Call{Call: _e.mock.On("OwnedWorkspaces", ctx, userID, ids)}
+}
+
+func (_c *NotificationRepositoryMock_OwnedWorkspaces_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID)) *NotificationRepositoryMock_OwnedWorkspaces_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_OwnedWorkspaces_Call) Return(uUIDToUUID map[uuid.UUID]uuid.UUID, err error) *NotificationRepositoryMock_OwnedWorkspaces_Call {
+	_c.Call.Return(uUIDToUUID, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_OwnedWorkspaces_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error)) *NotificationRepositoryMock_OwnedWorkspaces_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PendingEmail provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) PendingEmail(ctx context.Context, createdBefore time.Time, createdAfter time.Time) ([]*ent.Notification, error) {
+	ret := _mock.Called(ctx, createdBefore, createdAfter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PendingEmail")
+	}
+
+	var r0 []*ent.Notification
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) ([]*ent.Notification, error)); ok {
+		return returnFunc(ctx, createdBefore, createdAfter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) []*ent.Notification); ok {
+		r0 = returnFunc(ctx, createdBefore, createdAfter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Notification)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time, time.Time) error); ok {
+		r1 = returnFunc(ctx, createdBefore, createdAfter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_PendingEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PendingEmail'
+type NotificationRepositoryMock_PendingEmail_Call struct {
+	*mock.Call
+}
+
+// PendingEmail is a helper method to define mock.On call
+//   - ctx context.Context
+//   - createdBefore time.Time
+//   - createdAfter time.Time
+func (_e *NotificationRepositoryMock_Expecter) PendingEmail(ctx any, createdBefore any, createdAfter any) *NotificationRepositoryMock_PendingEmail_Call {
+	return &NotificationRepositoryMock_PendingEmail_Call{Call: _e.mock.On("PendingEmail", ctx, createdBefore, createdAfter)}
+}
+
+func (_c *NotificationRepositoryMock_PendingEmail_Call) Run(run func(ctx context.Context, createdBefore time.Time, createdAfter time.Time)) *NotificationRepositoryMock_PendingEmail_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_PendingEmail_Call) Return(notifications []*ent.Notification, err error) *NotificationRepositoryMock_PendingEmail_Call {
+	_c.Call.Return(notifications, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_PendingEmail_Call) RunAndReturn(run func(ctx context.Context, createdBefore time.Time, createdAfter time.Time) ([]*ent.Notification, error)) *NotificationRepositoryMock_PendingEmail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveWorkspaceOfNotification provides a mock function for the type NotificationRepositoryMock
 func (_mock *NotificationRepositoryMock) ResolveWorkspaceOfNotification(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	ret := _mock.Called(ctx, id)
@@ -256,6 +990,281 @@ func (_c *NotificationRepositoryMock_ResolveWorkspaceOfNotification_Call) Return
 }
 
 func (_c *NotificationRepositoryMock_ResolveWorkspaceOfNotification_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (uuid.UUID, error)) *NotificationRepositoryMock_ResolveWorkspaceOfNotification_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetArchived provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) SetArchived(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, archivedAt *time.Time) error {
+	ret := _mock.Called(ctx, userID, ids, archivedAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetArchived")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *time.Time) error); ok {
+		r0 = returnFunc(ctx, userID, ids, archivedAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationRepositoryMock_SetArchived_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetArchived'
+type NotificationRepositoryMock_SetArchived_Call struct {
+	*mock.Call
+}
+
+// SetArchived is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - ids []uuid.UUID
+//   - archivedAt *time.Time
+func (_e *NotificationRepositoryMock_Expecter) SetArchived(ctx any, userID any, ids any, archivedAt any) *NotificationRepositoryMock_SetArchived_Call {
+	return &NotificationRepositoryMock_SetArchived_Call{Call: _e.mock.On("SetArchived", ctx, userID, ids, archivedAt)}
+}
+
+func (_c *NotificationRepositoryMock_SetArchived_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, archivedAt *time.Time)) *NotificationRepositoryMock_SetArchived_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 *time.Time
+		if args[3] != nil {
+			arg3 = args[3].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_SetArchived_Call) Return(err error) *NotificationRepositoryMock_SetArchived_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_SetArchived_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, archivedAt *time.Time) error) *NotificationRepositoryMock_SetArchived_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetRead provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) SetRead(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, readAt *time.Time) error {
+	ret := _mock.Called(ctx, userID, ids, readAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetRead")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, *time.Time) error); ok {
+		r0 = returnFunc(ctx, userID, ids, readAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationRepositoryMock_SetRead_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetRead'
+type NotificationRepositoryMock_SetRead_Call struct {
+	*mock.Call
+}
+
+// SetRead is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - ids []uuid.UUID
+//   - readAt *time.Time
+func (_e *NotificationRepositoryMock_Expecter) SetRead(ctx any, userID any, ids any, readAt any) *NotificationRepositoryMock_SetRead_Call {
+	return &NotificationRepositoryMock_SetRead_Call{Call: _e.mock.On("SetRead", ctx, userID, ids, readAt)}
+}
+
+func (_c *NotificationRepositoryMock_SetRead_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, readAt *time.Time)) *NotificationRepositoryMock_SetRead_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 *time.Time
+		if args[3] != nil {
+			arg3 = args[3].(*time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_SetRead_Call) Return(err error) *NotificationRepositoryMock_SetRead_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_SetRead_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, readAt *time.Time) error) *NotificationRepositoryMock_SetRead_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Settings provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) Settings(ctx context.Context, userIDs []uuid.UUID) (map[uuid.UUID]*ent.NotificationSetting, error) {
+	ret := _mock.Called(ctx, userIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Settings")
+	}
+
+	var r0 map[uuid.UUID]*ent.NotificationSetting
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID]*ent.NotificationSetting, error)); ok {
+		return returnFunc(ctx, userIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID]*ent.NotificationSetting); ok {
+		r0 = returnFunc(ctx, userIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]*ent.NotificationSetting)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationRepositoryMock_Settings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Settings'
+type NotificationRepositoryMock_Settings_Call struct {
+	*mock.Call
+}
+
+// Settings is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userIDs []uuid.UUID
+func (_e *NotificationRepositoryMock_Expecter) Settings(ctx any, userIDs any) *NotificationRepositoryMock_Settings_Call {
+	return &NotificationRepositoryMock_Settings_Call{Call: _e.mock.On("Settings", ctx, userIDs)}
+}
+
+func (_c *NotificationRepositoryMock_Settings_Call) Run(run func(ctx context.Context, userIDs []uuid.UUID)) *NotificationRepositoryMock_Settings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_Settings_Call) Return(uUIDToNotificationSetting map[uuid.UUID]*ent.NotificationSetting, err error) *NotificationRepositoryMock_Settings_Call {
+	_c.Call.Return(uUIDToNotificationSetting, err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_Settings_Call) RunAndReturn(run func(ctx context.Context, userIDs []uuid.UUID) (map[uuid.UUID]*ent.NotificationSetting, error)) *NotificationRepositoryMock_Settings_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Snooze provides a mock function for the type NotificationRepositoryMock
+func (_mock *NotificationRepositoryMock) Snooze(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, until time.Time) error {
+	ret := _mock.Called(ctx, userID, ids, until)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Snooze")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []uuid.UUID, time.Time) error); ok {
+		r0 = returnFunc(ctx, userID, ids, until)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationRepositoryMock_Snooze_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Snooze'
+type NotificationRepositoryMock_Snooze_Call struct {
+	*mock.Call
+}
+
+// Snooze is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - ids []uuid.UUID
+//   - until time.Time
+func (_e *NotificationRepositoryMock_Expecter) Snooze(ctx any, userID any, ids any, until any) *NotificationRepositoryMock_Snooze_Call {
+	return &NotificationRepositoryMock_Snooze_Call{Call: _e.mock.On("Snooze", ctx, userID, ids, until)}
+}
+
+func (_c *NotificationRepositoryMock_Snooze_Call) Run(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, until time.Time)) *NotificationRepositoryMock_Snooze_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_Snooze_Call) Return(err error) *NotificationRepositoryMock_Snooze_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationRepositoryMock_Snooze_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, until time.Time) error) *NotificationRepositoryMock_Snooze_Call {
 	_c.Call.Return(run)
 	return _c
 }

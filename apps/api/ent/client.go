@@ -20,6 +20,7 @@ import (
 	"github.com/unbindapp/zigzag-api/ent/attachment"
 	"github.com/unbindapp/zigzag-api/ent/comment"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/document"
 	"github.com/unbindapp/zigzag-api/ent/favorite"
 	"github.com/unbindapp/zigzag-api/ent/importjob"
@@ -74,6 +75,8 @@ type Client struct {
 	Comment *CommentClient
 	// Cycle is the client for interacting with the Cycle builders.
 	Cycle *CycleClient
+	// CycleScopeHistory is the client for interacting with the CycleScopeHistory builders.
+	CycleScopeHistory *CycleScopeHistoryClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// Favorite is the client for interacting with the Favorite builders.
@@ -163,6 +166,7 @@ func (c *Client) init() {
 	c.Attachment = NewAttachmentClient(c.config)
 	c.Comment = NewCommentClient(c.config)
 	c.Cycle = NewCycleClient(c.config)
+	c.CycleScopeHistory = NewCycleScopeHistoryClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.Favorite = NewFavoriteClient(c.config)
 	c.ImportJob = NewImportJobClient(c.config)
@@ -296,6 +300,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Attachment:             NewAttachmentClient(cfg),
 		Comment:                NewCommentClient(cfg),
 		Cycle:                  NewCycleClient(cfg),
+		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
@@ -356,6 +361,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Attachment:             NewAttachmentClient(cfg),
 		Comment:                NewCommentClient(cfg),
 		Cycle:                  NewCycleClient(cfg),
+		CycleScopeHistory:      NewCycleScopeHistoryClient(cfg),
 		Document:               NewDocumentClient(cfg),
 		Favorite:               NewFavoriteClient(cfg),
 		ImportJob:              NewImportJobClient(cfg),
@@ -422,14 +428,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.Document, c.Favorite, c.ImportJob,
-		c.Initiative, c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory,
-		c.IssueMove, c.IssueRelation, c.JWTKey, c.Label, c.Notification,
-		c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant,
-		c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken, c.Project,
-		c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
-		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
-		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
+		c.Favorite, c.ImportJob, c.Initiative, c.InitiativePost, c.Invitation, c.Issue,
+		c.IssueHistory, c.IssueMove, c.IssueRelation, c.JWTKey, c.Label,
+		c.Notification, c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient,
+		c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken,
+		c.Project, c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus,
+		c.Reaction, c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload,
+		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -439,14 +445,14 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.Document, c.Favorite, c.ImportJob,
-		c.Initiative, c.InitiativePost, c.Invitation, c.Issue, c.IssueHistory,
-		c.IssueMove, c.IssueRelation, c.JWTKey, c.Label, c.Notification,
-		c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant,
-		c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken, c.Project,
-		c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus, c.Reaction,
-		c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload, c.User, c.View,
-		c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
+		c.APIKey, c.Attachment, c.Comment, c.Cycle, c.CycleScopeHistory, c.Document,
+		c.Favorite, c.ImportJob, c.Initiative, c.InitiativePost, c.Invitation, c.Issue,
+		c.IssueHistory, c.IssueMove, c.IssueRelation, c.JWTKey, c.Label,
+		c.Notification, c.NotificationSetting, c.OAuthAuthorizationCode, c.OAuthClient,
+		c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PasswordResetToken,
+		c.Project, c.ProjectLink, c.ProjectMilestone, c.ProjectPost, c.ProjectStatus,
+		c.Reaction, c.SystemSetting, c.Team, c.TeamMember, c.Template, c.Upload,
+		c.User, c.View, c.Webhook, c.WorkflowState, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -463,6 +469,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Comment.mutate(ctx, m)
 	case *CycleMutation:
 		return c.Cycle.mutate(ctx, m)
+	case *CycleScopeHistoryMutation:
+		return c.CycleScopeHistory.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
 	case *FavoriteMutation:
@@ -1257,6 +1265,22 @@ func (c *CycleClient) QueryIssues(_m *Cycle) *IssueQuery {
 	return query
 }
 
+// QueryScopeHistory queries the scope_history edge of a Cycle.
+func (c *CycleClient) QueryScopeHistory(_m *Cycle) *CycleScopeHistoryQuery {
+	query := (&CycleScopeHistoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cycle.Table, cycle.FieldID, id),
+			sqlgraph.To(cyclescopehistory.Table, cyclescopehistory.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, cycle.ScopeHistoryTable, cycle.ScopeHistoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CycleClient) Hooks() []Hook {
 	return c.hooks.Cycle
@@ -1279,6 +1303,155 @@ func (c *CycleClient) mutate(ctx context.Context, m *CycleMutation) (Value, erro
 		return (&CycleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Cycle mutation op: %q", m.Op())
+	}
+}
+
+// CycleScopeHistoryClient is a client for the CycleScopeHistory schema.
+type CycleScopeHistoryClient struct {
+	config
+}
+
+// NewCycleScopeHistoryClient returns a client for the CycleScopeHistory from the given config.
+func NewCycleScopeHistoryClient(c config) *CycleScopeHistoryClient {
+	return &CycleScopeHistoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `cyclescopehistory.Hooks(f(g(h())))`.
+func (c *CycleScopeHistoryClient) Use(hooks ...Hook) {
+	c.hooks.CycleScopeHistory = append(c.hooks.CycleScopeHistory, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `cyclescopehistory.Intercept(f(g(h())))`.
+func (c *CycleScopeHistoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CycleScopeHistory = append(c.inters.CycleScopeHistory, interceptors...)
+}
+
+// Create returns a builder for creating a CycleScopeHistory entity.
+func (c *CycleScopeHistoryClient) Create() *CycleScopeHistoryCreate {
+	mutation := newCycleScopeHistoryMutation(c.config, OpCreate)
+	return &CycleScopeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CycleScopeHistory entities.
+func (c *CycleScopeHistoryClient) CreateBulk(builders ...*CycleScopeHistoryCreate) *CycleScopeHistoryCreateBulk {
+	return &CycleScopeHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CycleScopeHistoryClient) MapCreateBulk(slice any, setFunc func(*CycleScopeHistoryCreate, int)) *CycleScopeHistoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CycleScopeHistoryCreateBulk{err: fmt.Errorf("calling to CycleScopeHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CycleScopeHistoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CycleScopeHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CycleScopeHistory.
+func (c *CycleScopeHistoryClient) Update() *CycleScopeHistoryUpdate {
+	mutation := newCycleScopeHistoryMutation(c.config, OpUpdate)
+	return &CycleScopeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CycleScopeHistoryClient) UpdateOne(_m *CycleScopeHistory) *CycleScopeHistoryUpdateOne {
+	mutation := newCycleScopeHistoryMutation(c.config, OpUpdateOne, withCycleScopeHistory(_m))
+	return &CycleScopeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CycleScopeHistoryClient) UpdateOneID(id uuid.UUID) *CycleScopeHistoryUpdateOne {
+	mutation := newCycleScopeHistoryMutation(c.config, OpUpdateOne, withCycleScopeHistoryID(id))
+	return &CycleScopeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CycleScopeHistory.
+func (c *CycleScopeHistoryClient) Delete() *CycleScopeHistoryDelete {
+	mutation := newCycleScopeHistoryMutation(c.config, OpDelete)
+	return &CycleScopeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CycleScopeHistoryClient) DeleteOne(_m *CycleScopeHistory) *CycleScopeHistoryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CycleScopeHistoryClient) DeleteOneID(id uuid.UUID) *CycleScopeHistoryDeleteOne {
+	builder := c.Delete().Where(cyclescopehistory.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CycleScopeHistoryDeleteOne{builder}
+}
+
+// Query returns a query builder for CycleScopeHistory.
+func (c *CycleScopeHistoryClient) Query() *CycleScopeHistoryQuery {
+	return &CycleScopeHistoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCycleScopeHistory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CycleScopeHistory entity by its id.
+func (c *CycleScopeHistoryClient) Get(ctx context.Context, id uuid.UUID) (*CycleScopeHistory, error) {
+	return c.Query().Where(cyclescopehistory.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CycleScopeHistoryClient) GetX(ctx context.Context, id uuid.UUID) *CycleScopeHistory {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCycle queries the cycle edge of a CycleScopeHistory.
+func (c *CycleScopeHistoryClient) QueryCycle(_m *CycleScopeHistory) *CycleQuery {
+	query := (&CycleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cyclescopehistory.Table, cyclescopehistory.FieldID, id),
+			sqlgraph.To(cycle.Table, cycle.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, cyclescopehistory.CycleTable, cyclescopehistory.CycleColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CycleScopeHistoryClient) Hooks() []Hook {
+	return c.hooks.CycleScopeHistory
+}
+
+// Interceptors returns the client interceptors.
+func (c *CycleScopeHistoryClient) Interceptors() []Interceptor {
+	return c.inters.CycleScopeHistory
+}
+
+func (c *CycleScopeHistoryClient) mutate(ctx context.Context, m *CycleScopeHistoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CycleScopeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CycleScopeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CycleScopeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CycleScopeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CycleScopeHistory mutation op: %q", m.Op())
 	}
 }
 
@@ -9038,22 +9211,23 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		APIKey, Attachment, Comment, Cycle, Document, Favorite, ImportJob, Initiative,
-		InitiativePost, Invitation, Issue, IssueHistory, IssueMove, IssueRelation,
-		JWTKey, Label, Notification, NotificationSetting, OAuthAuthorizationCode,
-		OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken,
-		Project, ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
-		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
-		WorkflowState, Workspace, WorkspaceMember []ent.Hook
+		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
+		ImportJob, Initiative, InitiativePost, Invitation, Issue, IssueHistory,
+		IssueMove, IssueRelation, JWTKey, Label, Notification, NotificationSetting,
+		OAuthAuthorizationCode, OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token,
+		PasswordResetToken, Project, ProjectLink, ProjectMilestone, ProjectPost,
+		ProjectStatus, Reaction, SystemSetting, Team, TeamMember, Template, Upload,
+		User, View, Webhook, WorkflowState, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
-		APIKey, Attachment, Comment, Cycle, Document, Favorite, ImportJob, Initiative,
-		InitiativePost, Invitation, Issue, IssueHistory, IssueMove, IssueRelation,
-		JWTKey, Label, Notification, NotificationSetting, OAuthAuthorizationCode,
-		OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token, PasswordResetToken,
-		Project, ProjectLink, ProjectMilestone, ProjectPost, ProjectStatus, Reaction,
-		SystemSetting, Team, TeamMember, Template, Upload, User, View, Webhook,
-		WorkflowState, Workspace, WorkspaceMember []ent.Interceptor
+		APIKey, Attachment, Comment, Cycle, CycleScopeHistory, Document, Favorite,
+		ImportJob, Initiative, InitiativePost, Invitation, Issue, IssueHistory,
+		IssueMove, IssueRelation, JWTKey, Label, Notification, NotificationSetting,
+		OAuthAuthorizationCode, OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token,
+		PasswordResetToken, Project, ProjectLink, ProjectMilestone, ProjectPost,
+		ProjectStatus, Reaction, SystemSetting, Team, TeamMember, Template, Upload,
+		User, View, Webhook, WorkflowState, Workspace,
+		WorkspaceMember []ent.Interceptor
 	}
 )
 

@@ -2,6 +2,16 @@
 
 package import_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // ImportServiceInterface ...
 type ImportServiceInterface interface {
+	ImportLinear(ctx context.Context, userID uuid.UUID, input *ImportLinearInput) (*schema.ImportReport, error)
+	List(ctx context.Context, userID uuid.UUID, input *ListImportsInput) ([]*models.ImportResponse, error)
 }

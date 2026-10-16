@@ -2,6 +2,7 @@ package importjob_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
@@ -36,4 +37,21 @@ func (self *ImportJobRepository) ResolveWorkspaceOfImportJob(ctx context.Context
 		return uuid.Nil, err
 	}
 	return found.WorkspaceID, nil
+}
+
+func (self *ImportJobRepository) Finish(ctx context.Context, id uuid.UUID, status schema.ImportStatus, report *schema.ImportReport, finishedAt time.Time) (*ent.ImportJob, error) {
+	return self.base.DB.ImportJob.UpdateOneID(id).
+		SetStatus(status).
+		SetReport(report).
+		SetFinishedAt(finishedAt).
+		Save(ctx)
+}
+
+func (self *ImportJobRepository) ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, limit int) ([]*ent.ImportJob, error) {
+	return self.base.DB.ImportJob.Query().
+		Where(importjob.WorkspaceID(workspaceID)).
+		WithStartedBy().
+		Order(ent.Desc(importjob.FieldCreatedAt)).
+		Limit(limit).
+		All(ctx)
 }

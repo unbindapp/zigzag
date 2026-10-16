@@ -14,6 +14,9 @@ import (
 
 // UserRepositoryInterface ...
 type UserRepositoryInterface interface {
+	GetByEmails(ctx context.Context, emails []string) ([]*ent.User, error)
+	DisplayNamesWithPrefixes(ctx context.Context, prefixes []string) ([]string, error)
+	CreatePlaceholders(ctx context.Context, tx repository.TxInterface, users []ImportedUser) error
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateUserInput) (*ent.User, error)
 	UpdatePassword(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, password string) error
 	Update(ctx context.Context, tx repository.TxInterface, userID uuid.UUID, input *UpdateUserInput) (*ent.User, error)

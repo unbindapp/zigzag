@@ -4,15 +4,72 @@ package issue_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
+	"github.com/unbindapp/zigzag-api/ent/schema"
+	"github.com/unbindapp/zigzag-api/internal/models"
 	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
 // IssueRepositoryInterface ...
 type IssueRepositoryInterface interface {
+	// IssueKeys loads only the identity columns of every issue in the workspace.
+	IssueKeys(ctx context.Context, workspaceID uuid.UUID) ([]*ent.Issue, error)
+	ImportedAttachments(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.Attachment, error)
+	ImportedRelations(ctx context.Context, workspaceID uuid.UUID, source string) ([]*ent.IssueRelation, error)
+	IssueIDsWithImportHistory(ctx context.Context, workspaceID uuid.UUID, source string) ([]uuid.UUID, error)
+	ImportIssues(ctx context.Context, tx repository.TxInterface, workspaceID uuid.UUID, source string, issues []ImportedIssue) error
+	SetParents(ctx context.Context, tx repository.TxInterface, parents []ImportedParent) error
+	ImportAttachments(ctx context.Context, tx repository.TxInterface, attachments []ImportedAttachment) error
+	ImportRelations(ctx context.Context, tx repository.TxInterface, relations []ImportedRelation) error
+	ImportHistory(ctx context.Context, tx repository.TxInterface, history []ImportedHistory) error
+	List(ctx context.Context, filter *ListFilter) ([]*ent.Issue, int, error)
+	TeamsForAutomation(ctx context.Context) ([]*ent.Team, error)
+	StaleOpenIssues(ctx context.Context, teamID uuid.UUID, updatedBefore time.Time) ([]*ent.Issue, error)
+	ClosedIssuesBefore(ctx context.Context, teamID uuid.UUID, closedBefore time.Time) ([]*ent.Issue, error)
+	TrashedBefore(ctx context.Context, before time.Time) ([]uuid.UUID, error)
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateIssueInput) (*ent.Issue, error)
+	Update(ctx context.Context, tx repository.TxInterface, id uuid.UUID, fields *IssueFields) error
+	SetLabels(ctx context.Context, tx repository.TxInterface, id uuid.UUID, add, remove []uuid.UUID) error
+	RecordMove(ctx context.Context, tx repository.TxInterface, issueID, oldTeamID uuid.UUID, oldNumber int) error
+	Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Issue, error)
+	GetWithEdges(ctx context.Context, tx repository.TxInterface, id uuid.UUID) (*ent.Issue, error)
+	// GetManyWithEdges keeps the order of ids and skips ids that do not exist.
+	GetManyWithEdges(ctx context.Context, tx repository.TxInterface, ids []uuid.UUID) ([]*ent.Issue, error)
 	ResolveWorkspaceOfIssue(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	FindByIdentifier(ctx context.Context, workspaceIDs []uuid.UUID, key string, number int) ([]uuid.UUID, error)
+	Counts(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]models.IssueCounts, error)
+	Children(ctx context.Context, parentID uuid.UUID) ([]*ent.Issue, error)
+	AncestorIDs(ctx context.Context, tx repository.TxInterface, id uuid.UUID) ([]uuid.UUID, error)
+	TopSortOrder(ctx context.Context, tx repository.TxInterface, stateID uuid.UUID) (float64, error)
+	LabelsByIDs(ctx context.Context, ids []uuid.UUID) ([]*ent.Label, error)
+	GetMilestone(ctx context.Context, id uuid.UUID) (*ent.ProjectMilestone, error)
+	GetProject(ctx context.Context, id uuid.UUID) (*ent.Project, error)
+	CreateHistory(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, actorID *uuid.UUID, source schema.HistorySource, changes []schema.FieldChange) error
+	ListHistory(ctx context.Context, issueID uuid.UUID, offset, limit int) ([]*ent.IssueHistory, error)
+	CreateRelation(ctx context.Context, tx repository.TxInterface, issueID, relatedIssueID uuid.UUID, relationType schema.IssueRelationType) (*ent.IssueRelation, error)
+	RelationExists(ctx context.Context, a, b uuid.UUID, relationType schema.IssueRelationType) (bool, error)
+	GetRelation(ctx context.Context, id uuid.UUID) (*ent.IssueRelation, error)
+	DeleteRelation(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
+	Relations(ctx context.Context, issueID uuid.UUID) (outgoing, incoming []*ent.IssueRelation, err error)
+	CreateAttachment(ctx context.Context, tx repository.TxInterface, input *CreateAttachmentInput) (*ent.Attachment, error)
+	GetAttachment(ctx context.Context, id uuid.UUID) (*ent.Attachment, error)
+	UpdateAttachment(ctx context.Context, id uuid.UUID, title, subtitle *string) (*ent.Attachment, error)
+	DeleteAttachment(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
+	Attachments(ctx context.Context, issueID uuid.UUID) ([]*ent.Attachment, error)
+	Subscribe(ctx context.Context, tx repository.TxInterface, issueID uuid.UUID, userIDs ...uuid.UUID) error
+	Unsubscribe(ctx context.Context, issueID, userID uuid.UUID) error
+	Subscribers(ctx context.Context, issueID uuid.UUID) ([]*ent.User, error)
+	SubscriberIDs(ctx context.Context, issueID uuid.UUID) ([]uuid.UUID, error)
+	AddReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error
+	RemoveReaction(ctx context.Context, userID uuid.UUID, emoji string, target ReactionTarget) error
+	Reactions(ctx context.Context, target ReactionTarget) ([]*ent.Reaction, error)
+	ReactionsForComments(ctx context.Context, commentIDs []uuid.UUID) (map[uuid.UUID][]*ent.Reaction, error)
+	IssueOfComment(ctx context.Context, commentID uuid.UUID) (uuid.UUID, error)
+	WorkspaceOfProjectUpdate(ctx context.Context, updateID uuid.UUID) (uuid.UUID, error)
+	// Postgres only: uses pg_trgm.
+	Search(ctx context.Context, workspaceID uuid.UUID, teamIDs []uuid.UUID, query string, limit int) ([]uuid.UUID, error)
 }

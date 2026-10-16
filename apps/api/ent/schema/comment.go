@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,8 @@ func (Comment) Fields() []ent.Field {
 		field.Time("edited_at").Optional().Nillable(),
 		field.Time("resolved_at").Optional().Nillable(),
 		field.UUID("resolved_by_id", uuid.UUID{}).Optional().Nillable(),
+		field.String("import_source").Optional(),
+		field.String("import_external_id").Optional(),
 	}
 }
 
@@ -42,7 +45,12 @@ func (Comment) Edges() []ent.Edge {
 }
 
 func (Comment) Indexes() []ent.Index {
-	return []ent.Index{index.Fields("issue_id", "created_at")}
+	return []ent.Index{
+		index.Fields("issue_id", "created_at"),
+		index.Fields("issue_id", "import_source", "import_external_id").
+			Unique().
+			Annotations(entsql.IndexWhere("import_source IS NOT NULL AND import_external_id IS NOT NULL")),
+	}
 }
 
 func (Comment) Annotations() []schema.Annotation { return table("comments") }

@@ -6,37 +6,51 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent"
 	"github.com/unbindapp/zigzag-api/ent/document"
-	repository "github.com/unbindapp/zigzag-api/internal/repositories"
 )
 
-type CreateDocumentInput struct {
-	WorkspaceID  uuid.UUID
-	Title        string
-	Slug         string
-	Icon         string
-	Content      string
-	ProjectID    *uuid.UUID
-	InitiativeID *uuid.UUID
-	IssueID      *uuid.UUID
-	CreatorID    *uuid.UUID
+type ListDocumentsFilter struct {
+	WorkspaceID     uuid.UUID
+	ProjectID       *uuid.UUID
+	InitiativeID    *uuid.UUID
+	IssueID         *uuid.UUID
+	Query           string
+	IncludeArchived bool
+	IncludeTrashed  bool
 }
 
-func (self *DocumentRepository) Create(ctx context.Context, tx repository.TxInterface, input *CreateDocumentInput) (*ent.Document, error) {
-	return self.base.Client(tx).Document.Create().
-		SetWorkspaceID(input.WorkspaceID).
-		SetTitle(input.Title).
-		SetSlug(input.Slug).
-		SetIcon(input.Icon).
-		SetContent(input.Content).
-		SetNillableProjectID(input.ProjectID).
-		SetNillableInitiativeID(input.InitiativeID).
-		SetNillableIssueID(input.IssueID).
-		SetNillableCreatorID(input.CreatorID).
-		Save(ctx)
+func withDocumentEdges(q *ent.DocumentQuery) *ent.DocumentQuery {
+	return q.WithProject().WithInitiative().WithCreator().WithUpdatedBy()
+}
+
+func (self *DocumentRepository) List(ctx context.Context, filter *ListDocumentsFilter) ([]*ent.Document, error) {
+	q := withDocumentEdges(self.base.DB.Document.Query().Where(document.WorkspaceID(filter.WorkspaceID)))
+	if !filter.IncludeArchived {
+		q.Where(document.ArchivedAtIsNil())
+	}
+	if !filter.IncludeTrashed {
+		q.Where(document.TrashedAtIsNil())
+	}
+	if filter.ProjectID != nil {
+		q.Where(document.ProjectID(*filter.ProjectID))
+	}
+	if filter.InitiativeID != nil {
+		q.Where(document.InitiativeID(*filter.InitiativeID))
+	}
+	if filter.IssueID != nil {
+		q.Where(document.IssueID(*filter.IssueID))
+	}
+	if filter.Query != "" {
+		q.Where(document.TitleContainsFold(filter.Query))
+	}
+	return q.Order(ent.Desc(document.FieldUpdatedAt)).All(ctx)
 }
 
 func (self *DocumentRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.Document, error) {
-	return self.base.DB.Document.Get(ctx, id)
+	return withDocumentEdges(self.base.DB.Document.Query().Where(document.ID(id))).Only(ctx)
+}
+
+func (self *DocumentRepository) GetBySlug(ctx context.Context, workspaceID uuid.UUID, slug string) (*ent.Document, error) {
+	return withDocumentEdges(self.base.DB.Document.Query().Where(document.WorkspaceID(workspaceID), document.Slug(slug))).Only(ctx)
 }
 
 func (self *DocumentRepository) ResolveWorkspaceOfDocument(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {

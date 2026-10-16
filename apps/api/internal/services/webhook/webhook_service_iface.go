@@ -2,6 +2,20 @@
 
 package webhook_service
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/unbindapp/zigzag-api/internal/models"
+)
+
 // WebhookServiceInterface ...
 type WebhookServiceInterface interface {
+	List(ctx context.Context, userID uuid.UUID, input *ListWebhooksInput) ([]*models.WebhookResponse, error)
+	Create(ctx context.Context, userID uuid.UUID, input *CreateWebhookInput) (*models.WebhookCreatedResponse, error)
+	Update(ctx context.Context, userID uuid.UUID, input *UpdateWebhookInput) (*models.WebhookResponse, error)
+	Delete(ctx context.Context, userID uuid.UUID, input *WebhookRefInput) error
+	Test(ctx context.Context, userID uuid.UUID, input *WebhookRefInput) (*models.WebhookTestResponse, error)
+	// Emit returns before any endpoint is called.
+	Emit(ctx context.Context, workspaceID uuid.UUID, event string, payload any) error
 }

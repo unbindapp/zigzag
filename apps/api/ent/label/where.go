@@ -106,6 +106,11 @@ func GroupSingleSelect(v bool) predicate.Label {
 	return predicate.Label(sql.FieldEQ(FieldGroupSingleSelect, v))
 }
 
+// SortOrder applies equality check predicate on the "sort_order" field. It's identical to SortOrderEQ.
+func SortOrder(v float64) predicate.Label {
+	return predicate.Label(sql.FieldEQ(FieldSortOrder, v))
+}
+
 // ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
 func ArchivedAt(v time.Time) predicate.Label {
 	return predicate.Label(sql.FieldEQ(FieldArchivedAt, v))
@@ -494,6 +499,46 @@ func GroupSingleSelectEQ(v bool) predicate.Label {
 // GroupSingleSelectNEQ applies the NEQ predicate on the "group_single_select" field.
 func GroupSingleSelectNEQ(v bool) predicate.Label {
 	return predicate.Label(sql.FieldNEQ(FieldGroupSingleSelect, v))
+}
+
+// SortOrderEQ applies the EQ predicate on the "sort_order" field.
+func SortOrderEQ(v float64) predicate.Label {
+	return predicate.Label(sql.FieldEQ(FieldSortOrder, v))
+}
+
+// SortOrderNEQ applies the NEQ predicate on the "sort_order" field.
+func SortOrderNEQ(v float64) predicate.Label {
+	return predicate.Label(sql.FieldNEQ(FieldSortOrder, v))
+}
+
+// SortOrderIn applies the In predicate on the "sort_order" field.
+func SortOrderIn(vs ...float64) predicate.Label {
+	return predicate.Label(sql.FieldIn(FieldSortOrder, vs...))
+}
+
+// SortOrderNotIn applies the NotIn predicate on the "sort_order" field.
+func SortOrderNotIn(vs ...float64) predicate.Label {
+	return predicate.Label(sql.FieldNotIn(FieldSortOrder, vs...))
+}
+
+// SortOrderGT applies the GT predicate on the "sort_order" field.
+func SortOrderGT(v float64) predicate.Label {
+	return predicate.Label(sql.FieldGT(FieldSortOrder, v))
+}
+
+// SortOrderGTE applies the GTE predicate on the "sort_order" field.
+func SortOrderGTE(v float64) predicate.Label {
+	return predicate.Label(sql.FieldGTE(FieldSortOrder, v))
+}
+
+// SortOrderLT applies the LT predicate on the "sort_order" field.
+func SortOrderLT(v float64) predicate.Label {
+	return predicate.Label(sql.FieldLT(FieldSortOrder, v))
+}
+
+// SortOrderLTE applies the LTE predicate on the "sort_order" field.
+func SortOrderLTE(v float64) predicate.Label {
+	return predicate.Label(sql.FieldLTE(FieldSortOrder, v))
 }
 
 // ArchivedAtEQ applies the EQ predicate on the "archived_at" field.

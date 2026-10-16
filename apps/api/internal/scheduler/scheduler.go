@@ -35,8 +35,14 @@ type TrashPurger interface {
 	PurgeTrashed(ctx context.Context) error
 }
 
+type IssueAutomation interface {
+	AutoCloseStaleIssues(ctx context.Context) error
+	AutoArchiveDoneIssues(ctx context.Context) error
+}
+
 type NotificationMailer interface {
 	SendEmailBatch(ctx context.Context) error
+	NotifyDueSoon(ctx context.Context) error
 }
 
 type Dependencies struct {
@@ -45,6 +51,7 @@ type Dependencies struct {
 	Invitations    InvitationCleaner
 	PasswordResets PasswordResetCleaner
 	Trash          TrashPurger
+	Automation     IssueAutomation
 	Notifications  NotificationMailer
 }
 
@@ -55,7 +62,10 @@ func Jobs(deps Dependencies) []Job {
 		{Name: "invitation expiry", Every: time.Hour, Run: deps.Invitations.CleanupExpiredInvitations},
 		{Name: "password reset expiry", Every: time.Hour, Run: deps.PasswordResets.CleanupPasswordResetTokens},
 		{Name: "trash purge", Every: time.Hour, Run: deps.Trash.PurgeTrashed},
+		{Name: "issue auto close", Every: time.Hour, Run: deps.Automation.AutoCloseStaleIssues},
+		{Name: "issue auto archive", Every: time.Hour, Run: deps.Automation.AutoArchiveDoneIssues},
 		{Name: "notification email", Every: 5 * time.Minute, Run: deps.Notifications.SendEmailBatch},
+		{Name: "issue due soon", Every: 24 * time.Hour, Run: deps.Notifications.NotifyDueSoon},
 	}
 }
 

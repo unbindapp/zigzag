@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/zigzag-api/ent/cycle"
+	"github.com/unbindapp/zigzag-api/ent/cyclescopehistory"
 	"github.com/unbindapp/zigzag-api/ent/issue"
 	"github.com/unbindapp/zigzag-api/ent/team"
 )
@@ -166,6 +167,21 @@ func (_c *CycleCreate) AddIssues(v ...*Issue) *CycleCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddIssueIDs(ids...)
+}
+
+// AddScopeHistoryIDs adds the "scope_history" edge to the CycleScopeHistory entity by IDs.
+func (_c *CycleCreate) AddScopeHistoryIDs(ids ...uuid.UUID) *CycleCreate {
+	_c.mutation.AddScopeHistoryIDs(ids...)
+	return _c
+}
+
+// AddScopeHistory adds the "scope_history" edges to the CycleScopeHistory entity.
+func (_c *CycleCreate) AddScopeHistory(v ...*CycleScopeHistory) *CycleCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddScopeHistoryIDs(ids...)
 }
 
 // Mutation returns the CycleMutation object of the builder.
@@ -338,6 +354,22 @@ func (_c *CycleCreate) createSpec() (*Cycle, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ScopeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   cycle.ScopeHistoryTable,
+			Columns: []string{cycle.ScopeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(cyclescopehistory.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -41,6 +41,8 @@ type Label struct {
 	IsGroup bool `json:"is_group,omitempty"`
 	// GroupSingleSelect holds the value of the "group_single_select" field.
 	GroupSingleSelect bool `json:"group_single_select,omitempty"`
+	// SortOrder holds the value of the "sort_order" field.
+	SortOrder float64 `json:"sort_order,omitempty"`
 	// ArchivedAt holds the value of the "archived_at" field.
 	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -137,6 +139,8 @@ func (*Label) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case label.FieldIsGroup, label.FieldGroupSingleSelect:
 			values[i] = new(sql.NullBool)
+		case label.FieldSortOrder:
+			values[i] = new(sql.NullFloat64)
 		case label.FieldName, label.FieldColor, label.FieldDescription:
 			values[i] = new(sql.NullString)
 		case label.FieldCreatedAt, label.FieldUpdatedAt, label.FieldArchivedAt:
@@ -225,6 +229,12 @@ func (_m *Label) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field group_single_select", values[i])
 			} else if value.Valid {
 				_m.GroupSingleSelect = value.Bool
+			}
+		case label.FieldSortOrder:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field sort_order", values[i])
+			} else if value.Valid {
+				_m.SortOrder = value.Float64
 			}
 		case label.FieldArchivedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -332,6 +342,9 @@ func (_m *Label) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("group_single_select=")
 	builder.WriteString(fmt.Sprintf("%v", _m.GroupSingleSelect))
+	builder.WriteString(", ")
+	builder.WriteString("sort_order=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SortOrder))
 	builder.WriteString(", ")
 	if v := _m.ArchivedAt; v != nil {
 		builder.WriteString("archived_at=")
