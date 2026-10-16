@@ -3,6 +3,7 @@ package notification_service
 import (
 	"context"
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -259,11 +260,21 @@ func (suite *NotificationServiceSuite) TestEmailBatchDoesNothingWithoutMail() {
 }
 
 func (suite *NotificationServiceSuite) pending(user *ent.User, title string) *ent.Notification {
-	row := &ent.Notification{ID: uuid.New(), UserID: user.ID, Title: title, Body: "Ada assigned you", CreatedAt: suite.now.Add(-10 * time.Minute)}
-	row.Edges.User = user
+	issue := &ent.Issue{ID: uuid.New(), Number: 12, Title: title, Edges: ent.IssueEdges{Team: &ent.Team{Key: "ENG"}}}
+	row := suite.row(user, issue, schema.NotificationIssueAssigned, "Assigned to you")
 	row.Edges.Actor = &ent.User{ID: suite.actorID, Name: "Ada Lovelace"}
-	row.Edges.Workspace = &ent.Workspace{ID: suite.workspaceID, Slug: "acme"}
-	row.Edges.Issue = &ent.Issue{ID: uuid.New(), Number: 12, Title: title, Edges: ent.IssueEdges{Team: &ent.Team{Key: "ENG"}}}
+	return row
+}
+
+func (suite *NotificationServiceSuite) row(user *ent.User, issue *ent.Issue, kind schema.NotificationType, body string) *ent.Notification {
+	row := &ent.Notification{ID: uuid.New(), UserID: user.ID, WorkspaceID: suite.workspaceID, Type: kind, Body: body, CreatedAt: suite.now.Add(-10 * time.Minute)}
+	row.Edges.User = user
+	row.Edges.Workspace = &ent.Workspace{ID: suite.workspaceID, Name: "Acme", Slug: "acme"}
+	if issue != nil {
+		row.IssueID = &issue.ID
+		row.Title = "ENG-" + strconv.Itoa(issue.Number) + " " + issue.Title
+		row.Edges.Issue = issue
+	}
 	return row
 }
 
@@ -271,7 +282,7 @@ func (suite *NotificationServiceSuite) TestEmailBatchSendsOneEmailPerUser() {
 	grace := &ent.User{ID: uuid.New(), Email: "grace@example.com", Active: true}
 	quiet := &ent.User{ID: uuid.New(), Email: "quiet@example.com", Active: true}
 	gone := &ent.User{ID: uuid.New(), Email: "gone@example.com", Active: false}
-	first, second := suite.pending(grace, "Fix login"), suite.pending(grace, "ENG-12 Ship it")
+	first, second := suite.pending(grace, "Fix login"), suite.pending(grace, "Ship it")
 	muted, inactive := suite.pending(quiet, "Muted"), suite.pending(gone, "Gone")
 
 	suite.MockEmail.EXPECT().Configured(suite.Ctx).Return(true, nil).Once()
@@ -289,9 +300,83 @@ func (suite *NotificationServiceSuite) TestEmailBatchSendsOneEmailPerUser() {
 	suite.MockNotificationRepo.EXPECT().MarkEmailed(suite.Ctx, []uuid.UUID{inactive.ID}, suite.now).Return(nil).Once()
 
 	suite.Require().NoError(suite.service.SendEmailBatch(suite.Ctx))
-	suite.Equal("2 new notifications", sent.Subject)
-	suite.Equal([]string{"ENG-12 Fix login: Ada assigned you (Ada Lovelace)", "ENG-12 Ship it: Ada assigned you (Ada Lovelace)"}, sent.Paragraphs)
-	suite.Equal("https://zigzag.example.com/acme/inbox", sent.ButtonURL)
+	suite.Equal("2 unread notifications", sent.Subject)
+	suite.Equal("You have 2 unread notifications in Acme.", sent.Heading)
+	suite.Equal([]string{"Fix login", "Ship it"}, []string{sent.Items[0].Title, sent.Items[1].Title})
+	suite.Equal(mail.Button{Label: "Open your inbox", URL: "https://zigzag.example.com/acme/inbox"}, sent.Button)
+	suite.Equal("https://zigzag.example.com/acme/settings/account/notifications", sent.Footer.ManageURL)
+	suite.Equal("Notification settings", sent.Footer.ManageLabel)
+}
+
+func (suite *NotificationServiceSuite) TestDigestGroupsNotificationsPerIssue() {
+	grace := &ent.User{ID: uuid.New(), Email: "grace@example.com", Active: true}
+	ada := &ent.User{ID: suite.actorID, Name: "Ada Lovelace"}
+	handle := &ent.User{ID: uuid.New(), DisplayName: "ngyekta"}
+	login := &ent.Issue{ID: uuid.New(), Number: 12, Title: "Fix login", Edges: ent.IssueEdges{Team: &ent.Team{Key: "ENG"}}}
+	billing := &ent.Issue{ID: uuid.New(), Number: 7, Title: "Billing page", Edges: ent.IssueEdges{Team: &ent.Team{Key: "ENG"}}}
+	project := &ent.Project{ID: uuid.New(), Name: "Launch", Slug: "launch-1a2b3c4d"}
+
+	with := func(row *ent.Notification, actor *ent.User) *ent.Notification {
+		row.Edges.Actor = actor
+		return row
+	}
+	projectLead := with(suite.row(grace, nil, schema.NotificationProjectLead, ""), ada)
+	projectLead.ProjectID = &project.ID
+	projectLead.Title = "You were made lead of Launch"
+	projectLead.Edges.Project = project
+	batch := []*ent.Notification{
+		with(suite.row(grace, login, schema.NotificationIssueAssigned, "Assigned to you"), handle),
+		with(suite.row(grace, billing, schema.NotificationIssueMentioned, "See @grace"), ada),
+		with(suite.row(grace, login, schema.NotificationIssueStateChanged, "Moved to Done"), ada),
+		with(suite.row(grace, login, schema.NotificationIssuePriorityChanged, "Priority set to High"), ada),
+		with(suite.row(grace, billing, schema.NotificationIssueCommented, "Looks good"), handle),
+		suite.row(grace, billing, schema.NotificationIssueDueSoon, "Due today"),
+		projectLead,
+	}
+
+	content := suite.service.digest(batch)
+
+	suite.Equal("You have 7 unread notifications in Acme.", content.Heading)
+	suite.Equal("ngyekta assigned the issue to you", content.Preheader)
+	suite.Require().Len(content.Items, 3)
+	suite.Equal(mail.Item{
+		Identifier: "ENG-12",
+		Title:      "Fix login",
+		URL:        "https://zigzag.example.com/acme/issue/ENG-12",
+		Lines: []mail.Line{
+			mail.ActorLine(handle.ID.String(), "ngyekta", "assigned the issue to you"),
+			mail.ActorLine(ada.ID.String(), "Ada Lovelace", "changed the status to Done"),
+			mail.ActorLine(ada.ID.String(), "Ada Lovelace", "changed the priority to High"),
+		},
+	}, content.Items[0])
+	suite.Equal([]mail.Line{
+		mail.ActorLine(ada.ID.String(), "Ada Lovelace", "mentioned you"),
+		mail.ActorLine(handle.ID.String(), "ngyekta", "commented"),
+		{Text: "Due today"},
+	}, content.Items[1].Lines)
+	suite.Equal(mail.Item{
+		Title: "Launch",
+		URL:   "https://zigzag.example.com/acme/project/launch-1a2b3c4d",
+		Lines: []mail.Line{mail.ActorLine(ada.ID.String(), "Ada Lovelace", "made you the project lead")},
+	}, content.Items[2])
+	suite.Empty(content.Note)
+}
+
+func (suite *NotificationServiceSuite) TestDigestCapsTheListAndNamesOneNotificationInTheSubject() {
+	grace := &ent.User{ID: uuid.New(), Email: "grace@example.com", Active: true}
+	single := suite.service.digest([]*ent.Notification{suite.pending(grace, "Fix login")})
+	suite.Equal("ENG-12 Fix login: Ada Lovelace assigned the issue to you", single.Subject)
+	suite.Equal("You have an unread notification in Acme.", single.Heading)
+
+	batch := make([]*ent.Notification, emailMaxListItems+3)
+	for i := range batch {
+		batch[i] = suite.pending(grace, "Issue "+strconv.Itoa(i))
+	}
+	batch[0].WorkspaceID = uuid.New()
+	capped := suite.service.digest(batch)
+	suite.Len(capped.Items, emailMaxListItems)
+	suite.Equal("And 3 more in your inbox.", capped.Note)
+	suite.Equal("You have 23 unread notifications.", capped.Heading, "a batch across workspaces names none")
 }
 
 func (suite *NotificationServiceSuite) TestEmailBatchKeepsUnsentNotificationsPending() {
@@ -300,9 +385,7 @@ func (suite *NotificationServiceSuite) TestEmailBatchKeepsUnsentNotificationsPen
 	suite.MockEmail.EXPECT().Configured(suite.Ctx).Return(true, nil).Once()
 	suite.MockNotificationRepo.EXPECT().PendingEmail(suite.Ctx, mock.Anything, mock.Anything).Return([]*ent.Notification{row}, nil).Once()
 	suite.MockNotificationRepo.EXPECT().Settings(suite.Ctx, mock.Anything).Return(map[uuid.UUID]*ent.NotificationSetting{}, nil).Once()
-	suite.MockEmail.EXPECT().Send(suite.Ctx, "grace@example.com", mock.MatchedBy(func(content mail.Content) bool {
-		return content.Subject == "ENG-12 Fix login: Ada assigned you (Ada Lovelace)"
-	})).Return(false, errors.New("relay down")).Once()
+	suite.MockEmail.EXPECT().Send(suite.Ctx, "grace@example.com", mock.Anything).Return(false, errors.New("relay down")).Once()
 
 	suite.Error(suite.service.SendEmailBatch(suite.Ctx))
 }

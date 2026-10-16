@@ -64,12 +64,11 @@ func (self *UserService) RequestPasswordReset(ctx context.Context, rawEmail stri
 	}
 	link += "?token=" + token
 	self.email.SendAsync(ctx, user.Email, mail.Content{
-		Subject:     "Reset your Zigzag password",
-		Heading:     "Reset your password",
-		Paragraphs:  []string{"Someone asked to reset the password for " + user.Email + ". Choose a new one with the link below."},
-		ButtonLabel: "Choose a new password",
-		ButtonURL:   link,
-		Note:        "The link works once and expires in one hour. If you did not ask for it, ignore this email and your password stays the same.",
+		Subject: "Reset your Zigzag password",
+		Heading: "Reset your password",
+		Intro:   []string{"Someone asked to reset the password for " + user.Email + ". Choose a new one with the button below."},
+		Button:  mail.Button{Label: "Reset password", URL: link},
+		Note:    "The link works once and expires in one hour. If you did not ask for it, ignore this email and your password stays the same.",
 	})
 	return nil
 }

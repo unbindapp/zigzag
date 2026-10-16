@@ -1,10 +1,17 @@
 {{.Heading}}
-{{range .Paragraphs}}
+{{range .Intro}}
 {{.}}
-{{end}}{{if .ButtonURL}}
-{{.ButtonLabel}}: {{.ButtonURL}}
+{{end}}{{range .Items}}
+{{if .Identifier}}{{.Identifier}} {{end}}{{.Title}}
+{{range .Lines}}    {{if .ActorName}}{{.ActorName}} {{end}}{{.Text}}
+{{end}}{{if .URL}}    {{.URL}}
+{{end}}{{end}}{{if .Button.URL}}
+{{.Button.Label}}
+{{.Button.URL}}
 {{end}}{{if .Note}}
 {{.Note}}
 {{end}}
 --
-Sent by {{.InstanceName}}{{if .InstanceURL}} at {{.InstanceURL}}{{end}}.
+{{.Footer.InstanceName}}{{if .Footer.InstanceURL}} {{.Footer.InstanceURL}}{{end}}
+{{if .Footer.ManageURL}}{{.Footer.ManageLabel}}: {{.Footer.ManageURL}}
+{{end -}}

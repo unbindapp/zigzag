@@ -94,11 +94,7 @@ func (self *EmailService) SendTest(ctx context.Context, requesterUserID uuid.UUI
 	if err != nil {
 		return err
 	}
-	sent, err := self.Send(ctx, user.Email, mail.Content{
-		Subject:    "Zigzag can send email",
-		Heading:    "Email is working",
-		Paragraphs: []string{"This is a test message from your Zigzag instance. Invitations, password resets and notifications are delivered the same way."},
-	})
+	sent, err := self.Send(ctx, user.Email, testContent(self.cfg.ExternalUIUrl))
 	if err != nil {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Sending failed: %v", err))
 	}
@@ -106,6 +102,22 @@ func (self *EmailService) SendTest(ctx context.Context, requesterUserID uuid.UUI
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Email is not configured")
 	}
 	return nil
+}
+
+func testContent(instanceURL string) mail.Content {
+	content := mail.Content{
+		Subject: "Zigzag can send email",
+		Heading: "Email is working",
+		Intro: []string{
+			"This test message came from your Zigzag instance, so its mail settings work.",
+			"Workspace invitations, password resets and notification digests are delivered the same way.",
+		},
+		Note: "You get this because you sent a test email from the instance settings.",
+	}
+	if instanceURL != "" {
+		content.Button = mail.Button{Label: "Open Zigzag", URL: instanceURL}
+	}
+	return content
 }
 
 func (self *EmailService) Configured(ctx context.Context) (bool, error) {
@@ -119,11 +131,11 @@ func (self *EmailService) Send(ctx context.Context, to string, content mail.Cont
 	if err != nil || !configured {
 		return false, err
 	}
-	if content.InstanceURL == "" {
-		content.InstanceURL = self.cfg.ExternalUIUrl
+	if content.Footer.InstanceURL == "" {
+		content.Footer.InstanceURL = self.cfg.ExternalUIUrl
 	}
-	if content.InstanceName == "" {
-		content.InstanceName = instanceName
+	if content.Footer.InstanceName == "" {
+		content.Footer.InstanceName = instanceName
 	}
 	msg, err := mail.Render(to, content)
 	if err != nil {

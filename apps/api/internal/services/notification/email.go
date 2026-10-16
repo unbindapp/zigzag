@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/zigzagapp-org/zigzag-api/ent"
+	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/log"
 	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
 	"github.com/zigzagapp-org/zigzag-api/internal/models"
@@ -83,44 +86,175 @@ func notificationIDs(notifications []*ent.Notification) []uuid.UUID {
 
 func (self *NotificationService) digest(batch []*ent.Notification) mail.Content {
 	count := len(batch)
-	subject := fmt.Sprintf("%d new notifications", count)
-	heading := fmt.Sprintf("You have %d unread notifications", count)
-	if count == 1 {
-		subject = digestLine(batch[0])
-		heading = "You have an unread notification"
-	}
-
-	lines := make([]string, 0, min(count, emailMaxListItems)+1)
-	for _, row := range batch[:min(count, emailMaxListItems)] {
-		lines = append(lines, digestLine(row))
+	items := self.digestItems(batch[:min(count, emailMaxListItems)])
+	content := mail.Content{
+		Subject:   digestSubject(count, items),
+		Preheader: lineSentence(items[0].Lines[0]),
+		Heading:   digestHeading(count, sharedWorkspace(batch)),
+		Items:     items,
 	}
 	if count > emailMaxListItems {
-		lines = append(lines, fmt.Sprintf("And %d more.", count-emailMaxListItems))
+		content.Note = fmt.Sprintf("And %d more in your inbox.", count-emailMaxListItems)
 	}
-
-	content := mail.Content{
-		Subject:    subject,
-		Heading:    heading,
-		Paragraphs: lines,
-		Note:       "You get these emails for unread notifications. Turn them off under Settings, Account, Notifications.",
+	workspace := batch[0].Edges.Workspace
+	if workspace == nil {
+		return content
 	}
-	if workspace := batch[0].Edges.Workspace; workspace != nil {
-		content.ButtonLabel = "Open inbox"
-		content.ButtonURL = strings.TrimRight(self.cfg.ExternalUIUrl, "/") + "/" + workspace.Slug + "/inbox"
-	}
+	base := self.workspaceURL(workspace)
+	content.Button = mail.Button{Label: "Open your inbox", URL: base + "/inbox"}
+	content.Footer.ManageURL = base + "/settings/account/notifications"
+	content.Footer.ManageLabel = "Notification settings"
 	return content
 }
 
-func digestLine(row *ent.Notification) string {
-	line := row.Title
-	if summary := models.TransformIssueSummary(row.Edges.Issue); summary != nil && summary.Identifier != "" && !strings.HasPrefix(line, summary.Identifier) {
-		line = summary.Identifier + " " + line
+func (self *NotificationService) workspaceURL(workspace *ent.Workspace) string {
+	return strings.TrimRight(self.cfg.ExternalUIUrl, "/") + "/" + workspace.Slug
+}
+
+func (self *NotificationService) digestItems(rows []*ent.Notification) []mail.Item {
+	items := []mail.Item{}
+	index := map[uuid.UUID]int{}
+	for _, row := range rows {
+		key := digestKey(row)
+		position, seen := index[key]
+		if !seen {
+			position = len(items)
+			index[key] = position
+			items = append(items, self.digestItem(row))
+		}
+		items[position].Lines = append(items[position].Lines, digestLine(row))
 	}
-	if row.Body != "" {
-		line += ": " + row.Body
+	return items
+}
+
+func digestKey(row *ent.Notification) uuid.UUID {
+	switch {
+	case row.IssueID != nil:
+		return *row.IssueID
+	case row.ProjectID != nil:
+		return *row.ProjectID
+	default:
+		return row.ID
 	}
-	if row.Edges.Actor != nil {
-		line += " (" + row.Edges.Actor.Name + ")"
+}
+
+func (self *NotificationService) digestItem(row *ent.Notification) mail.Item {
+	workspace := row.Edges.Workspace
+	if workspace == nil {
+		return mail.Item{Title: row.Title}
 	}
-	return line
+	if summary := models.TransformIssueSummary(row.Edges.Issue); summary != nil {
+		return mail.Item{Identifier: summary.Identifier, Title: summary.Title, URL: models.IssueURL(self.cfg.ExternalUIUrl, workspace.Slug, summary.Identifier)}
+	}
+	if project := row.Edges.Project; project != nil {
+		return mail.Item{Title: project.Name, URL: self.workspaceURL(workspace) + "/project/" + project.Slug}
+	}
+	return mail.Item{Title: row.Title, URL: self.workspaceURL(workspace) + "/inbox"}
+}
+
+func digestLine(row *ent.Notification) mail.Line {
+	sentence := digestSentence(row)
+	actor := row.Edges.Actor
+	if actor == nil {
+		return mail.Line{Text: upperFirst(sentence)}
+	}
+	return mail.ActorLine(actor.ID.String(), actorName(actor), sentence)
+}
+
+func actorName(actor *ent.User) string {
+	if actor.Name != "" {
+		return actor.Name
+	}
+	return actor.DisplayName
+}
+
+func digestSentence(row *ent.Notification) string {
+	switch row.Type {
+	case schema.NotificationIssueAssigned:
+		return "assigned the issue to you"
+	case schema.NotificationIssueUnassigned:
+		return "unassigned you from the issue"
+	case schema.NotificationIssueMentioned:
+		return "mentioned you"
+	case schema.NotificationCommentMentioned:
+		return "mentioned you in a comment"
+	case schema.NotificationIssueCommented:
+		return "commented"
+	case schema.NotificationIssueStateChanged:
+		return changedTo("status", row.Body, models.StateChangedBodyPrefix)
+	case schema.NotificationIssuePriorityChanged:
+		return changedTo("priority", row.Body, models.PriorityChangedBodyPrefix)
+	case schema.NotificationIssueBlocking:
+		if blocker, ok := strings.CutPrefix(row.Body, models.BlockedByBodyPrefix); ok {
+			return "marked the issue as blocked by " + blocker
+		}
+		return "changed what blocks the issue"
+	case schema.NotificationProjectUpdate:
+		return "posted a project update"
+	case schema.NotificationProjectMember:
+		return "added you to the project"
+	case schema.NotificationProjectLead:
+		return "made you the project lead"
+	case schema.NotificationReaction, schema.NotificationIssueDueSoon:
+		return lowerFirst(row.Body)
+	default:
+		return lowerFirst(row.Title)
+	}
+}
+
+func changedTo(field, body, prefix string) string {
+	value, ok := strings.CutPrefix(body, prefix)
+	if !ok || value == "" {
+		return "changed the " + field
+	}
+	return "changed the " + field + " to " + value
+}
+
+func digestSubject(count int, items []mail.Item) string {
+	if count > 1 {
+		return fmt.Sprintf("%d unread notifications", count)
+	}
+	item := items[0]
+	return strings.TrimSpace(item.Identifier+" "+item.Title) + ": " + lineSentence(item.Lines[0])
+}
+
+func digestHeading(count int, workspace *ent.Workspace) string {
+	heading := fmt.Sprintf("You have %d unread notifications", count)
+	if count == 1 {
+		heading = "You have an unread notification"
+	}
+	if workspace != nil {
+		heading += " in " + workspace.Name
+	}
+	return heading + "."
+}
+
+func sharedWorkspace(batch []*ent.Notification) *ent.Workspace {
+	first := batch[0].Edges.Workspace
+	for _, row := range batch {
+		if first == nil || row.WorkspaceID != first.ID {
+			return nil
+		}
+	}
+	return first
+}
+
+func lineSentence(line mail.Line) string {
+	return strings.TrimSpace(line.ActorName + " " + line.Text)
+}
+
+func upperFirst(text string) string {
+	if text == "" {
+		return text
+	}
+	first, size := utf8.DecodeRuneInString(text)
+	return string(unicode.ToUpper(first)) + text[size:]
+}
+
+func lowerFirst(text string) string {
+	if text == "" {
+		return text
+	}
+	first, size := utf8.DecodeRuneInString(text)
+	return string(unicode.ToLower(first)) + text[size:]
 }

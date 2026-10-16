@@ -109,8 +109,8 @@ func (suite *UserServiceSuite) TestRequestPasswordReset() {
 			}).Once()
 
 		suite.NoError(suite.service.RequestPasswordReset(suite.Ctx, "ada@example.com"))
-		suite.Contains(sent.ButtonURL, "https://zigzag.example.com/reset-password?token=")
-		token := sent.ButtonURL[len("https://zigzag.example.com/reset-password?token="):]
+		suite.Contains(sent.Button.URL, "https://zigzag.example.com/reset-password?token=")
+		token := sent.Button.URL[len("https://zigzag.example.com/reset-password?token="):]
 		suite.Equal(utils.HashToken(token), storedHash, "only the hash of the emailed token is stored")
 	})
 }

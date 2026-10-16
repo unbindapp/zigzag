@@ -1,34 +1,84 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>{{.Subject}}</title>
+<style>
+:root { color-scheme: light dark; supported-color-schemes: light dark; }
+body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+table { border-collapse: collapse; }
+img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+@media only screen and (max-width: 620px) {
+  .zz-pad { padding-left: 24px !important; padding-right: 24px !important; }
+  .zz-outer { padding: 24px 8px !important; }
+}
+@media (prefers-color-scheme: dark) {
+  .zz-page { background-color: #101216 !important; }
+  .zz-card { background-color: #1a1d23 !important; border-color: #2d3139 !important; }
+  .zz-strong { color: #eaecf0 !important; }
+  .zz-body { color: #c9cdd4 !important; }
+  .zz-muted { color: #9aa0ac !important; }
+  .zz-rule { border-color: #2d3139 !important; }
+  .zz-footer { background-color: #15171c !important; border-color: #2d3139 !important; }
+  .zz-button { background-color: #5c67de !important; }
+}
+</style>
+{{msoStyle}}
 </head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0f1319;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f9fafb;padding:40px 16px;">
-<tr><td align="center">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;">
-<tr><td style="padding:0 4px 16px 4px;">
-<table role="presentation" cellspacing="0" cellpadding="0"><tr>
-<td style="vertical-align:middle;padding-right:10px;"><img src="{{.LogoCID}}" width="28" height="28" alt="" style="display:block;border-radius:7px;"></td>
-<td style="vertical-align:middle;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#0f1319;">{{.InstanceName}}</td>
+<body class="zz-page" style="margin:0;padding:0;width:100%;background-color:#f3f4f6;">
+<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">{{.Preheader}}{{preheaderSpacer}}</div>
+<table role="presentation" class="zz-page" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f3f4f6" style="width:100%;background-color:#f3f4f6;">
+<tr><td class="zz-outer" align="center" style="padding:40px 12px;">
+{{msoOpen}}
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:separate;">
+<tr><td style="padding:0 4px 20px 4px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td width="20" style="width:20px;vertical-align:middle;padding-right:8px;">{{if .Footer.InstanceURL}}<a href="{{.Footer.InstanceURL}}">{{end}}<img src="{{.LogoSrc}}" width="20" height="20" alt="" style="display:block;width:20px;height:20px;border:0;border-radius:5px;">{{if .Footer.InstanceURL}}</a>{{end}}</td>
+<td class="zz-strong" style="vertical-align:middle;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:20px;font-weight:600;color:#0f131a;">{{.Footer.InstanceName}}</td>
 </tr></table>
 </td></tr>
-<tr><td style="background:#ffffff;border:1px solid #e3e5ea;border-radius:16px;padding:8px 0 4px 0;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-<tr><td style="padding:24px 28px 0 28px;font-size:22px;font-weight:700;line-height:1.3;letter-spacing:-0.01em;color:#0f1319;">{{.Heading}}</td></tr>
-{{range .Paragraphs}}<tr><td style="padding:14px 28px 0 28px;font-size:15px;line-height:1.55;color:#606775;">{{.}}</td></tr>
-{{end}}{{if .ButtonURL}}<tr><td style="padding:24px 28px 0 28px;">
-<a href="{{.ButtonURL}}" style="display:inline-block;background:#4753d1;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 20px;border-radius:10px;">{{.ButtonLabel}}</a>
-</td></tr>
-<tr><td style="padding:14px 28px 0 28px;font-size:13px;line-height:1.5;color:#606775;word-break:break-all;">If the button does not work, open this link: <a href="{{.ButtonURL}}" style="color:#0f1319;">{{.ButtonURL}}</a></td></tr>
-{{end}}{{if .Note}}<tr><td style="padding:20px 28px 0 28px;font-size:13px;line-height:1.5;color:#606775;">{{.Note}}</td></tr>
-{{end}}<tr><td style="padding:24px 28px 24px 28px;"></td></tr>
+<tr><td class="zz-card" bgcolor="#ffffff" style="background-color:#ffffff;border:1px solid #e2e4e9;border-radius:12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+<tr><td class="zz-pad zz-strong" style="padding:40px 48px 0 48px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;line-height:30px;font-weight:600;letter-spacing:-0.01em;color:#0f131a;">{{.Heading}}</td></tr>
+{{range .Intro}}<tr><td class="zz-pad zz-body" style="padding:16px 48px 0 48px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#30353f;">{{.}}</td></tr>
+{{end}}{{if .Items}}<tr><td class="zz-pad" style="padding:28px 48px 0 48px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+{{range .Items}}<tr><td class="zz-rule" style="padding:16px 0;border-top:1px solid #e2e4e9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<a href="{{.URL}}" class="zz-strong" style="font-size:15px;line-height:22px;font-weight:600;color:#0f131a;text-decoration:none;">{{if .Identifier}}<span class="zz-muted" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:13px;font-weight:400;color:#606876;">{{.Identifier}}</span>&nbsp;&nbsp;{{end}}{{.Title}}</a>
+{{if .Lines}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-top:8px;">
+{{range .Lines}}<tr><td width="20" valign="top" style="width:20px;padding:4px 10px 4px 0;vertical-align:top;">
+{{if .ActorName}}{{$color := avatarColor .ActorID}}<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr><td width="20" height="20" align="center" valign="middle" bgcolor="{{$color}}" style="width:20px;height:20px;border-radius:10px;background-color:{{$color}};color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:9px;line-height:20px;font-weight:600;text-align:center;mso-line-height-rule:exactly;">{{.ActorInitials}}</td></tr></table>
+{{else}}&nbsp;{{end}}</td><td class="zz-body" valign="top" style="padding:4px 0;vertical-align:top;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:20px;color:#30353f;">{{if .ActorName}}<span class="zz-strong" style="font-weight:600;color:#0f131a;">{{.ActorName}}</span> {{end}}{{.Text}}</td></tr>
+{{end}}</table>
+{{end}}</td></tr>
+{{end}}<tr><td class="zz-rule" style="border-top:1px solid #e2e4e9;font-size:0;line-height:0;">&nbsp;</td></tr>
 </table>
 </td></tr>
-<tr><td style="padding:16px 4px 0 4px;font-size:12px;line-height:1.5;color:#606775;">Sent by {{.InstanceName}}{{if .InstanceURL}} at <a href="{{.InstanceURL}}" style="color:#606775;">{{.InstanceURL}}</a>{{end}}.</td></tr>
+{{end}}{{if .Button.URL}}<tr><td class="zz-pad" style="padding:28px 48px 0 48px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>
+<td class="zz-button" bgcolor="#4753d1" style="background-color:#4753d1;border-radius:8px;">
+<a href="{{.Button.URL}}" style="display:inline-block;padding:11px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:18px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">{{.Button.Label}}</a>
+</td>
+</tr></table>
+</td></tr>
+{{if not .Items}}<tr><td class="zz-pad zz-muted" style="padding:16px 48px 0 48px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#606876;word-break:break-all;">Or open this link: <a href="{{.Button.URL}}" class="zz-muted" style="color:#606876;text-decoration:underline;">{{.Button.URL}}</a></td></tr>
+{{end}}{{end}}{{if .Note}}<tr><td class="zz-pad zz-muted" style="padding:24px 48px 0 48px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#606876;">{{.Note}}</td></tr>
+{{end}}<tr><td style="padding:40px 0 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
+<tr><td class="zz-pad zz-footer" bgcolor="#f9fafb" style="padding:16px 48px;background-color:#f9fafb;border-top:1px solid #e2e4e9;border-radius:0 0 12px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;"><tr>
+<td class="zz-muted" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#606876;">{{if .Footer.InstanceURL}}<a href="{{.Footer.InstanceURL}}" class="zz-muted" style="color:#606876;text-decoration:none;">{{.Footer.InstanceName}}</a>{{else}}{{.Footer.InstanceName}}{{end}}</td>
+{{if .Footer.ManageURL}}<td class="zz-muted" align="right" style="text-align:right;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#606876;"><a href="{{.Footer.ManageURL}}" class="zz-muted" style="color:#606876;text-decoration:underline;">{{.Footer.ManageLabel}}</a></td>
+{{end}}</tr></table>
+</td></tr>
 </table>
+</td></tr>
+</table>
+{{msoClose}}
 </td></tr>
 </table>
 </body>

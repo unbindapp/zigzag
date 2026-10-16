@@ -120,7 +120,24 @@ func (suite *EmailServiceSuite) TestSendDecryptsAndRenders() {
 	suite.Require().Len(suite.sender.sent, 1)
 	suite.Equal("re_secret", suite.sender.settings[0].Password)
 	suite.Equal(mail.EncryptionTLS, suite.sender.settings[0].Encryption)
-	suite.Contains(suite.sender.sent[0].Text, "Sent by Acme Tracker at https://zigzag.example.com")
+	suite.Contains(suite.sender.sent[0].Text, "--\nAcme Tracker https://zigzag.example.com\n")
+	suite.Contains(suite.sender.sent[0].HTML, `<a href="https://zigzag.example.com" class="zz-muted" style="color:#606876;text-decoration:none;">Acme Tracker</a>`)
+}
+
+func (suite *EmailServiceSuite) TestSendTestDeliversTheTestEmail() {
+	settings := relay()
+	suite.MockPermissionsRepo.EXPECT().CheckSystemAdmin(suite.Ctx, suite.adminID).Return(nil).Once()
+	suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.adminID).Return(&ent.User{Email: "ada@example.com"}, nil).Once()
+	suite.MockSystemRepo.EXPECT().GetSystemSettings(suite.Ctx, nil).Return(&ent.SystemSetting{InstanceName: "Zigzag", EmailSettings: &settings}, nil).Once()
+
+	suite.Require().NoError(suite.service.SendTest(suite.Ctx, suite.adminID))
+	suite.Require().Len(suite.sender.sent, 1)
+	sent := suite.sender.sent[0]
+	suite.Equal("ada@example.com", sent.To)
+	suite.Equal("Zigzag can send email", sent.Subject)
+	suite.Contains(sent.Text, "Email is working\n")
+	suite.Contains(sent.Text, "Workspace invitations, password resets and notification digests are delivered the same way.")
+	suite.Contains(sent.Text, "Open Zigzag\nhttps://zigzag.example.com\n")
 }
 
 func (suite *EmailServiceSuite) TestSendWithoutRelaySendsNothing() {

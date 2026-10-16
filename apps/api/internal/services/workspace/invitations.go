@@ -129,14 +129,7 @@ func (self *WorkspaceService) deliverInvitation(ctx context.Context, inviterID u
 	}
 	resp := models.TransformInvitationEntity(invitation)
 	resp.Link = link
-	resp.Emailed = self.email.SendAsync(ctx, invitation.Email, mail.Content{
-		Subject:     fmt.Sprintf("%s invited you to %s on Zigzag", displayOf(inviter), workspace.Name),
-		Heading:     fmt.Sprintf("Join %s", workspace.Name),
-		Paragraphs:  []string{fmt.Sprintf("%s invited you to the workspace %s as %s.", displayOf(inviter), workspace.Name, invitation.Role), "Accept the invitation to get started."},
-		ButtonLabel: "Accept invitation",
-		ButtonURL:   link,
-		Note:        "This invitation expires in 7 days. If you were not expecting it, you can ignore this email.",
-	})
+	resp.Emailed = self.email.SendAsync(ctx, invitation.Email, invitationContent(displayOf(inviter), workspace.Name, invitation.Role, link))
 	return resp, nil
 }
 
@@ -363,6 +356,37 @@ func (self *WorkspaceService) workspaceLink(workspace *ent.Workspace) (string, e
 
 func hasUsableAccount(user *ent.User) bool {
 	return user != nil && user.Active && (user.PasswordHash != "" || user.GoogleSubject != nil)
+}
+
+func invitationContent(inviter, workspaceName string, role schema.WorkspaceRole, link string) mail.Content {
+	return mail.Content{
+		Subject: fmt.Sprintf("%s invited you to %s on Zigzag", inviter, workspaceName),
+		Heading: fmt.Sprintf("Join %s on Zigzag", workspaceName),
+		Intro: []string{
+			fmt.Sprintf("%s invited you to the %s workspace as %s.", inviter, workspaceName, roleWithArticle(role)),
+			roleAbilities(role),
+		},
+		Button: mail.Button{Label: "Accept invitation", URL: link},
+		Note:   "This invitation expires in 7 days. If you were not expecting it, you can ignore this email.",
+	}
+}
+
+func roleWithArticle(role schema.WorkspaceRole) string {
+	if role == schema.WorkspaceRoleAdmin {
+		return "an admin"
+	}
+	return "a " + string(role)
+}
+
+func roleAbilities(role schema.WorkspaceRole) string {
+	switch role {
+	case schema.WorkspaceRoleAdmin:
+		return "Admins work on issues and projects and also manage people and settings."
+	case schema.WorkspaceRoleViewer:
+		return "Viewers can read issues, projects and documents."
+	default:
+		return "Members create and edit issues, projects and documents."
+	}
 }
 
 func displayOf(user *ent.User) string {

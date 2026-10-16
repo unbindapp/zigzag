@@ -7,6 +7,12 @@ import (
 
 type NotificationType = schema.NotificationType
 
+const (
+	StateChangedBodyPrefix    = "Moved to "
+	PriorityChangedBodyPrefix = "Priority set to "
+	BlockedByBodyPrefix       = "Blocked by "
+)
+
 type NotificationEvent struct {
 	Type            NotificationType
 	WorkspaceID     uuid.UUID

@@ -197,11 +197,17 @@ func (self *WorkspaceService) notifyAdded(ctx context.Context, inviterID, worksp
 		return
 	}
 	link, _ := self.workspaceLink(workspace)
-	self.email.SendAsync(ctx, to, mail.Content{
-		Subject:     fmt.Sprintf("You were added to %s on Zigzag", workspace.Name),
-		Heading:     fmt.Sprintf("You are now in %s", workspace.Name),
-		Paragraphs:  []string{fmt.Sprintf("%s added you to the workspace %s as %s.", displayOf(inviter), workspace.Name, role)},
-		ButtonLabel: "Open the workspace",
-		ButtonURL:   link,
-	})
+	self.email.SendAsync(ctx, to, addedContent(displayOf(inviter), workspace.Name, role, link))
+}
+
+func addedContent(inviter, workspaceName string, role schema.WorkspaceRole, link string) mail.Content {
+	return mail.Content{
+		Subject: fmt.Sprintf("You were added to %s on Zigzag", workspaceName),
+		Heading: fmt.Sprintf("You are now in %s", workspaceName),
+		Intro: []string{
+			fmt.Sprintf("%s added you to the %s workspace as %s.", inviter, workspaceName, roleWithArticle(role)),
+			roleAbilities(role),
+		},
+		Button: mail.Button{Label: "Open workspace", URL: link},
+	}
 }

@@ -533,10 +533,10 @@ func (self *IssueService) announce(ctx context.Context, actor *uuid.UUID, outcom
 			subscribers = nil
 		}
 		if outcome.stateChanged != nil {
-			event(schema.NotificationIssueStateChanged, subscribers, "Moved to "+outcome.stateChanged.Name)
+			event(schema.NotificationIssueStateChanged, subscribers, models.StateChangedBodyPrefix+outcome.stateChanged.Name)
 		}
 		if outcome.priorityChanged {
-			event(schema.NotificationIssuePriorityChanged, subscribers, "Priority set to "+response.PriorityLabel)
+			event(schema.NotificationIssuePriorityChanged, subscribers, models.PriorityChangedBodyPrefix+response.PriorityLabel)
 		}
 	}
 	self.emit(ctx, response.WorkspaceID, "issue.updated", map[string]any{"issue": response, "changes": outcome.changes})

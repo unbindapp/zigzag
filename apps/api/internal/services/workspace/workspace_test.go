@@ -14,6 +14,7 @@ import (
 	"github.com/zigzagapp-org/zigzag-api/ent/schema"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/errdefs"
 	"github.com/zigzagapp-org/zigzag-api/internal/common/utils"
+	"github.com/zigzagapp-org/zigzag-api/internal/infrastructure/mail"
 	permissions_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/permissions"
 	team_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/team"
 	user_repo "github.com/zigzagapp-org/zigzag-api/internal/repositories/user"
@@ -192,13 +193,19 @@ func (suite *WorkspaceServiceSuite) TestAddMemberAddsExistingAccountsAtOnce() {
 	suite.MockTeamRepo.EXPECT().AddMember(suite.Ctx, mock.Anything, teamID, existing.ID, false).Return(nil).Once()
 	suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.adminID).Return(&ent.User{ID: suite.adminID, Name: "Ada"}, nil).Once()
 	suite.MockWorkspaceRepo.EXPECT().GetByID(suite.Ctx, suite.workspaceID).Return(suite.workspace, nil).Once()
-	suite.MockEmail.EXPECT().SendAsync(suite.Ctx, "grace@example.com", mock.Anything).Return(true).Once()
+	var sent mail.Content
+	suite.MockEmail.EXPECT().SendAsync(suite.Ctx, "grace@example.com", mock.Anything).RunAndReturn(func(_ context.Context, _ string, content mail.Content) bool {
+		sent = content
+		return true
+	}).Once()
 
 	resp, err := suite.service.AddMember(suite.Ctx, suite.adminID, &AddMemberInput{WorkspaceID: suite.workspaceID, Email: "Grace@Example.com", Role: schema.WorkspaceRoleMember, TeamIDs: []uuid.UUID{teamID}})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(resp.Member)
 	suite.Nil(resp.Invitation)
 	suite.Equal([]uuid.UUID{teamID}, resp.Member.TeamIDs)
+	suite.Equal("Ada added you to the "+suite.workspace.Name+" workspace as a member.", sent.Intro[0])
+	suite.Equal(mail.Button{Label: "Open workspace", URL: "https://zigzag.example.com/" + suite.workspace.Slug}, sent.Button)
 }
 
 func (suite *WorkspaceServiceSuite) TestAddMemberRejectsForeignTeams() {
@@ -221,11 +228,18 @@ func (suite *WorkspaceServiceSuite) TestCreateInvitationReturnsLinkAndHashesToke
 	}).Maybe()
 	suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.adminID).Return(&ent.User{ID: suite.adminID, Email: "ada@example.com"}, nil).Once()
 	suite.MockWorkspaceRepo.EXPECT().GetByID(suite.Ctx, suite.workspaceID).Return(suite.workspace, nil).Once()
-	suite.MockEmail.EXPECT().SendAsync(suite.Ctx, "new@example.com", mock.Anything).Return(false).Once()
+	var sent mail.Content
+	suite.MockEmail.EXPECT().SendAsync(suite.Ctx, "new@example.com", mock.Anything).RunAndReturn(func(_ context.Context, _ string, content mail.Content) bool {
+		sent = content
+		return false
+	}).Once()
 
 	resp, err := suite.service.CreateInvitation(suite.Ctx, suite.adminID, &CreateInvitationInput{WorkspaceID: suite.workspaceID, Email: "new@example.com", Role: schema.WorkspaceRoleViewer})
 	suite.Require().NoError(err)
 	suite.False(resp.Emailed, "emailed is false when mail is not configured")
+	suite.Equal("ada@example.com invited you to "+suite.workspace.Name+" on Zigzag", sent.Subject)
+	suite.Equal([]string{"ada@example.com invited you to the " + suite.workspace.Name + " workspace as a viewer.", "Viewers can read issues, projects and documents."}, sent.Intro)
+	suite.Equal(mail.Button{Label: "Accept invitation", URL: resp.Link}, sent.Button)
 	suite.Contains(resp.Link, "https://zigzag.example.com/invite/")
 	token := resp.Link[len("https://zigzag.example.com/invite/"):]
 	suite.Equal(utils.HashToken(token), stored.TokenHash)

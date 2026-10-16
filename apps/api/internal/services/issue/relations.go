@@ -90,7 +90,7 @@ func (self *IssueService) CreateRelation(ctx context.Context, userID uuid.UUID, 
 		self.notify(ctx, models.NotificationEvent{
 			Type: schema.NotificationIssueBlocking, WorkspaceID: issue.WorkspaceID, ActorID: actor,
 			RecipientIDs: without([]uuid.UUID{*related.AssigneeID}, actor), IssueID: &related.ID,
-			Title: relatedIdentifier + " " + related.Title, Body: "Blocked by " + issueIdentifier + " " + issue.Title,
+			Title: relatedIdentifier + " " + related.Title, Body: models.BlockedByBodyPrefix + issueIdentifier + " " + issue.Title,
 		})
 	}
 	return models.TransformRelation(relation, related), nil
