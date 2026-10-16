@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 
 import { AuthShell } from "@/components/layout/auth-shell";
@@ -7,7 +7,11 @@ import { slugify } from "@/lib/helpers/identifiers";
 import { submitHandler, useAppForm } from "@/lib/hooks/use-app-form";
 import { useLogoutMutation } from "@/lib/queries/auth";
 import { meQuery, meWorkspaces } from "@/lib/queries/me";
-import { useCreateWorkspaceMutation, WorkspaceFormSchema } from "@/lib/queries/workspaces";
+import {
+  fetchWorkspaceLandingPath,
+  useCreateWorkspaceMutation,
+  WorkspaceFormSchema,
+} from "@/lib/queries/workspaces";
 
 export const Route = createFileRoute("/create-workspace/")({
   component: CreateWorkspace,
@@ -15,6 +19,7 @@ export const Route = createFileRoute("/create-workspace/")({
 
 function CreateWorkspace() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: me } = useQuery(meQuery);
   const hasWorkspaces = meWorkspaces(me).length > 0;
   const { mutateAsync: create } = useCreateWorkspaceMutation();
@@ -26,7 +31,7 @@ function CreateWorkspace() {
     onSubmit: async ({ value }) => {
       const parsed = WorkspaceFormSchema.parse(value);
       const res = await create(parsed);
-      router.history.push(`/${res.data.slug}`);
+      router.history.push(await fetchWorkspaceLandingPath(queryClient, res.data));
     },
   });
 

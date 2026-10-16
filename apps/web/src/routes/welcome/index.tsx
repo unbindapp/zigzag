@@ -7,6 +7,7 @@ import { slugify, workspaceSlugPattern } from "@/lib/helpers/identifiers";
 import { submitHandler, useAppForm } from "@/lib/hooks/use-app-form";
 import { meQuery } from "@/lib/queries/me";
 import { createBootstrapUser, queryKeySetup, setupStatusQuery } from "@/lib/queries/setup";
+import { fetchWorkspaceLandingPath } from "@/lib/queries/workspaces";
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
@@ -59,7 +60,7 @@ function Welcome() {
       queryClient.removeQueries({ queryKey: queryKeySetup.status() });
       queryClient.removeQueries({ queryKey: meQuery.queryKey });
       await queryClient.ensureQueryData(meQuery);
-      router.history.push(`/${res.data.workspace.slug}`);
+      router.history.push(await fetchWorkspaceLandingPath(queryClient, res.data.workspace));
     },
   });
 

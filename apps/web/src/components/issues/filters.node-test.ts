@@ -41,13 +41,13 @@ test("hiding completed issues removes completed and canceled state types", () =>
   assert.deepEqual(input.state_types, ["triage", "backlog", "unstarted", "started"]);
 });
 
-test("hiding sub-issues asks for top level issues only", () => {
+test("flat sub-issue rows still list sub-issues", () => {
   const input = buildListIssuesInput({
     workspaceId: "w",
     filters: { assignee_ids: [] },
-    display: { ...DEFAULT_DISPLAY, show_sub_issues: false },
+    display: { ...DEFAULT_DISPLAY, nest_sub_issues: false },
   });
-  assert.equal(input.has_parent, "false");
+  assert.equal(input.has_parent, undefined);
   assert.equal(input.assignee_ids, undefined);
   assert.equal(input.workspace_id, "w");
   assert.equal(input.order_by, "manual");

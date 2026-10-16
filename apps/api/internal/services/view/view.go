@@ -135,5 +135,10 @@ func validateDisplay(display schema.ViewDisplay) error {
 	if display.OrderBy != "" && !slices.Contains(orderByValues, display.OrderBy) {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "display.order_by must be one of "+strings.Join(orderByValues, ", "))
 	}
+	if display.ShowCompleted != "" && !slices.Contains(showCompletedValues, display.ShowCompleted) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "display.show_completed must be one of "+strings.Join(showCompletedValues, ", "))
+	}
 	return nil
 }
+
+var showCompletedValues = []string{"all", "past_week", "none"}

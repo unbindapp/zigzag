@@ -7,7 +7,7 @@ export const defaultViewDisplay: TViewDisplay = {
   group_by: "state",
   order_by: "manual",
   show_sub_issues: true,
-  show_completed: true,
+  show_completed: "all",
 };
 
 export function viewDisplayFrom(display: Partial<DisplaySettings> | undefined): TViewDisplay {
@@ -16,8 +16,8 @@ export function viewDisplayFrom(display: Partial<DisplaySettings> | undefined): 
     layout: display.layout ?? defaultViewDisplay.layout,
     group_by: display.group_by ?? defaultViewDisplay.group_by,
     order_by: display.order_by ?? defaultViewDisplay.order_by,
-    show_sub_issues: display.show_sub_issues ?? defaultViewDisplay.show_sub_issues,
-    show_completed: display.show_completed !== "none",
+    show_sub_issues: display.nest_sub_issues ?? defaultViewDisplay.show_sub_issues,
+    show_completed: display.show_completed ?? defaultViewDisplay.show_completed,
   };
 }
 
@@ -25,8 +25,8 @@ export function displaySettingsOf(view: TView): Partial<DisplaySettings> {
   const { display } = view;
   return {
     layout: display.layout,
-    show_sub_issues: display.show_sub_issues,
-    show_completed: display.show_completed ? "all" : "none",
+    nest_sub_issues: display.show_sub_issues,
+    show_completed: display.show_completed,
     ...(display.group_by ? { group_by: display.group_by as DisplaySettings["group_by"] } : {}),
     ...(display.order_by ? { order_by: display.order_by as DisplaySettings["order_by"] } : {}),
   };

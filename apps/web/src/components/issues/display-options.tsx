@@ -170,11 +170,11 @@ export function DisplayOptions({ value, onChange, onReset }: TProps) {
               onChange={(show_completed) => onChange({ show_completed })}
             />
           </OptionRow>
-          <OptionRow label="Show sub-issues" htmlFor={subIssuesId}>
+          <OptionRow label="Nest sub-issues" htmlFor={subIssuesId}>
             <Switch
               id={subIssuesId}
-              checked={value.show_sub_issues}
-              onCheckedChange={(show_sub_issues) => onChange({ show_sub_issues })}
+              checked={value.nest_sub_issues}
+              onCheckedChange={(nest_sub_issues) => onChange({ nest_sub_issues })}
             />
           </OptionRow>
         </div>

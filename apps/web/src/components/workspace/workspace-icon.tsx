@@ -6,9 +6,15 @@ type TProps = {
   name: string;
   icon?: string | null;
   color?: string | null;
+  iconUrl?: string | null;
 };
 
-export function WorkspaceIcon({ id, name, icon, color }: TProps) {
+export function WorkspaceIcon({ id, name, icon, color, iconUrl }: TProps) {
+  if (iconUrl) {
+    return (
+      <img aria-hidden src={iconUrl} alt="" className="size-5 shrink-0 rounded-md object-cover" />
+    );
+  }
   const resolved = resolveEntityIcon(icon);
   const isEmoji = resolved.kind === "emoji";
   return (

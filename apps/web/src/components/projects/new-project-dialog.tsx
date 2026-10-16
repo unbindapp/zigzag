@@ -17,6 +17,7 @@ import {
   useProjectStatuses,
 } from "@/components/projects/project-pickers";
 import { MarkdownField } from "@/components/shared/markdown-editor";
+import { NoTeamsNotice } from "@/components/shared/no-teams-notice";
 import { type TUserSummary } from "@/components/shared/user-chip";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,10 +75,12 @@ function NewProjectForm({
 }) {
   const { workspace } = useWorkspace();
   const navigate = useNavigate();
-  const { teams: allTeams } = useTeams();
+  const { teams: allTeams, isPending: isTeamsPending } = useTeams();
   const { statuses } = useProjectStatuses();
   const initialTeams = useInitialTeams(defaults);
-  const [teams, setTeams] = useState<TTeamRef[]>(initialTeams);
+  const [pickedTeams, setTeams] = useState<TTeamRef[] | null>(null);
+  const teams = pickedTeams ?? initialTeams;
+  const hasNoTeams = !isTeamsPending && allTeams.length === 0;
   const [statusId, setStatusId] = useState<string | undefined>(defaults.statusId);
   const [lead, setLead] = useState<TUserSummary | null>(null);
   const [memberIds, setMemberIds] = useState<string[]>([]);
@@ -123,6 +126,7 @@ function NewProjectForm({
 
   return (
     <form className="flex flex-col gap-4" onSubmit={submitHandler(form)} noValidate>
+      {hasNoTeams && <NoTeamsNotice entity="Projects" onNavigate={onClose} />}
       <form.AppField name="name" children={(field) => <field.TextField label="Name" autoFocus />} />
       <form.AppField
         name="summary"
@@ -170,7 +174,10 @@ function NewProjectForm({
           onChange={setTarget}
         />
       </div>
-      <DialogFooter>
+      <DialogFooter className="items-center">
+        {!hasNoTeams && teams.length === 0 && (
+          <p className="text-muted-foreground mr-auto text-sm">Pick at least one team.</p>
+        )}
         <DialogClose
           render={
             <Button type="button" variant="outline" size="sm">

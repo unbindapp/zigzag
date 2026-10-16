@@ -236,7 +236,6 @@ export function buildListIssuesInput({
     ...merged,
     workspace_id: workspaceId,
     state_types: stateTypesForDisplay(merged.state_types, display.show_completed),
-    has_parent: display.show_sub_issues || merged.parent_id ? undefined : "false",
     order_by: display.order_by,
     order: display.order,
     group_by: display.group_by,

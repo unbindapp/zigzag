@@ -7,7 +7,7 @@ import { SettingsPage } from "@/components/layout/settings-page";
 import { SettingsSection } from "@/components/layout/settings-section";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { TeamIcon } from "@/components/shared/team-icon";
-import { CreateTeamDialog } from "@/components/settings/create-team-dialog";
+import { useCreateTeamStore } from "@/components/settings/create-team-store";
 import { Button, LinkButton } from "@/components/ui/button";
 import { SimpleTooltip } from "@/components/ui/tooltip";
 import { useTeams } from "@/components/workspace/teams-provider";
@@ -20,15 +20,12 @@ export const Route = createFileRoute("/$workspace/_workspace/settings/_admin/tea
 
 function WorkspaceTeamsSettingsPage() {
   const { teams, isPending, error, refetch } = useTeams();
+  const openCreateTeam = useCreateTeamStore((state) => state.setOpen);
   const createButton = (
-    <CreateTeamDialog
-      trigger={
-        <Button size="sm">
-          <PlusIcon className="size-4" />
-          Create team
-        </Button>
-      }
-    />
+    <Button size="sm" onClick={() => openCreateTeam(true)}>
+      <PlusIcon className="size-4" />
+      Create team
+    </Button>
   );
 
   return (

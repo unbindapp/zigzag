@@ -7,6 +7,7 @@ import {
   InboxIcon,
   LayersIcon,
   ListTodoIcon,
+  PlusIcon,
   RefreshCwIcon,
   SearchIcon,
   SettingsIcon,
@@ -19,6 +20,7 @@ import {
 import { useCommandPanelStore } from "@/components/command-panel/command-panel-store";
 import { SidebarFavorites } from "@/components/favorites/sidebar-favorites";
 import { useNewIssueStore } from "@/components/issues/new-issue-store";
+import { useCreateTeamStore } from "@/components/settings/create-team-store";
 import { TeamIcon } from "@/components/shared/team-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -42,9 +44,10 @@ type TProps = {
 };
 
 export function Sidebar({ onNavigate }: TProps) {
-  const { workspace, canEdit } = useWorkspace();
+  const { workspace, canEdit, isAdmin } = useWorkspace();
   const openCommandPanel = useCommandPanelStore((state) => state.setOpen);
   const openNewIssue = useNewIssueStore((state) => state.open);
+  const openCreateTeam = useOpenCreateTeam(onNavigate);
   const params = { workspace: workspace.slug };
 
   return (
@@ -133,7 +136,23 @@ export function Sidebar({ onNavigate }: TProps) {
           <SidebarSection title="Favorites">
             <SidebarFavorites onNavigate={onNavigate} />
           </SidebarSection>
-          <SidebarSection title="Your teams">
+          <SidebarSection
+            title="Your teams"
+            action={
+              isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  forceMinSize={false}
+                  aria-label="New team"
+                  onClick={openCreateTeam}
+                  className="text-muted-foreground"
+                >
+                  <PlusIcon className="size-3.5" />
+                </Button>
+              )
+            }
+          >
             <TeamsNav onNavigate={onNavigate} />
           </SidebarSection>
         </nav>
@@ -155,8 +174,18 @@ function InboxUnreadBadge() {
   );
 }
 
+function useOpenCreateTeam(onNavigate?: () => void) {
+  const setOpen = useCreateTeamStore((state) => state.setOpen);
+  return () => {
+    onNavigate?.();
+    setOpen(true);
+  };
+}
+
 function TeamsNav({ onNavigate }: TProps) {
+  const { isAdmin } = useWorkspace();
   const { myTeams, isPending, error, refetch } = useTeams();
+  const openCreateTeam = useOpenCreateTeam(onNavigate);
   if (isPending) {
     return (
       <div className="flex flex-col gap-2 px-2.5 py-1">
@@ -174,6 +203,19 @@ function TeamsNav({ onNavigate }: TProps) {
         className="text-destructive justify-start"
       >
         Could not load teams. Retry
+      </Button>
+    );
+  }
+  if (myTeams.length === 0 && isAdmin) {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={openCreateTeam}
+        className="text-muted-foreground justify-start font-normal"
+      >
+        <PlusIcon className="size-4" />
+        Create a team
       </Button>
     );
   }

@@ -6,7 +6,6 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
-import { NewProjectDialog } from "@/components/projects/new-project-dialog";
 import { useNewProjectStore } from "@/components/projects/new-project-store";
 import { ProjectBoard } from "@/components/projects/project-board";
 import { ProjectList, type TProjectListFilters } from "@/components/projects/project-list";
@@ -88,7 +87,6 @@ export function ProjectsView({ title, breadcrumb, storageKey, filters }: TProps)
         }
       />
       {layout === "board" ? <ProjectBoard {...listProps} /> : <ProjectList {...listProps} />}
-      <NewProjectDialog />
     </PageContainer>
   );
 }

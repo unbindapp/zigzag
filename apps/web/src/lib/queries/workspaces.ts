@@ -1,8 +1,9 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { workspaceSlugPattern } from "@/lib/helpers/identifiers";
 import { queryKeyMe } from "@/lib/queries/me";
+import { teamsListQuery } from "@/lib/queries/teams";
 import { getGoClient } from "@/lib/server/client";
 import type { TGoClient, TInput, TListItem, TResponseData } from "@/lib/server/types";
 
@@ -14,6 +15,8 @@ export type TCreatedInvitation = TResponseData<TGoClient["workspaces"]["invitati
 export type TCreateWorkspaceInput = TInput<TGoClient["workspaces"]["create"]>;
 export type TUpdateWorkspaceInput = TInput<TGoClient["workspaces"]["update"]>;
 export type TCreateInvitationInput = TInput<TGoClient["workspaces"]["invitations"]["create"]>;
+
+export const NO_WORKSPACE_ICON_UPLOAD_ID = "00000000-0000-0000-0000-000000000000";
 
 export const WORKSPACE_ROLES: TWorkspaceRole[] = ["admin", "member", "viewer"];
 
@@ -66,6 +69,18 @@ export const invitationsListQuery = (workspaceId: string) =>
       return { invitations: res.data ?? [] };
     },
   });
+
+export async function fetchWorkspaceLandingPath(
+  queryClient: QueryClient,
+  workspace: Pick<TWorkspace, "id" | "slug" | "default_team_id">,
+) {
+  const { teams } = await queryClient.fetchQuery(teamsListQuery(workspace.id)).catch(() => ({
+    teams: [],
+  }));
+  const team = teams.find((item) => item.id === workspace.default_team_id);
+  if (!team) return `/${workspace.slug}`;
+  return `/${workspace.slug}/team/${team.key}/issues`;
+}
 
 export async function createWorkspace(input: TCreateWorkspaceInput) {
   const res = await getGoClient().workspaces.create(input);

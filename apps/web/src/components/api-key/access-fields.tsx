@@ -25,6 +25,7 @@ export function WorkspaceAccessList({ field, access }: { field: AnyFieldApi; acc
               name={workspace.name}
               icon={workspace.icon}
               color={workspace.color}
+              iconUrl={workspace.icon_url}
             />
           ),
         }))}

@@ -1,11 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { UploadIcon, XIcon } from "lucide-react";
 import { z } from "zod";
 
 import { SettingsPage } from "@/components/layout/settings-page";
 import { SettingsSection } from "@/components/layout/settings-section";
+import { Button } from "@/components/ui/button";
+import { FileTrigger } from "@/components/ui/file-trigger";
+import { WorkspaceIcon } from "@/components/workspace/workspace-icon";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { submitHandler, useAppForm } from "@/lib/hooks/use-app-form";
-import { useUpdateWorkspaceMutation, WorkspaceFormSchema } from "@/lib/queries/workspaces";
+import { useCreateUploadMutation } from "@/lib/queries/uploads";
+import {
+  NO_WORKSPACE_ICON_UPLOAD_ID,
+  useUpdateWorkspaceMutation,
+  WorkspaceFormSchema,
+} from "@/lib/queries/workspaces";
 
 export const Route = createFileRoute("/$workspace/_workspace/settings/_admin/")({
   component: WorkspaceGeneralSettingsPage,
@@ -69,6 +78,7 @@ function WorkspaceGeneralSettingsPage() {
             )}
           </form.Subscribe>
           <form.AppField name="color" children={(field) => <field.ColorField label="Color" />} />
+          <WorkspaceImageField />
         </div>
         <form.AppField name="name" children={(field) => <field.TextField label="Name" />} />
         <form.AppField
@@ -83,5 +93,61 @@ function WorkspaceGeneralSettingsPage() {
         />
       </SettingsSection>
     </SettingsPage>
+  );
+}
+
+function WorkspaceImageField() {
+  const { workspace } = useWorkspace();
+  const { mutateAsync: upload, isPending: isUploading } = useCreateUploadMutation();
+  const { mutateAsync: update, isPending: isSaving } = useUpdateWorkspaceMutation();
+  const setImage = (uploadId: string) =>
+    update({ workspace_id: workspace.id, icon_upload_id: uploadId }).catch(() => undefined);
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <p className="text-sm font-medium">Image</p>
+      <div className="flex items-center gap-2">
+        {workspace.icon_url && (
+          <WorkspaceIcon
+            id={workspace.id}
+            name={workspace.name}
+            icon={workspace.icon}
+            color={workspace.color}
+            iconUrl={workspace.icon_url}
+          />
+        )}
+        <FileTrigger
+          accept="image/*"
+          onSelect={async ([file]) => {
+            const res = await upload({ workspaceId: workspace.id, file }).catch(() => null);
+            if (!res) return;
+            await setImage(res.data.id);
+          }}
+        >
+          {(open) => (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={open}
+              isPending={isUploading || isSaving}
+            >
+              <UploadIcon className="size-4" />
+              Upload image
+            </Button>
+          )}
+        </FileTrigger>
+        {workspace.icon_url && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void setImage(NO_WORKSPACE_ICON_UPLOAD_ID)}
+          >
+            <XIcon className="size-4" />
+            Remove image
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

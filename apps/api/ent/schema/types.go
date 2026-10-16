@@ -1,6 +1,10 @@
 package schema
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
+
+	"github.com/google/uuid"
+)
 
 type EmailSettings struct {
 	Host        string `json:"host" required:"true" minLength:"1" doc:"SMTP host, for example smtp.resend.com"`
@@ -23,8 +27,45 @@ type ViewDisplay struct {
 	Layout        string `json:"layout" enum:"list,board" doc:"list or board"`
 	GroupBy       string `json:"group_by,omitempty" required:"false" doc:"Grouping, same values as list-issues group_by"`
 	OrderBy       string `json:"order_by,omitempty" required:"false" doc:"Ordering, same values as list-issues order_by"`
-	ShowSubIssues bool   `json:"show_sub_issues" doc:"Show sub-issues as rows"`
-	ShowCompleted bool   `json:"show_completed" doc:"Show completed and canceled issues"`
+	ShowSubIssues bool   `json:"show_sub_issues" doc:"Nest sub-issues under their parent instead of flat rows"`
+	ShowCompleted string `json:"show_completed" enum:"all,past_week,none" doc:"Which completed and canceled issues to show: all, past_week or none"`
+}
+
+func (self ViewDisplay) MarshalJSON() ([]byte, error) {
+	type plain ViewDisplay
+	if self.ShowCompleted == "" {
+		self.ShowCompleted = "all"
+	}
+	return json.Marshal(plain(self))
+}
+
+func (self *ViewDisplay) UnmarshalJSON(data []byte) error {
+	type stored struct {
+		Layout        string          `json:"layout"`
+		GroupBy       string          `json:"group_by"`
+		OrderBy       string          `json:"order_by"`
+		ShowSubIssues bool            `json:"show_sub_issues"`
+		ShowCompleted json.RawMessage `json:"show_completed"`
+	}
+	var raw stored
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	self.Layout, self.GroupBy, self.OrderBy, self.ShowSubIssues = raw.Layout, raw.GroupBy, raw.OrderBy, raw.ShowSubIssues
+	self.ShowCompleted = showCompletedFromJSON(raw.ShowCompleted)
+	return nil
+}
+
+func showCompletedFromJSON(raw json.RawMessage) string {
+	switch string(raw) {
+	case "", "null", "true", `"all"`:
+		return "all"
+	case "false", `"none"`:
+		return "none"
+	case `"past_week"`:
+		return "past_week"
+	}
+	return string(raw)
 }
 
 type TemplateSubIssue struct {

@@ -7,13 +7,12 @@ import {
   InboxIcon,
   LayersIcon,
   ListTodoIcon,
-  MonitorIcon,
-  MoonIcon,
   SettingsIcon,
   SquarePenIcon,
-  SunIcon,
+  SunMoonIcon,
   TargetIcon,
   UserCircleIcon,
+  UsersRoundIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ReactNode, useState } from "react";
@@ -21,6 +20,9 @@ import { ReactNode, useState } from "react";
 import { useCommandPanelStore } from "@/components/command-panel/command-panel-store";
 import { useCommandPanelSearch } from "@/components/command-panel/use-command-panel-search";
 import { useNewIssueStore } from "@/components/issues/new-issue-store";
+import { useNewProjectStore } from "@/components/projects/new-project-store";
+import { nextTheme } from "@/components/providers/themes";
+import { useCreateTeamStore } from "@/components/settings/create-team-store";
 import { TeamIcon } from "@/components/shared/team-icon";
 import {
   Command,
@@ -76,11 +78,13 @@ type TAction = {
 function CommandPanelContent({ onDone }: { onDone: () => void }) {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
+  const { theme: currentTheme, setTheme } = useTheme();
   const { workspace, isAdmin, canEdit } = useWorkspace();
   const { myTeams } = useTeams();
   const { data: me } = useQuery(meQuery);
   const openNewIssue = useNewIssueStore((state) => state.open);
+  const openNewProject = useNewProjectStore((state) => state.open);
+  const openCreateTeam = useCreateTeamStore((state) => state.setOpen);
   const search = useCommandPanelSearch(query);
   const params = { workspace: workspace.slug };
 
@@ -102,6 +106,22 @@ function CommandPanelContent({ onDone }: { onDone: () => void }) {
             icon: <SquarePenIcon className="size-4" />,
             shortcut: "C",
             run: run(() => openNewIssue()),
+          },
+          {
+            id: "new-project",
+            label: "Create project",
+            icon: <BoxIcon className="size-4" />,
+            run: run(() => openNewProject()),
+          },
+        ]
+      : []),
+    ...(isAdmin
+      ? [
+          {
+            id: "new-team",
+            label: "Create team",
+            icon: <UsersRoundIcon className="size-4" />,
+            run: run(() => openCreateTeam(true)),
           },
         ]
       : []),
@@ -172,31 +192,25 @@ function CommandPanelContent({ onDone }: { onDone: () => void }) {
       id: `ws-${item.id}`,
       label: `Switch to ${item.name}`,
       keywords: [item.slug, "workspace"],
-      icon: <WorkspaceIcon id={item.id} name={item.name} icon={item.icon} color={item.color} />,
+      icon: (
+        <WorkspaceIcon
+          id={item.id}
+          name={item.name}
+          icon={item.icon}
+          color={item.color}
+          iconUrl={item.icon_url}
+        />
+      ),
       run: () => go({ to: "/$workspace", params: { workspace: item.slug } }),
     }));
 
   const theme: TAction[] = [
     {
-      id: "theme-light",
-      label: "Switch to light theme",
-      keywords: ["theme", "appearance"],
-      icon: <SunIcon className="size-4" />,
-      run: run(() => setTheme("light")),
-    },
-    {
-      id: "theme-dark",
-      label: "Switch to dark theme",
-      keywords: ["theme", "appearance"],
-      icon: <MoonIcon className="size-4" />,
-      run: run(() => setTheme("dark")),
-    },
-    {
-      id: "theme-system",
-      label: "Use system theme",
-      keywords: ["theme", "appearance"],
-      icon: <MonitorIcon className="size-4" />,
-      run: run(() => setTheme("system")),
+      id: "theme-toggle",
+      label: "Toggle theme",
+      keywords: ["theme", "appearance", "light", "dark", "system"],
+      icon: <SunMoonIcon className="size-4" />,
+      run: run(() => setTheme(nextTheme(currentTheme))),
     },
   ];
 

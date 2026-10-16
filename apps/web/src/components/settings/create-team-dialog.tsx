@@ -1,4 +1,3 @@
-import { ReactElement, useState } from "react";
 import { z } from "zod";
 
 import {
@@ -9,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { useCreateTeamStore } from "@/components/settings/create-team-store";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { deriveTeamKey, sanitizeTeamKey } from "@/lib/helpers/identifiers";
@@ -23,11 +22,11 @@ const formSchema = TeamFormSchema.extend({
   private: z.boolean(),
 });
 
-export function CreateTeamDialog({ trigger }: { trigger: ReactElement }) {
-  const [isOpen, setIsOpen] = useState(false);
+export function CreateTeamDialog() {
+  const isOpen = useCreateTeamStore((state) => state.isOpen);
+  const setOpen = useCreateTeamStore((state) => state.setOpen);
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={trigger} />
+    <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="w-lg max-w-full">
         <DialogHeader>
           <DialogTitle>Create team</DialogTitle>
@@ -35,7 +34,7 @@ export function CreateTeamDialog({ trigger }: { trigger: ReactElement }) {
             The key prefixes every issue identifier, like ENG-123.
           </DialogDescription>
         </DialogHeader>
-        {isOpen && <CreateTeamForm onDone={() => setIsOpen(false)} />}
+        {isOpen && <CreateTeamForm onDone={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
   );

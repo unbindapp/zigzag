@@ -671,8 +671,8 @@ export const ViewDisplaySchema = z
     group_by: z.string().optional(), // Grouping, same values as list-issues group_by
     layout: z.enum(['list', 'board']), // list or board
     order_by: z.string().optional(), // Ordering, same values as list-issues order_by
-    show_completed: z.boolean(), // Show completed and canceled issues
-    show_sub_issues: z.boolean(), // Show sub-issues as rows
+    show_completed: z.enum(['all', 'past_week', 'none']), // Which completed and canceled issues to show: all, past_week or none
+    show_sub_issues: z.boolean(), // Nest sub-issues under their parent instead of flat rows
   })
   .strip();
 

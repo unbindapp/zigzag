@@ -19,7 +19,7 @@ export type TDisplaySettings = {
   group_by: TGroupBy;
   order_by: TOrderBy;
   order: "asc" | "desc";
-  show_sub_issues: boolean;
+  nest_sub_issues: boolean;
   show_completed: TShowCompleted;
   properties: TIssueProperty[];
 };
@@ -70,7 +70,7 @@ export const DEFAULT_DISPLAY: TDisplaySettings = {
   group_by: "state",
   order_by: "manual",
   order: "asc",
-  show_sub_issues: true,
+  nest_sub_issues: true,
   show_completed: "past_week",
   properties: ["priority", "identifier", "state", "labels", "project", "due_date", "assignee"],
 };

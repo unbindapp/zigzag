@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { UploadIcon, XIcon } from "lucide-react";
+import { MonitorIcon, MoonIcon, SunIcon, UploadIcon, XIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { type ReactNode } from "react";
 import { z } from "zod";
 
 import { ErrorCard } from "@/components/layout/error-card";
 import { ListSkeleton } from "@/components/layout/list-skeleton";
 import { SettingsPage } from "@/components/layout/settings-page";
 import { SettingsSection } from "@/components/layout/settings-section";
+import { defaultTheme, type TTheme } from "@/components/providers/themes";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
 import { FileTrigger } from "@/components/ui/file-trigger";
@@ -21,6 +24,12 @@ export const Route = createFileRoute("/$workspace/_workspace/settings/account/")
 });
 
 const timezones = timezoneOptions();
+
+const themeOptions: { value: TTheme; label: string; icon: ReactNode }[] = [
+  { value: "system", label: "System", icon: <MonitorIcon className="size-4" /> },
+  { value: "light", label: "Light", icon: <SunIcon className="size-4" /> },
+  { value: "dark", label: "Dark", icon: <MoonIcon className="size-4" /> },
+];
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
@@ -41,6 +50,7 @@ function AccountProfileSettingsPage() {
         <>
           <AvatarSection me={me} />
           <ProfileSection me={me} />
+          <AppearanceSection />
         </>
       )}
     </SettingsPage>
@@ -135,5 +145,25 @@ function ProfileSection({ me }: { me: TMe }) {
         children={(field) => <field.SelectField label="Timezone" items={timezones} />}
       />
     </SettingsSection>
+  );
+}
+
+function AppearanceSection() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <SettingsSection title="Appearance" description="Saved in this browser.">
+      <ThemeField key={theme} theme={theme ?? defaultTheme} onChange={setTheme} />
+    </SettingsSection>
+  );
+}
+
+function ThemeField({ theme, onChange }: { theme: string; onChange: (theme: string) => void }) {
+  const form = useAppForm({ defaultValues: { theme } });
+  return (
+    <form.AppField
+      name="theme"
+      listeners={{ onChange: ({ value }) => onChange(value) }}
+      children={(field) => <field.SelectField label="Theme" items={themeOptions} />}
+    />
   );
 }

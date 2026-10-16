@@ -19,6 +19,7 @@ import {
 } from "@/components/issues/picker-sources";
 import { PropertyPicker } from "@/components/issues/property-picker";
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { NoTeamsNotice } from "@/components/shared/no-teams-notice";
 import { useHotkeyScope } from "@/lib/hotkeys/use-hotkey-scope";
 import { TeamIcon } from "@/components/shared/team-icon";
 import { Button } from "@/components/ui/button";
@@ -114,7 +115,7 @@ function NewIssueForm({ defaults, onClose }: { defaults: TNewIssueDefaults; onCl
   const titleRef = useRef<HTMLInputElement>(null);
   const submittingRef = useRef(false);
   const createMoreId = useId();
-  const { teams, myTeams } = useTeams();
+  const { teams, myTeams, isPending: isTeamsPending } = useTeams();
   const { users } = useWorkspaceUsers();
   const uploadImage = useUploadImage();
   const { mutateAsync: createIssue, isPending } = useCreateIssueMutation();
@@ -198,6 +199,9 @@ function NewIssueForm({ defaults, onClose }: { defaults: TNewIssueDefaults; onCl
         <ChevronRightIcon className="text-muted-foreground size-3.5" />
         <DialogTitle>New issue</DialogTitle>
       </div>
+      {!isTeamsPending && teams.length === 0 && (
+        <NoTeamsNotice entity="Issues" onNavigate={onClose} />
+      )}
       <Input
         ref={titleRef}
         framed

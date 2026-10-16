@@ -40,30 +40,35 @@ export function SidebarNavItem({
 
 export function SidebarSection({
   title,
+  action,
   children,
   defaultOpen = true,
 }: {
   title: string;
+  action?: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <div className="flex flex-col gap-0.5">
-      <Button
-        variant="ghost"
-        size="sm"
-        forceMinSize={false}
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
-        className="text-muted-foreground w-full justify-start text-xs"
-      >
-        <span className="truncate">{title}</span>
-        <ChevronRightIcon
-          data-open={isOpen || undefined}
-          className="size-3.5 transition-transform data-open:rotate-90"
-        />
-      </Button>
+      <div className="flex items-center gap-0.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          forceMinSize={false}
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+          className="text-muted-foreground min-w-0 flex-1 justify-start text-xs"
+        >
+          <span className="truncate">{title}</span>
+          <ChevronRightIcon
+            data-open={isOpen || undefined}
+            className="size-3.5 transition-transform data-open:rotate-90"
+          />
+        </Button>
+        {action}
+      </div>
       {isOpen && <div className="flex flex-col gap-0.5">{children}</div>}
     </div>
   );

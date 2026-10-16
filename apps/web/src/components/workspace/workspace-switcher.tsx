@@ -53,6 +53,7 @@ export function WorkspaceSwitcher({ onNavigate }: { onNavigate?: () => void }) {
               name={workspace.name}
               icon={workspace.icon}
               color={workspace.color}
+              iconUrl={workspace.icon_url}
             />
             <span className="min-w-0 truncate">{workspace.name}</span>
             <ChevronDownIcon className="text-muted-foreground size-3.5" />
@@ -69,7 +70,13 @@ export function WorkspaceSwitcher({ onNavigate }: { onNavigate?: () => void }) {
                 go(() => navigate({ to: "/$workspace", params: { workspace: item.slug } }))
               }
             >
-              <WorkspaceIcon id={item.id} name={item.name} icon={item.icon} color={item.color} />
+              <WorkspaceIcon
+                id={item.id}
+                name={item.name}
+                icon={item.icon}
+                color={item.color}
+                iconUrl={item.icon_url}
+              />
               <span className="min-w-0 flex-1 truncate">{item.name}</span>
               {item.id === workspace.id && <CheckIcon className="size-4" />}
             </DropdownMenuItem>

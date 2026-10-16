@@ -97,7 +97,7 @@ export function IssueList(props: TIssueListProps) {
       groups={groups}
       issues={issues}
       showHeaders={display.group_by !== "none"}
-      nestSubIssues={display.show_sub_issues}
+      nestSubIssues={display.nest_sub_issues}
       properties={display.properties}
       fixedTeamId={fixedTeamId}
       hasNextPage={query.hasNextPage}
