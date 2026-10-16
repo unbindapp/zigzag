@@ -1,6 +1,6 @@
 .PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
 	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-fmt-check api-vet api-lint api-run \
-	web-build web-dev web-lint web-fmt web-typecheck web-test web-gen docker check
+	web-install web-build web-dev web-lint web-fmt web-typecheck web-test web-gen docker check
 
 WEB_DIR := apps/web
 API_DIR := apps/api
@@ -37,6 +37,7 @@ help:
 	@echo "  make api-run              - Run the API"
 	@echo ""
 	@echo "Web (apps/web):"
+	@echo "  make web-install          - Install web dependencies with pnpm (corepack enable first)"
 	@echo "  make web-build / web-dev / web-lint / web-fmt / web-typecheck / web-test / web-gen"
 	@echo ""
 	@echo "  make check                - fmt check, vet, tests, web type sync, web typecheck, lint and tests"
@@ -51,10 +52,10 @@ dev-api:
 	cd $(API_DIR) && $(DEV_ENV) go run ./cmd/api
 
 dev-web:
-	cd $(WEB_DIR) && VITE_DEV_API_PROXY=http://localhost:8091 npm run dev
+	cd $(WEB_DIR) && VITE_DEV_API_PROXY=http://localhost:8091 pnpm run dev
 
 web:
-	cd $(WEB_DIR) && npm run build
+	cd $(WEB_DIR) && pnpm run build
 
 embed: web
 	rm -rf $(EMBED_DIR)
@@ -109,25 +110,28 @@ api-lint:
 api-run:
 	cd $(API_DIR) && go run ./cmd/api
 
+web-install:
+	cd $(WEB_DIR) && pnpm install --frozen-lockfile
+
 web-build:
-	cd $(WEB_DIR) && npm run build
+	cd $(WEB_DIR) && pnpm run build
 
 web-dev:
-	cd $(WEB_DIR) && npm run dev
+	cd $(WEB_DIR) && pnpm run dev
 
 web-lint:
-	cd $(WEB_DIR) && npm run lint
+	cd $(WEB_DIR) && pnpm run lint
 
 web-fmt:
-	cd $(WEB_DIR) && npm run format
+	cd $(WEB_DIR) && pnpm run format
 
 web-typecheck:
-	cd $(WEB_DIR) && npm run typecheck
+	cd $(WEB_DIR) && pnpm run typecheck
 
 web-test:
-	cd $(WEB_DIR) && npm run test
+	cd $(WEB_DIR) && pnpm run test
 
 web-gen:
-	cd $(WEB_DIR) && npm run generate-sdk
+	cd $(WEB_DIR) && pnpm run generate-sdk
 
 check: api-fmt-check api-vet api-lint api-test check-web-types web-typecheck web-lint web-test

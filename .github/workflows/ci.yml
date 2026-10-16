@@ -76,12 +76,15 @@ jobs:
         with:
           module: apps/api
           cache-name: api-test
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: apps/web/package.json
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
-      - run: npm ci
+          cache: "pnpm"
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
         working-directory: ./apps/web
       - run: ./scripts/check-web-types.sh
 
@@ -95,17 +98,21 @@ jobs:
         working-directory: ./apps/web
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: apps/web/package.json
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
-      - run: npm ci
+          cache: "pnpm"
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
       - name: prettier
-        run: npx --no-install prettier --check src scripts
-      - run: npm run build
-      - run: npm run typecheck
-      - run: npm run test
+        run: pnpm exec prettier --check src scripts
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - run: pnpm run build
 
   image:
     name: Docker image

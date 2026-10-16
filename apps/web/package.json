@@ -2,11 +2,11 @@
   "name": "zigzag",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@11.19.0",
+  "packageManager": "pnpm@10.34.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "eslint . && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . && node scripts/check-ui-consistency.mjs",
     "format": "prettier --write src",
@@ -54,9 +54,6 @@
     "usehooks-ts": "^3.1.1",
     "zod": "^3.24.1",
     "zustand": "^5.0.3"
-  },
-  "overrides": {
-    "esbuild": ">=0.25.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

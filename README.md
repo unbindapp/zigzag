@@ -64,6 +64,8 @@ Create an API key under your account settings, then point any MCP client at `htt
 ## Develop
 
 ```sh
+corepack enable  # pnpm, pinned in apps/web/package.json
+make web-install # pnpm install in apps/web
 make dev-infra   # postgres in docker
 make dev-api     # api on :8091
 make dev-web     # vite on :5174

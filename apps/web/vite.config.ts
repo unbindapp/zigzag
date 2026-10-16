@@ -21,6 +21,7 @@ const rootApiProxy = Object.fromEntries(
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
+  build: { reportCompressedSize: false },
   server: {
     port: 5174,
     strictPort: true,

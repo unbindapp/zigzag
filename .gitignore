@@ -36,6 +36,8 @@ go.work.sum
 .data
 bin
 node_modules
+.pnpm-store
+apps/web/package-lock.json
 dist
 !apps/api/internal/web/dist
 apps/api/internal/web/dist/*
