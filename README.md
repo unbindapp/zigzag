@@ -12,6 +12,15 @@ Workspaces, teams, issues, projects, cycles, labels, views, documents, inbox. On
 
 ---
 
+> [!IMPORTANT]
+> **In memoriam: Zigzag, 10/16/26 - 10/16/26**
+>
+> Zigzag has been acquired by [Ricrac](https://github.com/unbindapp/ricrac). This repository is archived and will not receive updates.
+>
+> To all of our faithful users: thank you. Please migrate to [Ricrac](https://github.com/unbindapp/ricrac).
+
+---
+
 ## What you get
 
 - Issues with sub-issues, relations, labels, priorities, estimates, due dates, comments, reactions, attachments and full history
